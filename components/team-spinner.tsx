@@ -1,6 +1,6 @@
 "use client"
 
-// Team spinner with wheel click sound - v8
+// Team spinner with wheel click sound - v9
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight } from "lucide-react"
@@ -182,35 +182,43 @@ export function TeamSpinner({
         <div className="px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {/* Team Color Indicator */}
+              {/* Team Color Indicator - blur when stopped to hide result */}
               <motion.div
-                className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-lg"
-                style={{ backgroundColor: currentTeam.color }}
+                className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-lg relative overflow-hidden"
+                style={{ backgroundColor: spinPhase === "stopped" ? "#666" : currentTeam.color }}
                 animate={{
                   scale: 1,
                 }}
                 transition={{ duration: 0.15, ease: "easeInOut" }}
               >
-                {currentTeam.name.slice(0, 2).toUpperCase()}
+                {spinPhase === "stopped" ? "?" : currentTeam.name.slice(0, 2).toUpperCase()}
+                {/* Shimmer effect when stopped */}
+                {spinPhase === "stopped" && (
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                    animate={{ x: [-50, 50] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  />
+                )}
               </motion.div>
 
-              {/* Team Name */}
+              {/* Team Name - hide when stopped */}
               <div className="flex flex-col">
                 <AnimatePresence mode="wait">
                   <motion.span
-                    key={currentTeam.name}
+                    key={spinPhase === "stopped" ? "hidden" : currentTeam.name}
                     className="text-white font-semibold text-lg"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: spinPhase === "fast" ? 0.05 : 0.15 }}
                   >
-                    {currentTeam.name}
+                    {spinPhase === "stopped" ? "???" : currentTeam.name}
                   </motion.span>
                 </AnimatePresence>
                 <span className="text-white/50 text-xs">
                   {spinPhase === "idle" ? "Tap to spin" : 
-                   spinPhase === "stopped" ? "Selected!" : "Spinning..."}
+                   spinPhase === "stopped" ? "Get ready..." : "Spinning..."}
                 </span>
               </div>
             </div>
@@ -229,7 +237,7 @@ export function TeamSpinner({
               <motion.div
                 className="px-4 py-2 rounded-xl font-medium text-sm"
                 style={{ 
-                  backgroundColor: spinPhase === "stopped" ? currentTeam.color : "rgba(255,255,255,0.1)",
+                  backgroundColor: "rgba(255,255,255,0.1)",
                   color: "white"
                 }}
                 animate={{
@@ -237,7 +245,7 @@ export function TeamSpinner({
                 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
               >
-                {spinPhase === "stopped" ? "Winner!" : "..."}
+                {spinPhase === "stopped" ? "Revealing..." : "..."}
               </motion.div>
             )}
           </div>
