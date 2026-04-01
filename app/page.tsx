@@ -92,8 +92,8 @@ export default function AnimationShowcase() {
       
       {/* eBay Live Header */}
       <div className="absolute top-12 left-0 right-0 z-20 p-4">
-        <div className="flex items-center justify-between">
-          {/* Back button and streamer info */}
+        {/* Top row - Back button, username, and viewer count aligned */}
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <button className="w-8 h-8 flex items-center justify-center">
               <ChevronDown className="w-6 h-6 text-white" />
@@ -105,22 +105,24 @@ export default function AnimationShowcase() {
             </div>
           </div>
           
-          {/* Right side actions */}
-          <div className="flex flex-col items-end gap-3">
-            <div className="flex items-center gap-1 bg-red-500 rounded-full px-2 py-1">
-              <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-              <span className="text-white text-xs font-medium">240</span>
-            </div>
-            <button className="w-10 h-10 bg-black/40 backdrop-blur rounded-xl flex items-center justify-center">
-              <LayoutGrid className="w-5 h-5 text-white" />
-            </button>
-            <button className="w-10 h-10 bg-black/40 backdrop-blur rounded-xl flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-white" />
-            </button>
-            <button className="w-10 h-10 bg-black/40 backdrop-blur rounded-xl flex items-center justify-center">
-              <MoreHorizontal className="w-5 h-5 text-white" />
-            </button>
+          {/* Viewer count */}
+          <div className="flex items-center gap-1 bg-red-500 rounded-full px-2 py-1">
+            <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+            <span className="text-white text-xs font-medium">240</span>
           </div>
+        </div>
+        
+        {/* Right side action buttons */}
+        <div className="absolute top-16 right-4 flex flex-col items-end gap-3">
+          <button className="w-10 h-10 bg-black/40 backdrop-blur rounded-xl flex items-center justify-center">
+            <LayoutGrid className="w-5 h-5 text-white" />
+          </button>
+          <button className="w-10 h-10 bg-black/40 backdrop-blur rounded-xl flex items-center justify-center">
+            <Wallet className="w-5 h-5 text-white" />
+          </button>
+          <button className="w-10 h-10 bg-black/40 backdrop-blur rounded-xl flex items-center justify-center">
+            <MoreHorizontal className="w-5 h-5 text-white" />
+          </button>
         </div>
       </div>
 
