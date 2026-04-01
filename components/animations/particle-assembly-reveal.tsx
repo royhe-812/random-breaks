@@ -19,7 +19,7 @@ interface ParticleAssemblyRevealProps {
 
 export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAssemblyRevealProps) {
   const [phase, setPhase] = useState<"idle" | "scattering" | "assembling" | "revealed">("idle")
-  const [team, setTeam] = useState(teams[0])
+  const team = teams[0] // Fixed team - Chiefs
   
   const particles = useMemo(() => 
     [...Array(40)].map((_, i) => ({
@@ -34,7 +34,6 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
   useEffect(() => {
     if (isRevealing) {
       setPhase("idle")
-      setTeam(teams[Math.floor(Math.random() * teams.length)])
       
       const scatterTimer = setTimeout(() => setPhase("scattering"), 100)
       const assembleTimer = setTimeout(() => setPhase("assembling"), 600)

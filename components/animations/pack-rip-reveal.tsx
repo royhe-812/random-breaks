@@ -19,12 +19,11 @@ interface PackRipRevealProps {
 
 export function PackRipReveal({ isRevealing, onComplete }: PackRipRevealProps) {
   const [phase, setPhase] = useState<"closed" | "ripping" | "revealed">("closed")
-  const [team, setTeam] = useState(teams[0])
+  const team = teams[0] // Fixed team - Chiefs
 
   useEffect(() => {
     if (isRevealing) {
       setPhase("closed")
-      setTeam(teams[Math.floor(Math.random() * teams.length)])
       
       const ripTimer = setTimeout(() => setPhase("ripping"), 400)
       const revealTimer = setTimeout(() => setPhase("revealed"), 900)

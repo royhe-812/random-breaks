@@ -19,12 +19,11 @@ interface MysteryBoxRevealProps {
 
 export function MysteryBoxReveal({ isRevealing, onComplete }: MysteryBoxRevealProps) {
   const [phase, setPhase] = useState<"idle" | "shaking" | "glowing" | "burst" | "revealed">("idle")
-  const [team, setTeam] = useState(teams[0])
+  const team = teams[0] // Fixed team - Chiefs
 
   useEffect(() => {
     if (isRevealing) {
       setPhase("idle")
-      setTeam(teams[Math.floor(Math.random() * teams.length)])
       
       const shakeTimer = setTimeout(() => setPhase("shaking"), 200)
       const glowTimer = setTimeout(() => setPhase("glowing"), 800)

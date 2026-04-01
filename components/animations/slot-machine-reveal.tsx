@@ -21,14 +21,14 @@ interface SlotMachineRevealProps {
 
 export function SlotMachineReveal({ isRevealing, onComplete }: SlotMachineRevealProps) {
   const [spinning, setSpinning] = useState(false)
-  const [finalTeam, setFinalTeam] = useState(teams[0])
+  const finalTeam = teams[0] // Fixed team - Chiefs
   const [showConfetti, setShowConfetti] = useState(false)
   const [visibleTeams, setVisibleTeams] = useState(teams.slice(0, 3))
   const [locked, setLocked] = useState(false)
 
   const spinTeams = useCallback(() => {
     if (!spinning) return
-    setVisibleTeams(prev => {
+    setVisibleTeams(() => {
       const shuffled = [...teams].sort(() => Math.random() - 0.5)
       return shuffled.slice(0, 3)
     })
@@ -39,15 +39,13 @@ export function SlotMachineReveal({ isRevealing, onComplete }: SlotMachineReveal
       setSpinning(true)
       setShowConfetti(false)
       setLocked(false)
-      const selected = teams[Math.floor(Math.random() * teams.length)]
-      setFinalTeam(selected)
       
       const spinInterval = setInterval(spinTeams, 80)
       
       const stopTimer = setTimeout(() => {
         clearInterval(spinInterval)
         setSpinning(false)
-        setVisibleTeams([teams[0], selected, teams[2]])
+        setVisibleTeams([teams[1], finalTeam, teams[2]])
         setLocked(true)
       }, 1500)
       

@@ -19,14 +19,13 @@ interface CardFlipRevealProps {
 
 export function CardFlipReveal({ isRevealing, onComplete }: CardFlipRevealProps) {
   const [isFlipped, setIsFlipped] = useState(false)
-  const [team, setTeam] = useState(teams[0])
+  const team = teams[0] // Fixed team - Chiefs
   const [showShine, setShowShine] = useState(false)
 
   useEffect(() => {
     if (isRevealing) {
       setIsFlipped(false)
       setShowShine(false)
-      setTeam(teams[Math.floor(Math.random() * teams.length)])
       
       const flipTimer = setTimeout(() => {
         setIsFlipped(true)
