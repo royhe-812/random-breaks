@@ -25,18 +25,14 @@ export default function AnimationShowcase() {
   const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("card-flip")
   const [isRevealing, setIsRevealing] = useState(false)
   const [key, setKey] = useState(0)
-  const [showPicker, setShowPicker] = useState(true)
-
   const handleReveal = useCallback(() => {
     setIsRevealing(true)
-    setShowPicker(false)
     setKey(prev => prev + 1)
   }, [])
 
   const handleComplete = useCallback(() => {
     setTimeout(() => {
       setIsRevealing(false)
-      setShowPicker(true)
     }, 1500)
   }, [])
 
@@ -98,16 +94,13 @@ export default function AnimationShowcase() {
         </AnimatePresence>
       </EbayLiveBackground>
 
-      {/* Animation Style Picker - Floating Panel */}
-      <AnimatePresence>
-        {showPicker && (
-          <motion.div
-            className="absolute top-4 left-4 right-16 z-30"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-          >
+      {/* Animation Style Picker - Always Visible */}
+      <motion.div
+        className="absolute top-4 left-4 right-16 z-30"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+      >
             <div className="bg-black/80 backdrop-blur-xl rounded-2xl border border-white/10 p-3">
               <div className="flex items-center justify-between mb-2 px-1">
                 <span className="text-white/70 text-xs font-medium uppercase tracking-wider">
@@ -134,12 +127,10 @@ export default function AnimationShowcase() {
               </div>
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Instructions overlay when not revealing */}
       <AnimatePresence>
-        {showPicker && !isRevealing && (
+        {!isRevealing && (
           <motion.div
             className="absolute bottom-52 left-4 right-4 z-30 pointer-events-none"
             initial={{ opacity: 0 }}
