@@ -404,20 +404,13 @@ export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftB
                   <p className="text-xs font-semibold text-white/80 uppercase tracking-wider">
                     {(team as typeof teams[0]).city || ""}
                   </p>
-                  <h3 className="text-2xl font-black text-white tracking-wide">
+                  <p className="text-2xl font-black text-white tracking-wide">
                     {team.name.toUpperCase()}
-                  </h3>
+                  </p>
+                  <p className="text-xs mt-1 font-medium tracking-widest" style={{ color: team.secondary }}>
+                    NFL 2024
+                  </p>
                 </motion.div>
-                {/* Sub text */}
-                <motion.p
-                  className="text-xs mt-1 font-medium tracking-widest"
-                  style={{ color: team.secondary }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  NFL 2024
-                </motion.p>
               </div>
               
               {/* Card corner accents */}

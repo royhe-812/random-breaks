@@ -265,9 +265,9 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
               <p className="text-sm font-semibold text-white/80 uppercase tracking-wider">
                 {(team as typeof teams[0]).city || ""}
               </p>
-              <h3 className="text-3xl font-black text-white drop-shadow-lg">
+              <p className="text-3xl font-black text-white drop-shadow-lg">
                 {team.name}
-              </h3>
+              </p>
             </motion.div>
             
             <motion.div
