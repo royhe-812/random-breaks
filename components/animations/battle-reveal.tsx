@@ -31,19 +31,21 @@ interface BattleRevealProps {
 }
 
 export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
-  const [phase, setPhase] = useState<"idle" | "spinning" | "narrowing" | "enter" | "clash" | "battle" | "deciding" | "winner">("idle")
-  const [spinningIndex, setSpinningIndex] = useState(0)
+  const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "battle" | "deciding" | "winner">("idle")
+  const [leftIndex, setLeftIndex] = useState(0)
+  const [rightIndex, setRightIndex] = useState(4)
   const [spinSpeed, setSpinSpeed] = useState(80)
   const audioContextRef = useRef<AudioContext | null>(null)
   
-  // Randomly select two teams that will battle and a winner
-  const [team1, team2, winner] = useMemo(() => {
-    const shuffled = [...teams].sort(() => Math.random() - 0.5)
-    const t1 = shuffled[0]
-    const t2 = shuffled[1]
-    const winnerTeam = Math.random() > 0.5 ? t1 : t2
-    return [t1, t2, winnerTeam]
+  // Randomly select winner (left or right)
+  const [winnerSide] = useMemo(() => {
+    return [Math.random() > 0.5 ? "left" : "right"]
   }, [isRevealing])
+
+  // Get the final teams when spinning stops
+  const leftTeam = teams[leftIndex]
+  const rightTeam = teams[rightIndex]
+  const winner = winnerSide === "left" ? leftTeam : rightTeam
 
   // Play tick sound
   const playTickSound = () => {
@@ -76,12 +78,13 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
     }
   }
 
-  // Spinning team names effect
+  // Both cards spinning through teams at different offsets
   useEffect(() => {
-    if (phase !== "spinning") return
+    if (phase !== "spinning" && phase !== "slowing") return
     
     const interval = setInterval(() => {
-      setSpinningIndex(prev => (prev + 1) % teams.length)
+      setLeftIndex(prev => (prev + 1) % teams.length)
+      setRightIndex(prev => (prev + 1) % teams.length)
       playTickSound()
     }, spinSpeed)
     
@@ -90,17 +93,17 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
 
   // Slow down spinning
   useEffect(() => {
-    if (phase !== "spinning") return
+    if (phase !== "slowing") return
     
     const slowDown = setInterval(() => {
       setSpinSpeed(prev => {
-        if (prev >= 300) {
+        if (prev >= 350) {
           clearInterval(slowDown)
           return prev
         }
-        return prev + 30
+        return prev + 40
       })
-    }, 200)
+    }, 150)
     
     return () => clearInterval(slowDown)
   }, [phase])
@@ -109,37 +112,30 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
     if (isRevealing) {
       setPhase("idle")
       setSpinSpeed(80)
-      setSpinningIndex(0)
+      setLeftIndex(0)
+      setRightIndex(4)
       
-      // Phase 0: Start spinning through team names
+      // Phase 0: Start spinning both cards
       const spinTimer = setTimeout(() => setPhase("spinning"), 100)
       
-      // Phase 0.5: Show "narrowing down" - stops on two teams
-      const narrowTimer = setTimeout(() => setPhase("narrowing"), 2000)
+      // Phase 1: Start slowing down
+      const slowTimer = setTimeout(() => setPhase("slowing"), 1500)
       
-      // Phase 1: Cards enter from sides
-      const enterTimer = setTimeout(() => setPhase("enter"), 2800)
+      // Phase 2: Battle phase - teams locked in
+      const battleTimer = setTimeout(() => setPhase("battle"), 3000)
       
-      // Phase 2: Cards clash in middle
-      const clashTimer = setTimeout(() => setPhase("clash"), 3500)
+      // Phase 3: Deciding moment
+      const decidingTimer = setTimeout(() => setPhase("deciding"), 4000)
       
-      // Phase 3: Battle with energy effects
-      const battleTimer = setTimeout(() => setPhase("battle"), 3900)
-      
-      // Phase 4: Deciding moment - rapid switching highlight
-      const decidingTimer = setTimeout(() => setPhase("deciding"), 4900)
-      
-      // Phase 5: Winner revealed
+      // Phase 4: Winner revealed
       const winnerTimer = setTimeout(() => {
         setPhase("winner")
         onComplete()
-      }, 5900)
+      }, 5000)
 
       return () => {
         clearTimeout(spinTimer)
-        clearTimeout(narrowTimer)
-        clearTimeout(enterTimer)
-        clearTimeout(clashTimer)
+        clearTimeout(slowTimer)
         clearTimeout(battleTimer)
         clearTimeout(decidingTimer)
         clearTimeout(winnerTimer)
@@ -149,96 +145,106 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
 
   if (!isRevealing && phase === "idle") return null
 
-  const currentSpinTeam = teams[spinningIndex]
-
   return (
     <div className="relative flex flex-col items-center justify-center">
-      {/* Spinning Phase - Team names cycling */}
+      {/* Two cards spinning side by side */}
       <AnimatePresence>
-        {(phase === "spinning" || phase === "narrowing") && (
+        {(phase === "spinning" || phase === "slowing") && (
           <motion.div
             className="flex flex-col items-center"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8, y: -50 }}
+            exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.3 }}
           >
             <motion.p
-              className="text-white/60 text-sm mb-4 uppercase tracking-widest"
+              className="text-white/60 text-sm mb-6 uppercase tracking-widest"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              {phase === "spinning" ? "Selecting teams..." : "Narrowing down..."}
+              {phase === "spinning" ? "Selecting matchup..." : "Locking in..."}
             </motion.p>
             
-            {/* Spinning team display */}
-            <motion.div
-              className="relative w-64 h-24 rounded-2xl overflow-hidden"
-              style={{
-                background: `linear-gradient(145deg, ${currentSpinTeam.color}dd, ${currentSpinTeam.color}99)`,
-                boxShadow: `0 0 30px ${currentSpinTeam.color}60`,
-              }}
-              key={spinningIndex}
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.05 }}
-            >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span 
-                  className="text-4xl font-black text-white drop-shadow-lg"
-                  style={{ textShadow: "0 4px 12px rgba(0,0,0,0.4)" }}
-                >
-                  {currentSpinTeam.name.toUpperCase()}
-                </span>
-              </div>
-              
-              {/* Shine effect */}
+            {/* Two cards cycling */}
+            <div className="flex items-center gap-6">
+              {/* Left card */}
               <motion.div
-                className="absolute inset-0 pointer-events-none"
+                className="relative w-28 h-40 rounded-xl overflow-hidden"
                 style={{
-                  background: `linear-gradient(105deg, 
-                    transparent 0%,
-                    rgba(255,255,255,0.2) 45%, 
-                    rgba(255,255,255,0.4) 50%,
-                    rgba(255,255,255,0.2) 55%, 
-                    transparent 100%
-                  )`,
+                  background: `linear-gradient(145deg, ${leftTeam.color}dd, ${leftTeam.color}99)`,
+                  boxShadow: `0 0 25px ${leftTeam.color}60`,
                 }}
-                animate={{ x: [-200, 200] }}
-                transition={{ duration: 0.8, repeat: Infinity }}
-              />
-            </motion.div>
-
-            {/* Narrowing indicator - shows the two finalists */}
-            {phase === "narrowing" && (
-              <motion.div
-                className="mt-6 flex items-center gap-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
+                key={`left-${leftIndex}`}
+                initial={{ y: 15, opacity: 0.5 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.05 }}
               >
-                <div 
-                  className="px-4 py-2 rounded-lg"
-                  style={{ background: team1.color }}
-                >
-                  <span className="text-white font-bold">{team1.name}</span>
-                </div>
-                <span className="text-yellow-400 font-black text-xl">VS</span>
-                <div 
-                  className="px-4 py-2 rounded-lg"
-                  style={{ background: team2.color }}
-                >
-                  <span className="text-white font-bold">{team2.name}</span>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span 
+                    className="text-4xl font-black text-white drop-shadow-lg"
+                    style={{ textShadow: "0 4px 12px rgba(0,0,0,0.4)" }}
+                  >
+                    {leftTeam.name.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span className="text-xs font-bold text-white/80 mt-2 uppercase tracking-wider">
+                    {leftTeam.name}
+                  </span>
                 </div>
               </motion.div>
+
+              {/* VS indicator */}
+              <motion.div
+                className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center"
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+              >
+                <span className="text-sm font-black text-black">VS</span>
+              </motion.div>
+
+              {/* Right card */}
+              <motion.div
+                className="relative w-28 h-40 rounded-xl overflow-hidden"
+                style={{
+                  background: `linear-gradient(145deg, ${rightTeam.color}dd, ${rightTeam.color}99)`,
+                  boxShadow: `0 0 25px ${rightTeam.color}60`,
+                }}
+                key={`right-${rightIndex}`}
+                initial={{ y: -15, opacity: 0.5 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.05 }}
+              >
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span 
+                    className="text-4xl font-black text-white drop-shadow-lg"
+                    style={{ textShadow: "0 4px 12px rgba(0,0,0,0.4)" }}
+                  >
+                    {rightTeam.name.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span className="text-xs font-bold text-white/80 mt-2 uppercase tracking-wider">
+                    {rightTeam.name}
+                  </span>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Speed indicator */}
+            {phase === "slowing" && (
+              <motion.p
+                className="text-yellow-400 text-xs mt-4 uppercase tracking-widest"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+              >
+                Locking teams...
+              </motion.p>
             )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* VS Badge - only show after spinning */}
+      {/* VS Badge - only show during battle */}
       <AnimatePresence>
-        {(phase === "clash" || phase === "battle" || phase === "deciding") && phase !== "spinning" && phase !== "narrowing" && (
+        {(phase === "battle" || phase === "deciding") && (
           <motion.div
             className="absolute z-30"
             initial={{ scale: 0, rotate: -180 }}
@@ -301,63 +307,57 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
         )}
       </AnimatePresence>
 
-      {/* Battle Container - only show after spinning */}
-      {phase !== "spinning" && phase !== "narrowing" && phase !== "idle" && (
+      {/* Battle Cards */}
+      {(phase === "battle" || phase === "deciding" || phase === "winner") && (
         <div className="relative flex items-center gap-4">
-        {/* Team 1 Card - Left */}
+        {/* Left Team Card */}
         <motion.div
           className="relative"
-          initial={{ x: -200, opacity: 0, rotateY: -30 }}
+          initial={{ x: -100, opacity: 0 }}
           animate={{
-            x: phase === "idle" ? -200 : 
-               phase === "enter" ? -60 :
-               phase === "winner" ? 0 : -40,
-            opacity: phase === "idle" ? 0 : 1,
-            rotateY: phase === "enter" ? -15 : 0,
-            scale: phase === "winner" ? 1.1 : 
+            x: phase === "winner" && winnerSide === "left" ? 0 : -40,
+            opacity: 1,
+            scale: phase === "winner" && winnerSide === "left" ? 1.15 : 
+                   phase === "winner" && winnerSide === "right" ? 0.85 :
                    phase === "deciding" ? 1.03 : 1,
-            filter: phase === "winner" ? "brightness(1.2)" : "brightness(1)",
+            filter: phase === "winner" && winnerSide === "right" ? "grayscale(0.8) brightness(0.6)" : "brightness(1)",
           }}
           transition={{ 
             type: "spring",
             stiffness: 200,
             damping: 20,
-            scale: phase === "deciding" ? { duration: 0.2, repeat: 5 } : undefined,
           }}
         >
           <TeamCard 
-            team={team1} 
-            isWinner={phase === "winner"} 
-            isHighlighted={phase === "deciding" || phase === "winner"}
+            team={leftTeam} 
+            isWinner={phase === "winner" && winnerSide === "left"} 
+            isHighlighted={phase === "deciding" || (phase === "winner" && winnerSide === "left")}
             side="left"
           />
         </motion.div>
 
-        {/* Team 2 Card - Right */}
+        {/* Right Team Card */}
         <motion.div
           className="relative"
-          initial={{ x: 200, opacity: 0, rotateY: 30 }}
+          initial={{ x: 100, opacity: 0 }}
           animate={{
-            x: phase === "idle" ? 200 : 
-               phase === "enter" ? 60 :
-               phase === "winner" ? 100 : 40,
-            opacity: phase === "idle" ? 0 : phase === "winner" ? 0.4 : 1,
-            rotateY: phase === "enter" ? 15 : 0,
-            scale: phase === "winner" ? 0.8 : 
+            x: phase === "winner" && winnerSide === "right" ? 0 : 40,
+            opacity: phase === "winner" && winnerSide === "left" ? 0.4 : 1,
+            scale: phase === "winner" && winnerSide === "right" ? 1.15 : 
+                   phase === "winner" && winnerSide === "left" ? 0.85 :
                    phase === "deciding" ? 1.03 : 1,
-            filter: phase === "winner" ? "grayscale(0.8) brightness(0.6)" : "brightness(1)",
+            filter: phase === "winner" && winnerSide === "left" ? "grayscale(0.8) brightness(0.6)" : "brightness(1)",
           }}
           transition={{ 
             type: "spring",
             stiffness: 200,
             damping: 20,
-            scale: phase === "deciding" ? { duration: 0.2, repeat: 5, delay: 0.1 } : undefined,
           }}
         >
           <TeamCard 
-            team={team2} 
-            isWinner={false} 
-            isHighlighted={phase === "deciding"}
+            team={rightTeam} 
+            isWinner={phase === "winner" && winnerSide === "right"} 
+            isHighlighted={phase === "deciding" || (phase === "winner" && winnerSide === "right")}
             side="right"
           />
         </motion.div>
@@ -366,7 +366,7 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
 
       {/* Energy clash effect in battle */}
       <AnimatePresence>
-        {phase === "battle" && (
+        {(phase === "battle" || phase === "deciding") && (
           <motion.div
             className="absolute inset-0 pointer-events-none"
             initial={{ opacity: 0 }}
