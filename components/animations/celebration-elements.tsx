@@ -21,14 +21,15 @@ export function CelebrationElements({ show, teamColor = "#E31837" }: Celebration
         className="absolute -top-8 -left-12 w-16 h-16 z-20"
         initial={{ scale: 0, rotate: -30, opacity: 0 }}
         animate={{ 
-          scale: [0, 1.2, 1],
-          rotate: [-30, 10, 0],
+          scale: 1,
+          rotate: 0,
           opacity: 1,
-          y: [0, -8, 0],
         }}
         transition={{ 
-          duration: 0.6,
-          y: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+          duration: 0.5,
+          type: "spring",
+          stiffness: 300,
+          damping: 15,
         }}
       >
         <Image src={STARS_URL} alt="" fill className="object-contain" />
@@ -38,15 +39,16 @@ export function CelebrationElements({ show, teamColor = "#E31837" }: Celebration
         className="absolute -top-4 -right-10 w-12 h-12 z-20"
         initial={{ scale: 0, rotate: 20, opacity: 0 }}
         animate={{ 
-          scale: [0, 1.3, 1],
-          rotate: [20, -5, 0],
+          scale: 1,
+          rotate: 0,
           opacity: 1,
-          y: [0, -6, 0],
         }}
         transition={{ 
-          duration: 0.6,
+          duration: 0.5,
           delay: 0.15,
-          y: { duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }
+          type: "spring",
+          stiffness: 300,
+          damping: 15,
         }}
       >
         <Image src={STARS_URL} alt="" fill className="object-contain" />
@@ -56,15 +58,16 @@ export function CelebrationElements({ show, teamColor = "#E31837" }: Celebration
         className="absolute -bottom-6 -right-8 w-10 h-10 z-20"
         initial={{ scale: 0, rotate: -15, opacity: 0 }}
         animate={{ 
-          scale: [0, 1.2, 1],
-          rotate: [-15, 5, 0],
+          scale: 1,
+          rotate: 0,
           opacity: 1,
-          y: [0, -5, 0],
         }}
         transition={{ 
           duration: 0.5,
           delay: 0.3,
-          y: { duration: 1.8, repeat: Infinity, ease: "easeInOut", delay: 0.5 }
+          type: "spring",
+          stiffness: 300,
+          damping: 15,
         }}
       >
         <Image src={STARS_URL} alt="" fill className="object-contain" />
@@ -75,8 +78,8 @@ export function CelebrationElements({ show, teamColor = "#E31837" }: Celebration
         className="absolute -bottom-4 -left-6 w-14 h-14 z-20"
         initial={{ scale: 0, y: 20, opacity: 0 }}
         animate={{ 
-          scale: [0, 1.3, 1],
-          y: [20, -5, 0],
+          scale: 1,
+          y: 0,
           opacity: 1,
         }}
         transition={{ 

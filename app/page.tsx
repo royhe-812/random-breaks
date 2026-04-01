@@ -25,6 +25,7 @@ export default function AnimationShowcase() {
   const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("card-flip")
   const [isRevealing, setIsRevealing] = useState(false)
   const [key, setKey] = useState(0)
+
   const handleReveal = useCallback(() => {
     setIsRevealing(true)
     setKey(prev => prev + 1)
@@ -101,32 +102,32 @@ export default function AnimationShowcase() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
       >
-            <div className="bg-black/80 backdrop-blur-xl rounded-2xl border border-white/10 p-3">
-              <div className="flex items-center justify-between mb-2 px-1">
-                <span className="text-white/70 text-xs font-medium uppercase tracking-wider">
-                  Animation Style
-                </span>
-                <span className="text-green-400 text-xs">
-                  Tap &quot;Bid&quot; to preview
-                </span>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                {animations.map((animation) => (
-                  <button
-                    key={animation.id}
-                    onClick={() => setSelectedAnimation(animation.id)}
-                    className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                      selectedAnimation === animation.id
-                        ? "bg-green-500 text-white"
-                        : "bg-white/10 text-white/70 hover:bg-white/20"
-                    }`}
-                  >
-                    {animation.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </motion.div>
+        <div className="bg-black/80 backdrop-blur-xl rounded-2xl border border-white/10 p-3">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className="text-white/70 text-xs font-medium uppercase tracking-wider">
+              Animation Style
+            </span>
+            <span className="text-green-400 text-xs">
+              Tap &quot;Bid&quot; to preview
+            </span>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {animations.map((animation) => (
+              <button
+                key={animation.id}
+                onClick={() => setSelectedAnimation(animation.id)}
+                className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  selectedAnimation === animation.id
+                    ? "bg-green-500 text-white"
+                    : "bg-white/10 text-white/70 hover:bg-white/20"
+                }`}
+              >
+                {animation.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      </motion.div>
 
       {/* Instructions overlay when not revealing */}
       <AnimatePresence>

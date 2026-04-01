@@ -284,13 +284,14 @@ export function SlotMachineReveal({ isRevealing, onComplete }: SlotMachineReveal
                   }}
                   initial={{ scale: 0, rotate: -10 }}
                   animate={{ 
-                    scale: [0, 1.2, 1],
-                    rotate: [-10, 5, 0],
+                    scale: 1,
+                    rotate: 0,
                   }}
                   transition={{ 
                     type: "spring", 
                     stiffness: 400,
-                    damping: 15,
+                    damping: 12,
+                    mass: 1.2,
                   }}
                 >
                   <span>{finalTeam.name.toUpperCase()}!</span>
