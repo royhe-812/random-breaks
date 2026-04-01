@@ -9,11 +9,12 @@ import { MysteryBoxReveal } from "@/components/animations/mystery-box-reveal"
 import { ParticleAssemblyReveal } from "@/components/animations/particle-assembly-reveal"
 import { GiftBoxReveal } from "@/components/animations/gift-box-reveal"
 import { BattleReveal } from "@/components/animations/battle-reveal"
+import { PickCardReveal } from "@/components/animations/pick-card-reveal"
 import { TeamSpinner, type Team } from "@/components/team-spinner"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight } from "lucide-react"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card"
 
 const animations: { id: AnimationType; name: string }[] = [
   { id: "card-flip", name: "Card Flip" },
@@ -23,6 +24,7 @@ const animations: { id: AnimationType; name: string }[] = [
   { id: "particle-assembly", name: "Particles" },
   { id: "gift-box", name: "Gift Box" },
   { id: "battle", name: "Battle" },
+  { id: "pick-card", name: "Pick Card" },
 ]
 
 export default function AnimationShowcase() {
@@ -72,6 +74,8 @@ export default function AnimationShowcase() {
         return <GiftBoxReveal key={key} {...props} />
       case "battle":
         return <BattleReveal key={key} {...props} />
+      case "pick-card":
+        return <PickCardReveal key={key} {...props} />
       default:
         return null
     }
