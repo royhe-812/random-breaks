@@ -9,6 +9,7 @@ import { MysteryBoxReveal } from "@/components/animations/mystery-box-reveal"
 import { ParticleAssemblyReveal } from "@/components/animations/particle-assembly-reveal"
 import { GiftBoxReveal } from "@/components/animations/gift-box-reveal"
 import { BattleReveal } from "@/components/animations/battle-reveal"
+import { TeamSpinner } from "@/components/team-spinner"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight } from "lucide-react"
 
@@ -27,7 +28,17 @@ const animations: { id: AnimationType; name: string }[] = [
 export default function AnimationShowcase() {
   const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("card-flip")
   const [isRevealing, setIsRevealing] = useState(false)
+  const [isSpinning, setIsSpinning] = useState(false)
   const [key, setKey] = useState(0)
+
+  const handleStartSpin = useCallback(() => {
+    setIsSpinning(true)
+  }, [])
+
+  const handleSpinComplete = useCallback(() => {
+    setIsRevealing(true)
+    setKey(prev => prev + 1)
+  }, [])
 
   const handleReveal = useCallback(() => {
     setIsRevealing(true)
@@ -37,6 +48,7 @@ export default function AnimationShowcase() {
   const handleComplete = useCallback(() => {
     setTimeout(() => {
       setIsRevealing(false)
+      setIsSpinning(false)
     }, 1500)
   }, [])
 
@@ -134,14 +146,15 @@ export default function AnimationShowcase() {
         </div>
       </div>
 
-      {/* Spots Available */}
-      <div className="absolute left-4 right-4 bottom-40 z-20">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-white/70">16/32 spots available</span>
-          <button className="flex items-center gap-1 text-white font-medium">
-            View all <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+      {/* Team Spinner with Spots Available */}
+      <div className="absolute left-4 right-4 bottom-44 z-20">
+        <TeamSpinner
+          totalSpots={32}
+          availableSpots={16}
+          isSpinning={isSpinning}
+          onStartSpin={handleStartSpin}
+          onSpinComplete={handleSpinComplete}
+        />
       </div>
 
       {/* Auction Card */}
