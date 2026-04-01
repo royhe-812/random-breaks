@@ -1,5 +1,6 @@
 "use client"
 
+// Battle reveal with cycling cards - v2
 import { useState, useEffect, useMemo, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
@@ -8,7 +9,7 @@ const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayL
 const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
 
 const teams = [
-  { name: "Chiefs", color: "#E31837", secondary: "#FFB612" },
+  { name: "Chiefs", color: "#E31837", secondary: "#FFB81C" },
   { name: "Eagles", color: "#004C54", secondary: "#A5ACAF" },
   { name: "Cowboys", color: "#003594", secondary: "#869397" },
   { name: "49ers", color: "#AA0000", secondary: "#B3995D" },
@@ -16,6 +17,14 @@ const teams = [
   { name: "Dolphins", color: "#008E97", secondary: "#FC4C02" },
   { name: "Ravens", color: "#241773", secondary: "#9E7C0C" },
   { name: "Lions", color: "#0076B6", secondary: "#B0B7BC" },
+  { name: "Packers", color: "#203731", secondary: "#FFB612" },
+  { name: "Bengals", color: "#FB4F14", secondary: "#000000" },
+  { name: "Jets", color: "#125740", secondary: "#000000" },
+  { name: "Broncos", color: "#FB4F14", secondary: "#002244" },
+  { name: "Chargers", color: "#0080C6", secondary: "#FFC20E" },
+  { name: "Colts", color: "#002C5F", secondary: "#A2AAAD" },
+  { name: "Texans", color: "#03202F", secondary: "#A71930" },
+  { name: "Steelers", color: "#FFB612", secondary: "#101820" },
 ]
 
 interface Team {

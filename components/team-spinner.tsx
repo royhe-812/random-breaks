@@ -1,6 +1,6 @@
 "use client"
 
-// Team spinner with wheel click sound - v6
+// Team spinner with wheel click sound - v7
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight } from "lucide-react"

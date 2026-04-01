@@ -16,7 +16,15 @@ const teams = [
   { name: "Bills", color: "#00338D", abbr: "BUF" },
   { name: "Dolphins", color: "#008E97", abbr: "MIA" },
   { name: "Ravens", color: "#241773", abbr: "BAL" },
+  { name: "Lions", color: "#0076B6", abbr: "DET" },
+  { name: "Packers", color: "#203731", abbr: "GB" },
   { name: "Bengals", color: "#FB4F14", abbr: "CIN" },
+  { name: "Jets", color: "#125740", abbr: "NYJ" },
+  { name: "Broncos", color: "#FB4F14", abbr: "DEN" },
+  { name: "Chargers", color: "#0080C6", abbr: "LAC" },
+  { name: "Colts", color: "#002C5F", abbr: "IND" },
+  { name: "Texans", color: "#03202F", abbr: "HOU" },
+  { name: "Steelers", color: "#FFB612", abbr: "PIT" },
 ]
 
 interface Team {
