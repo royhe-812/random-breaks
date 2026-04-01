@@ -50,6 +50,7 @@ export function TeamSpinner({
   const [spinPhase, setSpinPhase] = useState<"idle" | "fast" | "slowing" | "stopped">("idle")
   const [spinSpeed, setSpinSpeed] = useState(50)
   const [finalTeamIndex, setFinalTeamIndex] = useState<number | null>(null)
+  const targetTeamIndexRef = useRef<number | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
 
   // Play tick sound using Web Audio API - classic wheel clicker sound
@@ -96,6 +97,9 @@ export function TeamSpinner({
   }, [isSpinning, spinPhase])
 
   const startSpin = useCallback(() => {
+    // Pick a completely random team at the start of the spin
+    const randomIndex = Math.floor(Math.random() * teams.length)
+    targetTeamIndexRef.current = randomIndex
     setSpinPhase("fast")
     setSpinSpeed(50)
     onStartSpin()
@@ -123,18 +127,17 @@ export function TeamSpinner({
   }, [spinPhase])
 
   useEffect(() => {
-    if (spinPhase === "slowing") {
-      // Gradually slow down
+    if (spinPhase === "slowing" && targetTeamIndexRef.current !== null) {
+      // Gradually slow down and land on the pre-selected random team
+      const targetIndex = targetTeamIndexRef.current
       const slowdownInterval = setInterval(() => {
         setSpinSpeed(prev => {
           const newSpeed = prev + 30
           if (newSpeed >= 400) {
             clearInterval(slowdownInterval)
-            // Capture the current team index NOW before the timeout
-            setCurrentTeamIndex(idx => {
-              setFinalTeamIndex(idx)
-              return idx
-            })
+            // Land on the randomly selected target team
+            setCurrentTeamIndex(targetIndex)
+            setFinalTeamIndex(targetIndex)
             setSpinPhase("stopped")
             return 400
           }
