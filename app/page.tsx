@@ -150,14 +150,16 @@ export default function AnimationShowcase() {
           <Heart className="w-5 h-5 text-red-500 fill-red-500" />
         </div>
 
-        {/* Team Spinner with Spots Available */}
-        <TeamSpinner
-          totalSpots={32}
-          availableSpots={16}
-          isSpinning={isSpinning}
-          onStartSpin={handleStartSpin}
-          onSpinComplete={handleSpinComplete}
-        />
+        {/* Team Spinner with Spots Available - hidden for slot machine */}
+        {selectedAnimation !== "slot-machine" && (
+          <TeamSpinner
+            totalSpots={32}
+            availableSpots={16}
+            isSpinning={isSpinning}
+            onStartSpin={handleStartSpin}
+            onSpinComplete={handleSpinComplete}
+          />
+        )}
 
         {/* Auction Card */}
         <div className="bg-zinc-900/95 backdrop-blur rounded-2xl p-4">
@@ -197,7 +199,15 @@ export default function AnimationShowcase() {
               Max bid
             </button>
             <button 
-              onClick={handleReveal}
+              onClick={() => {
+                if (selectedAnimation === "slot-machine") {
+                  // For slot machine, bid directly triggers the reveal
+                  setIsRevealing(true)
+                  setKey(prev => prev + 1)
+                } else {
+                  handleReveal()
+                }
+              }}
               disabled={isRevealing}
               className="flex-1 py-3 bg-green-500 hover:bg-green-600 disabled:bg-green-500/50 rounded-xl text-black font-semibold flex items-center justify-center gap-2 transition-colors"
             >
