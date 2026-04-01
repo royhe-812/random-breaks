@@ -7,7 +7,7 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Case Break Animations | eBay Live Prototypes',
+  title: 'Case Break Animations | eBay Live Prototypes v3',
   description: 'Winning moment animation prototypes for eBay Live case breaks',
   generator: 'v0.app',
   icons: {

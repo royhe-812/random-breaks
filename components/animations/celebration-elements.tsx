@@ -18,7 +18,7 @@ export function CelebrationElements({ show, teamColor = "#E31837" }: Celebration
     <>
       {/* Floating Stars */}
       <motion.div
-        className="absolute -top-8 -left-12 w-16 h-16 z-20"
+        className="absolute -top-12 -left-16 w-24 h-24 z-20"
         initial={{ scale: 0, rotate: -30, opacity: 0 }}
         animate={{ 
           scale: 1,
@@ -36,7 +36,7 @@ export function CelebrationElements({ show, teamColor = "#E31837" }: Celebration
       </motion.div>
 
       <motion.div
-        className="absolute -top-4 -right-10 w-12 h-12 z-20"
+        className="absolute -top-6 -right-14 w-20 h-20 z-20"
         initial={{ scale: 0, rotate: 20, opacity: 0 }}
         animate={{ 
           scale: 1,
@@ -55,7 +55,7 @@ export function CelebrationElements({ show, teamColor = "#E31837" }: Celebration
       </motion.div>
 
       <motion.div
-        className="absolute -bottom-6 -right-8 w-10 h-10 z-20"
+        className="absolute -bottom-10 -right-12 w-16 h-16 z-20"
         initial={{ scale: 0, rotate: -15, opacity: 0 }}
         animate={{ 
           scale: 1,
@@ -75,7 +75,7 @@ export function CelebrationElements({ show, teamColor = "#E31837" }: Celebration
 
       {/* Fire Icon */}
       <motion.div
-        className="absolute -bottom-4 -left-6 w-14 h-14 z-20"
+        className="absolute -bottom-8 -left-10 w-20 h-20 z-20"
         initial={{ scale: 0, y: 20, opacity: 0 }}
         animate={{ 
           scale: 1,
