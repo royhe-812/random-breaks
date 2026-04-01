@@ -101,7 +101,7 @@ export function SealBreakReveal({ isRevealing, onComplete }: SealBreakRevealProp
                   ? { scale: [1, 1.03, 1] }
                   : {}
               }
-              transition={{ duration: 0.25, repeat: phase === "heating" ? Infinity : 0 }}
+              transition={{ duration: 0.25, repeat: phase === "heating" ? Infinity : 0, ease: "easeInOut" }}
             >
               {/* Holographic sheen */}
               <motion.div
@@ -137,7 +137,7 @@ export function SealBreakReveal({ isRevealing, onComplete }: SealBreakRevealProp
                         }
                       : {}
                   }
-                  transition={{ duration: 0.4, repeat: Infinity }}
+                  transition={{ duration: 0.4, repeat: Infinity, ease: "easeInOut" }}
                 >
                   ?
                 </motion.span>

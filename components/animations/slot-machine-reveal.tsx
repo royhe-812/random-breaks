@@ -157,7 +157,7 @@ export function SlotMachineReveal({ isRevealing, onComplete }: SlotMachineReveal
                 )`,
               }}
               animate={{ x: ["-100%", "200%"] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 1, ease: "easeInOut" }}
             />
             <span className="text-white font-black text-lg tracking-wider drop-shadow-lg relative z-10">
               YOUR TEAM
@@ -219,7 +219,7 @@ export function SlotMachineReveal({ isRevealing, onComplete }: SlotMachineReveal
                   animate={{ 
                     opacity: [0, 0.5, 0.2, 0.5, 0.2],
                   }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                   style={{ 
                     backgroundColor: finalTeam.color,
                     boxShadow: `inset 0 0 40px ${finalTeam.color}`,
@@ -316,7 +316,7 @@ export function SlotMachineReveal({ isRevealing, onComplete }: SlotMachineReveal
                 opacity: [0, 0.5, 0.2, 0.5, 0.2],
                 scale: [1, 1.15, 1.05, 1.15, 1.05],
               }}
-              transition={{ duration: 1, repeat: Infinity }}
+              transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
             />
           )}
         </AnimatePresence>

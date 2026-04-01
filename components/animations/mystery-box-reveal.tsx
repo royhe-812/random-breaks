@@ -123,7 +123,7 @@ export function MysteryBoxReveal({ isRevealing, onComplete }: MysteryBoxRevealPr
                       "0 0 20px rgba(167,139,250,0.5)",
                     ]
                   } : {}}
-                  transition={{ duration: 0.4, repeat: Infinity }}
+                  transition={{ duration: 0.4, repeat: Infinity, ease: "easeInOut" }}
                 >
                   ?
                 </motion.div>
@@ -138,28 +138,28 @@ export function MysteryBoxReveal({ isRevealing, onComplete }: MysteryBoxRevealPr
                       style={{ background: "linear-gradient(90deg, transparent, #a78bfa, transparent)" }}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 0.2, repeat: Infinity }}
+                      transition={{ duration: 0.2, repeat: Infinity, ease: "easeInOut" }}
                     />
                     <motion.div
                       className="absolute inset-x-0 bottom-0 h-1 rounded-full"
                       style={{ background: "linear-gradient(90deg, transparent, #c4b5fd, transparent)" }}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 0.2, repeat: Infinity, delay: 0.1 }}
+                      transition={{ duration: 0.2, repeat: Infinity, delay: 0.1, ease: "easeInOut" }}
                     />
                     <motion.div
                       className="absolute inset-y-0 left-0 w-1 rounded-full"
                       style={{ background: "linear-gradient(180deg, transparent, #a78bfa, transparent)" }}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 0.2, repeat: Infinity, delay: 0.15 }}
+                      transition={{ duration: 0.2, repeat: Infinity, delay: 0.15, ease: "easeInOut" }}
                     />
                     <motion.div
                       className="absolute inset-y-0 right-0 w-1 rounded-full"
                       style={{ background: "linear-gradient(180deg, transparent, #c4b5fd, transparent)" }}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 0.2, repeat: Infinity, delay: 0.2 }}
+                      transition={{ duration: 0.2, repeat: Infinity, delay: 0.2, ease: "easeInOut" }}
                     />
                   </>
                 )}

@@ -42,6 +42,14 @@ export function TeamSpinner({
   const [spinPhase, setSpinPhase] = useState<"idle" | "fast" | "slowing" | "stopped">("idle")
   const [spinSpeed, setSpinSpeed] = useState(50)
 
+  // Reset to idle when isSpinning becomes false
+  useEffect(() => {
+    if (!isSpinning && spinPhase !== "idle") {
+      setSpinPhase("idle")
+      setSpinSpeed(50)
+    }
+  }, [isSpinning, spinPhase])
+
   const startSpin = useCallback(() => {
     setSpinPhase("fast")
     setSpinSpeed(50)

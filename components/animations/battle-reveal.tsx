@@ -358,7 +358,7 @@ function TeamCard({
           }}
           initial={{ x: -150 }}
           animate={{ x: 150 }}
-          transition={{ duration: 0.8, repeat: isWinner ? Infinity : 0, repeatDelay: 1 }}
+          transition={{ duration: 0.8, repeat: isWinner ? Infinity : 0, repeatDelay: 1, ease: "easeInOut" }}
         />
       )}
       

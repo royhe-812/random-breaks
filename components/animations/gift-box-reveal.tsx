@@ -113,7 +113,7 @@ export function GiftBoxReveal({ isRevealing, onComplete }: GiftBoxRevealProps) {
               <motion.div 
                 className="absolute inset-0 flex items-center justify-center"
                 animate={phase === "shaking" ? { opacity: [1, 0.5, 1] } : {}}
-                transition={{ duration: 0.2, repeat: Infinity }}
+                transition={{ duration: 0.2, repeat: Infinity, ease: "easeInOut" }}
               >
                 <span className="text-5xl font-black text-white/30 drop-shadow-lg">?</span>
               </motion.div>
