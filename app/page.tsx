@@ -1,5 +1,6 @@
 "use client"
 
+// eBay Live Case Break Animation Showcase
 import { useState, useCallback } from "react"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
@@ -8,16 +9,17 @@ import { MysteryBoxReveal } from "@/components/animations/mystery-box-reveal"
 import { ParticleAssemblyReveal } from "@/components/animations/particle-assembly-reveal"
 import { SealBreakReveal } from "@/components/animations/seal-break-reveal"
 import { AnimatePresence, motion } from "framer-motion"
+import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight } from "lucide-react"
 
 type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "seal-break"
 
-const animations: { id: AnimationType; name: string; description: string }[] = [
-  { id: "card-flip", name: "Card Flip", description: "Classic trading card flip with holographic shine" },
-  { id: "pack-rip", name: "Pack Rip", description: "Foil pack tears open revealing the card" },
-  { id: "slot-machine", name: "Slot Machine", description: "Teams spin like slots before locking" },
-  { id: "mystery-box", name: "Mystery Box", description: "Box glows and explodes to reveal team" },
-  { id: "particle-assembly", name: "Particle Assembly", description: "Light particles form the team logo" },
-  { id: "seal-break", name: "Seal Break", description: "Wax seal heats, cracks, and breaks" },
+const animations: { id: AnimationType; name: string }[] = [
+  { id: "card-flip", name: "Card Flip" },
+  { id: "pack-rip", name: "Pack Rip" },
+  { id: "slot-machine", name: "Slot Machine" },
+  { id: "mystery-box", name: "Mystery Box" },
+  { id: "particle-assembly", name: "Particles" },
+  { id: "seal-break", name: "Seal Break" },
 ]
 
 export default function AnimationShowcase() {
@@ -66,15 +68,165 @@ export default function AnimationShowcase() {
           backgroundImage: `url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background-f26bZVAw8GB6FM5n7pkn4MfRb9ML7J.png')`,
         }}
       />
-      {/* Dark overlay for better readability */}
-      <div className="absolute inset-0 bg-black/40" />
       
-      {/* Animation Overlay */}
-      <div className="absolute inset-0 flex items-center justify-center z-20">
-        <AnimatePresence>
-          {isRevealing && (
+      {/* Gradient overlays for readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
+      
+      {/* eBay Live Header */}
+      <div className="absolute top-0 left-0 right-0 z-20 p-4">
+        <div className="flex items-center justify-between">
+          {/* Back button and streamer info */}
+          <div className="flex items-center gap-3">
+            <button className="w-8 h-8 flex items-center justify-center">
+              <ChevronDown className="w-6 h-6 text-white" />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500" />
+              <span className="text-white font-semibold text-sm">ryans_cardhouse</span>
+              <Heart className="w-4 h-4 text-white fill-white" />
+            </div>
+          </div>
+          
+          {/* Right side actions */}
+          <div className="flex flex-col items-end gap-3">
+            <div className="flex items-center gap-1 bg-red-500 rounded-full px-2 py-1">
+              <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              <span className="text-white text-xs font-medium">240</span>
+            </div>
+            <button className="w-10 h-10 bg-black/40 backdrop-blur rounded-xl flex items-center justify-center">
+              <LayoutGrid className="w-5 h-5 text-white" />
+            </button>
+            <button className="w-10 h-10 bg-black/40 backdrop-blur rounded-xl flex items-center justify-center">
+              <Wallet className="w-5 h-5 text-white" />
+            </button>
+            <button className="w-10 h-10 bg-black/40 backdrop-blur rounded-xl flex items-center justify-center">
+              <MoreHorizontal className="w-5 h-5 text-white" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Chat Messages */}
+      <div className="absolute left-4 bottom-64 z-20 space-y-2 max-w-[250px]">
+        <div className="flex items-start gap-2">
+          <span className="text-white/60 text-sm">johnpleys</span>
+        </div>
+        <div className="text-white/80 text-sm italic">Gotta try to hit this one! Love M...</div>
+        <div className="mt-2">
+          <span className="text-yellow-400 font-semibold text-sm">Chloepulls11</span>
+          <p className="text-white text-sm">These are so hot, get your bids in! 🤟🔥</p>
+        </div>
+        <div className="mt-2">
+          <span className="text-white font-semibold text-sm">chrisjames</span>
+          <p className="text-white/80 text-sm">So sick</p>
+        </div>
+      </div>
+
+      {/* Comment Input */}
+      <div className="absolute left-4 right-4 bottom-52 z-20">
+        <div className="flex items-center bg-black/40 backdrop-blur rounded-full px-4 py-3">
+          <span className="text-white/50 text-sm flex-1">Add comment...</span>
+          <Heart className="w-5 h-5 text-red-500 fill-red-500" />
+        </div>
+      </div>
+
+      {/* Spots Available */}
+      <div className="absolute left-4 right-4 bottom-40 z-20">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-white/70">16/32 spots available</span>
+          <button className="flex items-center gap-1 text-white font-medium">
+            View all <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Auction Card */}
+      <div className="absolute left-4 right-4 bottom-4 z-20">
+        <div className="bg-zinc-900/95 backdrop-blur rounded-2xl p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-green-400 font-semibold text-sm">Random team</span>
+                <span className="text-white/60 text-sm">- 16X 2023 Panini Mosaic NFL Blaster Random #224</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-white font-bold text-xl">$28.00</span>
+                <span className="text-white/50 text-sm">+ $5 shipping</span>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/50" />
+          </div>
+          
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🎲</span>
+              <span className="text-yellow-400 font-medium text-sm">Jessica991 is winning</span>
+            </div>
+            <div className="flex items-center gap-1 text-red-400">
+              <div className="w-4 h-4 rounded-full border-2 border-red-400 flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+              </div>
+              <span className="font-medium text-sm">00:10</span>
+            </div>
+          </div>
+          
+          <div className="flex gap-3">
+            <button className="px-6 py-3 bg-zinc-800 rounded-xl text-white font-semibold">
+              Max bid
+            </button>
+            <button 
+              onClick={handleReveal}
+              disabled={isRevealing}
+              className="flex-1 py-3 bg-green-500 hover:bg-green-600 disabled:bg-green-500/50 rounded-xl text-white font-semibold flex items-center justify-center gap-2 transition-colors"
+            >
+              <span>Bid $30</span>
+              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5 -ml-3" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Animation Style Picker - Compact floating pills */}
+      <motion.div
+        className="absolute top-20 left-4 right-14 z-30"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+          {animations.map((animation) => (
+            <button
+              key={animation.id}
+              onClick={() => setSelectedAnimation(animation.id)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                selectedAnimation === animation.id
+                  ? "bg-green-500 text-white"
+                  : "bg-black/50 backdrop-blur text-white/70 hover:bg-black/70"
+              }`}
+            >
+              {animation.name}
+            </button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Reveal Animation Overlay */}
+      <AnimatePresence>
+        {isRevealing && (
+          <>
+            {/* Backdrop blur */}
             <motion.div
-              className="flex flex-col items-center"
+              className="absolute inset-0 bg-black/70 backdrop-blur-sm z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            />
+            
+            {/* Animation container */}
+            <motion.div
+              className="absolute inset-0 flex flex-col items-center justify-center z-50"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
@@ -96,55 +248,9 @@ export default function AnimationShowcase() {
               {/* The animation component */}
               {renderAnimation()}
             </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Trigger Button */}
-      <div className="absolute bottom-8 left-4 right-4 z-30">
-        <button
-          onClick={handleReveal}
-          disabled={isRevealing}
-          className="w-full py-4 bg-green-500 hover:bg-green-600 disabled:bg-green-500/50 text-white font-semibold rounded-xl transition-colors"
-        >
-          {isRevealing ? "Revealing..." : "Reveal Team"}
-        </button>
-      </div>
-
-      {/* Animation Style Picker - Always Visible */}
-      <motion.div
-        className="absolute top-4 left-4 right-16 z-30"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-      >
-        <div className="bg-black/80 backdrop-blur-xl rounded-2xl border border-white/10 p-3">
-          <div className="flex items-center justify-between mb-2 px-1">
-            <span className="text-white/70 text-xs font-medium uppercase tracking-wider">
-              Animation Style
-            </span>
-            <span className="text-green-400 text-xs">
-              Tap &quot;Bid&quot; to preview
-            </span>
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            {animations.map((animation) => (
-              <button
-                key={animation.id}
-                onClick={() => setSelectedAnimation(animation.id)}
-                className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  selectedAnimation === animation.id
-                    ? "bg-green-500 text-white"
-                    : "bg-white/10 text-white/70 hover:bg-white/20"
-                }`}
-              >
-                {animation.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </motion.div>
-
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
