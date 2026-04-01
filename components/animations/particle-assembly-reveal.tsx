@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { CelebrationElements, HolographicShine } from "./celebration-elements"
 
 const teams = [
   { name: "Chiefs", color: "#E31837", secondary: "#FFB81C" },
@@ -19,15 +20,15 @@ interface ParticleAssemblyRevealProps {
 
 export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAssemblyRevealProps) {
   const [phase, setPhase] = useState<"idle" | "scattering" | "assembling" | "revealed">("idle")
-  const team = teams[0] // Fixed team - Chiefs
+  const team = teams[0]
   
   const particles = useMemo(() => 
-    [...Array(40)].map((_, i) => ({
+    [...Array(50)].map((_, i) => ({
       id: i,
-      startX: (Math.random() - 0.5) * 300,
-      startY: (Math.random() - 0.5) * 300,
+      startX: (Math.random() - 0.5) * 350,
+      startY: (Math.random() - 0.5) * 350,
       delay: Math.random() * 0.5,
-      size: 3 + Math.random() * 6,
+      size: 3 + Math.random() * 8,
     })), []
   )
 
@@ -37,8 +38,8 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
       
       const scatterTimer = setTimeout(() => setPhase("scattering"), 100)
       const assembleTimer = setTimeout(() => setPhase("assembling"), 600)
-      const revealTimer = setTimeout(() => setPhase("revealed"), 2000)
-      const completeTimer = setTimeout(() => onComplete(), 3500)
+      const revealTimer = setTimeout(() => setPhase("revealed"), 2200)
+      const completeTimer = setTimeout(() => onComplete(), 4000)
       
       return () => {
         clearTimeout(scatterTimer)
@@ -50,8 +51,8 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
   }, [isRevealing, onComplete])
 
   return (
-    <div className="relative w-56 h-72 flex items-center justify-center overflow-hidden">
-      {/* Scattered particles */}
+    <div className="relative w-64 h-80 flex items-center justify-center overflow-visible">
+      {/* Scattered particles - holographic style */}
       <AnimatePresence>
         {(phase === "scattering" || phase === "assembling") && (
           <>
@@ -62,8 +63,16 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
                 style={{
                   width: particle.size,
                   height: particle.size,
-                  backgroundColor: particle.id % 3 === 0 ? team.color : particle.id % 3 === 1 ? team.secondary : "#ffffff",
-                  boxShadow: `0 0 ${particle.size * 2}px ${particle.id % 2 === 0 ? team.color : team.secondary}`,
+                  background: particle.id % 4 === 0 
+                    ? `linear-gradient(135deg, #a78bfa, #c4b5fd)` 
+                    : particle.id % 4 === 1 
+                    ? `linear-gradient(135deg, #c4b5fd, #e9d5ff)`
+                    : particle.id % 4 === 2
+                    ? team.color 
+                    : team.secondary,
+                  boxShadow: `0 0 ${particle.size * 2}px ${
+                    particle.id % 2 === 0 ? "rgba(167,139,250,0.6)" : team.color + "80"
+                  }`,
                 }}
                 initial={{
                   x: particle.startX,
@@ -80,8 +89,8 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
                         scale: 1,
                       }
                     : {
-                        x: (Math.random() - 0.5) * 40,
-                        y: (Math.random() - 0.5) * 40,
+                        x: (Math.random() - 0.5) * 30,
+                        y: (Math.random() - 0.5) * 30,
                         opacity: 1,
                         scale: 1,
                       }
@@ -91,7 +100,7 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
                   scale: 2,
                 }}
                 transition={{
-                  duration: phase === "scattering" ? 0.4 : 1.2,
+                  duration: phase === "scattering" ? 0.4 : 1.4,
                   delay: particle.delay,
                   ease: phase === "assembling" ? [0.2, 0.8, 0.2, 1] : "easeOut",
                 }}
@@ -101,19 +110,43 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
         )}
       </AnimatePresence>
 
-      {/* Swirling effect during assembly */}
+      {/* Swirling effect during assembly - holographic */}
       <AnimatePresence>
         {phase === "assembling" && (
-          <motion.div
-            className="absolute w-32 h-32 rounded-full"
-            style={{
-              background: `conic-gradient(from 0deg, ${team.color}00, ${team.color}40, ${team.secondary}40, ${team.color}00)`,
-            }}
-            initial={{ scale: 2, opacity: 0, rotate: 0 }}
-            animate={{ scale: 1, opacity: 1, rotate: 360 }}
-            exit={{ scale: 0.5, opacity: 0 }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
-          />
+          <>
+            <motion.div
+              className="absolute w-40 h-40 rounded-full"
+              style={{
+                background: `conic-gradient(from 0deg, 
+                  rgba(167,139,250,0) 0%, 
+                  rgba(167,139,250,0.4) 25%, 
+                  rgba(196,181,253,0.4) 50%, 
+                  rgba(233,213,255,0.4) 75%, 
+                  rgba(167,139,250,0) 100%
+                )`,
+              }}
+              initial={{ scale: 2.5, opacity: 0, rotate: 0 }}
+              animate={{ scale: 1, opacity: 1, rotate: 720 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              transition={{ duration: 1.5, ease: "easeInOut" }}
+            />
+            <motion.div
+              className="absolute w-28 h-28 rounded-full"
+              style={{
+                background: `conic-gradient(from 180deg, 
+                  ${team.color}00 0%, 
+                  ${team.color}60 25%, 
+                  ${team.secondary}60 50%, 
+                  ${team.color}60 75%, 
+                  ${team.color}00 100%
+                )`,
+              }}
+              initial={{ scale: 2, opacity: 0, rotate: 0 }}
+              animate={{ scale: 1, opacity: 1, rotate: -540 }}
+              exit={{ scale: 0.3, opacity: 0 }}
+              transition={{ duration: 1.5, ease: "easeInOut", delay: 0.1 }}
+            />
+          </>
         )}
       </AnimatePresence>
 
@@ -121,34 +154,46 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
       <AnimatePresence>
         {phase === "revealed" && (
           <motion.div
-            className="flex flex-col items-center"
-            initial={{ scale: 0.5, opacity: 0 }}
+            className="flex flex-col items-center relative"
+            initial={{ scale: 0.3, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 12 }}
           >
-            {/* Glow effect */}
+            {/* Celebration elements */}
+            <CelebrationElements show={true} teamColor={team.color} />
+            
+            {/* Multi-ring glow effect */}
             <motion.div
-              className="absolute w-40 h-40 rounded-full"
+              className="absolute w-48 h-48 rounded-full -z-10"
               style={{
-                background: `radial-gradient(circle, ${team.color}40 0%, transparent 70%)`,
+                background: `radial-gradient(circle, 
+                  rgba(167,139,250,0.3) 0%, 
+                  ${team.color}20 40%, 
+                  transparent 70%
+                )`,
               }}
               animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
             
-            {/* Logo circle */}
+            {/* Logo circle with premium finish */}
             <motion.div
-              className="relative w-28 h-28 rounded-full flex items-center justify-center overflow-hidden"
+              className="relative w-32 h-32 rounded-full flex items-center justify-center overflow-hidden"
               style={{
                 background: `linear-gradient(135deg, ${team.color} 0%, ${team.color}dd 100%)`,
-                boxShadow: `0 0 50px ${team.color}80, inset 0 0 30px ${team.secondary}30`,
+                boxShadow: `
+                  0 0 60px ${team.color}60, 
+                  0 0 100px rgba(167,139,250,0.4),
+                  inset 0 -8px 20px rgba(0,0,0,0.3)
+                `,
               }}
               initial={{ rotate: -180 }}
               animate={{ rotate: 0 }}
               transition={{ type: "spring", stiffness: 100 }}
             >
+              <HolographicShine />
               <motion.span 
-                className="text-4xl font-black text-white relative z-10"
+                className="text-5xl font-black text-white relative z-10 drop-shadow-lg"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring" }}
@@ -157,47 +202,45 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
               </motion.span>
               
               {/* Inner shine */}
-              <motion.div
-                className="absolute inset-0"
+              <div
+                className="absolute inset-0 rounded-full"
                 style={{
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%)",
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.35) 0%, transparent 50%)",
                 }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
               />
             </motion.div>
             
-            {/* Orbiting particles */}
-            {[...Array(6)].map((_, i) => (
+            {/* Orbiting holographic particles */}
+            {[...Array(8)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-2 h-2 rounded-full"
-                style={{
-                  backgroundColor: i % 2 === 0 ? team.secondary : team.color,
-                }}
-                animate={{
-                  rotate: 360,
-                }}
+                className="absolute w-56 h-56"
+                animate={{ rotate: 360 }}
                 transition={{
-                  duration: 3,
+                  duration: 4 + i * 0.5,
                   repeat: Infinity,
                   ease: "linear",
-                  delay: i * 0.2,
                 }}
+                style={{ transform: `rotate(${i * 45}deg)` }}
               >
                 <motion.div
-                  className="w-2 h-2 rounded-full"
+                  className="absolute w-3 h-3 rounded-full -top-1"
                   style={{
-                    backgroundColor: i % 2 === 0 ? team.secondary : team.color,
-                    transform: `translateX(${50 + i * 5}px)`,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    background: i % 2 === 0 
+                      ? "linear-gradient(135deg, #a78bfa, #c4b5fd)" 
+                      : `linear-gradient(135deg, ${team.secondary}, ${team.color})`,
+                    boxShadow: `0 0 10px ${i % 2 === 0 ? "#a78bfa" : team.secondary}`,
                   }}
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: i * 0.1 }}
                 />
               </motion.div>
             ))}
             
             <motion.h3
-              className="mt-6 text-2xl font-black text-white"
+              className="mt-8 text-3xl font-black text-white drop-shadow-lg"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
@@ -206,8 +249,12 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
             </motion.h3>
             
             <motion.div
-              className="mt-2 px-4 py-1 rounded-full text-sm font-medium"
-              style={{ backgroundColor: `${team.secondary}30`, color: team.secondary }}
+              className="mt-3 px-5 py-2 rounded-full text-sm font-bold"
+              style={{ 
+                background: "linear-gradient(135deg, rgba(167,139,250,0.3), rgba(196,181,253,0.2))",
+                color: "#c4b5fd",
+                border: "1px solid rgba(167,139,250,0.4)",
+              }}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.6 }}

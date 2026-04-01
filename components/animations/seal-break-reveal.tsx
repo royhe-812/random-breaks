@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { CelebrationElements, HolographicShine } from "./celebration-elements"
+import Image from "next/image"
+
+const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
 
 const teams = [
   { name: "Chiefs", color: "#E31837", secondary: "#FFB81C" },
@@ -19,7 +23,7 @@ interface SealBreakRevealProps {
 
 export function SealBreakReveal({ isRevealing, onComplete }: SealBreakRevealProps) {
   const [phase, setPhase] = useState<"idle" | "heating" | "cracking" | "breaking" | "revealed">("idle")
-  const team = teams[0] // Fixed team - Chiefs
+  const team = teams[0]
 
   useEffect(() => {
     if (isRevealing) {
@@ -29,7 +33,7 @@ export function SealBreakReveal({ isRevealing, onComplete }: SealBreakRevealProp
       const crackTimer = setTimeout(() => setPhase("cracking"), 900)
       const breakTimer = setTimeout(() => setPhase("breaking"), 1400)
       const revealTimer = setTimeout(() => setPhase("revealed"), 1700)
-      const completeTimer = setTimeout(() => onComplete(), 3200)
+      const completeTimer = setTimeout(() => onComplete(), 3700)
       
       return () => {
         clearTimeout(heatTimer)
@@ -42,161 +46,238 @@ export function SealBreakReveal({ isRevealing, onComplete }: SealBreakRevealProp
   }, [isRevealing, onComplete])
 
   return (
-    <div className="relative w-56 h-72 flex items-center justify-center">
-      {/* Heat glow */}
+    <div className="relative w-60 h-80 flex items-center justify-center">
+      {/* Heat glow - now with holographic purple tint */}
       <AnimatePresence>
         {(phase === "heating" || phase === "cracking") && (
           <motion.div
-            className="absolute w-40 h-40 rounded-full"
+            className="absolute w-48 h-48 rounded-full"
             style={{
-              background: "radial-gradient(circle, rgba(239,68,68,0.4) 0%, transparent 70%)",
+              background: `radial-gradient(circle, 
+                rgba(167,139,250,0.3) 0%, 
+                rgba(239,68,68,0.3) 30%, 
+                transparent 70%
+              )`,
             }}
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ 
-              scale: phase === "cracking" ? 1.5 : 1, 
+              scale: phase === "cracking" ? 1.8 : 1.2, 
               opacity: phase === "cracking" ? 1 : 0.6 
             }}
-            exit={{ scale: 2, opacity: 0 }}
+            exit={{ scale: 2.5, opacity: 0 }}
             transition={{ duration: 0.5 }}
           />
         )}
       </AnimatePresence>
 
-      {/* Wax Seal */}
+      {/* Wax Seal - Premium holographic finish */}
       <AnimatePresence>
         {phase !== "revealed" && (
           <motion.div
             className="relative"
             animate={
               phase === "breaking"
-                ? { scale: 1.3, opacity: 0 }
+                ? { scale: 1.4, opacity: 0 }
                 : {}
             }
             transition={{ duration: 0.3 }}
           >
-            {/* Seal base */}
+            {/* Seal base with premium gradient */}
             <motion.div
-              className="relative w-32 h-32 rounded-full"
+              className="relative w-36 h-36 rounded-full"
               style={{
-                background: "radial-gradient(circle at 30% 30%, #dc2626 0%, #991b1b 50%, #7f1d1d 100%)",
+                background: `radial-gradient(circle at 30% 30%, 
+                  #a78bfa 0%, 
+                  #8b5cf6 30%, 
+                  #7c3aed 60%, 
+                  #6d28d9 100%
+                )`,
                 boxShadow: phase === "heating" || phase === "cracking"
-                  ? "0 0 30px rgba(239,68,68,0.6), inset 0 -5px 15px rgba(0,0,0,0.3)"
-                  : "0 8px 20px rgba(0,0,0,0.4), inset 0 -5px 15px rgba(0,0,0,0.3)",
+                  ? "0 0 40px rgba(167,139,250,0.7), inset 0 -8px 20px rgba(0,0,0,0.3)"
+                  : "0 12px 30px rgba(0,0,0,0.5), inset 0 -8px 20px rgba(0,0,0,0.3)",
               }}
               animate={
                 phase === "heating"
-                  ? { scale: [1, 1.02, 1] }
+                  ? { scale: [1, 1.03, 1] }
                   : {}
               }
-              transition={{ duration: 0.3, repeat: phase === "heating" ? Infinity : 0 }}
+              transition={{ duration: 0.25, repeat: phase === "heating" ? Infinity : 0 }}
             >
+              {/* Holographic sheen */}
+              <motion.div
+                className="absolute inset-0 rounded-full overflow-hidden"
+                style={{
+                  background: `linear-gradient(
+                    135deg,
+                    rgba(255,255,255,0.3) 0%,
+                    transparent 40%,
+                    rgba(255,255,255,0.1) 60%,
+                    transparent 100%
+                  )`,
+                }}
+                animate={{
+                  rotate: phase === "heating" || phase === "cracking" ? 360 : 0,
+                }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              />
+              
               {/* Seal emblem */}
-              <div className="absolute inset-4 rounded-full border-4 border-red-800/50 flex items-center justify-center">
+              <div className="absolute inset-5 rounded-full border-4 border-violet-300/30 flex items-center justify-center">
                 <motion.span
-                  className="text-5xl font-black text-red-900/70"
+                  className="text-6xl font-black text-violet-200/70"
                   animate={
                     phase === "heating" || phase === "cracking"
-                      ? { opacity: [0.7, 0.5, 0.7] }
+                      ? { 
+                          opacity: [0.7, 0.4, 0.7],
+                          textShadow: [
+                            "0 0 10px rgba(255,255,255,0.3)",
+                            "0 0 30px rgba(255,255,255,0.6)",
+                            "0 0 10px rgba(255,255,255,0.3)",
+                          ]
+                        }
                       : {}
                   }
-                  transition={{ duration: 0.5, repeat: Infinity }}
+                  transition={{ duration: 0.4, repeat: Infinity }}
                 >
                   ?
                 </motion.span>
               </div>
               
-              {/* Drip edges */}
-              <div className="absolute -bottom-2 left-1/4 w-4 h-6 bg-red-700 rounded-b-full" />
-              <div className="absolute -bottom-3 right-1/3 w-3 h-5 bg-red-700 rounded-b-full" />
-              <div className="absolute -right-1 top-1/3 w-5 h-3 bg-red-700 rounded-r-full" />
+              {/* Decorative drips */}
+              <div className="absolute -bottom-3 left-1/4 w-5 h-7 bg-gradient-to-b from-violet-500 to-violet-700 rounded-b-full" />
+              <div className="absolute -bottom-4 right-1/3 w-4 h-6 bg-gradient-to-b from-violet-500 to-violet-700 rounded-b-full" />
+              <div className="absolute -right-2 top-1/3 w-6 h-4 bg-gradient-to-r from-violet-500 to-violet-700 rounded-r-full" />
               
-              {/* Crack lines */}
+              {/* Crack lines - glowing */}
               <AnimatePresence>
                 {phase === "cracking" && (
                   <>
                     <motion.div
-                      className="absolute top-1/2 left-1/2 w-full h-0.5 bg-amber-400 origin-left"
-                      style={{ transform: "translate(-50%, -50%) rotate(30deg)" }}
+                      className="absolute top-1/2 left-1/2 w-full h-1 origin-left rounded-full"
+                      style={{ 
+                        transform: "translate(-50%, -50%) rotate(30deg)",
+                        background: "linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24)",
+                        boxShadow: "0 0 15px #fbbf24",
+                      }}
                       initial={{ scaleX: 0, opacity: 0 }}
                       animate={{ scaleX: 1, opacity: 1 }}
-                      transition={{ duration: 0.2 }}
+                      transition={{ duration: 0.15 }}
                     />
                     <motion.div
-                      className="absolute top-1/2 left-1/2 w-full h-0.5 bg-amber-400 origin-left"
-                      style={{ transform: "translate(-50%, -50%) rotate(-45deg)" }}
+                      className="absolute top-1/2 left-1/2 w-full h-1 origin-left rounded-full"
+                      style={{ 
+                        transform: "translate(-50%, -50%) rotate(-45deg)",
+                        background: "linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24)",
+                        boxShadow: "0 0 15px #fbbf24",
+                      }}
                       initial={{ scaleX: 0, opacity: 0 }}
                       animate={{ scaleX: 1, opacity: 1 }}
-                      transition={{ duration: 0.2, delay: 0.1 }}
+                      transition={{ duration: 0.15, delay: 0.08 }}
                     />
                     <motion.div
-                      className="absolute top-1/2 left-1/2 w-full h-0.5 bg-amber-400 origin-left"
-                      style={{ transform: "translate(-50%, -50%) rotate(120deg)" }}
+                      className="absolute top-1/2 left-1/2 w-full h-1 origin-left rounded-full"
+                      style={{ 
+                        transform: "translate(-50%, -50%) rotate(120deg)",
+                        background: "linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24)",
+                        boxShadow: "0 0 15px #fbbf24",
+                      }}
                       initial={{ scaleX: 0, opacity: 0 }}
                       animate={{ scaleX: 1, opacity: 1 }}
-                      transition={{ duration: 0.2, delay: 0.2 }}
+                      transition={{ duration: 0.15, delay: 0.16 }}
                     />
                     {/* Glow from cracks */}
                     <motion.div
                       className="absolute inset-0 rounded-full"
                       style={{
-                        background: "radial-gradient(circle, rgba(251,191,36,0.4) 0%, transparent 60%)",
+                        background: "radial-gradient(circle, rgba(251,191,36,0.5) 0%, transparent 60%)",
                       }}
                       initial={{ opacity: 0 }}
-                      animate={{ opacity: [0, 1, 0.5] }}
-                      transition={{ duration: 0.4 }}
+                      animate={{ opacity: [0, 1, 0.6] }}
+                      transition={{ duration: 0.3 }}
                     />
                   </>
                 )}
               </AnimatePresence>
             </motion.div>
             
-            {/* Ribbon */}
-            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-              <div className="w-4 h-10 bg-gradient-to-b from-amber-500 to-amber-600 rounded-b-sm transform -rotate-12" />
-              <div className="w-4 h-12 bg-gradient-to-b from-amber-500 to-amber-600 rounded-b-sm transform rotate-12" />
+            {/* Premium ribbon */}
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
+              <div 
+                className="w-5 h-12 rounded-b-sm transform -rotate-15"
+                style={{
+                  background: "linear-gradient(180deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%)",
+                }}
+              />
+              <div 
+                className="w-5 h-14 rounded-b-sm transform rotate-15"
+                style={{
+                  background: "linear-gradient(180deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%)",
+                }}
+              />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Breaking pieces */}
+      {/* Breaking pieces - holographic shards */}
       <AnimatePresence>
         {phase === "breaking" && (
           <>
-            {[...Array(12)].map((_, i) => (
+            {[...Array(16)].map((_, i) => (
               <motion.div
                 key={i}
                 className="absolute rounded-sm"
                 style={{
-                  width: 10 + Math.random() * 15,
-                  height: 10 + Math.random() * 15,
-                  background: `linear-gradient(135deg, #dc2626 0%, #991b1b 100%)`,
+                  width: 12 + Math.random() * 18,
+                  height: 12 + Math.random() * 18,
+                  background: `linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%)`,
+                  boxShadow: "0 0 10px rgba(167,139,250,0.5)",
                 }}
                 initial={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
                 animate={{
-                  x: (Math.random() - 0.5) * 200,
-                  y: (Math.random() - 0.5) * 200 + 50,
+                  x: (Math.random() - 0.5) * 250,
+                  y: (Math.random() - 0.5) * 250 + 60,
                   opacity: 0,
-                  rotate: Math.random() * 360,
+                  rotate: Math.random() * 540,
                 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
+                transition={{ duration: 0.7, ease: "easeOut" }}
               />
             ))}
-            {/* Embers */}
-            {[...Array(16)].map((_, i) => (
+            {/* Fire embers with actual fire icons */}
+            {[...Array(6)].map((_, i) => (
               <motion.div
-                key={`ember-${i}`}
-                className="absolute w-1 h-1 rounded-full"
+                key={`fire-${i}`}
+                className="absolute w-8 h-8"
+                initial={{ x: 0, y: 0, opacity: 1, scale: 0 }}
+                animate={{
+                  x: (Math.random() - 0.5) * 180,
+                  y: -60 - Math.random() * 120,
+                  opacity: [0, 1, 0],
+                  scale: [0, 1, 0.5],
+                }}
+                transition={{ duration: 1.2, ease: "easeOut", delay: Math.random() * 0.2 }}
+              >
+                <Image src={FIRE_URL} alt="" fill className="object-contain" />
+              </motion.div>
+            ))}
+            {/* Holographic sparkles */}
+            {[...Array(20)].map((_, i) => (
+              <motion.div
+                key={`spark-${i}`}
+                className="absolute w-2 h-2 rounded-full"
                 style={{
-                  backgroundColor: i % 2 === 0 ? "#fbbf24" : "#f97316",
+                  background: i % 2 === 0 
+                    ? "linear-gradient(135deg, #fbbf24, #f59e0b)" 
+                    : "linear-gradient(135deg, #a78bfa, #c4b5fd)",
+                  boxShadow: `0 0 8px ${i % 2 === 0 ? "#fbbf24" : "#a78bfa"}`,
                 }}
                 initial={{ x: 0, y: 0, opacity: 1 }}
                 animate={{
-                  x: (Math.random() - 0.5) * 150,
-                  y: -50 - Math.random() * 100,
+                  x: (Math.random() - 0.5) * 200,
+                  y: -80 - Math.random() * 150,
                   opacity: 0,
                 }}
-                transition={{ duration: 1, ease: "easeOut", delay: Math.random() * 0.2 }}
+                transition={{ duration: 1.2, ease: "easeOut", delay: Math.random() * 0.25 }}
               />
             ))}
           </>
@@ -207,37 +288,50 @@ export function SealBreakReveal({ isRevealing, onComplete }: SealBreakRevealProp
       <AnimatePresence>
         {phase === "revealed" && (
           <motion.div
-            className="flex flex-col items-center"
-            initial={{ scale: 0, opacity: 0, y: 20 }}
+            className="flex flex-col items-center relative"
+            initial={{ scale: 0, opacity: 0, y: 30 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
           >
+            {/* Celebration elements */}
+            <CelebrationElements show={true} teamColor={team.color} />
+            
             {/* Glow backdrop */}
             <motion.div
-              className="absolute w-48 h-48 rounded-full"
+              className="absolute w-52 h-52 rounded-full -z-10"
               style={{
-                background: `radial-gradient(circle, ${team.secondary}30 0%, transparent 70%)`,
+                background: `radial-gradient(circle, 
+                  rgba(167,139,250,0.3) 0%, 
+                  ${team.color}20 40%, 
+                  transparent 70%
+                )`,
               }}
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
             
-            {/* Team emblem - now looks like a premium seal */}
+            {/* Team emblem - premium seal style */}
             <motion.div
-              className="relative w-28 h-28 rounded-full flex items-center justify-center"
+              className="relative w-32 h-32 rounded-full flex items-center justify-center overflow-hidden"
               style={{
                 background: `radial-gradient(circle at 30% 30%, ${team.color} 0%, ${team.color}cc 100%)`,
-                boxShadow: `0 8px 30px ${team.color}60, inset 0 -5px 15px rgba(0,0,0,0.2)`,
+                boxShadow: `
+                  0 12px 40px ${team.color}60, 
+                  0 0 80px rgba(167,139,250,0.4),
+                  inset 0 -8px 20px rgba(0,0,0,0.25)
+                `,
               }}
             >
+              <HolographicShine />
+              
               {/* Inner ring */}
               <div 
-                className="absolute inset-3 rounded-full border-2"
-                style={{ borderColor: team.secondary }}
+                className="absolute inset-4 rounded-full border-3"
+                style={{ borderColor: team.secondary + "60" }}
               />
               
               <motion.span
-                className="text-3xl font-black text-white"
+                className="text-4xl font-black text-white drop-shadow-lg relative z-10"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring" }}
@@ -247,7 +341,7 @@ export function SealBreakReveal({ isRevealing, onComplete }: SealBreakRevealProp
             </motion.div>
             
             <motion.h3
-              className="mt-5 text-2xl font-black text-white"
+              className="mt-6 text-3xl font-black text-white drop-shadow-lg"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -256,7 +350,7 @@ export function SealBreakReveal({ isRevealing, onComplete }: SealBreakRevealProp
             </motion.h3>
             
             <motion.p
-              className="text-zinc-400 text-sm mt-1"
+              className="text-violet-300 text-sm mt-2 font-medium"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}

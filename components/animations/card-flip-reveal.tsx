@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { CelebrationElements, HolographicShine } from "./celebration-elements"
 
 const teams = [
   { name: "Chiefs", color: "#E31837", secondary: "#FFB81C" },
@@ -19,7 +20,7 @@ interface CardFlipRevealProps {
 
 export function CardFlipReveal({ isRevealing, onComplete }: CardFlipRevealProps) {
   const [isFlipped, setIsFlipped] = useState(false)
-  const team = teams[0] // Fixed team - Chiefs
+  const team = teams[0]
   const [showShine, setShowShine] = useState(false)
 
   useEffect(() => {
@@ -37,7 +38,7 @@ export function CardFlipReveal({ isRevealing, onComplete }: CardFlipRevealProps)
       
       const completeTimer = setTimeout(() => {
         onComplete()
-      }, 2000)
+      }, 2500)
       
       return () => {
         clearTimeout(flipTimer)
@@ -48,7 +49,10 @@ export function CardFlipReveal({ isRevealing, onComplete }: CardFlipRevealProps)
   }, [isRevealing, onComplete])
 
   return (
-    <div className="relative w-48 h-72 perspective-1000">
+    <div className="relative w-52 h-80 perspective-1000">
+      {/* Celebration elements */}
+      <CelebrationElements show={isFlipped && showShine} teamColor={team.color} />
+      
       <motion.div
         className="relative w-full h-full"
         initial={false}
@@ -56,48 +60,68 @@ export function CardFlipReveal({ isRevealing, onComplete }: CardFlipRevealProps)
         transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
         style={{ transformStyle: "preserve-3d" }}
       >
-        {/* Card Back */}
+        {/* Card Back - Premium holographic style */}
         <div 
-          className="absolute inset-0 rounded-xl overflow-hidden backface-hidden"
+          className="absolute inset-0 rounded-2xl overflow-hidden backface-hidden"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-900 border-2 border-zinc-700 rounded-xl flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-zinc-800 via-zinc-900 to-black border-2 border-violet-500/30 rounded-2xl flex items-center justify-center">
+            {/* Holographic pattern */}
+            <div 
+              className="absolute inset-0 opacity-30"
+              style={{
+                background: `linear-gradient(135deg, 
+                  rgba(167, 139, 250, 0.2) 0%,
+                  rgba(196, 181, 253, 0.1) 25%,
+                  rgba(233, 213, 255, 0.2) 50%,
+                  rgba(167, 139, 250, 0.1) 75%,
+                  rgba(196, 181, 253, 0.2) 100%
+                )`,
+              }}
+            />
             <div className="relative">
               <motion.div
-                className="w-20 h-20 rounded-full border-4 border-amber-500/50 flex items-center justify-center"
+                className="w-24 h-24 rounded-full border-4 border-violet-400/50 flex items-center justify-center"
+                style={{
+                  background: "linear-gradient(135deg, rgba(167,139,250,0.2), rgba(196,181,253,0.1))",
+                  boxShadow: "0 0 30px rgba(167, 139, 250, 0.3)",
+                }}
                 animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
               >
-                <span className="text-4xl font-bold text-amber-500">?</span>
+                <span className="text-5xl font-bold text-violet-300">?</span>
               </motion.div>
               <motion.div
                 className="absolute inset-0 rounded-full"
                 style={{
-                  background: "conic-gradient(from 0deg, transparent, rgba(245, 158, 11, 0.3), transparent)",
+                  background: "conic-gradient(from 0deg, transparent, rgba(167, 139, 250, 0.4), transparent)",
                 }}
                 animate={{ rotate: 360 }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
               />
             </div>
-            {/* Pattern */}
-            <div className="absolute inset-4 border border-zinc-700 rounded-lg opacity-50" />
-            <div className="absolute inset-8 border border-zinc-700 rounded-lg opacity-30" />
+            {/* Premium border patterns */}
+            <div className="absolute inset-3 border border-violet-500/20 rounded-xl" />
+            <div className="absolute inset-6 border border-violet-500/10 rounded-lg" />
           </div>
         </div>
 
-        {/* Card Front */}
+        {/* Card Front - Team reveal with premium finish */}
         <div 
-          className="absolute inset-0 rounded-xl overflow-hidden backface-hidden"
+          className="absolute inset-0 rounded-2xl overflow-hidden backface-hidden"
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
           <div 
-            className="w-full h-full rounded-xl border-2 flex flex-col items-center justify-center relative overflow-hidden"
+            className="w-full h-full rounded-2xl border-2 flex flex-col items-center justify-center relative overflow-hidden"
             style={{ 
-              background: `linear-gradient(135deg, ${team.color} 0%, ${team.color}dd 100%)`,
-              borderColor: team.secondary
+              background: `linear-gradient(135deg, ${team.color} 0%, ${team.color}dd 50%, ${team.color}bb 100%)`,
+              borderColor: team.secondary,
+              boxShadow: `0 0 40px ${team.color}40`,
             }}
           >
-            {/* Shine effect */}
+            <HolographicShine />
+            
+            {/* Premium shine effect */}
             <AnimatePresence>
               {showShine && (
                 <motion.div
@@ -107,28 +131,38 @@ export function CardFlipReveal({ isRevealing, onComplete }: CardFlipRevealProps)
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
                   style={{
-                    background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                    background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)",
                     width: "50%",
                   }}
                 />
               )}
             </AnimatePresence>
             
-            {/* Team Logo Placeholder */}
+            {/* Team Logo */}
             <motion.div
-              className="w-24 h-24 rounded-full flex items-center justify-center mb-4"
-              style={{ backgroundColor: team.secondary }}
+              className="w-28 h-28 rounded-full flex items-center justify-center mb-4 relative"
+              style={{ 
+                backgroundColor: team.secondary,
+                boxShadow: `0 8px 32px ${team.color}60, inset 0 -4px 12px rgba(0,0,0,0.2)`,
+              }}
               initial={{ scale: 0 }}
               animate={isFlipped ? { scale: 1 } : { scale: 0 }}
               transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
             >
-              <span className="text-3xl font-bold" style={{ color: team.color }}>
+              <span className="text-4xl font-black" style={{ color: team.color }}>
                 {team.name.slice(0, 2).toUpperCase()}
               </span>
+              {/* Inner shine */}
+              <div 
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%)",
+                }}
+              />
             </motion.div>
             
             <motion.h3 
-              className="text-2xl font-bold text-white text-center"
+              className="text-3xl font-black text-white text-center drop-shadow-lg"
               initial={{ opacity: 0, y: 20 }}
               animate={isFlipped ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ delay: 0.4 }}
@@ -136,9 +170,9 @@ export function CardFlipReveal({ isRevealing, onComplete }: CardFlipRevealProps)
               {team.name}
             </motion.h3>
             
-            {/* Holographic effect */}
+            {/* Premium holographic overlay */}
             <div 
-              className="absolute inset-0 opacity-20 pointer-events-none"
+              className="absolute inset-0 opacity-10 pointer-events-none"
               style={{
                 background: `repeating-linear-gradient(
                   45deg,
@@ -153,27 +187,30 @@ export function CardFlipReveal({ isRevealing, onComplete }: CardFlipRevealProps)
         </div>
       </motion.div>
       
-      {/* Confetti particles */}
+      {/* Confetti particles with team colors */}
       <AnimatePresence>
         {isFlipped && showShine && (
           <>
-            {[...Array(12)].map((_, i) => (
+            {[...Array(16)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-2 h-2 rounded-full"
+                className="absolute rounded-full"
                 style={{
-                  backgroundColor: i % 2 === 0 ? team.color : team.secondary,
+                  width: 4 + Math.random() * 6,
+                  height: 4 + Math.random() * 6,
+                  backgroundColor: i % 3 === 0 ? team.color : i % 3 === 1 ? team.secondary : "#a78bfa",
+                  boxShadow: `0 0 6px ${i % 2 === 0 ? team.color : "#a78bfa"}`,
                   left: "50%",
                   top: "50%",
                 }}
                 initial={{ x: 0, y: 0, opacity: 1, scale: 0 }}
                 animate={{
-                  x: (Math.random() - 0.5) * 200,
-                  y: (Math.random() - 0.5) * 200,
+                  x: (Math.random() - 0.5) * 250,
+                  y: (Math.random() - 0.5) * 250,
                   opacity: 0,
                   scale: 1,
                 }}
-                transition={{ duration: 0.8, delay: i * 0.02 }}
+                transition={{ duration: 1, delay: i * 0.02 }}
               />
             ))}
           </>
