@@ -198,7 +198,7 @@ export default function AnimationShowcase() {
             <button 
               onClick={handleReveal}
               disabled={isRevealing}
-              className="flex-1 py-3 bg-green-500 hover:bg-green-600 disabled:bg-green-500/50 rounded-xl text-white font-semibold flex items-center justify-center gap-2 transition-colors"
+              className="flex-1 py-3 bg-green-500 hover:bg-green-600 disabled:bg-green-500/50 rounded-xl text-black font-semibold flex items-center justify-center gap-2 transition-colors"
             >
               <span>Bid $30</span>
               <ChevronRight className="w-5 h-5" />
@@ -222,7 +222,7 @@ export default function AnimationShowcase() {
               onClick={() => setSelectedAnimation(animation.id)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                 selectedAnimation === animation.id
-                  ? "bg-green-500 text-white"
+                  ? "bg-green-500 text-black"
                   : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
               }`}
             >

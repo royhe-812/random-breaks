@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight } from "lucide-react"
 
@@ -48,6 +48,37 @@ export function TeamSpinner({
   const [spinPhase, setSpinPhase] = useState<"idle" | "fast" | "slowing" | "stopped">("idle")
   const [spinSpeed, setSpinSpeed] = useState(50)
   const [finalTeamIndex, setFinalTeamIndex] = useState<number | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
+
+  // Play tick sound using Web Audio API - stored in ref to avoid dependency issues
+  const playTickSoundRef = useRef(() => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+      }
+      const ctx = audioContextRef.current
+      if (ctx.state === 'suspended') {
+        ctx.resume()
+      }
+      
+      const oscillator = ctx.createOscillator()
+      const gainNode = ctx.createGain()
+      
+      oscillator.connect(gainNode)
+      gainNode.connect(ctx.destination)
+      
+      oscillator.frequency.value = 800 + Math.random() * 200
+      oscillator.type = 'sine'
+      
+      gainNode.gain.setValueAtTime(0.1, ctx.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05)
+      
+      oscillator.start(ctx.currentTime)
+      oscillator.stop(ctx.currentTime + 0.05)
+    } catch {
+      // Silently fail if audio context isn't available
+    }
+  })
 
   // Reset to idle when isSpinning becomes false
   useEffect(() => {
@@ -69,6 +100,7 @@ export function TeamSpinner({
 
     const interval = setInterval(() => {
       setCurrentTeamIndex(prev => (prev + 1) % teams.length)
+      playTickSoundRef.current()
     }, spinSpeed)
 
     return () => clearInterval(interval)
@@ -182,7 +214,7 @@ export function TeamSpinner({
             {spinPhase === "idle" ? (
               <motion.button
                 onClick={startSpin}
-                className="px-5 py-2.5 bg-green-500 hover:bg-green-600 rounded-xl text-white font-semibold text-sm transition-colors"
+                className="px-5 py-2.5 bg-green-500 hover:bg-green-600 rounded-xl text-black font-semibold text-sm transition-colors"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -226,27 +258,7 @@ export function TeamSpinner({
           )}
         </div>
 
-        {/* Spinning Indicator Dots */}
-        {spinPhase !== "idle" && spinPhase !== "stopped" && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                className="w-1.5 h-1.5 rounded-full bg-white"
-                animate={{
-                  opacity: [0.3, 1, 0.3],
-                  scale: [0.8, 1, 0.8],
-                }}
-                transition={{
-                  duration: 0.6,
-                  repeat: Infinity,
-                  delay: i * 0.15,
-                  ease: "easeInOut",
-                }}
-              />
-            ))}
-          </div>
-        )}
+
       </motion.div>
     </div>
   )
