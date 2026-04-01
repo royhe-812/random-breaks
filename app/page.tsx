@@ -272,7 +272,7 @@ export default function AnimationShowcase() {
                 transition={{ delay: 0.2 }}
               >
                 <p className="text-green-400 text-sm font-medium uppercase tracking-wider mb-1">
-                  You Won!
+                  Jessica991 Won!
                 </p>
                 <p className="text-white/70 text-sm">Your team is...</p>
               </motion.div>

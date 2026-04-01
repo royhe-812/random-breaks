@@ -366,49 +366,14 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
           )}
         </motion.div>
 
-        {/* VS indicator - hide when winner selected */}
-        <AnimatePresence>
-          {phase !== "winner" && (
-            <motion.div
-              className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center z-10"
-              initial={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              animate={{ 
-                scale: showBattleEffects ? [1, 1.2, 1] : 1,
-                rotate: showBattleEffects ? [0, 5, -5, 0] : 0,
-              }}
-              transition={{ duration: 0.3, repeat: showBattleEffects && phase !== "winner" ? Infinity : 0 }}
-            >
-              <span className="text-sm font-black text-black">VS</span>
-              
-              {/* Energy sparks during battle */}
-              {isTensionPhase && (
-                <>
-                  {[...Array(8)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute w-1 h-3 bg-yellow-300 rounded-full"
-                      style={{
-                        transformOrigin: "center",
-                      }}
-                      animate={{
-                        x: Math.cos(i * 45 * Math.PI / 180) * 30,
-                        y: Math.sin(i * 45 * Math.PI / 180) * 30,
-                        opacity: [1, 0],
-                        scale: [1, 0.5],
-                      }}
-                      transition={{
-                        duration: 0.4,
-                        repeat: Infinity,
-                        delay: i * 0.05,
-                      }}
-                    />
-                  ))}
-                </>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* VS indicator - completely hidden when winner selected */}
+        {phase !== "winner" && phase !== "locked" && (
+          <div
+            className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center z-10"
+          >
+            <span className="text-sm font-black text-black">VS</span>
+          </div>
+        )}
 
         {/* Right card */}
         <motion.div
