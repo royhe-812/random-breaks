@@ -446,39 +446,6 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
         </motion.div>
       </div>
 
-      {/* Lightning bolts during tension */}
-      <AnimatePresence>
-        {isTensionPhase && (
-          <motion.div
-            className="absolute inset-0 pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            {[...Array(4)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute left-1/2 top-1/2 w-0.5 bg-gradient-to-b from-yellow-300 via-white to-yellow-300"
-                style={{
-                  height: 40 + Math.random() * 30,
-                  transformOrigin: "top center",
-                }}
-                initial={{ opacity: 0, rotate: -20 + i * 10, scale: 0 }}
-                animate={{
-                  opacity: [0, 1, 0],
-                  scale: [0, 1, 0],
-                }}
-                transition={{
-                  duration: 0.25,
-                  repeat: Infinity,
-                  delay: i * 0.1,
-                }}
-              />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Winner celebration */}
       <AnimatePresence>
         {phase === "winner" && (

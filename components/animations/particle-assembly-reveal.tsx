@@ -1,6 +1,6 @@
 "use client"
 
-// Particle assembly reveal animation - v2
+// Particle assembly reveal animation - v3
 import { motion, AnimatePresence } from "framer-motion"
 import { CelebrationElements, HolographicShine } from "./celebration-elements"
 
