@@ -1,6 +1,6 @@
 "use client"
 
-// eBay Live Case Break Animation Showcase - v4
+// eBay Live Case Break Animation Showcase - v5
 import { useState, useCallback } from "react"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
@@ -12,7 +12,7 @@ import { BattleReveal } from "@/components/animations/battle-reveal"
 import { PickCardReveal } from "@/components/animations/pick-card-reveal"
 import { TeamSpinner, type Team } from "@/components/team-spinner"
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight } from "lucide-react"
+import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight, Star, ChevronsRight } from "lucide-react"
 
 type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card"
 
@@ -169,45 +169,43 @@ export default function AnimationShowcase() {
 
         {/* Auction Card */}
         <div className="bg-zinc-900/95 backdrop-blur rounded-2xl p-4">
-          <div className="flex items-start justify-between mb-3">
+          <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span 
-                  className="font-semibold text-sm text-white"
-                >
+              <div className="flex items-start gap-1 mb-1">
+                <span className="font-semibold text-sm text-white">
                   {selectedTeam ? selectedTeam.name : 'Random team'}
                 </span>
-                <span className="text-white/60 text-sm">- 16X 2023 Panini Mosaic NFL Blaster Random #224</span>
+                <span className="text-white/50 text-sm">- 16X 2023 Panini Mosaic NFL Blaster Random #224</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-white font-bold text-xl">$28.00</span>
-                <span className="text-white/50 text-sm">+ $5 shipping</span>
+                <span className="text-white font-bold text-lg">$28.00</span>
+                <span className="text-green-400 text-sm">+ $5 shipping</span>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-white/50" />
+            <ChevronRight className="w-5 h-5 text-white/40 mt-1" />
           </div>
           
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">🎲</span>
-              <span className="text-yellow-400 font-medium text-sm">Jessica991 is winning</span>
+            <div className="flex items-center gap-1.5">
+              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+              <span className="text-green-400 font-medium text-sm">Jessica991</span>
+              <span className="text-white/60 text-sm">is winning</span>
             </div>
-            <div className="flex items-center gap-1 text-red-400">
-              <div className="w-4 h-4 rounded-full border-2 border-red-400 flex items-center justify-center">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+            <div className="flex items-center gap-1.5 text-white/50">
+              <div className="w-4 h-4 rounded-full border-2 border-white/40 flex items-center justify-center">
+                <div className="w-1 h-1 rounded-full bg-white/40" />
               </div>
               <span className="font-medium text-sm">00:10</span>
             </div>
           </div>
           
           <div className="flex gap-3">
-            <button className="px-6 py-3 bg-zinc-800 rounded-xl text-white font-semibold">
+            <button className="px-5 py-2.5 border border-white/30 rounded-full text-white font-medium text-sm hover:bg-white/10 transition-colors">
               Max bid
             </button>
             <button 
               onClick={() => {
                 if (selectedAnimation === "slot-machine" || selectedAnimation === "battle") {
-                  // For slot machine and battle, bid directly triggers the reveal
                   setIsRevealing(true)
                   setKey(prev => prev + 1)
                 } else {
@@ -215,11 +213,10 @@ export default function AnimationShowcase() {
                 }
               }}
               disabled={isRevealing}
-              className="flex-1 py-3 bg-green-500 hover:bg-green-600 disabled:bg-green-500/50 rounded-xl text-black font-semibold flex items-center justify-center gap-2 transition-colors"
+              className="flex-1 py-2.5 bg-green-500 hover:bg-green-400 disabled:bg-green-500/50 rounded-full text-black font-semibold text-sm flex items-center justify-center gap-1 transition-colors"
             >
               <span>Bid $30</span>
-              <ChevronRight className="w-5 h-5" />
-              <ChevronRight className="w-5 h-5 -ml-3" />
+              <ChevronsRight className="w-4 h-4" />
             </button>
           </div>
         </div>
