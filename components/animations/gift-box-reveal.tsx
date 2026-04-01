@@ -1,0 +1,393 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { CelebrationElements } from "./celebration-elements"
+import Image from "next/image"
+
+const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayLiveApp_Stars_DW_CC_v007_CC%202-OGJYd3jy5o3bamd4lN3498JekCYscy.png"
+const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
+
+const teams = [
+  { name: "Chiefs", color: "#E31837", secondary: "#FFB81C" },
+  { name: "Eagles", color: "#004C54", secondary: "#A5ACAF" },
+  { name: "Cowboys", color: "#003594", secondary: "#869397" },
+  { name: "49ers", color: "#AA0000", secondary: "#B3995D" },
+  { name: "Bills", color: "#00338D", secondary: "#C60C30" },
+  { name: "Dolphins", color: "#008E97", secondary: "#FC4C02" },
+]
+
+interface GiftBoxRevealProps {
+  isRevealing: boolean
+  onComplete: () => void
+}
+
+export function GiftBoxReveal({ isRevealing, onComplete }: GiftBoxRevealProps) {
+  const [phase, setPhase] = useState<"idle" | "shaking" | "opening" | "revealed">("idle")
+  const team = teams[0]
+
+  useEffect(() => {
+    if (isRevealing) {
+      setPhase("idle")
+      
+      const shakeTimer = setTimeout(() => setPhase("shaking"), 200)
+      const openTimer = setTimeout(() => setPhase("opening"), 1200)
+      const revealTimer = setTimeout(() => setPhase("revealed"), 1800)
+      const completeTimer = setTimeout(() => onComplete(), 4000)
+      
+      return () => {
+        clearTimeout(shakeTimer)
+        clearTimeout(openTimer)
+        clearTimeout(revealTimer)
+        clearTimeout(completeTimer)
+      }
+    }
+  }, [isRevealing, onComplete])
+
+  return (
+    <div className="relative w-72 h-96 flex items-center justify-center">
+      {/* Anticipation glow */}
+      <AnimatePresence>
+        {phase === "shaking" && (
+          <motion.div
+            className="absolute w-64 h-64 rounded-full -z-10"
+            style={{
+              background: `radial-gradient(circle, rgba(167,139,250,0.4) 0%, transparent 70%)`,
+            }}
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
+            exit={{ scale: 1.5, opacity: 0 }}
+            transition={{ duration: 0.5, repeat: Infinity }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Gift Box */}
+      <AnimatePresence>
+        {phase !== "revealed" && (
+          <motion.div
+            className="relative"
+            animate={
+              phase === "shaking"
+                ? { 
+                    rotate: [-2, 2, -2, 2, 0],
+                    y: [0, -5, 0, -3, 0],
+                  }
+                : phase === "opening"
+                ? { scale: 1.1 }
+                : {}
+            }
+            transition={
+              phase === "shaking"
+                ? { duration: 0.3, repeat: Infinity }
+                : { duration: 0.3 }
+            }
+          >
+            {/* Box Base */}
+            <motion.div
+              className="relative w-40 h-32 rounded-lg"
+              style={{
+                background: `linear-gradient(145deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%)`,
+                boxShadow: phase === "shaking" 
+                  ? "0 0 40px rgba(139,92,246,0.6), 0 20px 40px rgba(0,0,0,0.4)"
+                  : "0 20px 40px rgba(0,0,0,0.4), inset 0 -10px 20px rgba(0,0,0,0.2)",
+              }}
+            >
+              {/* Box shine */}
+              <div 
+                className="absolute inset-0 rounded-lg overflow-hidden"
+                style={{
+                  background: `linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(255,255,255,0.1) 100%)`,
+                }}
+              />
+              
+              {/* Vertical ribbon on box */}
+              <div 
+                className="absolute left-1/2 -translate-x-1/2 w-8 h-full"
+                style={{
+                  background: `linear-gradient(90deg, #fbbf24 0%, #f59e0b 50%, #fbbf24 100%)`,
+                }}
+              />
+              
+              {/* Question mark */}
+              <motion.div 
+                className="absolute inset-0 flex items-center justify-center"
+                animate={phase === "shaking" ? { opacity: [1, 0.5, 1] } : {}}
+                transition={{ duration: 0.2, repeat: Infinity }}
+              >
+                <span className="text-5xl font-black text-white/30 drop-shadow-lg">?</span>
+              </motion.div>
+            </motion.div>
+
+            {/* Box Lid */}
+            <motion.div
+              className="absolute -top-12 left-0 w-40 origin-bottom"
+              style={{ perspective: "500px" }}
+              animate={
+                phase === "opening"
+                  ? { rotateX: -120, y: -30 }
+                  : {}
+              }
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              {/* Lid top */}
+              <div 
+                className="relative w-full h-12 rounded-t-lg"
+                style={{
+                  background: `linear-gradient(145deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%)`,
+                  boxShadow: "0 -4px 20px rgba(0,0,0,0.2)",
+                  transformStyle: "preserve-3d",
+                }}
+              >
+                {/* Lid shine */}
+                <div 
+                  className="absolute inset-0 rounded-t-lg"
+                  style={{
+                    background: `linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 60%)`,
+                  }}
+                />
+                
+                {/* Horizontal ribbon on lid */}
+                <div 
+                  className="absolute top-1/2 -translate-y-1/2 w-full h-8"
+                  style={{
+                    background: `linear-gradient(180deg, #fbbf24 0%, #f59e0b 50%, #fbbf24 100%)`,
+                  }}
+                />
+                
+                {/* Bow */}
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+                  {/* Bow loops */}
+                  <div className="relative">
+                    <div 
+                      className="absolute -left-6 top-1 w-8 h-5 rounded-full transform -rotate-30"
+                      style={{
+                        background: `linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)`,
+                        boxShadow: "inset 2px 2px 4px rgba(255,255,255,0.3)",
+                      }}
+                    />
+                    <div 
+                      className="absolute -right-6 top-1 w-8 h-5 rounded-full transform rotate-30"
+                      style={{
+                        background: `linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)`,
+                        boxShadow: "inset 2px 2px 4px rgba(255,255,255,0.3)",
+                      }}
+                    />
+                    {/* Bow center */}
+                    <div 
+                      className="relative w-5 h-5 rounded-full z-10"
+                      style={{
+                        background: `radial-gradient(circle at 30% 30%, #fcd34d 0%, #f59e0b 100%)`,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                      }}
+                    />
+                    {/* Bow tails */}
+                    <div 
+                      className="absolute top-4 -left-2 w-4 h-8 rounded-b-full transform -rotate-15"
+                      style={{
+                        background: `linear-gradient(180deg, #f59e0b 0%, #d97706 100%)`,
+                      }}
+                    />
+                    <div 
+                      className="absolute top-4 -right-2 w-4 h-8 rounded-b-full transform rotate-15"
+                      style={{
+                        background: `linear-gradient(180deg, #f59e0b 0%, #d97706 100%)`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Opening burst particles */}
+      <AnimatePresence>
+        {phase === "opening" && (
+          <>
+            {/* Confetti burst */}
+            {[...Array(24)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute"
+                style={{
+                  width: 8 + Math.random() * 12,
+                  height: 8 + Math.random() * 12,
+                  borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+                  background: i % 4 === 0 
+                    ? "#a78bfa" 
+                    : i % 4 === 1 
+                    ? "#fbbf24" 
+                    : i % 4 === 2 
+                    ? team.color 
+                    : "#fff",
+                  boxShadow: `0 0 6px ${i % 2 === 0 ? "#a78bfa" : "#fbbf24"}`,
+                }}
+                initial={{ y: -20, x: 0, opacity: 1, scale: 0 }}
+                animate={{
+                  y: -150 - Math.random() * 100,
+                  x: (Math.random() - 0.5) * 200,
+                  opacity: [1, 1, 0],
+                  scale: [0, 1, 0.5],
+                  rotate: Math.random() * 360,
+                }}
+                transition={{ 
+                  duration: 1, 
+                  ease: "easeOut",
+                  delay: Math.random() * 0.2,
+                }}
+              />
+            ))}
+            
+            {/* Stars burst */}
+            {[...Array(5)].map((_, i) => (
+              <motion.div
+                key={`star-${i}`}
+                className="absolute w-10 h-10"
+                initial={{ y: -20, x: 0, opacity: 0, scale: 0 }}
+                animate={{
+                  y: -120 - Math.random() * 80,
+                  x: (Math.random() - 0.5) * 160,
+                  opacity: [0, 1, 0],
+                  scale: [0, 1.2, 0.8],
+                  rotate: Math.random() * 30 - 15,
+                }}
+                transition={{ 
+                  duration: 1.2, 
+                  ease: "easeOut",
+                  delay: 0.1 + Math.random() * 0.2,
+                }}
+              >
+                <Image src={STARS_URL} alt="" fill className="object-contain" />
+              </motion.div>
+            ))}
+
+            {/* Light rays */}
+            <motion.div
+              className="absolute w-80 h-80 -z-10"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: [0, 1, 0], scale: [0.5, 1.5, 2] }}
+              transition={{ duration: 0.8 }}
+            >
+              {[...Array(12)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute left-1/2 top-1/2 w-1 h-40 origin-bottom"
+                  style={{
+                    transform: `translate(-50%, -100%) rotate(${i * 30}deg)`,
+                    background: `linear-gradient(to top, rgba(167,139,250,0.8), transparent)`,
+                  }}
+                />
+              ))}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Revealed team */}
+      <AnimatePresence>
+        {phase === "revealed" && (
+          <motion.div
+            className="flex flex-col items-center relative"
+            initial={{ scale: 0, opacity: 0, y: 50 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+          >
+            {/* Celebration elements */}
+            <CelebrationElements show={true} teamColor={team.color} />
+            
+            {/* Pulsing glow */}
+            <motion.div
+              className="absolute w-56 h-56 rounded-full -z-10"
+              style={{
+                background: `radial-gradient(circle, 
+                  ${team.color}40 0%, 
+                  rgba(167,139,250,0.2) 50%, 
+                  transparent 70%
+                )`,
+              }}
+              animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            
+            {/* Team card/emblem */}
+            <motion.div
+              className="relative w-36 h-36 rounded-2xl flex items-center justify-center overflow-hidden"
+              style={{
+                background: `linear-gradient(145deg, ${team.color} 0%, ${team.color}cc 100%)`,
+                boxShadow: `
+                  0 20px 50px ${team.color}60, 
+                  0 0 100px rgba(167,139,250,0.4),
+                  inset 0 -10px 30px rgba(0,0,0,0.2)
+                `,
+              }}
+              initial={{ rotateY: 180 }}
+              animate={{ rotateY: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+            >
+              {/* Holographic shine */}
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(135deg, 
+                    rgba(255,255,255,0.4) 0%, 
+                    transparent 40%, 
+                    rgba(255,255,255,0.1) 60%, 
+                    transparent 100%
+                  )`,
+                }}
+                animate={{ x: [-100, 100] }}
+                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
+              />
+              
+              {/* Inner border */}
+              <div 
+                className="absolute inset-3 rounded-xl border-2"
+                style={{ borderColor: team.secondary + "50" }}
+              />
+              
+              {/* Team abbreviation */}
+              <motion.span
+                className="text-5xl font-black text-white drop-shadow-lg relative z-10"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 300 }}
+              >
+                {team.name.slice(0, 2).toUpperCase()}
+              </motion.span>
+            </motion.div>
+            
+            {/* Team name */}
+            <motion.h3
+              className="mt-6 text-4xl font-black text-white drop-shadow-lg"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              {team.name}
+            </motion.h3>
+            
+            {/* Fire icons flanking */}
+            <motion.div
+              className="flex items-center gap-4 mt-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <div className="relative w-8 h-8">
+                <Image src={FIRE_URL} alt="" fill className="object-contain" />
+              </div>
+              <p className="text-violet-300 text-sm font-medium">
+                Gift Unlocked!
+              </p>
+              <div className="relative w-8 h-8">
+                <Image src={FIRE_URL} alt="" fill className="object-contain" />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}

@@ -7,11 +7,11 @@ import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
 import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
 import { MysteryBoxReveal } from "@/components/animations/mystery-box-reveal"
 import { ParticleAssemblyReveal } from "@/components/animations/particle-assembly-reveal"
-import { SealBreakReveal } from "@/components/animations/seal-break-reveal"
+import { GiftBoxReveal } from "@/components/animations/gift-box-reveal"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight } from "lucide-react"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "seal-break"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box"
 
 const animations: { id: AnimationType; name: string }[] = [
   { id: "card-flip", name: "Card Flip" },
@@ -19,7 +19,7 @@ const animations: { id: AnimationType; name: string }[] = [
   { id: "slot-machine", name: "Slot Machine" },
   { id: "mystery-box", name: "Mystery Box" },
   { id: "particle-assembly", name: "Particles" },
-  { id: "seal-break", name: "Seal Break" },
+  { id: "gift-box", name: "Gift Box" },
 ]
 
 export default function AnimationShowcase() {
@@ -52,8 +52,8 @@ export default function AnimationShowcase() {
         return <MysteryBoxReveal key={key} {...props} />
       case "particle-assembly":
         return <ParticleAssemblyReveal key={key} {...props} />
-      case "seal-break":
-        return <SealBreakReveal key={key} {...props} />
+      case "gift-box":
+        return <GiftBoxReveal key={key} {...props} />
       default:
         return null
     }
