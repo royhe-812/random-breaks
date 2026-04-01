@@ -236,7 +236,7 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
           style={{
             top: "25%",
             height: "65%",
-            background: `linear-gradient(160deg, ${team.color} 0%, ${team.color}dd 50%, ${team.color}bb 100%)`,
+            background: team.color,
             boxShadow: isRevealed 
               ? `0 20px 50px ${team.color}50, 0 0 60px rgba(167,139,250,0.3)`
               : "0 4px 16px rgba(0,0,0,0.2)",

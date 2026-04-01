@@ -1,6 +1,6 @@
 "use client"
 
-// Gift box reveal animation - v5
+// Gift box reveal animation - v6
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { CelebrationElements } from "./celebration-elements"
