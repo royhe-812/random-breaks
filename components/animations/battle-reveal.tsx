@@ -366,8 +366,8 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
           )}
         </motion.div>
 
-        {/* VS indicator - completely hidden when winner selected */}
-        {phase !== "winner" && phase !== "locked" && (
+        {/* VS indicator - always visible until winner is selected */}
+        {phase !== "winner" && (
           <div
             className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center z-10"
           >

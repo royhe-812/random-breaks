@@ -1,6 +1,6 @@
 "use client"
 
-// Gift box reveal animation - v3
+// Gift box reveal animation - v4
 import { motion, AnimatePresence } from "framer-motion"
 import { CelebrationElements } from "./celebration-elements"
 import Image from "next/image"
