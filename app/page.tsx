@@ -8,10 +8,11 @@ import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
 import { MysteryBoxReveal } from "@/components/animations/mystery-box-reveal"
 import { ParticleAssemblyReveal } from "@/components/animations/particle-assembly-reveal"
 import { GiftBoxReveal } from "@/components/animations/gift-box-reveal"
+import { BattleReveal } from "@/components/animations/battle-reveal"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight } from "lucide-react"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle"
 
 const animations: { id: AnimationType; name: string }[] = [
   { id: "card-flip", name: "Card Flip" },
@@ -20,6 +21,7 @@ const animations: { id: AnimationType; name: string }[] = [
   { id: "mystery-box", name: "Mystery Box" },
   { id: "particle-assembly", name: "Particles" },
   { id: "gift-box", name: "Gift Box" },
+  { id: "battle", name: "Battle" },
 ]
 
 export default function AnimationShowcase() {
@@ -54,6 +56,8 @@ export default function AnimationShowcase() {
         return <ParticleAssemblyReveal key={key} {...props} />
       case "gift-box":
         return <GiftBoxReveal key={key} {...props} />
+      case "battle":
+        return <BattleReveal key={key} {...props} />
       default:
         return null
     }
