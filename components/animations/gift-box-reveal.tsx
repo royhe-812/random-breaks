@@ -9,22 +9,22 @@ const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayL
 const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
 
 const teams = [
-  { name: "Chiefs", color: "#E31837", secondary: "#FFB81C" },
-  { name: "Eagles", color: "#004C54", secondary: "#A5ACAF" },
-  { name: "Cowboys", color: "#003594", secondary: "#869397" },
-  { name: "49ers", color: "#AA0000", secondary: "#B3995D" },
-  { name: "Bills", color: "#00338D", secondary: "#C60C30" },
-  { name: "Dolphins", color: "#008E97", secondary: "#FC4C02" },
-  { name: "Ravens", color: "#241773", secondary: "#9E7C0C" },
-  { name: "Lions", color: "#0076B6", secondary: "#B0B7BC" },
-  { name: "Packers", color: "#203731", secondary: "#FFB612" },
-  { name: "Bengals", color: "#FB4F14", secondary: "#000000" },
-  { name: "Jets", color: "#125740", secondary: "#000000" },
-  { name: "Broncos", color: "#FB4F14", secondary: "#002244" },
-  { name: "Chargers", color: "#0080C6", secondary: "#FFC20E" },
-  { name: "Colts", color: "#002C5F", secondary: "#A2AAAD" },
-  { name: "Texans", color: "#03202F", secondary: "#A71930" },
-  { name: "Steelers", color: "#FFB612", secondary: "#101820" },
+  { name: "Chiefs", city: "Kansas City", color: "#E31837", secondary: "#FFB81C" },
+  { name: "Eagles", city: "Philadelphia", color: "#004C54", secondary: "#A5ACAF" },
+  { name: "Cowboys", city: "Dallas", color: "#003594", secondary: "#869397" },
+  { name: "49ers", city: "San Francisco", color: "#AA0000", secondary: "#B3995D" },
+  { name: "Bills", city: "Buffalo", color: "#00338D", secondary: "#C60C30" },
+  { name: "Dolphins", city: "Miami", color: "#008E97", secondary: "#FC4C02" },
+  { name: "Ravens", city: "Baltimore", color: "#241773", secondary: "#9E7C0C" },
+  { name: "Lions", city: "Detroit", color: "#0076B6", secondary: "#B0B7BC" },
+  { name: "Packers", city: "Green Bay", color: "#203731", secondary: "#FFB612" },
+  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", secondary: "#000000" },
+  { name: "Jets", city: "New York", color: "#125740", secondary: "#000000" },
+  { name: "Broncos", city: "Denver", color: "#FB4F14", secondary: "#002244" },
+  { name: "Chargers", city: "Los Angeles", color: "#0080C6", secondary: "#FFC20E" },
+  { name: "Colts", city: "Indianapolis", color: "#002C5F", secondary: "#A2AAAD" },
+  { name: "Texans", city: "Houston", color: "#03202F", secondary: "#A71930" },
+  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", secondary: "#101820" },
 ]
 
 interface Team {
@@ -394,15 +394,20 @@ export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftB
                   style={{ background: `linear-gradient(90deg, transparent, ${team.secondary}, transparent)` }}
                 />
                 {/* Team name on card */}
-                <motion.h3
-                  className="text-2xl font-black text-white tracking-wide"
+                <motion.div
+                  className="text-center"
                   style={{ textShadow: `0 2px 8px rgba(0,0,0,0.5)` }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
                 >
-                  {team.name.toUpperCase()}
-                </motion.h3>
+                  <p className="text-xs font-semibold text-white/80 uppercase tracking-wider">
+                    {(team as typeof teams[0]).city || ""}
+                  </p>
+                  <h3 className="text-2xl font-black text-white tracking-wide">
+                    {team.name.toUpperCase()}
+                  </h3>
+                </motion.div>
                 {/* Sub text */}
                 <motion.p
                   className="text-xs mt-1 font-medium tracking-widest"

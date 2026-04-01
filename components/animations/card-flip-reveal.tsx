@@ -5,22 +5,22 @@ import { motion, AnimatePresence } from "framer-motion"
 import { CelebrationElements, HolographicShine } from "./celebration-elements"
 
 const teams = [
-  { name: "Chiefs", color: "#E31837", secondary: "#FFB81C" },
-  { name: "Eagles", color: "#004C54", secondary: "#A5ACAF" },
-  { name: "Cowboys", color: "#003594", secondary: "#869397" },
-  { name: "49ers", color: "#AA0000", secondary: "#B3995D" },
-  { name: "Bills", color: "#00338D", secondary: "#C60C30" },
-  { name: "Dolphins", color: "#008E97", secondary: "#FC4C02" },
-  { name: "Ravens", color: "#241773", secondary: "#9E7C0C" },
-  { name: "Lions", color: "#0076B6", secondary: "#B0B7BC" },
-  { name: "Packers", color: "#203731", secondary: "#FFB612" },
-  { name: "Bengals", color: "#FB4F14", secondary: "#000000" },
-  { name: "Jets", color: "#125740", secondary: "#000000" },
-  { name: "Broncos", color: "#FB4F14", secondary: "#002244" },
-  { name: "Chargers", color: "#0080C6", secondary: "#FFC20E" },
-  { name: "Colts", color: "#002C5F", secondary: "#A2AAAD" },
-  { name: "Texans", color: "#03202F", secondary: "#A71930" },
-  { name: "Steelers", color: "#FFB612", secondary: "#101820" },
+  { name: "Chiefs", city: "Kansas City", color: "#E31837", secondary: "#FFB81C" },
+  { name: "Eagles", city: "Philadelphia", color: "#004C54", secondary: "#A5ACAF" },
+  { name: "Cowboys", city: "Dallas", color: "#003594", secondary: "#869397" },
+  { name: "49ers", city: "San Francisco", color: "#AA0000", secondary: "#B3995D" },
+  { name: "Bills", city: "Buffalo", color: "#00338D", secondary: "#C60C30" },
+  { name: "Dolphins", city: "Miami", color: "#008E97", secondary: "#FC4C02" },
+  { name: "Ravens", city: "Baltimore", color: "#241773", secondary: "#9E7C0C" },
+  { name: "Lions", city: "Detroit", color: "#0076B6", secondary: "#B0B7BC" },
+  { name: "Packers", city: "Green Bay", color: "#203731", secondary: "#FFB612" },
+  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", secondary: "#000000" },
+  { name: "Jets", city: "New York", color: "#125740", secondary: "#000000" },
+  { name: "Broncos", city: "Denver", color: "#FB4F14", secondary: "#002244" },
+  { name: "Chargers", city: "Los Angeles", color: "#0080C6", secondary: "#FFC20E" },
+  { name: "Colts", city: "Indianapolis", color: "#002C5F", secondary: "#A2AAAD" },
+  { name: "Texans", city: "Houston", color: "#03202F", secondary: "#A71930" },
+  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", secondary: "#101820" },
 ]
 
 interface Team {
@@ -178,14 +178,19 @@ export function CardFlipReveal({ isRevealing, onComplete, team: propTeam }: Card
               />
             </motion.div>
             
-            <motion.h3 
-              className="text-3xl font-black text-white text-center drop-shadow-lg"
+            <motion.div 
+              className="text-center"
               initial={{ opacity: 0, y: 20 }}
               animate={isFlipped ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ delay: 0.4 }}
             >
-              {team.name}
-            </motion.h3>
+              <p className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+                {(team as typeof teams[0]).city || ""}
+              </p>
+              <h3 className="text-3xl font-black text-white drop-shadow-lg">
+                {team.name}
+              </h3>
+            </motion.div>
             
             {/* Premium holographic overlay */}
             <div 

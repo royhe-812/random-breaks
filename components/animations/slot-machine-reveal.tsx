@@ -9,22 +9,22 @@ const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayL
 const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
 
 const teams = [
-  { name: "Chiefs", color: "#E31837", abbr: "KC" },
-  { name: "Eagles", color: "#004C54", abbr: "PHI" },
-  { name: "Cowboys", color: "#003594", abbr: "DAL" },
-  { name: "49ers", color: "#AA0000", abbr: "SF" },
-  { name: "Bills", color: "#00338D", abbr: "BUF" },
-  { name: "Dolphins", color: "#008E97", abbr: "MIA" },
-  { name: "Ravens", color: "#241773", abbr: "BAL" },
-  { name: "Lions", color: "#0076B6", abbr: "DET" },
-  { name: "Packers", color: "#203731", abbr: "GB" },
-  { name: "Bengals", color: "#FB4F14", abbr: "CIN" },
-  { name: "Jets", color: "#125740", abbr: "NYJ" },
-  { name: "Broncos", color: "#FB4F14", abbr: "DEN" },
-  { name: "Chargers", color: "#0080C6", abbr: "LAC" },
-  { name: "Colts", color: "#002C5F", abbr: "IND" },
-  { name: "Texans", color: "#03202F", abbr: "HOU" },
-  { name: "Steelers", color: "#FFB612", abbr: "PIT" },
+  { name: "Chiefs", city: "Kansas City", color: "#E31837", abbr: "KC" },
+  { name: "Eagles", city: "Philadelphia", color: "#004C54", abbr: "PHI" },
+  { name: "Cowboys", city: "Dallas", color: "#003594", abbr: "DAL" },
+  { name: "49ers", city: "San Francisco", color: "#AA0000", abbr: "SF" },
+  { name: "Bills", city: "Buffalo", color: "#00338D", abbr: "BUF" },
+  { name: "Dolphins", city: "Miami", color: "#008E97", abbr: "MIA" },
+  { name: "Ravens", city: "Baltimore", color: "#241773", abbr: "BAL" },
+  { name: "Lions", city: "Detroit", color: "#0076B6", abbr: "DET" },
+  { name: "Packers", city: "Green Bay", color: "#203731", abbr: "GB" },
+  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", abbr: "CIN" },
+  { name: "Jets", city: "New York", color: "#125740", abbr: "NYJ" },
+  { name: "Broncos", city: "Denver", color: "#FB4F14", abbr: "DEN" },
+  { name: "Chargers", city: "Los Angeles", color: "#0080C6", abbr: "LAC" },
+  { name: "Colts", city: "Indianapolis", color: "#002C5F", abbr: "IND" },
+  { name: "Texans", city: "Houston", color: "#03202F", abbr: "HOU" },
+  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", abbr: "PIT" },
 ]
 
 interface Team {
@@ -209,9 +209,14 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
                       }}
                     />
                   </div>
-                  <span className="font-bold text-white text-2xl flex-1">
-                    {team.name}
-                  </span>
+                  <div className="flex-1">
+                    <span className="font-bold text-white text-xl block">
+                      {team.city}
+                    </span>
+                    <span className="text-white/70 text-sm">
+                      {team.name}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -311,7 +316,7 @@ scale: phase === "explode" ? 1.3 : 1,
                     mass: 1.2,
                   }}
                 >
-                  <span>{finalTeam.name.toUpperCase()}!</span>
+                  <span>{(finalTeam as typeof teams[0]).city?.toUpperCase() || ""} {finalTeam.name.toUpperCase()}!</span>
                 </motion.div>
               )}
             </AnimatePresence>
