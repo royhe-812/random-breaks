@@ -251,25 +251,7 @@ export function TeamSpinner({
             )}
           </div>
 
-          {/* Progress Bar */}
-          {spinPhase !== "idle" && (
-            <motion.div
-              className="mt-4 h-1.5 bg-white/10 rounded-full overflow-hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <motion.div
-                className="h-full rounded-full"
-                style={{ backgroundColor: currentTeam.color }}
-                initial={{ width: "0%" }}
-                animate={{ 
-                  width: spinPhase === "stopped" ? "100%" : 
-                         spinPhase === "slowing" ? "70%" : "30%"
-                }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              />
-            </motion.div>
-          )}
+
         </div>
 
 
