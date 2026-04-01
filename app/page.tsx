@@ -163,8 +163,7 @@ export default function AnimationShowcase() {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <span 
-                  className="font-semibold text-sm"
-                  style={{ color: selectedTeam ? selectedTeam.color : '#4ade80' }}
+                  className="font-semibold text-sm text-white"
                 >
                   {selectedTeam ? selectedTeam.name : 'Random team'}
                 </span>

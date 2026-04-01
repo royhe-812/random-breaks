@@ -1,5 +1,6 @@
 "use client"
 
+// Team spinner with wheel click sound - v2
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight } from "lucide-react"
@@ -50,7 +51,7 @@ export function TeamSpinner({
   const [finalTeamIndex, setFinalTeamIndex] = useState<number | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
 
-  // Play tick sound using Web Audio API - stored in ref to avoid dependency issues
+  // Play tick sound using Web Audio API - classic wheel clicker sound
   const playTickSoundRef = useRef(() => {
     try {
       if (!audioContextRef.current) {
@@ -61,20 +62,24 @@ export function TeamSpinner({
         ctx.resume()
       }
       
+      // Create a short click/tick sound like a wheel peg hitting a flipper
       const oscillator = ctx.createOscillator()
       const gainNode = ctx.createGain()
       
       oscillator.connect(gainNode)
       gainNode.connect(ctx.destination)
       
-      oscillator.frequency.value = 800 + Math.random() * 200
-      oscillator.type = 'sine'
+      // Higher frequency for a sharper click
+      oscillator.frequency.setValueAtTime(1200, ctx.currentTime)
+      oscillator.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.03)
+      oscillator.type = 'square'
       
-      gainNode.gain.setValueAtTime(0.1, ctx.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05)
+      // Quick attack, fast decay for a click sound
+      gainNode.gain.setValueAtTime(0.15, ctx.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04)
       
       oscillator.start(ctx.currentTime)
-      oscillator.stop(ctx.currentTime + 0.05)
+      oscillator.stop(ctx.currentTime + 0.04)
     } catch {
       // Silently fail if audio context isn't available
     }
