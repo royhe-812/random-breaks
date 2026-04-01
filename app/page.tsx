@@ -58,7 +58,17 @@ export default function AnimationShowcase() {
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-neutral-900">
+    <div className="relative w-full h-screen overflow-hidden bg-black">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background-f26bZVAw8GB6FM5n7pkn4MfRb9ML7J.png')`,
+        }}
+      />
+      {/* Dark overlay for better readability */}
+      <div className="absolute inset-0 bg-black/40" />
+      
       {/* Animation Overlay */}
       <div className="absolute inset-0 flex items-center justify-center z-20">
         <AnimatePresence>
