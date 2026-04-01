@@ -57,7 +57,7 @@ export function GiftBoxReveal({ isRevealing, onComplete }: GiftBoxRevealProps) {
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
             exit={{ scale: 1.5, opacity: 0 }}
-            transition={{ duration: 0.5, repeat: Infinity }}
+            transition={{ duration: 0.5, repeat: Infinity, ease: "easeInOut" }}
           />
         )}
       </AnimatePresence>
@@ -308,7 +308,7 @@ export function GiftBoxReveal({ isRevealing, onComplete }: GiftBoxRevealProps) {
                 )`,
               }}
               animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             />
             
             {/* Sports Card - Vertical */}

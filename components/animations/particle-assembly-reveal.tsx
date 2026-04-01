@@ -173,7 +173,7 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
                 )`,
               }}
               animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             />
             
             {/* Logo circle with premium finish */}
@@ -234,7 +234,7 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
                     boxShadow: `0 0 10px ${i % 2 === 0 ? "#a78bfa" : team.secondary}`,
                   }}
                   animate={{ scale: [1, 1.3, 1] }}
-                  transition={{ duration: 1, repeat: Infinity, delay: i * 0.1 }}
+                  transition={{ duration: 1, repeat: Infinity, delay: i * 0.1, ease: "easeInOut" }}
                 />
               </motion.div>
             ))}

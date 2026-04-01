@@ -77,7 +77,7 @@ export default function AnimationShowcase() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
       
       {/* eBay Live Header */}
-      <div className="absolute top-0 left-0 right-0 z-20 p-4">
+      <div className="absolute top-12 left-0 right-0 z-20 p-4">
         <div className="flex items-center justify-between">
           {/* Back button and streamer info */}
           <div className="flex items-center gap-3">
@@ -191,14 +191,14 @@ export default function AnimationShowcase() {
         </div>
       </div>
 
-      {/* Animation Style Picker - Compact floating pills */}
+      {/* Animation Style Picker - Above Live UI */}
       <motion.div
-        className="absolute top-20 left-4 right-14 z-30"
+        className="absolute -top-0 left-0 right-0 z-50 bg-zinc-900/95 backdrop-blur border-b border-white/10 px-4 py-2 safe-top"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
       >
-        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {animations.map((animation) => (
             <button
               key={animation.id}
@@ -206,7 +206,7 @@ export default function AnimationShowcase() {
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                 selectedAnimation === animation.id
                   ? "bg-green-500 text-white"
-                  : "bg-black/50 backdrop-blur text-white/70 hover:bg-black/70"
+                  : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
               }`}
             >
               {animation.name}

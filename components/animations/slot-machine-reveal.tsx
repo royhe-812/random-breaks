@@ -248,6 +248,7 @@ export function SlotMachineReveal({ isRevealing, onComplete }: SlotMachineReveal
                   duration: phase === "spinning" ? 0.2 : 0.5,
                   repeat: phase === "spinning" || phase === "slowing" || phase === "explode" ? Infinity : 0,
                   delay: i * 0.05,
+                  ease: "easeInOut",
                 }}
               />
             ))}
@@ -267,6 +268,7 @@ export function SlotMachineReveal({ isRevealing, onComplete }: SlotMachineReveal
                   duration: phase === "spinning" ? 0.2 : 0.5,
                   repeat: phase === "spinning" || phase === "slowing" || phase === "explode" ? Infinity : 0,
                   delay: i * 0.05,
+                  ease: "easeInOut",
                 }}
               />
             ))}

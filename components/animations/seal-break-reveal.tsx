@@ -307,7 +307,7 @@ export function SealBreakReveal({ isRevealing, onComplete }: SealBreakRevealProp
                 )`,
               }}
               animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             />
             
             {/* Team emblem - premium seal style */}
