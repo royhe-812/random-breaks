@@ -123,9 +123,9 @@ export function TeamSpinner({
                 className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-lg"
                 style={{ backgroundColor: currentTeam.color }}
                 animate={{
-                  scale: spinPhase === "fast" ? [1, 1.05, 1] : 1,
+                  scale: 1,
                 }}
-                transition={{ duration: 0.15, repeat: spinPhase === "fast" ? Infinity : 0, ease: "easeInOut" }}
+                transition={{ duration: 0.15, ease: "easeInOut" }}
               >
                 {currentTeam.name.slice(0, 2).toUpperCase()}
               </motion.div>
@@ -169,7 +169,7 @@ export function TeamSpinner({
                   color: "white"
                 }}
                 animate={{
-                  scale: spinPhase === "stopped" ? [1, 1.1, 1] : 1,
+                  scale: 1,
                 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
               >

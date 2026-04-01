@@ -138,16 +138,15 @@ export default function AnimationShowcase() {
         </div>
       </div>
 
-      {/* Comment Input */}
-      <div className="absolute left-4 right-4 bottom-52 z-20">
+      {/* Bottom UI Stack - Comment, Spinner, Auction Card */}
+      <div className="absolute left-4 right-4 bottom-4 z-20 flex flex-col gap-3">
+        {/* Comment Input */}
         <div className="flex items-center bg-black/40 backdrop-blur rounded-full px-4 py-3">
           <span className="text-white/50 text-sm flex-1">Add comment...</span>
           <Heart className="w-5 h-5 text-red-500 fill-red-500" />
         </div>
-      </div>
 
-      {/* Team Spinner with Spots Available */}
-      <div className="absolute left-4 right-4 bottom-44 z-20">
+        {/* Team Spinner with Spots Available */}
         <TeamSpinner
           totalSpots={32}
           availableSpots={16}
@@ -155,10 +154,8 @@ export default function AnimationShowcase() {
           onStartSpin={handleStartSpin}
           onSpinComplete={handleSpinComplete}
         />
-      </div>
 
-      {/* Auction Card */}
-      <div className="absolute left-4 right-4 bottom-4 z-20">
+        {/* Auction Card */}
         <div className="bg-zinc-900/95 backdrop-blur rounded-2xl p-4">
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">

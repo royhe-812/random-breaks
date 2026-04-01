@@ -126,6 +126,7 @@ export function CelebrationElements({ show, teamColor = "#E31837" }: Celebration
             delay: 0.5 + i * 0.1,
             repeat: Infinity,
             repeatDelay: 1,
+            ease: "easeInOut",
           }}
         />
       ))}
@@ -144,8 +145,8 @@ export function CelebrationElements({ show, teamColor = "#E31837" }: Celebration
         }}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ 
-          scale: [0.8, 1.2, 0.8],
-          opacity: [0, 0.6, 0],
+          scale: 1,
+          opacity: 0.4,
           rotate: 360,
         }}
         transition={{
