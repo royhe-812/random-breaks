@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+// Particle assembly reveal animation - v2
 import { motion, AnimatePresence } from "framer-motion"
 import { CelebrationElements, HolographicShine } from "./celebration-elements"
 

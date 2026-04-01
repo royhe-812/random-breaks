@@ -79,12 +79,14 @@ export default function AnimationShowcase() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background-f26bZVAw8GB6FM5n7pkn4MfRb9ML7J.png')`,
-        }}
+      {/* Background Video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ScreenRecording_03-10-2026%2022-12-18_1-XEQSf4595ZNfLCTCuTl1EmyY0whFpa.mov"
       />
       
       {/* Gradient overlays for readability */}
