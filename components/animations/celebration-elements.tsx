@@ -91,12 +91,13 @@ export function CelebrationElements({ show, teamColor = "#E31837" }: Celebration
       >
         <motion.div
           animate={{ 
-            scale: [1, 1.1, 1],
-            rotate: [-3, 3, -3],
+            scale: 1.05,
+            rotate: 2,
           }}
           transition={{ 
-            duration: 0.8, 
-            repeat: Infinity, 
+            duration: 0.4, 
+            repeat: Infinity,
+            repeatType: "reverse",
             ease: "easeInOut" 
           }}
           className="w-full h-full relative"

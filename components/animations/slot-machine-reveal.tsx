@@ -19,14 +19,21 @@ const teams = [
   { name: "Bengals", color: "#FB4F14", abbr: "CIN" },
 ]
 
+interface Team {
+  name: string
+  color: string
+  secondary?: string
+}
+
 interface SlotMachineRevealProps {
   isRevealing: boolean
   onComplete: () => void
+  team?: Team | null
 }
 
-export function SlotMachineReveal({ isRevealing, onComplete }: SlotMachineRevealProps) {
+export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: SlotMachineRevealProps) {
   const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "landed" | "explode">("idle")
-  const finalTeam = teams[0]
+  const finalTeam = propTeam ? { ...propTeam, abbr: propTeam.name.slice(0, 3).toUpperCase() } : teams[0]
   const [spinOffset, setSpinOffset] = useState(0)
   const animationRef = useRef<number | null>(null)
   const speedRef = useRef(0)
@@ -239,9 +246,9 @@ export function SlotMachineReveal({ isRevealing, onComplete }: SlotMachineReveal
                   backgroundColor: phase === "spinning" || phase === "slowing"
                     ? ["#a78bfa", "#c4b5fd", "#e9d5ff", "#a78bfa"]
                     : phase === "landed" || phase === "explode" ? "#22c55e" : "#6b7280",
-                  scale: phase === "explode" ? [1, 1.5, 1] : 1,
-                  boxShadow: phase === "explode" 
-                    ? ["0 0 8px #22c55e", "0 0 16px #22c55e", "0 0 8px #22c55e"]
+scale: phase === "explode" ? 1.3 : 1,
+                  boxShadow: phase === "explode"
+                    ? "0 0 16px #22c55e"
                     : "none",
                 }}
                 transition={{ 
@@ -262,11 +269,11 @@ export function SlotMachineReveal({ isRevealing, onComplete }: SlotMachineReveal
                   backgroundColor: phase === "spinning" || phase === "slowing"
                     ? ["#e9d5ff", "#a78bfa", "#c4b5fd", "#e9d5ff"]
                     : phase === "landed" || phase === "explode" ? "#22c55e" : "#6b7280",
-                  scale: phase === "explode" ? [1, 1.5, 1] : 1,
+                  scale: phase === "explode" ? 1.3 : 1,
                 }}
                 transition={{ 
                   duration: phase === "spinning" ? 0.2 : 0.5,
-                  repeat: phase === "spinning" || phase === "slowing" || phase === "explode" ? Infinity : 0,
+                  repeat: phase === "spinning" || phase === "slowing" ? Infinity : 0,
                   delay: i * 0.05,
                   ease: "easeInOut",
                 }}
@@ -312,11 +319,11 @@ export function SlotMachineReveal({ isRevealing, onComplete }: SlotMachineReveal
                 background: `linear-gradient(135deg, ${finalTeam.color}, #a78bfa)`,
               }}
               initial={{ opacity: 0, scale: 1 }}
-              animate={{ 
-                opacity: [0, 0.5, 0.2, 0.5, 0.2],
-                scale: [1, 1.15, 1.05, 1.15, 1.05],
+animate={{
+                opacity: 0.4,
+                scale: 1.1,
               }}
-              transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 0.5 }}
             />
           )}
         </AnimatePresence>

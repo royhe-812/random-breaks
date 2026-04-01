@@ -13,14 +13,21 @@ const teams = [
   { name: "Dolphins", color: "#008E97", secondary: "#FC4C02" },
 ]
 
+interface Team {
+  name: string
+  color: string
+  secondary: string
+}
+
 interface CardFlipRevealProps {
   isRevealing: boolean
   onComplete: () => void
+  team?: Team | null
 }
 
-export function CardFlipReveal({ isRevealing, onComplete }: CardFlipRevealProps) {
+export function CardFlipReveal({ isRevealing, onComplete, team: propTeam }: CardFlipRevealProps) {
   const [isFlipped, setIsFlipped] = useState(false)
-  const team = teams[0]
+  const team = propTeam || teams[0]
   const [showShine, setShowShine] = useState(false)
 
   useEffect(() => {

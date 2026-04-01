@@ -98,7 +98,7 @@ export function SealBreakReveal({ isRevealing, onComplete }: SealBreakRevealProp
               }}
               animate={
                 phase === "heating"
-                  ? { scale: [1, 1.03, 1] }
+                  ? { scale: 1.02 }
                   : {}
               }
               transition={{ duration: 0.25, repeat: phase === "heating" ? Infinity : 0, ease: "easeInOut" }}
@@ -306,8 +306,8 @@ export function SealBreakReveal({ isRevealing, onComplete }: SealBreakRevealProp
                   transparent 70%
                 )`,
               }}
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              animate={{ scale: 1.1 }}
+              transition={{ duration: 1 }}
             />
             
             {/* Team emblem - premium seal style */}

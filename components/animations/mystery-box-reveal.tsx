@@ -16,14 +16,21 @@ const teams = [
   { name: "Dolphins", color: "#008E97", secondary: "#FC4C02" },
 ]
 
+interface Team {
+  name: string
+  color: string
+  secondary: string
+}
+
 interface MysteryBoxRevealProps {
   isRevealing: boolean
   onComplete: () => void
+  team?: Team | null
 }
 
-export function MysteryBoxReveal({ isRevealing, onComplete }: MysteryBoxRevealProps) {
+export function MysteryBoxReveal({ isRevealing, onComplete, team: propTeam }: MysteryBoxRevealProps) {
   const [phase, setPhase] = useState<"idle" | "shaking" | "glowing" | "burst" | "revealed">("idle")
-  const team = teams[0]
+  const team = propTeam || teams[0]
 
   useEffect(() => {
     if (isRevealing) {
@@ -114,15 +121,11 @@ export function MysteryBoxReveal({ isRevealing, onComplete }: MysteryBoxRevealPr
               <div className="absolute inset-5 border-2 border-violet-500/30 rounded-xl flex items-center justify-center">
                 <motion.div
                   className="text-7xl font-black text-violet-400/60"
-                  animate={phase === "glowing" ? { 
-                    scale: [1, 1.15, 1],
-                    opacity: [0.6, 1, 0.6],
-                    textShadow: [
-                      "0 0 20px rgba(167,139,250,0.5)",
-                      "0 0 40px rgba(167,139,250,0.8)",
-                      "0 0 20px rgba(167,139,250,0.5)",
-                    ]
-                  } : {}}
+animate={phase === "glowing" ? {
+                scale: 1.1,
+                opacity: 0.9,
+                textShadow: "0 0 40px rgba(167,139,250,0.8)",
+              } : {}}
                   transition={{ duration: 0.4, repeat: Infinity, ease: "easeInOut" }}
                 >
                   ?

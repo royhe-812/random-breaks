@@ -23,10 +23,16 @@ const teams = [
   { name: "Steelers", color: "#FFB612", secondary: "#101820" },
 ]
 
+export interface Team {
+  name: string
+  color: string
+  secondary: string
+}
+
 interface TeamSpinnerProps {
   totalSpots: number
   availableSpots: number
-  onSpinComplete: () => void
+  onSpinComplete: (team: Team) => void
   isSpinning: boolean
   onStartSpin: () => void
 }
@@ -87,7 +93,7 @@ export function TeamSpinner({
             setSpinPhase("stopped")
             // Trigger winning moment after a brief pause
             setTimeout(() => {
-              onSpinComplete()
+              onSpinComplete(teams[currentTeamIndex])
             }, 500)
             return 400
           }

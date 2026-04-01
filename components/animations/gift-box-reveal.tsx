@@ -17,14 +17,21 @@ const teams = [
   { name: "Dolphins", color: "#008E97", secondary: "#FC4C02" },
 ]
 
+interface Team {
+  name: string
+  color: string
+  secondary: string
+}
+
 interface GiftBoxRevealProps {
   isRevealing: boolean
   onComplete: () => void
+  team?: Team | null
 }
 
-export function GiftBoxReveal({ isRevealing, onComplete }: GiftBoxRevealProps) {
+export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftBoxRevealProps) {
   const [phase, setPhase] = useState<"idle" | "shaking" | "opening" | "revealed">("idle")
-  const team = teams[0]
+  const team = propTeam || teams[0]
 
   useEffect(() => {
     if (isRevealing) {
@@ -55,9 +62,9 @@ export function GiftBoxReveal({ isRevealing, onComplete }: GiftBoxRevealProps) {
               background: `radial-gradient(circle, rgba(167,139,250,0.4) 0%, transparent 70%)`,
             }}
             initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
+            animate={{ scale: 1.2, opacity: 0.7 }}
             exit={{ scale: 1.5, opacity: 0 }}
-            transition={{ duration: 0.5, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 0.5 }}
           />
         )}
       </AnimatePresence>
@@ -307,8 +314,8 @@ export function GiftBoxReveal({ isRevealing, onComplete }: GiftBoxRevealProps) {
                   transparent 70%
                 )`,
               }}
-              animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              animate={{ scale: 1.1, opacity: 0.9 }}
+              transition={{ duration: 1 }}
             />
             
             {/* Sports Card - Vertical */}

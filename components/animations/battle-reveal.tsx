@@ -18,21 +18,30 @@ const teams = [
   { name: "Lions", color: "#0076B6", secondary: "#B0B7BC" },
 ]
 
+interface Team {
+  name: string
+  color: string
+  secondary: string
+}
+
 interface BattleRevealProps {
   isRevealing: boolean
   onComplete: () => void
+  team?: Team | null
 }
 
-export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
+export function BattleReveal({ isRevealing, onComplete, team: propTeam }: BattleRevealProps) {
   const [phase, setPhase] = useState<"idle" | "enter" | "clash" | "battle" | "deciding" | "winner">("idle")
   
-  // Pick two random different teams
+  // Pick two teams - winner is the prop team, opponent is random
   const [team1, team2] = useMemo(() => {
-    const shuffled = [...teams].sort(() => Math.random() - 0.5)
-    return [shuffled[0], shuffled[1]]
-  }, [])
+    const winner = propTeam || teams[0]
+    const otherTeams = teams.filter(t => t.name !== winner.name)
+    const opponent = otherTeams[Math.floor(Math.random() * otherTeams.length)]
+    return [winner, opponent]
+  }, [propTeam])
   
-  // Winner is always team1 for this demo
+  // Winner is always team1 (the passed in team)
   const winner = team1
 
   useEffect(() => {
@@ -149,7 +158,7 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
             opacity: phase === "idle" ? 0 : 1,
             rotateY: phase === "enter" ? -15 : 0,
             scale: phase === "winner" ? 1.1 : 
-                   phase === "deciding" ? [1, 1.05, 1] : 1,
+                   phase === "deciding" ? 1.03 : 1,
             filter: phase === "winner" ? "brightness(1.2)" : "brightness(1)",
           }}
           transition={{ 
@@ -178,7 +187,7 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
             opacity: phase === "idle" ? 0 : phase === "winner" ? 0.4 : 1,
             rotateY: phase === "enter" ? 15 : 0,
             scale: phase === "winner" ? 0.8 : 
-                   phase === "deciding" ? [1, 1.05, 1] : 1,
+                   phase === "deciding" ? 1.03 : 1,
             filter: phase === "winner" ? "grayscale(0.8) brightness(0.6)" : "brightness(1)",
           }}
           transition={{ 

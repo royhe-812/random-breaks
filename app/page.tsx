@@ -9,7 +9,7 @@ import { MysteryBoxReveal } from "@/components/animations/mystery-box-reveal"
 import { ParticleAssemblyReveal } from "@/components/animations/particle-assembly-reveal"
 import { GiftBoxReveal } from "@/components/animations/gift-box-reveal"
 import { BattleReveal } from "@/components/animations/battle-reveal"
-import { TeamSpinner } from "@/components/team-spinner"
+import { TeamSpinner, type Team } from "@/components/team-spinner"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight } from "lucide-react"
 
@@ -29,13 +29,15 @@ export default function AnimationShowcase() {
   const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("card-flip")
   const [isRevealing, setIsRevealing] = useState(false)
   const [isSpinning, setIsSpinning] = useState(false)
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
 
   const handleStartSpin = useCallback(() => {
     setIsSpinning(true)
   }, [])
 
-  const handleSpinComplete = useCallback(() => {
+  const handleSpinComplete = useCallback((team: Team) => {
+    setSelectedTeam(team)
     setIsRevealing(true)
     setKey(prev => prev + 1)
   }, [])
@@ -53,7 +55,7 @@ export default function AnimationShowcase() {
   }, [])
 
   const renderAnimation = () => {
-    const props = { isRevealing, onComplete: handleComplete }
+    const props = { isRevealing, onComplete: handleComplete, team: selectedTeam }
     
     switch (selectedAnimation) {
       case "card-flip":

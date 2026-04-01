@@ -13,14 +13,21 @@ const teams = [
   { name: "Dolphins", color: "#008E97", secondary: "#FC4C02" },
 ]
 
+interface Team {
+  name: string
+  color: string
+  secondary: string
+}
+
 interface ParticleAssemblyRevealProps {
   isRevealing: boolean
   onComplete: () => void
+  team?: Team | null
 }
 
-export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAssemblyRevealProps) {
+export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam }: ParticleAssemblyRevealProps) {
   const [phase, setPhase] = useState<"idle" | "scattering" | "assembling" | "revealed">("idle")
-  const team = teams[0]
+  const team = propTeam || teams[0]
   
   const particles = useMemo(() => 
     [...Array(50)].map((_, i) => ({
@@ -172,8 +179,8 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
                   transparent 70%
                 )`,
               }}
-              animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              animate={{ scale: 1.15, opacity: 0.7 }}
+              transition={{ duration: 1 }}
             />
             
             {/* Logo circle with premium finish */}
@@ -233,8 +240,8 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete }: ParticleAsse
                       : `linear-gradient(135deg, ${team.secondary}, ${team.color})`,
                     boxShadow: `0 0 10px ${i % 2 === 0 ? "#a78bfa" : team.secondary}`,
                   }}
-                  animate={{ scale: [1, 1.3, 1] }}
-                  transition={{ duration: 1, repeat: Infinity, delay: i * 0.1, ease: "easeInOut" }}
+                  animate={{ scale: 1.2 }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
                 />
               </motion.div>
             ))}

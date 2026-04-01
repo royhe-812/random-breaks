@@ -17,14 +17,21 @@ const teams = [
   { name: "Dolphins", color: "#008E97", secondary: "#FC4C02" },
 ]
 
+interface Team {
+  name: string
+  color: string
+  secondary: string
+}
+
 interface PackRipRevealProps {
   isRevealing: boolean
   onComplete: () => void
+  team?: Team | null
 }
 
-export function PackRipReveal({ isRevealing, onComplete }: PackRipRevealProps) {
+export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackRipRevealProps) {
   const [phase, setPhase] = useState<"idle" | "grip" | "tearing" | "ripped" | "revealed">("idle")
-  const team = teams[0]
+  const team = propTeam || teams[0]
 
   useEffect(() => {
     if (isRevealing) {
