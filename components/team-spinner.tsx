@@ -47,12 +47,14 @@ export function TeamSpinner({
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0)
   const [spinPhase, setSpinPhase] = useState<"idle" | "fast" | "slowing" | "stopped">("idle")
   const [spinSpeed, setSpinSpeed] = useState(50)
+  const [finalTeamIndex, setFinalTeamIndex] = useState<number | null>(null)
 
   // Reset to idle when isSpinning becomes false
   useEffect(() => {
     if (!isSpinning && spinPhase !== "idle") {
       setSpinPhase("idle")
       setSpinSpeed(50)
+      setFinalTeamIndex(null)
     }
   }, [isSpinning, spinPhase])
 
@@ -90,11 +92,12 @@ export function TeamSpinner({
           const newSpeed = prev + 30
           if (newSpeed >= 400) {
             clearInterval(slowdownInterval)
+            // Capture the current team index NOW before the timeout
+            setCurrentTeamIndex(idx => {
+              setFinalTeamIndex(idx)
+              return idx
+            })
             setSpinPhase("stopped")
-            // Trigger winning moment after a brief pause
-            setTimeout(() => {
-              onSpinComplete(teams[currentTeamIndex])
-            }, 500)
             return 400
           }
           return newSpeed
@@ -102,7 +105,17 @@ export function TeamSpinner({
       }, 200)
       return () => clearInterval(slowdownInterval)
     }
-  }, [spinPhase, onSpinComplete])
+  }, [spinPhase])
+
+  // Trigger winning moment when finalTeamIndex is set
+  useEffect(() => {
+    if (finalTeamIndex !== null && spinPhase === "stopped") {
+      const timer = setTimeout(() => {
+        onSpinComplete(teams[finalTeamIndex])
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [finalTeamIndex, spinPhase, onSpinComplete])
 
   const currentTeam = teams[currentTeamIndex]
 

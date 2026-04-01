@@ -1,6 +1,6 @@
 "use client"
 
-// eBay Live Case Break Animation Showcase - v2
+// eBay Live Case Break Animation Showcase - v3
 import { useState, useCallback } from "react"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
