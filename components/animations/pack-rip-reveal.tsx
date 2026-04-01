@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { CelebrationElements, HolographicShine } from "./celebration-elements"
+import Image from "next/image"
+import { CelebrationElements } from "./celebration-elements"
+
+const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayLiveApp_Stars_DW_CC_v007_CC%202-OGJYd3jy5o3bamd4lN3498JekCYscy.png"
+const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
 
 const teams = [
   { name: "Chiefs", color: "#E31837", secondary: "#FFB81C" },
@@ -19,233 +23,354 @@ interface PackRipRevealProps {
 }
 
 export function PackRipReveal({ isRevealing, onComplete }: PackRipRevealProps) {
-  const [phase, setPhase] = useState<"closed" | "ripping" | "revealed">("closed")
+  const [phase, setPhase] = useState<"idle" | "grip" | "tearing" | "ripped" | "revealed">("idle")
   const team = teams[0]
 
   useEffect(() => {
     if (isRevealing) {
-      setPhase("closed")
+      setPhase("idle")
       
-      const ripTimer = setTimeout(() => setPhase("ripping"), 400)
-      const revealTimer = setTimeout(() => setPhase("revealed"), 900)
-      const completeTimer = setTimeout(() => onComplete(), 3000)
+      const gripTimer = setTimeout(() => setPhase("grip"), 200)
+      const tearTimer = setTimeout(() => setPhase("tearing"), 600)
+      const rippedTimer = setTimeout(() => setPhase("ripped"), 1100)
+      const revealTimer = setTimeout(() => setPhase("revealed"), 1500)
+      const completeTimer = setTimeout(() => onComplete(), 4000)
       
       return () => {
-        clearTimeout(ripTimer)
+        clearTimeout(gripTimer)
+        clearTimeout(tearTimer)
+        clearTimeout(rippedTimer)
         clearTimeout(revealTimer)
         clearTimeout(completeTimer)
       }
     }
   }, [isRevealing, onComplete])
 
+  const isRipping = phase === "tearing" || phase === "ripped" || phase === "revealed"
+  const isRevealed = phase === "revealed"
+
   return (
-    <div className="relative w-52 h-80 flex items-center justify-center">
-      {/* Pack Wrapper */}
-      <div className="relative w-full h-full">
-        {/* Base pack with holographic finish */}
-        <div className="absolute inset-0 rounded-2xl overflow-hidden">
+    <div className="relative w-48 h-72 flex items-center justify-center" style={{ perspective: "1000px" }}>
+      {/* Tear particles */}
+      <AnimatePresence>
+        {phase === "tearing" && (
+          <>
+            {[...Array(30)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute rounded-sm"
+                style={{
+                  width: 2 + Math.random() * 4,
+                  height: 4 + Math.random() * 8,
+                  backgroundColor: i % 4 === 0 ? "#a78bfa" : i % 4 === 1 ? "#c4b5fd" : i % 4 === 2 ? "#8b5cf6" : "#e9d5ff",
+                  boxShadow: "0 0 4px rgba(167, 139, 250, 0.8)",
+                  left: "50%",
+                  top: "30%",
+                }}
+                initial={{ x: 0, y: 0, opacity: 1, rotate: 0, scale: 1 }}
+                animate={{
+                  x: (Math.random() - 0.5) * 200,
+                  y: Math.random() * 150 - 50,
+                  opacity: 0,
+                  rotate: Math.random() * 720 - 360,
+                  scale: 0.5,
+                }}
+                transition={{ duration: 0.8 + Math.random() * 0.4, ease: "easeOut" }}
+              />
+            ))}
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Glow effect behind pack */}
+      <AnimatePresence>
+        {isRevealed && (
+          <motion.div
+            className="absolute inset-0 rounded-2xl"
+            style={{
+              background: `radial-gradient(circle, ${team.color}60 0%, transparent 70%)`,
+            }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1.3 }}
+            transition={{ duration: 0.5 }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Pack container */}
+      <div className="relative w-full h-full" style={{ transformStyle: "preserve-3d" }}>
+        
+        {/* LEFT HALF of wrapper - tears to the left */}
+        <motion.div
+          className="absolute inset-y-0 left-0 w-1/2 origin-left overflow-hidden"
+          style={{ transformStyle: "preserve-3d" }}
+          initial={{ rotateY: 0, x: 0 }}
+          animate={
+            isRipping
+              ? { rotateY: -75, x: -20, opacity: phase === "revealed" ? 0 : 1 }
+              : phase === "grip" 
+                ? { rotateY: -3, x: -2 }
+                : { rotateY: 0, x: 0 }
+          }
+          transition={{ 
+            duration: phase === "tearing" ? 0.5 : 0.3,
+            ease: [0.4, 0, 0.2, 1]
+          }}
+        >
           <div 
-            className="w-full h-full border-2 border-violet-400/40"
+            className="w-[200%] h-full rounded-l-xl"
             style={{
               background: "linear-gradient(135deg, #a78bfa 0%, #8b5cf6 30%, #7c3aed 60%, #6d28d9 100%)",
+              borderLeft: "2px solid rgba(167, 139, 250, 0.5)",
+              borderTop: "2px solid rgba(167, 139, 250, 0.5)",
+              borderBottom: "2px solid rgba(167, 139, 250, 0.5)",
             }}
           >
             {/* Holographic foil pattern */}
             <div 
-              className="absolute inset-0 opacity-40"
+              className="absolute inset-0 opacity-30"
               style={{
                 background: `repeating-linear-gradient(
-                  110deg,
+                  120deg,
                   transparent,
-                  transparent 8px,
-                  rgba(255,255,255,0.3) 8px,
-                  rgba(255,255,255,0.3) 10px
+                  transparent 6px,
+                  rgba(255,255,255,0.4) 6px,
+                  rgba(255,255,255,0.4) 8px
                 )`
               }}
             />
-            {/* Iridescent shimmer */}
-            <motion.div
-              className="absolute inset-0"
-              style={{
-                background: `linear-gradient(
-                  105deg,
-                  transparent 30%,
-                  rgba(233, 213, 255, 0.3) 45%,
-                  rgba(196, 181, 253, 0.4) 50%,
-                  rgba(167, 139, 250, 0.3) 55%,
-                  transparent 70%
-                )`,
-              }}
-              animate={{ x: ["-100%", "200%"] }}
-              transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
-            />
-            {/* Pack label */}
-            <div className="absolute inset-x-4 top-20 bottom-20 bg-zinc-900/95 rounded-xl flex flex-col items-center justify-center p-4 border border-violet-500/30">
-              <div className="text-violet-300 font-bold text-sm tracking-wider">2023 PANINI</div>
-              <div className="text-white font-black text-2xl mt-1">MOSAIC</div>
-              <div className="text-violet-300 text-xs mt-2 tracking-widest">NFL FOOTBALL</div>
-              <div className="mt-4 w-16 h-1 bg-gradient-to-r from-violet-400 to-purple-400 rounded-full" />
+            {/* Pack branding - left half */}
+            <div className="absolute top-16 left-4 right-0">
+              <div className="text-violet-200/80 font-bold text-xs tracking-wider">2024</div>
+              <div className="text-white font-black text-lg">PANI</div>
             </div>
           </div>
-        </div>
+          {/* Torn edge */}
+          <motion.div
+            className="absolute right-0 top-0 bottom-0 w-3"
+            style={{
+              background: isRipping 
+                ? "linear-gradient(90deg, #1a1a2e, #2d2d44)"
+                : "transparent",
+              clipPath: isRipping
+                ? "polygon(0 0, 100% 5%, 60% 10%, 100% 18%, 40% 25%, 100% 35%, 50% 42%, 100% 50%, 60% 58%, 100% 65%, 40% 72%, 100% 82%, 50% 90%, 100% 100%, 0 100%)"
+                : "none",
+            }}
+          />
+        </motion.div>
 
-        {/* Ripping top portion */}
+        {/* RIGHT HALF of wrapper - tears to the right */}
         <motion.div
-          className="absolute inset-x-0 top-0 h-16 rounded-t-2xl overflow-hidden origin-top"
-          initial={{ rotateX: 0, y: 0 }}
+          className="absolute inset-y-0 right-0 w-1/2 origin-right overflow-hidden"
+          style={{ transformStyle: "preserve-3d" }}
+          initial={{ rotateY: 0, x: 0 }}
           animate={
-            phase === "ripping" || phase === "revealed"
-              ? { rotateX: -120, y: -20, opacity: 0.5 }
-              : { rotateX: 0, y: 0, opacity: 1 }
+            isRipping
+              ? { rotateY: 75, x: 20, opacity: phase === "revealed" ? 0 : 1 }
+              : phase === "grip"
+                ? { rotateY: 3, x: 2 }
+                : { rotateY: 0, x: 0 }
           }
-          transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ 
+            duration: phase === "tearing" ? 0.5 : 0.3,
+            ease: [0.4, 0, 0.2, 1]
+          }}
         >
           <div 
-            className="w-full h-full border-2 border-b-0 border-violet-400/40 rounded-t-2xl"
+            className="w-[200%] h-full -ml-full rounded-r-xl"
             style={{
-              background: "linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%)",
+              background: "linear-gradient(135deg, #a78bfa 0%, #8b5cf6 30%, #7c3aed 60%, #6d28d9 100%)",
+              borderRight: "2px solid rgba(167, 139, 250, 0.5)",
+              borderTop: "2px solid rgba(167, 139, 250, 0.5)",
+              borderBottom: "2px solid rgba(167, 139, 250, 0.5)",
+              marginLeft: "-100%",
             }}
           >
+            {/* Holographic foil pattern */}
             <div 
-              className="absolute inset-0 opacity-40"
+              className="absolute inset-0 opacity-30"
               style={{
                 background: `repeating-linear-gradient(
-                  110deg,
+                  120deg,
                   transparent,
-                  transparent 8px,
-                  rgba(255,255,255,0.3) 8px,
-                  rgba(255,255,255,0.3) 10px
+                  transparent 6px,
+                  rgba(255,255,255,0.4) 6px,
+                  rgba(255,255,255,0.4) 8px
                 )`
               }}
             />
+            {/* Pack branding - right half */}
+            <div className="absolute top-16 left-[50%] pl-1">
+              <div className="text-violet-200/80 font-bold text-xs tracking-wider">MOSAIC</div>
+              <div className="text-white font-black text-lg">NI</div>
+            </div>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-b from-transparent to-zinc-800" />
+          {/* Torn edge */}
+          <motion.div
+            className="absolute left-0 top-0 bottom-0 w-3"
+            style={{
+              background: isRipping 
+                ? "linear-gradient(270deg, #1a1a2e, #2d2d44)"
+                : "transparent",
+              clipPath: isRipping
+                ? "polygon(100% 0, 0 5%, 40% 10%, 0 18%, 60% 25%, 0 35%, 50% 42%, 0 50%, 40% 58%, 0 65%, 60% 72%, 0 82%, 50% 90%, 0 100%, 100% 100%)"
+                : "none",
+            }}
+          />
         </motion.div>
 
-        {/* Light rays with purple tint */}
-        <AnimatePresence>
-          {phase === "revealed" && (
-            <motion.div
-              className="absolute inset-0 pointer-events-none"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {[...Array(8)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute left-1/2 top-8 w-1 origin-top"
-                  style={{
-                    height: "150%",
-                    background: `linear-gradient(to bottom, ${i % 2 === 0 ? "rgba(167,139,250,0.6)" : team.secondary + "80"}, transparent)`,
-                    transform: `rotate(${i * 45}deg)`,
-                  }}
-                  initial={{ scaleY: 0, opacity: 0 }}
-                  animate={{ scaleY: 1, opacity: [0, 0.8, 0.4] }}
-                  transition={{ duration: 0.6, delay: i * 0.05 }}
-                />
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* THE CARD - revealed as pack tears */}
+        <motion.div
+          className="absolute inset-3 rounded-xl overflow-hidden"
+          style={{
+            background: `linear-gradient(160deg, ${team.color} 0%, ${team.color}dd 50%, ${team.color}bb 100%)`,
+            boxShadow: isRevealed 
+              ? `0 25px 60px ${team.color}50, 0 0 80px rgba(167,139,250,0.4), inset 0 1px 2px rgba(255,255,255,0.2)`
+              : "0 4px 20px rgba(0,0,0,0.3)",
+            border: `3px solid ${team.secondary}`,
+          }}
+          initial={{ scale: 0.95, opacity: 0.5 }}
+          animate={
+            isRevealed
+              ? { scale: 1, opacity: 1, y: 0 }
+              : isRipping
+                ? { scale: 0.98, opacity: 0.9, y: 0 }
+                : { scale: 0.95, opacity: 0.5, y: 0 }
+          }
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          {/* Card holographic shine */}
+          <motion.div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `linear-gradient(105deg, 
+                transparent 0%,
+                rgba(255,255,255,0.3) 45%, 
+                rgba(255,255,255,0.5) 50%,
+                rgba(255,255,255,0.3) 55%, 
+                transparent 100%
+              )`,
+            }}
+            initial={{ x: "-150%" }}
+            animate={isRevealed ? { x: "150%" } : { x: "-150%" }}
+            transition={{ duration: 1, delay: 0.3, ease: "easeInOut" }}
+          />
 
-        {/* Card sliding out */}
-        <AnimatePresence>
-          {(phase === "ripping" || phase === "revealed") && (
+          {/* Card inner border */}
+          <div 
+            className="absolute inset-2 rounded-lg border-2 pointer-events-none"
+            style={{ borderColor: team.secondary + "50" }}
+          />
+
+          {/* Card content */}
+          <div className="relative w-full h-full flex flex-col items-center justify-center p-4">
+            
+            {/* Celebration elements */}
+            <AnimatePresence>
+              {isRevealed && (
+                <CelebrationElements show={true} teamColor={team.color} />
+              )}
+            </AnimatePresence>
+
+            {/* Team logo circle */}
             <motion.div
-              className="absolute inset-x-5 top-10 bottom-10 rounded-xl overflow-hidden shadow-2xl"
-              style={{
-                background: `linear-gradient(135deg, ${team.color} 0%, ${team.color}cc 100%)`,
-                border: `3px solid ${team.secondary}`,
-                boxShadow: `0 20px 60px ${team.color}40, 0 0 30px rgba(167,139,250,0.3)`,
+              className="relative w-20 h-20 rounded-full flex items-center justify-center mb-4"
+              style={{ 
+                backgroundColor: team.secondary,
+                boxShadow: `0 8px 24px ${team.color}60, inset 0 -4px 8px rgba(0,0,0,0.2)`,
               }}
-              initial={{ y: 60, opacity: 0, scale: 0.9 }}
-              animate={{ y: phase === "revealed" ? -50 : 20, opacity: 1, scale: 1 }}
+              initial={{ scale: 0, rotate: -180 }}
+              animate={isRevealed ? { scale: 1, rotate: 0 } : { scale: 0.8, rotate: -90 }}
               transition={{ 
-                duration: 0.6, 
-                ease: [0.2, 0.8, 0.2, 1],
-                delay: phase === "ripping" ? 0 : 0.2
+                delay: isRevealed ? 0.2 : 0,
+                type: "spring", 
+                stiffness: 200,
+                damping: 15
               }}
             >
-              <HolographicShine />
-              
-              <div className="w-full h-full flex flex-col items-center justify-center p-4 relative">
-                {/* Celebration elements */}
-                <CelebrationElements show={phase === "revealed"} teamColor={team.color} />
-                
-                <motion.div
-                  className="w-20 h-20 rounded-full flex items-center justify-center mb-3 relative"
-                  style={{ 
-                    backgroundColor: team.secondary,
-                    boxShadow: `0 8px 24px ${team.color}60`,
-                  }}
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
-                >
-                  <span className="text-2xl font-black" style={{ color: team.color }}>
-                    {team.name.slice(0, 2).toUpperCase()}
-                  </span>
-                  <div 
-                    className="absolute inset-0 rounded-full"
-                    style={{
-                      background: "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%)",
-                    }}
-                  />
-                </motion.div>
-                <motion.div
-                  className="text-white font-black text-xl text-center drop-shadow-lg"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  {team.name}
-                </motion.div>
-              </div>
-              
-              {/* Card shine */}
-              <motion.div
-                className="absolute inset-0 pointer-events-none"
-                initial={{ x: "-100%" }}
-                animate={{ x: "200%" }}
-                transition={{ duration: 1, delay: 0.6 }}
+              <span className="text-3xl font-black" style={{ color: team.color }}>
+                {team.name.slice(0, 2).toUpperCase()}
+              </span>
+              {/* Glossy overlay */}
+              <div 
+                className="absolute inset-0 rounded-full"
                 style={{
-                  background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
-                  width: "50%",
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%)",
                 }}
               />
             </motion.div>
-          )}
-        </AnimatePresence>
 
-        {/* Holographic foil particles */}
-        <AnimatePresence>
-          {phase === "ripping" && (
-            <>
-              {[...Array(20)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-1 h-3 rounded-full"
-                  style={{
-                    backgroundColor: i % 3 === 0 ? "#a78bfa" : i % 3 === 1 ? "#c4b5fd" : "#e9d5ff",
-                    boxShadow: "0 0 6px rgba(167, 139, 250, 0.6)",
-                    left: `${20 + Math.random() * 60}%`,
-                    top: "10%",
-                  }}
-                  initial={{ y: 0, opacity: 1, rotate: 0 }}
-                  animate={{
-                    y: 100 + Math.random() * 100,
-                    x: (Math.random() - 0.5) * 80,
-                    opacity: 0,
-                    rotate: Math.random() * 360,
-                  }}
-                  transition={{ duration: 0.8, delay: Math.random() * 0.2 }}
-                />
-              ))}
-            </>
-          )}
-        </AnimatePresence>
+            {/* Team name */}
+            <motion.div
+              className="text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+            >
+              <h3 className="text-white font-black text-2xl tracking-wide drop-shadow-lg">
+                {team.name.toUpperCase()}
+              </h3>
+              <p className="text-xs mt-1 font-semibold tracking-widest" style={{ color: team.secondary }}>
+                NFL 2024
+              </p>
+            </motion.div>
+
+            {/* Fire icons */}
+            <motion.div
+              className="flex items-center gap-2 mt-4"
+              initial={{ opacity: 0 }}
+              animate={isRevealed ? { opacity: 1 } : { opacity: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <div className="relative w-6 h-6">
+                <Image src={FIRE_URL} alt="" fill className="object-contain" />
+              </div>
+              <span className="text-violet-300 text-xs font-bold tracking-wider">PULLED</span>
+              <div className="relative w-6 h-6">
+                <Image src={FIRE_URL} alt="" fill className="object-contain" />
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Corner accents */}
+          <div className="absolute top-3 left-3 w-4 h-4 border-l-2 border-t-2 rounded-tl-sm" style={{ borderColor: team.secondary + "70" }} />
+          <div className="absolute top-3 right-3 w-4 h-4 border-r-2 border-t-2 rounded-tr-sm" style={{ borderColor: team.secondary + "70" }} />
+          <div className="absolute bottom-3 left-3 w-4 h-4 border-l-2 border-b-2 rounded-bl-sm" style={{ borderColor: team.secondary + "70" }} />
+          <div className="absolute bottom-3 right-3 w-4 h-4 border-r-2 border-b-2 rounded-br-sm" style={{ borderColor: team.secondary + "70" }} />
+        </motion.div>
       </div>
+
+      {/* Floating stars */}
+      <AnimatePresence>
+        {isRevealed && (
+          <>
+            <motion.div
+              className="absolute -top-8 -left-8 w-14 h-14"
+              initial={{ scale: 0, rotate: -30 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+            >
+              <Image src={STARS_URL} alt="" fill className="object-contain" />
+            </motion.div>
+            <motion.div
+              className="absolute -top-4 -right-10 w-12 h-12"
+              initial={{ scale: 0, rotate: 30 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.6, type: "spring", stiffness: 200 }}
+            >
+              <Image src={STARS_URL} alt="" fill className="object-contain" />
+            </motion.div>
+            <motion.div
+              className="absolute -bottom-6 -right-6 w-10 h-10"
+              initial={{ scale: 0, rotate: -20 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.7, type: "spring", stiffness: 200 }}
+            >
+              <Image src={STARS_URL} alt="" fill className="object-contain" />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
