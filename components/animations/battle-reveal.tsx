@@ -9,26 +9,27 @@ const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayL
 const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
 
 const teams = [
-  { name: "Chiefs", color: "#E31837", secondary: "#FFB81C" },
-  { name: "Eagles", color: "#004C54", secondary: "#A5ACAF" },
-  { name: "Cowboys", color: "#003594", secondary: "#869397" },
-  { name: "49ers", color: "#AA0000", secondary: "#B3995D" },
-  { name: "Bills", color: "#00338D", secondary: "#C60C30" },
-  { name: "Dolphins", color: "#008E97", secondary: "#FC4C02" },
-  { name: "Ravens", color: "#241773", secondary: "#9E7C0C" },
-  { name: "Lions", color: "#0076B6", secondary: "#B0B7BC" },
-  { name: "Packers", color: "#203731", secondary: "#FFB612" },
-  { name: "Bengals", color: "#FB4F14", secondary: "#000000" },
-  { name: "Jets", color: "#125740", secondary: "#000000" },
-  { name: "Broncos", color: "#FB4F14", secondary: "#002244" },
-  { name: "Chargers", color: "#0080C6", secondary: "#FFC20E" },
-  { name: "Colts", color: "#002C5F", secondary: "#A2AAAD" },
-  { name: "Texans", color: "#03202F", secondary: "#A71930" },
-  { name: "Steelers", color: "#FFB612", secondary: "#101820" },
+  { name: "Chiefs", city: "Kansas City", color: "#E31837", secondary: "#FFB81C" },
+  { name: "Eagles", city: "Philadelphia", color: "#004C54", secondary: "#A5ACAF" },
+  { name: "Cowboys", city: "Dallas", color: "#003594", secondary: "#869397" },
+  { name: "49ers", city: "San Francisco", color: "#AA0000", secondary: "#B3995D" },
+  { name: "Bills", city: "Buffalo", color: "#00338D", secondary: "#C60C30" },
+  { name: "Dolphins", city: "Miami", color: "#008E97", secondary: "#FC4C02" },
+  { name: "Ravens", city: "Baltimore", color: "#241773", secondary: "#9E7C0C" },
+  { name: "Lions", city: "Detroit", color: "#0076B6", secondary: "#B0B7BC" },
+  { name: "Packers", city: "Green Bay", color: "#203731", secondary: "#FFB612" },
+  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", secondary: "#000000" },
+  { name: "Jets", city: "New York", color: "#125740", secondary: "#000000" },
+  { name: "Broncos", city: "Denver", color: "#FB4F14", secondary: "#002244" },
+  { name: "Chargers", city: "Los Angeles", color: "#0080C6", secondary: "#FFC20E" },
+  { name: "Colts", city: "Indianapolis", color: "#002C5F", secondary: "#A2AAAD" },
+  { name: "Texans", city: "Houston", color: "#03202F", secondary: "#A71930" },
+  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", secondary: "#101820" },
 ]
 
 interface Team {
   name: string
+  city: string
   color: string
   secondary: string
 }
@@ -346,7 +347,10 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
             >
               {leftTeam.name.slice(0, 2).toUpperCase()}
             </motion.span>
-            <span className="text-xs font-bold text-white/80 mt-2 uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-white/90 mt-1 uppercase tracking-wider">
+              {leftTeam.city}
+            </span>
+            <span className="text-[9px] font-medium text-white/60 uppercase">
               {leftTeam.name}
             </span>
           </div>
@@ -457,7 +461,10 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
             >
               {rightTeam.name.slice(0, 2).toUpperCase()}
             </motion.span>
-            <span className="text-xs font-bold text-white/80 mt-2 uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-white/90 mt-1 uppercase tracking-wider">
+              {rightTeam.city}
+            </span>
+            <span className="text-[9px] font-medium text-white/60 uppercase">
               {rightTeam.name}
             </span>
           </div>
@@ -561,6 +568,9 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
+              <span className="text-white/80 text-sm font-semibold uppercase tracking-wider">
+                {winner.city}
+              </span>
               <span 
                 className="text-3xl font-black"
                 style={{ color: winner.color }}
