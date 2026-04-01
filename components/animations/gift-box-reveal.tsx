@@ -1,6 +1,7 @@
 "use client"
 
-// Gift box reveal animation - v4
+// Gift box reveal animation - v5
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { CelebrationElements } from "./celebration-elements"
 import Image from "next/image"

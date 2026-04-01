@@ -1,6 +1,7 @@
 "use client"
 
-// Particle assembly reveal animation - v4
+// Particle assembly reveal animation - v5
+import { useState, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { CelebrationElements, HolographicShine } from "./celebration-elements"
 

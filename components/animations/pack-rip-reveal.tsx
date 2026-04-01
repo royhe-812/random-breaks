@@ -1,6 +1,6 @@
 "use client"
 
-// Pack rip reveal animation - v4 - realistic top tear
+// Pack rip reveal animation - v5 - tear from right to left
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
@@ -41,83 +41,93 @@ interface PackRipRevealProps {
 }
 
 export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackRipRevealProps) {
-  const [phase, setPhase] = useState<"idle" | "grip" | "tearing" | "pulling" | "revealed">("idle")
+  const [phase, setPhase] = useState<"idle" | "grip" | "tearing" | "open" | "revealed">("idle")
+  const [tearProgress, setTearProgress] = useState(0)
   const team = propTeam || teams[0]
 
   useEffect(() => {
     if (isRevealing) {
       setPhase("idle")
+      setTearProgress(0)
       
       const gripTimer = setTimeout(() => setPhase("grip"), 200)
-      const tearTimer = setTimeout(() => setPhase("tearing"), 700)
-      const pullTimer = setTimeout(() => setPhase("pulling"), 1200)
-      const revealTimer = setTimeout(() => setPhase("revealed"), 1800)
-      const completeTimer = setTimeout(() => onComplete(), 4500)
+      const tearTimer = setTimeout(() => {
+        setPhase("tearing")
+        // Animate tear progress from 0 to 100 over 800ms
+        let start = Date.now()
+        const animateTear = () => {
+          const elapsed = Date.now() - start
+          const progress = Math.min(elapsed / 800, 1)
+          setTearProgress(progress * 100)
+          if (progress < 1) {
+            requestAnimationFrame(animateTear)
+          }
+        }
+        requestAnimationFrame(animateTear)
+      }, 600)
+      const openTimer = setTimeout(() => setPhase("open"), 1500)
+      const revealTimer = setTimeout(() => setPhase("revealed"), 2200)
+      const completeTimer = setTimeout(() => onComplete(), 5000)
       
       return () => {
         clearTimeout(gripTimer)
         clearTimeout(tearTimer)
-        clearTimeout(pullTimer)
+        clearTimeout(openTimer)
         clearTimeout(revealTimer)
         clearTimeout(completeTimer)
       }
     }
   }, [isRevealing, onComplete])
 
-  const isTearing = phase === "tearing" || phase === "pulling" || phase === "revealed"
-  const isPulling = phase === "pulling" || phase === "revealed"
+  const isTearing = phase === "tearing" || phase === "open" || phase === "revealed"
+  const isOpen = phase === "open" || phase === "revealed"
   const isRevealed = phase === "revealed"
 
   return (
-    <div className="relative w-48 h-72 flex items-center justify-center" style={{ perspective: "1200px" }}>
+    <div className="relative w-48 h-72 flex items-center justify-center">
       
-      {/* Tear particles flying out when ripping */}
+      {/* Tear particles flying out from the tear line */}
       <AnimatePresence>
         {phase === "tearing" && (
           <>
-            {[...Array(20)].map((_, i) => (
+            {[...Array(15)].map((_, i) => (
               <motion.div
                 key={i}
                 className="absolute rounded-sm z-50"
                 style={{
-                  width: 3 + Math.random() * 5,
-                  height: 6 + Math.random() * 10,
+                  width: 2 + Math.random() * 4,
+                  height: 4 + Math.random() * 8,
                   backgroundColor: i % 3 === 0 ? "#c4b5fd" : i % 3 === 1 ? "#a78bfa" : "#e9d5ff",
-                  left: `${30 + Math.random() * 40}%`,
-                  top: "15%",
+                  right: `${20 + (tearProgress * 0.6)}%`,
+                  top: "18%",
                 }}
-                initial={{ y: 0, opacity: 1, rotate: 0, scale: 1 }}
+                initial={{ y: 0, x: 0, opacity: 1, rotate: 0 }}
                 animate={{
-                  x: (Math.random() - 0.5) * 150,
-                  y: -50 + Math.random() * 100,
+                  x: -30 + Math.random() * 60,
+                  y: -40 + Math.random() * 80,
                   opacity: 0,
-                  rotate: Math.random() * 540 - 270,
-                  scale: 0.3,
+                  rotate: Math.random() * 360,
                 }}
-                transition={{ duration: 0.6 + Math.random() * 0.3, ease: "easeOut" }}
+                transition={{ duration: 0.4, delay: i * 0.03, ease: "easeOut" }}
               />
             ))}
           </>
         )}
       </AnimatePresence>
 
-      {/* Main pack container */}
-      <div className="relative w-full h-full" style={{ transformStyle: "preserve-3d" }}>
+      {/* Main pack */}
+      <div className="relative w-full h-full">
         
-        {/* Pack body (stays in place) */}
-        <motion.div
+        {/* Pack body - the main wrapper that holds everything */}
+        <div
           className="absolute inset-0 rounded-xl overflow-hidden"
           style={{
             background: "linear-gradient(160deg, #a78bfa 0%, #8b5cf6 40%, #7c3aed 70%, #6d28d9 100%)",
             boxShadow: "0 8px 32px rgba(139, 92, 246, 0.4), inset 0 1px 2px rgba(255,255,255,0.2)",
             border: "2px solid rgba(167, 139, 250, 0.6)",
           }}
-          animate={{
-            scale: phase === "grip" ? 1.02 : 1,
-          }}
-          transition={{ duration: 0.2 }}
         >
-          {/* Holographic foil pattern on body */}
+          {/* Holographic foil pattern */}
           <div 
             className="absolute inset-0 opacity-20"
             style={{
@@ -131,72 +141,32 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
             }}
           />
           
-          {/* Pack branding - PANINI style */}
-          <div className="absolute top-20 inset-x-0 flex flex-col items-center">
+          {/* Pack branding */}
+          <div className="absolute top-24 inset-x-0 flex flex-col items-center">
             <div className="text-violet-200/60 font-bold text-xs tracking-[0.3em]">2024</div>
             <div className="text-white font-black text-2xl tracking-wider mt-1">PANINI</div>
             <div className="text-violet-200/80 font-bold text-sm tracking-[0.2em] mt-1">MOSAIC</div>
             <div className="w-16 h-0.5 bg-violet-300/40 mt-3 rounded-full" />
             <div className="text-violet-300/60 text-[10px] font-semibold mt-2 tracking-widest">NFL</div>
           </div>
-          
-          {/* Bottom accent */}
-          <div className="absolute bottom-4 inset-x-4">
-            <div className="h-1 bg-gradient-to-r from-transparent via-violet-300/30 to-transparent rounded-full" />
-          </div>
-        </motion.div>
+        </div>
 
-        {/* Top flap that tears/peels back */}
-        <motion.div
-          className="absolute top-0 left-0 right-0 h-24 origin-bottom overflow-visible z-20"
-          style={{ 
-            transformStyle: "preserve-3d",
-            transformOrigin: "center bottom",
-          }}
-          animate={{
-            rotateX: isPulling ? -160 : isTearing ? -40 : phase === "grip" ? -8 : 0,
-            y: isPulling ? -10 : 0,
-            scale: isPulling ? 0.95 : 1,
-          }}
-          transition={{ 
-            duration: phase === "pulling" ? 0.5 : phase === "tearing" ? 0.4 : 0.2,
-            ease: [0.4, 0, 0.2, 1]
-          }}
-        >
-          {/* Front of the flap */}
-          <div 
-            className="absolute inset-0 rounded-t-xl"
+        {/* Top sealed area - this gets torn */}
+        <div className="absolute top-0 left-0 right-0 h-20 overflow-hidden rounded-t-xl z-10">
+          {/* Untorn portion (shrinks from right as tear progresses) */}
+          <motion.div
+            className="absolute top-0 left-0 h-full rounded-t-xl"
             style={{
+              width: `${100 - tearProgress}%`,
               background: "linear-gradient(160deg, #c4b5fd 0%, #a78bfa 40%, #8b5cf6 100%)",
-              border: "2px solid rgba(167, 139, 250, 0.6)",
-              borderBottom: "none",
-              boxShadow: isTearing ? "0 4px 16px rgba(0,0,0,0.3)" : "none",
-              backfaceVisibility: "hidden",
+              borderTop: "2px solid rgba(167, 139, 250, 0.6)",
+              borderLeft: "2px solid rgba(167, 139, 250, 0.6)",
+              borderRight: isTearing ? "none" : "2px solid rgba(167, 139, 250, 0.6)",
             }}
           >
-            {/* Tear line indicator */}
+            {/* Holographic shine */}
             <div 
-              className="absolute bottom-0 left-0 right-0 h-1"
-              style={{
-                background: "repeating-linear-gradient(90deg, transparent 0px, transparent 4px, rgba(139, 92, 246, 0.6) 4px, rgba(139, 92, 246, 0.6) 8px)",
-              }}
-            />
-            
-            {/* Grip area indicator */}
-            <motion.div 
-              className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1"
-              animate={{
-                scale: phase === "grip" ? 1.1 : 1,
-              }}
-            >
-              <div className="w-2 h-2 rounded-full bg-violet-300/50" />
-              <div className="text-violet-200/70 text-[9px] font-bold tracking-wider">TEAR HERE</div>
-              <div className="w-2 h-2 rounded-full bg-violet-300/50" />
-            </motion.div>
-            
-            {/* Holographic shine on flap */}
-            <div 
-              className="absolute inset-0 opacity-30 rounded-t-xl"
+              className="absolute inset-0 opacity-30"
               style={{
                 background: `repeating-linear-gradient(
                   110deg,
@@ -207,50 +177,84 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
                 )`
               }}
             />
-          </div>
-          
-          {/* Back of the flap (visible when flipped) */}
-          <div 
-            className="absolute inset-0 rounded-t-xl"
-            style={{
-              background: "linear-gradient(160deg, #1a1a2e 0%, #2d2d44 100%)",
-              transform: "rotateX(180deg)",
-              backfaceVisibility: "hidden",
-            }}
-          />
-          
-          {/* Torn edge effect */}
-          <motion.div
-            className="absolute -bottom-2 left-0 right-0 h-4"
-            style={{
-              background: "linear-gradient(180deg, #1a1a2e 0%, transparent 100%)",
-              clipPath: isTearing 
-                ? "polygon(0 0, 8% 60%, 15% 20%, 22% 70%, 30% 30%, 38% 80%, 45% 25%, 52% 65%, 60% 35%, 68% 75%, 75% 20%, 82% 60%, 90% 30%, 100% 50%, 100% 100%, 0 100%)"
-                : "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
-              opacity: isTearing ? 1 : 0,
-            }}
-          />
-        </motion.div>
+            
+            {/* Tear here text */}
+            {!isTearing && (
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-300/50" />
+                <div className="text-violet-200/70 text-[8px] font-bold tracking-wider">RIP</div>
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-300/50" />
+              </div>
+            )}
+          </motion.div>
 
-        {/* The card inside - revealed as pack opens */}
+          {/* Torn flap piece (peels away to the right) */}
+          <AnimatePresence>
+            {tearProgress > 0 && (
+              <motion.div
+                className="absolute top-0 h-full origin-left"
+                style={{
+                  left: `${100 - tearProgress}%`,
+                  width: `${tearProgress}%`,
+                  background: "linear-gradient(160deg, #c4b5fd 0%, #a78bfa 100%)",
+                  transformOrigin: "left center",
+                }}
+                initial={{ rotateY: 0 }}
+                animate={{ 
+                  rotateY: isOpen ? 90 : tearProgress > 50 ? 30 : 10,
+                  x: isOpen ? 20 : 0,
+                  opacity: isOpen ? 0 : 1,
+                }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* Jagged torn edge on the left side */}
+                <div 
+                  className="absolute left-0 top-0 bottom-0 w-2 -ml-1"
+                  style={{
+                    background: "#a78bfa",
+                    clipPath: "polygon(100% 0, 0 5%, 100% 10%, 0 18%, 100% 25%, 0 32%, 100% 40%, 0 48%, 100% 55%, 0 62%, 100% 70%, 0 78%, 100% 85%, 0 92%, 100% 100%, 100% 0)",
+                  }}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          {/* Perforated tear line indicator */}
+          {!isTearing && (
+            <div 
+              className="absolute bottom-0 left-0 right-0 h-1"
+              style={{
+                background: "repeating-linear-gradient(90deg, transparent 0px, transparent 4px, rgba(109, 40, 217, 0.5) 4px, rgba(109, 40, 217, 0.5) 8px)",
+              }}
+            />
+          )}
+        </div>
+
+        {/* Card inside - hidden by pack, slides up when opened */}
         <motion.div
-          className="absolute left-3 right-3 top-20 bottom-3 rounded-lg overflow-hidden z-10"
+          className="absolute left-4 right-4 rounded-lg overflow-hidden z-5"
           style={{
+            top: "25%",
+            height: "65%",
             background: `linear-gradient(160deg, ${team.color} 0%, ${team.color}dd 50%, ${team.color}bb 100%)`,
             boxShadow: isRevealed 
-              ? `0 20px 50px ${team.color}50, 0 0 60px rgba(167,139,250,0.3), inset 0 1px 2px rgba(255,255,255,0.2)`
+              ? `0 20px 50px ${team.color}50, 0 0 60px rgba(167,139,250,0.3)`
               : "0 4px 16px rgba(0,0,0,0.2)",
             border: `3px solid ${team.secondary}`,
+            clipPath: isOpen ? "none" : "inset(0 0 0 0)",
           }}
-          initial={{ y: 20, opacity: 0, scale: 0.9 }}
+          initial={{ y: 50, opacity: 0 }}
           animate={
             isRevealed
-              ? { y: -30, opacity: 1, scale: 1.05 }
-              : isPulling
-                ? { y: 0, opacity: 1, scale: 0.95 }
-                : { y: 20, opacity: 0, scale: 0.9 }
+              ? { y: -60, opacity: 1, scale: 1.08 }
+              : isOpen
+                ? { y: 0, opacity: 1, scale: 1 }
+                : { y: 50, opacity: 0, scale: 0.95 }
           }
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ 
+            duration: isRevealed ? 0.6 : 0.4, 
+            ease: [0.34, 1.56, 0.64, 1]
+          }}
         >
           {/* Card holographic shine */}
           <motion.div
@@ -266,13 +270,7 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
             }}
             initial={{ x: "-150%" }}
             animate={isRevealed ? { x: "150%" } : { x: "-150%" }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "easeInOut" }}
-          />
-
-          {/* Card inner border */}
-          <div 
-            className="absolute inset-2 rounded-md border-2 pointer-events-none"
-            style={{ borderColor: team.secondary + "40" }}
+            transition={{ duration: 0.8, delay: 0.3, ease: "easeInOut" }}
           />
 
           {/* Card content */}
@@ -287,30 +285,23 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
 
             {/* Team logo circle */}
             <motion.div
-              className="relative w-16 h-16 rounded-full flex items-center justify-center mb-3"
+              className="relative w-14 h-14 rounded-full flex items-center justify-center mb-2"
               style={{ 
                 backgroundColor: team.secondary,
-                boxShadow: `0 6px 20px ${team.color}50, inset 0 -3px 6px rgba(0,0,0,0.2)`,
+                boxShadow: `0 6px 20px ${team.color}50`,
               }}
               initial={{ scale: 0, rotate: -180 }}
-              animate={isRevealed ? { scale: 1, rotate: 0 } : { scale: 0.5, rotate: -90 }}
+              animate={isRevealed ? { scale: 1, rotate: 0 } : isOpen ? { scale: 0.8, rotate: -45 } : { scale: 0, rotate: -180 }}
               transition={{ 
-                delay: isRevealed ? 0.15 : 0,
+                delay: isRevealed ? 0.2 : 0,
                 type: "spring", 
                 stiffness: 200,
                 damping: 15
               }}
             >
-              <span className="text-2xl font-black" style={{ color: team.color }}>
+              <span className="text-xl font-black" style={{ color: team.color }}>
                 {team.name.slice(0, 2).toUpperCase()}
               </span>
-              {/* Glossy overlay */}
-              <div 
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%)",
-                }}
-              />
             </motion.div>
 
             {/* Team name */}
@@ -318,14 +309,14 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
               className="text-center"
               initial={{ opacity: 0, y: 15 }}
               animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
+              transition={{ delay: 0.35, duration: 0.4 }}
             >
               <p className="text-[10px] font-semibold text-white/80 uppercase tracking-wider">
                 {(team as typeof teams[0]).city || ""}
               </p>
-              <h3 className="text-white font-black text-xl tracking-wide drop-shadow-lg">
+              <p className="text-white font-black text-lg tracking-wide drop-shadow-lg">
                 {team.name.toUpperCase()}
-              </h3>
+              </p>
               <p className="text-[9px] mt-0.5 font-semibold tracking-widest" style={{ color: team.secondary }}>
                 NFL 2024
               </p>
