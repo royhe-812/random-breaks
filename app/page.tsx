@@ -124,24 +124,24 @@ export default function AnimationShowcase() {
         </div>
       </div>
 
-      {/* Chat Messages */}
-      <div className="absolute left-4 bottom-64 z-20 space-y-2 max-w-[250px]">
-        <div className="flex items-start gap-2">
-          <span className="text-white/60 text-sm">johnpleys</span>
-        </div>
-        <div className="text-white/80 text-sm italic">Gotta try to hit this one! Love M...</div>
-        <div className="mt-2">
-          <span className="text-yellow-400 font-semibold text-sm">Chloepulls11</span>
-          <p className="text-white text-sm">These are so hot, get your bids in! 🤟🔥</p>
-        </div>
-        <div className="mt-2">
-          <span className="text-white font-semibold text-sm">chrisjames</span>
-          <p className="text-white/80 text-sm">So sick</p>
-        </div>
-      </div>
-
-      {/* Bottom UI Stack - Comment, Spinner, Auction Card */}
+      {/* Bottom UI Stack - Chat, Comment, Spinner, Auction Card */}
       <div className="absolute left-4 right-4 bottom-4 z-20 flex flex-col gap-3">
+        {/* Chat Messages */}
+        <div className="space-y-1.5 max-w-[280px]">
+          <div className="flex items-start gap-2">
+            <span className="text-white/60 text-sm">johnpleys</span>
+            <span className="text-white/80 text-sm italic">Gotta try to hit this one! Love M...</span>
+          </div>
+          <div>
+            <span className="text-yellow-400 font-semibold text-sm">Chloepulls11</span>
+            <span className="text-white text-sm ml-1">These are so hot, get your bids in!</span>
+          </div>
+          <div>
+            <span className="text-white font-semibold text-sm">chrisjames</span>
+            <span className="text-white/80 text-sm ml-1">So sick</span>
+          </div>
+        </div>
+
         {/* Comment Input */}
         <div className="flex items-center bg-black/40 backdrop-blur rounded-full px-4 py-3">
           <span className="text-white/50 text-sm flex-1">Add comment...</span>
@@ -162,7 +162,12 @@ export default function AnimationShowcase() {
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-green-400 font-semibold text-sm">Random team</span>
+                <span 
+                  className="font-semibold text-sm"
+                  style={{ color: selectedTeam ? selectedTeam.color : '#4ade80' }}
+                >
+                  {selectedTeam ? selectedTeam.name : 'Random team'}
+                </span>
                 <span className="text-white/60 text-sm">- 16X 2023 Panini Mosaic NFL Blaster Random #224</span>
               </div>
               <div className="flex items-center gap-2">
