@@ -7,7 +7,6 @@ import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
 import { MysteryBoxReveal } from "@/components/animations/mystery-box-reveal"
 import { ParticleAssemblyReveal } from "@/components/animations/particle-assembly-reveal"
 import { SealBreakReveal } from "@/components/animations/seal-break-reveal"
-import { EbayLiveBackground } from "@/components/ebay-live-background"
 import { AnimatePresence, motion } from "framer-motion"
 
 type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "seal-break"
@@ -59,13 +58,9 @@ export default function AnimationShowcase() {
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      {/* eBay Live Stream Background */}
-      <EbayLiveBackground 
-        onTriggerReveal={handleReveal}
-        isRevealing={isRevealing}
-      >
-        {/* Animation Overlay */}
+    <div className="relative w-full h-screen overflow-hidden bg-neutral-900">
+      {/* Animation Overlay */}
+      <div className="absolute inset-0 flex items-center justify-center z-20">
         <AnimatePresence>
           {isRevealing && (
             <motion.div
@@ -93,7 +88,18 @@ export default function AnimationShowcase() {
             </motion.div>
           )}
         </AnimatePresence>
-      </EbayLiveBackground>
+      </div>
+
+      {/* Trigger Button */}
+      <div className="absolute bottom-8 left-4 right-4 z-30">
+        <button
+          onClick={handleReveal}
+          disabled={isRevealing}
+          className="w-full py-4 bg-green-500 hover:bg-green-600 disabled:bg-green-500/50 text-white font-semibold rounded-xl transition-colors"
+        >
+          {isRevealing ? "Revealing..." : "Reveal Team"}
+        </button>
+      </div>
 
       {/* Animation Style Picker - Always Visible */}
       <motion.div
@@ -129,23 +135,6 @@ export default function AnimationShowcase() {
         </div>
       </motion.div>
 
-      {/* Instructions overlay when not revealing */}
-      <AnimatePresence>
-        {!isRevealing && (
-          <motion.div
-            className="absolute bottom-52 left-4 right-4 z-30 pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="bg-green-500/20 backdrop-blur border border-green-500/30 rounded-xl p-3 text-center">
-              <p className="text-green-400 text-sm font-medium">
-                Press the green &quot;Bid&quot; button to trigger the winning moment animation
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   )
 }
