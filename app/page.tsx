@@ -150,8 +150,8 @@ export default function AnimationShowcase() {
           <Heart className="w-5 h-5 text-red-500 fill-red-500" />
         </div>
 
-        {/* Team Spinner with Spots Available - hidden for slot machine */}
-        {selectedAnimation !== "slot-machine" && (
+        {/* Team Spinner with Spots Available - hidden for slot machine and battle */}
+        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={16}
@@ -200,8 +200,8 @@ export default function AnimationShowcase() {
             </button>
             <button 
               onClick={() => {
-                if (selectedAnimation === "slot-machine") {
-                  // For slot machine, bid directly triggers the reveal
+                if (selectedAnimation === "slot-machine" || selectedAnimation === "battle") {
+                  // For slot machine and battle, bid directly triggers the reveal
                   setIsRevealing(true)
                   setKey(prev => prev + 1)
                 } else {

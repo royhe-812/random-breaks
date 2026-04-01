@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 
@@ -30,43 +30,114 @@ interface BattleRevealProps {
   team?: Team | null
 }
 
-export function BattleReveal({ isRevealing, onComplete, team: propTeam }: BattleRevealProps) {
-  const [phase, setPhase] = useState<"idle" | "enter" | "clash" | "battle" | "deciding" | "winner">("idle")
+export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
+  const [phase, setPhase] = useState<"idle" | "spinning" | "narrowing" | "enter" | "clash" | "battle" | "deciding" | "winner">("idle")
+  const [spinningIndex, setSpinningIndex] = useState(0)
+  const [spinSpeed, setSpinSpeed] = useState(80)
+  const audioContextRef = useRef<AudioContext | null>(null)
   
-  // Pick two teams - winner is the prop team, opponent is random
-  const [team1, team2] = useMemo(() => {
-    const winner = propTeam || teams[0]
-    const otherTeams = teams.filter(t => t.name !== winner.name)
-    const opponent = otherTeams[Math.floor(Math.random() * otherTeams.length)]
-    return [winner, opponent]
-  }, [propTeam])
-  
-  // Winner is always team1 (the passed in team)
-  const winner = team1
+  // Randomly select two teams that will battle and a winner
+  const [team1, team2, winner] = useMemo(() => {
+    const shuffled = [...teams].sort(() => Math.random() - 0.5)
+    const t1 = shuffled[0]
+    const t2 = shuffled[1]
+    const winnerTeam = Math.random() > 0.5 ? t1 : t2
+    return [t1, t2, winnerTeam]
+  }, [isRevealing])
+
+  // Play tick sound
+  const playTickSound = () => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+      }
+      const ctx = audioContextRef.current
+      if (ctx.state === 'suspended') {
+        ctx.resume()
+      }
+      
+      const oscillator = ctx.createOscillator()
+      const gainNode = ctx.createGain()
+      
+      oscillator.connect(gainNode)
+      gainNode.connect(ctx.destination)
+      
+      oscillator.frequency.setValueAtTime(1200, ctx.currentTime)
+      oscillator.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.03)
+      oscillator.type = 'square'
+      
+      gainNode.gain.setValueAtTime(0.12, ctx.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04)
+      
+      oscillator.start(ctx.currentTime)
+      oscillator.stop(ctx.currentTime + 0.04)
+    } catch {
+      // Silently fail
+    }
+  }
+
+  // Spinning team names effect
+  useEffect(() => {
+    if (phase !== "spinning") return
+    
+    const interval = setInterval(() => {
+      setSpinningIndex(prev => (prev + 1) % teams.length)
+      playTickSound()
+    }, spinSpeed)
+    
+    return () => clearInterval(interval)
+  }, [phase, spinSpeed])
+
+  // Slow down spinning
+  useEffect(() => {
+    if (phase !== "spinning") return
+    
+    const slowDown = setInterval(() => {
+      setSpinSpeed(prev => {
+        if (prev >= 300) {
+          clearInterval(slowDown)
+          return prev
+        }
+        return prev + 30
+      })
+    }, 200)
+    
+    return () => clearInterval(slowDown)
+  }, [phase])
 
   useEffect(() => {
     if (isRevealing) {
       setPhase("idle")
+      setSpinSpeed(80)
+      setSpinningIndex(0)
+      
+      // Phase 0: Start spinning through team names
+      const spinTimer = setTimeout(() => setPhase("spinning"), 100)
+      
+      // Phase 0.5: Show "narrowing down" - stops on two teams
+      const narrowTimer = setTimeout(() => setPhase("narrowing"), 2000)
       
       // Phase 1: Cards enter from sides
-      const enterTimer = setTimeout(() => setPhase("enter"), 100)
+      const enterTimer = setTimeout(() => setPhase("enter"), 2800)
       
       // Phase 2: Cards clash in middle
-      const clashTimer = setTimeout(() => setPhase("clash"), 800)
+      const clashTimer = setTimeout(() => setPhase("clash"), 3500)
       
       // Phase 3: Battle with energy effects
-      const battleTimer = setTimeout(() => setPhase("battle"), 1200)
+      const battleTimer = setTimeout(() => setPhase("battle"), 3900)
       
       // Phase 4: Deciding moment - rapid switching highlight
-      const decidingTimer = setTimeout(() => setPhase("deciding"), 2200)
+      const decidingTimer = setTimeout(() => setPhase("deciding"), 4900)
       
       // Phase 5: Winner revealed
       const winnerTimer = setTimeout(() => {
         setPhase("winner")
         onComplete()
-      }, 3200)
+      }, 5900)
 
       return () => {
+        clearTimeout(spinTimer)
+        clearTimeout(narrowTimer)
         clearTimeout(enterTimer)
         clearTimeout(clashTimer)
         clearTimeout(battleTimer)
@@ -78,11 +149,96 @@ export function BattleReveal({ isRevealing, onComplete, team: propTeam }: Battle
 
   if (!isRevealing && phase === "idle") return null
 
+  const currentSpinTeam = teams[spinningIndex]
+
   return (
     <div className="relative flex flex-col items-center justify-center">
-      {/* VS Badge */}
+      {/* Spinning Phase - Team names cycling */}
       <AnimatePresence>
-        {(phase === "clash" || phase === "battle" || phase === "deciding") && (
+        {(phase === "spinning" || phase === "narrowing") && (
+          <motion.div
+            className="flex flex-col items-center"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8, y: -50 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.p
+              className="text-white/60 text-sm mb-4 uppercase tracking-widest"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              {phase === "spinning" ? "Selecting teams..." : "Narrowing down..."}
+            </motion.p>
+            
+            {/* Spinning team display */}
+            <motion.div
+              className="relative w-64 h-24 rounded-2xl overflow-hidden"
+              style={{
+                background: `linear-gradient(145deg, ${currentSpinTeam.color}dd, ${currentSpinTeam.color}99)`,
+                boxShadow: `0 0 30px ${currentSpinTeam.color}60`,
+              }}
+              key={spinningIndex}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.05 }}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span 
+                  className="text-4xl font-black text-white drop-shadow-lg"
+                  style={{ textShadow: "0 4px 12px rgba(0,0,0,0.4)" }}
+                >
+                  {currentSpinTeam.name.toUpperCase()}
+                </span>
+              </div>
+              
+              {/* Shine effect */}
+              <motion.div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background: `linear-gradient(105deg, 
+                    transparent 0%,
+                    rgba(255,255,255,0.2) 45%, 
+                    rgba(255,255,255,0.4) 50%,
+                    rgba(255,255,255,0.2) 55%, 
+                    transparent 100%
+                  )`,
+                }}
+                animate={{ x: [-200, 200] }}
+                transition={{ duration: 0.8, repeat: Infinity }}
+              />
+            </motion.div>
+
+            {/* Narrowing indicator - shows the two finalists */}
+            {phase === "narrowing" && (
+              <motion.div
+                className="mt-6 flex items-center gap-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <div 
+                  className="px-4 py-2 rounded-lg"
+                  style={{ background: team1.color }}
+                >
+                  <span className="text-white font-bold">{team1.name}</span>
+                </div>
+                <span className="text-yellow-400 font-black text-xl">VS</span>
+                <div 
+                  className="px-4 py-2 rounded-lg"
+                  style={{ background: team2.color }}
+                >
+                  <span className="text-white font-bold">{team2.name}</span>
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* VS Badge - only show after spinning */}
+      <AnimatePresence>
+        {(phase === "clash" || phase === "battle" || phase === "deciding") && phase !== "spinning" && phase !== "narrowing" && (
           <motion.div
             className="absolute z-30"
             initial={{ scale: 0, rotate: -180 }}
@@ -145,8 +301,9 @@ export function BattleReveal({ isRevealing, onComplete, team: propTeam }: Battle
         )}
       </AnimatePresence>
 
-      {/* Battle Container */}
-      <div className="relative flex items-center gap-4">
+      {/* Battle Container - only show after spinning */}
+      {phase !== "spinning" && phase !== "narrowing" && phase !== "idle" && (
+        <div className="relative flex items-center gap-4">
         {/* Team 1 Card - Left */}
         <motion.div
           className="relative"
@@ -204,7 +361,8 @@ export function BattleReveal({ isRevealing, onComplete, team: propTeam }: Battle
             side="right"
           />
         </motion.div>
-      </div>
+        </div>
+      )}
 
       {/* Energy clash effect in battle */}
       <AnimatePresence>
