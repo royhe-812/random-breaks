@@ -311,77 +311,114 @@ export function GiftBoxReveal({ isRevealing, onComplete }: GiftBoxRevealProps) {
               transition={{ duration: 2, repeat: Infinity }}
             />
             
-            {/* Team card/emblem */}
+            {/* Sports Card - Vertical */}
             <motion.div
-              className="relative w-36 h-36 rounded-2xl flex items-center justify-center overflow-hidden"
+              className="relative w-44 h-64 rounded-xl flex flex-col items-center justify-between overflow-hidden p-4"
               style={{
-                background: `linear-gradient(145deg, ${team.color} 0%, ${team.color}cc 100%)`,
+                background: `linear-gradient(165deg, ${team.color} 0%, ${team.color}dd 40%, ${team.color}99 100%)`,
                 boxShadow: `
-                  0 20px 50px ${team.color}60, 
-                  0 0 100px rgba(167,139,250,0.4),
-                  inset 0 -10px 30px rgba(0,0,0,0.2)
+                  0 25px 60px ${team.color}50, 
+                  0 0 80px rgba(167,139,250,0.3),
+                  inset 0 2px 4px rgba(255,255,255,0.2),
+                  inset 0 -10px 30px rgba(0,0,0,0.3)
                 `,
               }}
-              initial={{ rotateY: 180 }}
-              animate={{ rotateY: 0 }}
+              initial={{ rotateY: 180, scale: 0.8 }}
+              animate={{ rotateY: 0, scale: 1 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
             >
-              {/* Holographic shine */}
+              {/* Holographic shine sweep */}
               <motion.div
-                className="absolute inset-0"
+                className="absolute inset-0 pointer-events-none"
                 style={{
-                  background: `linear-gradient(135deg, 
-                    rgba(255,255,255,0.4) 0%, 
-                    transparent 40%, 
-                    rgba(255,255,255,0.1) 60%, 
+                  background: `linear-gradient(105deg, 
+                    transparent 0%,
+                    rgba(255,255,255,0.4) 45%, 
+                    rgba(255,255,255,0.6) 50%,
+                    rgba(255,255,255,0.4) 55%, 
                     transparent 100%
                   )`,
                 }}
-                animate={{ x: [-100, 100] }}
-                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
+                initial={{ x: -200 }}
+                animate={{ x: 200 }}
+                transition={{ duration: 1.2, repeat: Infinity, repeatDelay: 2, ease: "easeInOut" }}
               />
               
-              {/* Inner border */}
+              {/* Card inner border */}
               <div 
-                className="absolute inset-3 rounded-xl border-2"
-                style={{ borderColor: team.secondary + "50" }}
+                className="absolute inset-2 rounded-lg border-2 pointer-events-none"
+                style={{ borderColor: team.secondary + "40" }}
               />
               
-              {/* Team abbreviation */}
-              <motion.span
-                className="text-5xl font-black text-white drop-shadow-lg relative z-10"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.3, type: "spring", stiffness: 300 }}
-              >
-                {team.name.slice(0, 2).toUpperCase()}
-              </motion.span>
+              {/* Top section - Team Logo Area */}
+              <div className="relative w-full flex-1 flex items-center justify-center">
+                {/* Secondary color accent circle */}
+                <div 
+                  className="absolute w-24 h-24 rounded-full opacity-30"
+                  style={{ background: team.secondary }}
+                />
+                {/* Team abbreviation */}
+                <motion.span
+                  className="text-6xl font-black text-white drop-shadow-lg relative z-10"
+                  style={{ textShadow: `0 4px 12px rgba(0,0,0,0.4)` }}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.3, type: "spring", stiffness: 300 }}
+                >
+                  {team.name.slice(0, 2).toUpperCase()}
+                </motion.span>
+              </div>
+              
+              {/* Bottom section - Team Name */}
+              <div className="w-full text-center pb-2">
+                {/* Divider line */}
+                <div 
+                  className="w-3/4 h-0.5 mx-auto mb-3 rounded-full"
+                  style={{ background: `linear-gradient(90deg, transparent, ${team.secondary}, transparent)` }}
+                />
+                {/* Team name on card */}
+                <motion.h3
+                  className="text-2xl font-black text-white tracking-wide"
+                  style={{ textShadow: `0 2px 8px rgba(0,0,0,0.5)` }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  {team.name.toUpperCase()}
+                </motion.h3>
+                {/* Sub text */}
+                <motion.p
+                  className="text-xs mt-1 font-medium tracking-widest"
+                  style={{ color: team.secondary }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  NFL 2024
+                </motion.p>
+              </div>
+              
+              {/* Card corner accents */}
+              <div className="absolute top-3 left-3 w-3 h-3 border-l-2 border-t-2 rounded-tl-sm" style={{ borderColor: team.secondary + "60" }} />
+              <div className="absolute top-3 right-3 w-3 h-3 border-r-2 border-t-2 rounded-tr-sm" style={{ borderColor: team.secondary + "60" }} />
+              <div className="absolute bottom-3 left-3 w-3 h-3 border-l-2 border-b-2 rounded-bl-sm" style={{ borderColor: team.secondary + "60" }} />
+              <div className="absolute bottom-3 right-3 w-3 h-3 border-r-2 border-b-2 rounded-br-sm" style={{ borderColor: team.secondary + "60" }} />
             </motion.div>
             
-            {/* Team name */}
-            <motion.h3
-              className="mt-6 text-4xl font-black text-white drop-shadow-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              {team.name}
-            </motion.h3>
-            
-            {/* Fire icons flanking */}
+            {/* Fire icons below card */}
             <motion.div
-              className="flex items-center gap-4 mt-3"
+              className="flex items-center gap-3 mt-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
             >
-              <div className="relative w-8 h-8">
+              <div className="relative w-7 h-7">
                 <Image src={FIRE_URL} alt="" fill className="object-contain" />
               </div>
-              <p className="text-violet-300 text-sm font-medium">
-                Gift Unlocked!
+              <p className="text-violet-300 text-sm font-semibold tracking-wide">
+                UNLOCKED
               </p>
-              <div className="relative w-8 h-8">
+              <div className="relative w-7 h-7">
                 <Image src={FIRE_URL} alt="" fill className="object-contain" />
               </div>
             </motion.div>
