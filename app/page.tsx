@@ -1,7 +1,7 @@
 "use client"
 
 // React
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 // External
 import { AnimatePresence, motion } from "framer-motion"
@@ -33,6 +33,24 @@ const animations: { id: AnimationType; name: string }[] = [
   { id: "carousel", name: "Carousel" },
 ]
 
+const chatMessages = [
+  { user: "johnpleys", message: "Gotta try to hit this one! Love Mosaic", color: "text-white/60" },
+  { user: "Chloepulls11", message: "These are so hot, get your bids in!", color: "text-yellow-400" },
+  { user: "chrisjames", message: "So sick", color: "text-white" },
+  { user: "cardking99", message: "GL everyone!", color: "text-blue-400" },
+  { user: "packripperz", message: "Who got the Burrow last break?", color: "text-purple-400" },
+  { user: "sportsfan22", message: "Need that Stroud auto", color: "text-green-400" },
+  { user: "rookie_hunter", message: "Herbert please!", color: "text-orange-400" },
+  { user: "bigpulls", message: "Let's gooo", color: "text-pink-400" },
+  { user: "cardcollector", message: "Anyone hit a case hit yet?", color: "text-cyan-400" },
+  { user: "mikibreaks", message: "Just got the Cowboys, hyped!", color: "text-blue-400" },
+  { user: "nfl_cards", message: "Mahomes would be insane", color: "text-red-400" },
+  { user: "boxbreaker", message: "Love these random breaks", color: "text-yellow-400" },
+  { user: "pullemall", message: "Chiefs or Eagles plz", color: "text-green-400" },
+  { user: "firstroundpick", message: "Mosaic hits different", color: "text-purple-400" },
+  { user: "cardfiend", message: "What's the case hit?", color: "text-white" },
+]
+
 export default function AnimationShowcase() {
   const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("card-flip")
   const [isRevealing, setIsRevealing] = useState(false)
@@ -40,6 +58,21 @@ export default function AnimationShowcase() {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
   const [hasWon, setHasWon] = useState(false)
+  const [visibleMessages, setVisibleMessages] = useState(chatMessages.slice(0, 3))
+  const messageIndexRef = useRef(3)
+
+  // Rotate chat messages to feel alive
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisibleMessages(prev => {
+        const newMessages = [...prev.slice(1)]
+        newMessages.push(chatMessages[messageIndexRef.current % chatMessages.length])
+        messageIndexRef.current++
+        return newMessages
+      })
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [])
 
   // Reset auction state when switching animation concepts
   useEffect(() => {
@@ -153,18 +186,21 @@ export default function AnimationShowcase() {
       <div className="absolute left-4 right-4 bottom-4 z-20 flex flex-col gap-3">
         {/* Chat Messages */}
         <div className="space-y-1.5 max-w-[280px]">
-          <div className="flex items-start gap-2">
-            <span className="text-white/60 text-sm">johnpleys</span>
-            <span className="text-white/80 text-sm italic">Gotta try to hit this one! Love M...</span>
-          </div>
-          <div>
-            <span className="text-yellow-400 font-semibold text-sm">Chloepulls11</span>
-            <span className="text-white text-sm ml-1">These are so hot, get your bids in!</span>
-          </div>
-          <div>
-            <span className="text-white font-semibold text-sm">chrisjames</span>
-            <span className="text-white/80 text-sm ml-1">So sick</span>
-          </div>
+          <AnimatePresence mode="popLayout">
+            {visibleMessages.map((msg, index) => (
+              <motion.div
+                key={`${msg.user}-${msg.message}-${index}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                layout
+              >
+                <span className={`${msg.color} font-semibold text-sm`}>{msg.user}</span>
+                <span className="text-white/80 text-sm ml-1">{msg.message}</span>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
 
         {/* Comment Input */}
