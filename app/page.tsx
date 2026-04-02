@@ -1,6 +1,6 @@
 "use client"
 
-// eBay Live Case Break Animation Showcase - v5
+// eBay Live Case Break Animation Showcase - v6
 import { useState, useCallback } from "react"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
@@ -170,19 +170,17 @@ export default function AnimationShowcase() {
         {/* Auction Card */}
         <div className="bg-zinc-900/95 backdrop-blur rounded-2xl p-4">
           <div className="flex items-start justify-between mb-2">
-            <div className="flex-1">
-              <div className="flex items-start gap-1 mb-1">
-                <span className="font-semibold text-sm text-white">
-                  {selectedTeam ? selectedTeam.name : 'Random team'}
-                </span>
-                <span className="text-white/50 text-sm">- 16X 2023 Panini Mosaic NFL Blaster Random #224</span>
-              </div>
+            <div className="flex-1 pr-2">
+              <p className="text-sm text-white mb-1 line-clamp-2">
+                <span className="font-semibold">{selectedTeam ? selectedTeam.name : 'Random team'}</span>
+                <span className="text-white/50"> - 16X 2023 Panini Mosaic NFL Blaster Random #224</span>
+              </p>
               <div className="flex items-center gap-2">
                 <span className="text-white font-bold text-lg">$28.00</span>
                 <span className="text-green-400 text-sm">+ $5 shipping</span>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-white/40 mt-1" />
+            <ChevronRight className="w-5 h-5 text-white/40 mt-1 flex-shrink-0" />
           </div>
           
           <div className="flex items-center justify-between mb-3">
