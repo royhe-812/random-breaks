@@ -1,8 +1,13 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+// React
+import { useCallback, useEffect, useState } from "react"
+
+// External
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight, Star, ChevronsRight } from "lucide-react"
+import { ChevronDown, ChevronRight, ChevronsRight, Heart, LayoutGrid, MoreHorizontal, Star, Wallet } from "lucide-react"
+
+// Internal
 import { TeamSpinner, type Team } from "@/components/team-spinner"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
