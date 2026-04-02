@@ -140,57 +140,56 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
     }
   }, [phase, onComplete])
 
-  // Get visible cards (5 cards: 2 left, center, 2 right)
-  const getVisibleCards = () => {
-    const cards = []
-    for (let i = -2; i <= 2; i++) {
-      const index = (currentIndex + i + teams.length) % teams.length
-      cards.push({ team: teams[index], position: i })
-    }
-    return cards
-  }
-
-  const visibleCards = getVisibleCards()
   const selectedTeam = teams[currentIndex]
+  
+  // Use only 8 cards in the 3D ring for better spacing
+  const cardsInRing = 8
+  const anglePerCard = 360 / cardsInRing
+  const radius = 220 // Distance from center
+  
+  // Calculate rotation based on current index
+  const rotation = -currentIndex * anglePerCard
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] relative">
-      {/* Horizontal Carousel - centered vertically */}
-      <div className="relative h-52 w-full flex items-center justify-center overflow-hidden">
-        {/* Cards container */}
-        <div className="relative flex items-center justify-center">
-          {visibleCards.map(({ team, position }) => {
-            const isCenter = position === 0
-            const absPos = Math.abs(position)
+      {/* 3D Carousel Ring */}
+      <div 
+        className="relative h-56 w-full flex items-center justify-center"
+        style={{ perspective: "1000px" }}
+      >
+        {/* Rotating container */}
+        <div
+          className="relative w-32 h-44 flex items-center justify-center"
+          style={{
+            transformStyle: "preserve-3d",
+            transform: `rotateY(${rotation}deg)`,
+            transition: phase === "spinning" ? "transform 0.08s linear" : 
+                       phase === "slowing" ? `transform ${speed / 1000}s ease-out` :
+                       "transform 0.4s ease-out",
+          }}
+        >
+          {/* Cards arranged in a circle */}
+          {Array.from({ length: cardsInRing }).map((_, i) => {
+            const team = teams[i % teams.length]
+            const angle = i * anglePerCard
+            const isFront = Math.abs(((currentIndex % cardsInRing) - i + cardsInRing) % cardsInRing) === 0 ||
+                           Math.abs(((currentIndex % cardsInRing) - i + cardsInRing) % cardsInRing) === cardsInRing
             
-            // Simple horizontal positioning with scale
-            const translateX = position * 90
-            const scale = isCenter ? 1.15 : 0.8 - absPos * 0.1
-            const cardOpacity = isCenter ? 1 : 0.5 - absPos * 0.15
-            const zIndex = 10 - absPos
-
             return (
-              <motion.div
-                key={`${team.name}-${position}`}
-                className="absolute"
-                animate={{
-                  x: translateX,
-                  scale,
-                  opacity: cardOpacity,
+              <div
+                key={i}
+                className="absolute w-32 h-44"
+                style={{
+                  transform: `rotateY(${angle}deg) translateZ(${radius}px)`,
+                  backfaceVisibility: "hidden",
                 }}
-                transition={{
-                  type: "tween",
-                  ease: "easeInOut",
-                  duration: 0.15,
-                }}
-                style={{ zIndex }}
               >
                 {/* Card */}
                 <div
-                  className="w-28 h-40 rounded-xl flex flex-col items-center justify-center relative overflow-hidden"
+                  className="w-full h-full rounded-xl flex flex-col items-center justify-center relative overflow-hidden"
                   style={{
                     background: `linear-gradient(145deg, ${team.color} 0%, ${team.color}dd 100%)`,
-                    boxShadow: isCenter && (phase === "stopped" || phase === "revealed")
+                    boxShadow: isFront && (phase === "stopped" || phase === "revealed")
                       ? `0 0 50px ${team.color}80, 0 0 80px ${team.color}40, 0 20px 40px rgba(0,0,0,0.5)`
                       : `0 10px 25px rgba(0,0,0,0.4)`,
                   }}
@@ -204,18 +203,18 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
                   />
                   
                   {/* Team initials */}
-                  <span className="text-3xl font-black text-white drop-shadow-lg relative z-10">
+                  <span className="text-4xl font-black text-white drop-shadow-lg relative z-10">
                     {team.name.slice(0, 2).toUpperCase()}
                   </span>
                   
                   {/* Team name */}
-                  <span className="text-xs font-semibold text-white/90 mt-2 relative z-10">
+                  <span className="text-sm font-semibold text-white/90 mt-2 relative z-10">
                     {team.name}
                   </span>
                   
                   {/* Secondary color accent */}
                   <div
-                    className="absolute bottom-0 left-0 right-0 h-2"
+                    className="absolute bottom-0 left-0 right-0 h-3"
                     style={{ backgroundColor: team.secondary }}
                   />
                   
@@ -225,7 +224,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
                     style={{ backgroundColor: team.secondary }}
                   />
                 </div>
-              </motion.div>
+              </div>
             )
           })}
         </div>
@@ -240,7 +239,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
               exit={{ opacity: 0 }}
             >
               <div
-                className="w-40 h-48 rounded-2xl"
+                className="w-44 h-52 rounded-2xl"
                 style={{
                   background: `radial-gradient(circle, ${selectedTeam.color}50 0%, ${selectedTeam.color}20 40%, transparent 70%)`,
                   filter: "blur(20px)",
@@ -255,7 +254,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
       <AnimatePresence>
         {phase === "revealed" && (
           <motion.div
-            className="mt-6 text-center"
+            className="mt-4 text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, ease: "easeOut" }}
@@ -276,7 +275,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
       {/* Status indicator while spinning */}
       {phase !== "revealed" && phase !== "idle" && (
         <motion.div
-          className="mt-6 text-white/50 text-sm"
+          className="mt-4 text-white/50 text-sm"
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 1, repeat: Infinity }}
         >
