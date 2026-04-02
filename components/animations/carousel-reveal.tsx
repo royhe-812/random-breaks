@@ -1,6 +1,5 @@
 "use client"
 
-import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect, useRef } from "react"
 
 const teams = [
@@ -12,30 +11,6 @@ const teams = [
   { name: "49ers", city: "San Francisco", color: "#AA0000", secondary: "#B3995D" },
   { name: "Bills", city: "Buffalo", color: "#00338D", secondary: "#C60C30" },
   { name: "Dolphins", city: "Miami", color: "#008E97", secondary: "#FC4C02" },
-  { name: "Ravens", city: "Baltimore", color: "#241773", secondary: "#9E7C0C" },
-  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", secondary: "#000000" },
-  { name: "Browns", city: "Cleveland", color: "#311D00", secondary: "#FF3C00" },
-  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", secondary: "#101820" },
-  { name: "Texans", city: "Houston", color: "#03202F", secondary: "#A71930" },
-  { name: "Colts", city: "Indianapolis", color: "#002C5F", secondary: "#A2AAAD" },
-  { name: "Jaguars", city: "Jacksonville", color: "#101820", secondary: "#D7A22A" },
-  { name: "Titans", city: "Tennessee", color: "#0C2340", secondary: "#4B92DB" },
-  { name: "Broncos", city: "Denver", color: "#FB4F14", secondary: "#002244" },
-  { name: "Chargers", city: "Los Angeles", color: "#0080C6", secondary: "#FFC20E" },
-  { name: "Raiders", city: "Las Vegas", color: "#000000", secondary: "#A5ACAF" },
-  { name: "Jets", city: "New York", color: "#125740", secondary: "#000000" },
-  { name: "Giants", city: "New York", color: "#0B2265", secondary: "#A71930" },
-  { name: "Commanders", city: "Washington", color: "#5A1414", secondary: "#FFB612" },
-  { name: "Bears", city: "Chicago", color: "#0B162A", secondary: "#C83803" },
-  { name: "Lions", city: "Detroit", color: "#0076B6", secondary: "#B0B7BC" },
-  { name: "Vikings", city: "Minnesota", color: "#4F2683", secondary: "#FFC62F" },
-  { name: "Falcons", city: "Atlanta", color: "#A71930", secondary: "#000000" },
-  { name: "Panthers", city: "Carolina", color: "#0085CA", secondary: "#101820" },
-  { name: "Saints", city: "New Orleans", color: "#D3BC8D", secondary: "#101820" },
-  { name: "Buccaneers", city: "Tampa Bay", color: "#D50A0A", secondary: "#FF7900" },
-  { name: "Cardinals", city: "Arizona", color: "#97233F", secondary: "#000000" },
-  { name: "Rams", city: "Los Angeles", color: "#003594", secondary: "#FFA300" },
-  { name: "Seahawks", city: "Seattle", color: "#002244", secondary: "#69BE28" },
 ]
 
 interface CarouselRevealProps {
@@ -44,10 +19,9 @@ interface CarouselRevealProps {
 }
 
 export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "stopped" | "revealed">("idle")
-  const [speed, setSpeed] = useState(80)
-  const targetIndexRef = useRef<number | null>(null)
+  const [rotation, setRotation] = useState(0)
+  const [isSpinning, setIsSpinning] = useState(false)
+  const targetRotationRef = useRef(0)
   const audioContextRef = useRef<AudioContext | null>(null)
 
   // Initialize audio context
@@ -76,75 +50,41 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
 
   // Start spinning when isRevealing becomes true
   useEffect(() => {
-    if (isRevealing && phase === "idle") {
-      const randomIndex = Math.floor(Math.random() * teams.length)
-      targetIndexRef.current = randomIndex
-      setPhase("spinning")
-      setSpeed(80)
+    if (isRevealing && !isSpinning) {
+      setIsSpinning(true)
+      
+      // Pick random target card
+      const targetIndex = Math.floor(Math.random() * teams.length)
+      const anglePerCard = 360 / teams.length
+      // Spin multiple rotations plus land on target
+      const spins = 3 + Math.random() * 2 // 3-5 full rotations
+      const targetRotation = (spins * 360) + (targetIndex * anglePerCard)
+      targetRotationRef.current = targetRotation
+      
+      // Animate rotation
+      setRotation(targetRotation)
+      
+      // Play tick sounds during spin
+      let tickCount = 0
+      const maxTicks = 30
+      const tickInterval = setInterval(() => {
+        playTickSound()
+        tickCount++
+        if (tickCount >= maxTicks) {
+          clearInterval(tickInterval)
+        }
+      }, 100)
+      
+      // Call onComplete after spin finishes
+      setTimeout(() => {
+        onComplete(teams[targetIndex])
+      }, 3500)
     }
-  }, [isRevealing, phase])
+  }, [isRevealing, isSpinning, onComplete])
 
-  // Spinning animation
-  useEffect(() => {
-    if (phase === "spinning" || phase === "slowing") {
-      const interval = setInterval(() => {
-        setCurrentIndex(prev => {
-          const next = (prev + 1) % teams.length
-          playTickSound()
-          return next
-        })
-      }, speed)
-
-      return () => clearInterval(interval)
-    }
-  }, [phase, speed])
-
-  // Slow down after spinning for a bit
-  useEffect(() => {
-    if (phase === "spinning") {
-      const timeout = setTimeout(() => {
-        setPhase("slowing")
-      }, 2000)
-      return () => clearTimeout(timeout)
-    }
-  }, [phase])
-
-  // Gradually slow down
-  useEffect(() => {
-    if (phase === "slowing") {
-      const interval = setInterval(() => {
-        setSpeed(prev => {
-          const newSpeed = prev + 40
-          if (newSpeed >= 500) {
-            clearInterval(interval)
-            // Land on target
-            setCurrentIndex(targetIndexRef.current!)
-            setPhase("stopped")
-            return 500
-          }
-          return newSpeed
-        })
-      }, 200)
-      return () => clearInterval(interval)
-    }
-  }, [phase])
-
-  // Call onComplete when stopped (no separate reveal phase)
-  useEffect(() => {
-    if (phase === "stopped") {
-      onComplete(teams[targetIndexRef.current!])
-    }
-  }, [phase, onComplete])
-
-  const selectedTeam = teams[currentIndex]
-  
-  // Use only 8 cards in the 3D ring for better spacing
-  const cardsInRing = 8
+  const cardsInRing = teams.length
   const anglePerCard = 360 / cardsInRing
-  const radius = 220 // Distance from center
-  
-  // Calculate rotation based on current index
-  const rotation = -currentIndex * anglePerCard
+  const radius = 200
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] relative">
@@ -155,21 +95,18 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
       >
         {/* Rotating container */}
         <div
-          className="relative w-32 h-44 flex items-center justify-center"
+          className="relative w-32 h-44"
           style={{
             transformStyle: "preserve-3d",
-            transform: `rotateY(${rotation}deg)`,
-            transition: phase === "spinning" ? "transform 0.08s linear" : 
-                       phase === "slowing" ? `transform ${speed / 1000}s ease-out` :
-                       "transform 0.4s ease-out",
+            transform: `rotateY(${-rotation}deg)`,
+            transition: isSpinning 
+              ? "transform 3.5s cubic-bezier(0.15, 0.6, 0.2, 1)" 
+              : "none",
           }}
         >
           {/* Cards arranged in a circle */}
-          {Array.from({ length: cardsInRing }).map((_, i) => {
-            const team = teams[i % teams.length]
+          {teams.map((team, i) => {
             const angle = i * anglePerCard
-            const isFront = Math.abs(((currentIndex % cardsInRing) - i + cardsInRing) % cardsInRing) === 0 ||
-                           Math.abs(((currentIndex % cardsInRing) - i + cardsInRing) % cardsInRing) === cardsInRing
             
             return (
               <div
@@ -185,9 +122,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
                   className="w-full h-full rounded-xl flex flex-col items-center justify-center relative overflow-hidden"
                   style={{
                     background: `linear-gradient(145deg, ${team.color} 0%, ${team.color}dd 100%)`,
-                    boxShadow: isFront && (phase === "stopped" || phase === "revealed")
-                      ? `0 0 50px ${team.color}80, 0 0 80px ${team.color}40, 0 20px 40px rgba(0,0,0,0.5)`
-                      : `0 10px 25px rgba(0,0,0,0.4)`,
+                    boxShadow: `0 10px 25px rgba(0,0,0,0.4)`,
                   }}
                 >
                   {/* Card shine */}
@@ -224,38 +159,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
             )
           })}
         </div>
-
-        {/* Center glow when stopped */}
-        <AnimatePresence>
-          {phase === "stopped" && (
-            <motion.div
-              className="absolute inset-0 pointer-events-none flex items-center justify-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <div
-                className="w-44 h-52 rounded-2xl"
-                style={{
-                  background: `radial-gradient(circle, ${selectedTeam.color}50 0%, ${selectedTeam.color}20 40%, transparent 70%)`,
-                  filter: "blur(20px)",
-                }}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
-
-      {/* Status indicator while spinning */}
-      {phase !== "stopped" && phase !== "idle" && (
-        <motion.div
-          className="mt-4 text-white/50 text-sm"
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 1, repeat: Infinity }}
-        >
-          Spinning...
-        </motion.div>
-      )}
     </div>
   )
 }
