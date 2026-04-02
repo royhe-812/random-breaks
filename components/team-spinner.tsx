@@ -1,6 +1,6 @@
 "use client"
 
-// Team spinner with wheel click sound - REBUILD v18 - deps verified
+// Team spinner with wheel click sound - CACHE BUST v19
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight } from "lucide-react"
@@ -237,7 +237,7 @@ export function TeamSpinner({
               <motion.button
                 onClick={startSpin}
                 disabled={disabled}
-                className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors ${
+                className={`px-5 py-2.5 rounded-full font-semibold text-sm transition-colors ${
                   disabled 
                     ? 'bg-zinc-700 text-white/40 cursor-not-allowed' 
                     : 'bg-green-500 hover:bg-green-600 text-black'

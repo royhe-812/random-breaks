@@ -1,7 +1,7 @@
 "use client"
 
-// eBay Live Case Break Animation Showcase - REBUILD v11 - all imports verified
-import { useState, useCallback, useEffect } from "react"
+// eBay Live Case Break Animation Showcase - CACHE BUST v12
+import React, { useState, useCallback, useEffect } from "react"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
 import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
