@@ -193,7 +193,7 @@ export function TeamSpinner({
               <motion.div
                 className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-lg relative overflow-hidden"
                 style={{ 
-                  backgroundColor: spinPhase === "idle" ? "#3b82f6" : 
+                  backgroundColor: spinPhase === "idle" ? "#3f3f46" : 
                                    spinPhase === "stopped" ? "#666" : currentTeam.color 
                 }}
                 animate={{
