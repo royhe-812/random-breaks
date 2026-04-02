@@ -1,6 +1,6 @@
 "use client"
 
-// eBay Live Case Break Animation Showcase - v9 - imports fixed
+// eBay Live Case Break Animation Showcase - v10 - useEffect Star ChevronsRight imported
 import { useState, useCallback, useEffect } from "react"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
@@ -226,6 +226,13 @@ export default function AnimationShowcase() {
               onClick={() => {
                 if (!hasWon) {
                   setHasWon(true)
+                  // For slot-machine and battle, trigger reveal after a short delay
+                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle") {
+                    setTimeout(() => {
+                      setIsRevealing(true)
+                      setKey(prev => prev + 1)
+                    }, 1500)
+                  }
                 }
               }}
               disabled={hasWon}

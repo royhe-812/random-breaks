@@ -1,6 +1,6 @@
 "use client"
 
-// Team spinner with wheel click sound - v16 - deps fixed
+// Team spinner with wheel click sound - v17 - spinPhase only dep
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight } from "lucide-react"
