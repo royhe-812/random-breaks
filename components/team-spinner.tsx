@@ -242,7 +242,7 @@ export function TeamSpinner({
               whileHover={disabled || spinPhase !== "idle" ? {} : { scale: 1.02 }}
               whileTap={disabled || spinPhase !== "idle" ? {} : { scale: 0.98 }}
             >
-              {spinPhase === "idle" ? "Tap to spin" : "Spinning"}
+              {spinPhase === "idle" ? "Tap to spin" : spinPhase === "stopped" ? "Revealing..." : "Spinning"}
             </motion.button>
           </div>
 
