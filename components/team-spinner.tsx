@@ -1,11 +1,8 @@
 "use client"
 
-// React hooks
-import { useCallback, useEffect, useRef, useState } from "react"
-// Animation
 import { AnimatePresence, motion } from "framer-motion"
-// Icons - using Dice5 for single die
 import { ChevronRight, Dice5 } from "lucide-react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", color: "#E31837", secondary: "#FFB81C" },

@@ -28,6 +28,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
   const [isSpinning, setIsSpinning] = useState(false)
   const [hasStopped, setHasStopped] = useState(false)
   const [winningTeam, setWinningTeam] = useState(teams[0])
+  const [winningIndex, setWinningIndex] = useState(0)
   const hasStartedRef = useRef(false)
   const audioContextRef = useRef<AudioContext | null>(null)
 
@@ -63,11 +64,14 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
       // Pick random target card
       const targetIndex = Math.floor(Math.random() * teams.length)
       const anglePerCard = 360 / teams.length
-      // Spin multiple rotations plus land on target
-      const spins = 3 + Math.random() * 2 // 3-5 full rotations
+      // To land on a card, we need to rotate so that card faces front (its angle becomes 0)
+      // Card at index i is at angle (i * anglePerCard), so we need to rotate by -(i * anglePerCard)
+      // Plus multiple full rotations for the spinning effect
+      const spins = 3 + Math.floor(Math.random() * 2) // 3-4 full rotations
       const targetRotation = (spins * 360) + (targetIndex * anglePerCard)
       
       setWinningTeam(teams[targetIndex])
+      setWinningIndex(targetIndex)
       
       // Small delay before starting spin
       setTimeout(() => {
@@ -134,7 +138,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
                   className="w-full h-full rounded-xl flex flex-col items-center justify-center relative overflow-hidden"
                   style={{
                     background: `linear-gradient(145deg, ${team.color} 0%, ${team.color}dd 100%)`,
-                    boxShadow: hasStopped && team.name === winningTeam.name
+                    boxShadow: hasStopped && i === winningIndex
                       ? `0 0 60px ${team.color}90, 0 0 100px ${team.color}60, 0 20px 40px rgba(0,0,0,0.5)`
                       : `0 10px 25px rgba(0,0,0,0.4)`,
                   }}

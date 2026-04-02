@@ -1,13 +1,9 @@
 "use client"
 
-// React hooks - useRef for chat message rotation
-import { useCallback, useEffect, useRef, useState } from "react"
-// Animation library
 import { AnimatePresence, motion } from "framer-motion"
-// Icons
 import { ChevronDown, ChevronRight, ChevronsRight, Heart, LayoutGrid, MoreHorizontal, Star, Wallet } from "lucide-react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
-// Internal
 import { TeamSpinner, type Team } from "@/components/team-spinner"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
