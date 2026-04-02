@@ -1,15 +1,8 @@
 "use client"
 
-// React hooks
 import { useState, useCallback, useEffect } from "react"
-
-// Animation library
 import { AnimatePresence, motion } from "framer-motion"
-
-// Icons
 import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight, Star, ChevronsRight } from "lucide-react"
-
-// Components
 import { TeamSpinner, type Team } from "@/components/team-spinner"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
