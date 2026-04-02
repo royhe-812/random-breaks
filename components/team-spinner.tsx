@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronRight, Dices } from "lucide-react"
+import { ChevronRight, Dice5 } from "lucide-react"
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", color: "#E31837", secondary: "#FFB81C" },
@@ -202,7 +202,7 @@ export function TeamSpinner({
                 transition={{ duration: 0.15, ease: "easeInOut" }}
               >
                 {spinPhase === "idle" ? (
-                  <Dices className="w-6 h-6" />
+                  <Dice5 className="w-6 h-6" />
                 ) : spinPhase === "stopped" ? (
                   "?"
                 ) : (
