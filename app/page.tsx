@@ -1,10 +1,10 @@
 "use client"
 
-// React
+// React hooks - useRef for chat message rotation
 import { useCallback, useEffect, useRef, useState } from "react"
-
-// External
+// Animation library
 import { AnimatePresence, motion } from "framer-motion"
+// Icons
 import { ChevronDown, ChevronRight, ChevronsRight, Heart, LayoutGrid, MoreHorizontal, Star, Wallet } from "lucide-react"
 
 // Internal

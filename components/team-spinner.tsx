@@ -1,7 +1,10 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+// React hooks
+import { useCallback, useEffect, useRef, useState } from "react"
+// Animation
+import { AnimatePresence, motion } from "framer-motion"
+// Icons - using Dice5 for single die
 import { ChevronRight, Dice5 } from "lucide-react"
 
 const teams = [
