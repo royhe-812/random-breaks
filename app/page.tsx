@@ -1,7 +1,6 @@
 "use client"
-
-// eBay Live v15 - all imports on single lines
-import React, { useState, useCallback, useEffect } from "react"
+// v16
+import { useState, useCallback, useEffect } from "react"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
 import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"

@@ -88,19 +88,34 @@ export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftB
             animate={
               phase === "shaking"
                 ? { 
-                    rotate: [-2, 2, -2, 2, 0],
-                    y: [0, -5, 0, -3, 0],
+                    rotate: [-3, 3, -3, 3, 0],
+                    y: [0, -8, 0, -5, 0],
                   }
-                : phase === "opening"
-                ? { scale: 1.1 }
                 : {}
             }
             transition={
               phase === "shaking"
-                ? { duration: 0.3, repeat: Infinity }
+                ? { duration: 0.25, repeat: Infinity }
                 : { duration: 0.3 }
             }
+            exit={{ scale: 0.8, opacity: 0, transition: { duration: 0.3 } }}
           >
+            {/* Glow from inside box when opening */}
+            <AnimatePresence>
+              {phase === "opening" && (
+                <motion.div
+                  className="absolute -inset-8 rounded-3xl -z-10"
+                  style={{
+                    background: `radial-gradient(circle, rgba(251,191,36,0.8) 0%, rgba(139,92,246,0.6) 40%, transparent 70%)`,
+                  }}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: [0, 1, 1.2, 1], scale: [0.5, 1, 1.3, 1.5] }}
+                  exit={{ opacity: 0, scale: 2 }}
+                  transition={{ duration: 0.6 }}
+                />
+              )}
+            </AnimatePresence>
+
             {/* Box Base */}
             <motion.div
               className="relative w-40 h-32 rounded-lg"
@@ -108,9 +123,27 @@ export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftB
                 background: `linear-gradient(145deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%)`,
                 boxShadow: phase === "shaking" 
                   ? "0 0 40px rgba(139,92,246,0.6), 0 20px 40px rgba(0,0,0,0.4)"
+                  : phase === "opening"
+                  ? "0 0 60px rgba(251,191,36,0.8), 0 0 100px rgba(139,92,246,0.6)"
                   : "0 20px 40px rgba(0,0,0,0.4), inset 0 -10px 20px rgba(0,0,0,0.2)",
               }}
+              animate={phase === "opening" ? { y: 20 } : {}}
+              transition={{ duration: 0.4 }}
             >
+              {/* Inner glow when opening */}
+              <AnimatePresence>
+                {phase === "opening" && (
+                  <motion.div
+                    className="absolute inset-0 rounded-lg overflow-hidden"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    style={{
+                      background: `linear-gradient(to top, rgba(251,191,36,0.6), rgba(255,255,255,0.4))`,
+                    }}
+                  />
+                )}
+              </AnimatePresence>
+              
               {/* Box shine */}
               <div 
                 className="absolute inset-0 rounded-lg overflow-hidden"
@@ -130,23 +163,28 @@ export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftB
               {/* Question mark */}
               <motion.div 
                 className="absolute inset-0 flex items-center justify-center"
-                animate={phase === "shaking" ? { opacity: [1, 0.5, 1] } : {}}
-                transition={{ duration: 0.2, repeat: Infinity, ease: "easeInOut" }}
+                animate={
+                  phase === "shaking" 
+                    ? { opacity: [1, 0.5, 1], scale: [1, 1.1, 1] } 
+                    : phase === "opening"
+                    ? { opacity: 0, scale: 1.5 }
+                    : {}
+                }
+                transition={{ duration: 0.2, repeat: phase === "shaking" ? Infinity : 0, ease: "easeInOut" }}
               >
                 <span className="text-5xl font-black text-white/30 drop-shadow-lg">?</span>
               </motion.div>
             </motion.div>
 
-            {/* Box Lid */}
+            {/* Box Lid - flies off to the side */}
             <motion.div
-              className="absolute -top-12 left-0 w-40 origin-bottom"
-              style={{ perspective: "500px" }}
+              className="absolute -top-12 left-0 w-40"
               animate={
                 phase === "opening"
-                  ? { rotateX: -120, y: -30 }
+                  ? { y: -80, x: 60, rotate: 25, opacity: 0 }
                   : {}
               }
-              transition={{ duration: 0.5, ease: "easeOut" }}
+              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
               {/* Lid top */}
               <div 
@@ -154,7 +192,6 @@ export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftB
                 style={{
                   background: `linear-gradient(145deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%)`,
                   boxShadow: "0 -4px 20px rgba(0,0,0,0.2)",
-                  transformStyle: "preserve-3d",
                 }}
               >
                 {/* Lid shine */}
@@ -175,7 +212,6 @@ export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftB
                 
                 {/* Bow */}
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2">
-                  {/* Bow loops */}
                   <div className="relative">
                     <div 
                       className="absolute -left-6 top-1 w-8 h-5 rounded-full transform -rotate-30"
@@ -191,7 +227,6 @@ export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftB
                         boxShadow: "inset 2px 2px 4px rgba(255,255,255,0.3)",
                       }}
                     />
-                    {/* Bow center */}
                     <div 
                       className="relative w-5 h-5 rounded-full z-10"
                       style={{
@@ -199,7 +234,6 @@ export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftB
                         boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
                       }}
                     />
-                    {/* Bow tails */}
                     <div 
                       className="absolute top-4 -left-2 w-4 h-8 rounded-b-full transform -rotate-15"
                       style={{
