@@ -169,108 +169,114 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
       </motion.div>
 
       {/* 3D Carousel */}
-      <div className="relative h-56 w-full flex items-center justify-center" style={{ perspective: "1000px" }}>
-        <AnimatePresence mode="popLayout">
+      <div 
+        className="relative h-64 w-full flex items-center justify-center"
+        style={{ perspective: "1200px" }}
+      >
+        <div 
+          className="relative w-full h-full flex items-center justify-center"
+          style={{ transformStyle: "preserve-3d" }}
+        >
           {visibleCards.map(({ team, position }) => {
             const isCenter = position === 0
             const absPos = Math.abs(position)
             
-            // Calculate 3D transforms
-            const rotateY = position * 35
-            const translateX = position * 80
-            const translateZ = isCenter ? 50 : -50 * absPos
-            const scale = isCenter ? 1 : 0.7 - absPos * 0.1
-            const opacity = isCenter ? 1 : 0.5 - absPos * 0.15
+            // Calculate 3D transforms for horizontal carousel
+            const rotateY = position * 45
+            const translateX = position * 120
+            const translateZ = isCenter ? 100 : -80 * absPos
+            const scale = isCenter ? 1.1 : 0.75 - absPos * 0.1
+            const cardOpacity = isCenter ? 1 : 0.6 - absPos * 0.2
             const zIndex = 10 - absPos
 
             return (
               <motion.div
                 key={`${team.name}-${position}`}
                 className="absolute"
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{
-                  rotateY,
-                  x: translateX,
-                  z: translateZ,
-                  scale,
-                  opacity,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 30,
-                }}
+                animate={{ opacity: cardOpacity }}
+                transition={{ duration: 0.15 }}
                 style={{
                   zIndex,
+                  transform: `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
                   transformStyle: "preserve-3d",
+                  transition: "transform 0.15s ease-out",
                 }}
               >
                 {/* Card */}
                 <div
-                  className="w-28 h-40 rounded-xl flex flex-col items-center justify-center relative overflow-hidden"
+                  className="w-32 h-44 rounded-xl flex flex-col items-center justify-center relative overflow-hidden"
                   style={{
                     background: `linear-gradient(145deg, ${team.color} 0%, ${team.color}dd 100%)`,
                     boxShadow: isCenter && (phase === "stopped" || phase === "revealed")
-                      ? `0 0 40px ${team.color}80, 0 20px 40px rgba(0,0,0,0.4)`
-                      : `0 10px 30px rgba(0,0,0,0.3)`,
+                      ? `0 0 60px ${team.color}80, 0 0 100px ${team.color}40, 0 25px 50px rgba(0,0,0,0.5)`
+                      : `0 15px 35px rgba(0,0,0,0.4)`,
+                    backfaceVisibility: "hidden",
                   }}
                 >
                   {/* Card shine */}
                   <div
                     className="absolute inset-0"
                     style={{
-                      background: "linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(255,255,255,0.1) 100%)",
+                      background: "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 40%, rgba(255,255,255,0.1) 100%)",
                     }}
                   />
                   
                   {/* Team initials */}
-                  <span className="text-3xl font-black text-white drop-shadow-lg relative z-10">
+                  <span className="text-4xl font-black text-white drop-shadow-lg relative z-10">
                     {team.name.slice(0, 2).toUpperCase()}
                   </span>
                   
                   {/* Team name */}
-                  <span className="text-xs font-medium text-white/80 mt-2 relative z-10">
+                  <span className="text-sm font-semibold text-white/90 mt-2 relative z-10">
                     {team.name}
                   </span>
                   
                   {/* Secondary color accent */}
                   <div
-                    className="absolute bottom-0 left-0 right-0 h-2"
+                    className="absolute bottom-0 left-0 right-0 h-3"
+                    style={{ backgroundColor: team.secondary }}
+                  />
+                  
+                  {/* Top accent line */}
+                  <div
+                    className="absolute top-0 left-0 right-0 h-1"
                     style={{ backgroundColor: team.secondary }}
                   />
                 </div>
 
-                {/* Reflection */}
+                {/* Reflection - only for center card */}
                 {isCenter && (
                   <div
-                    className="w-28 h-20 mt-2 rounded-xl overflow-hidden"
+                    className="w-32 h-24 mt-1 rounded-xl overflow-hidden pointer-events-none"
                     style={{
-                      background: `linear-gradient(to bottom, ${team.color}40 0%, transparent 100%)`,
-                      transform: "scaleY(-1)",
-                      opacity: 0.3,
-                      filter: "blur(2px)",
+                      background: `linear-gradient(to bottom, ${team.color}50 0%, transparent 100%)`,
+                      transform: "scaleY(-1) rotateX(180deg)",
+                      opacity: 0.35,
+                      filter: "blur(3px)",
+                      maskImage: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)",
+                      WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%)",
                     }}
                   />
                 )}
               </motion.div>
             )
           })}
-        </AnimatePresence>
+        </div>
 
         {/* Center glow when stopped */}
         <AnimatePresence>
           {(phase === "stopped" || phase === "revealed") && (
             <motion.div
-              className="absolute inset-0 pointer-events-none"
+              className="absolute inset-0 pointer-events-none flex items-center justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
               <div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-48 rounded-2xl"
+                className="w-48 h-56 rounded-2xl"
                 style={{
-                  background: `radial-gradient(circle, ${selectedTeam.color}40 0%, transparent 70%)`,
-                  filter: "blur(20px)",
+                  background: `radial-gradient(circle, ${selectedTeam.color}50 0%, ${selectedTeam.color}20 40%, transparent 70%)`,
+                  filter: "blur(25px)",
                 }}
               />
             </motion.div>
