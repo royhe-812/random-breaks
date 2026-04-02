@@ -1,11 +1,14 @@
 "use client"
 
+// React hooks - all required hooks imported
 import { useCallback, useEffect, useRef, useState } from "react"
+
+// External libraries
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, ChevronRight, ChevronsRight, Heart, LayoutGrid, MoreHorizontal, Star, Wallet } from "lucide-react"
-import { TeamSpinner, type Team } from "@/components/team-spinner"
 
-// Animation showcase page
+// Internal components
+import { TeamSpinner, type Team } from "@/components/team-spinner"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
 import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
@@ -228,7 +231,7 @@ export default function AnimationShowcase() {
                 <span className="text-white/50"> - 16X 2023 Panini Mosaic NFL Blaster Random #224</span>
               </p>
               <div className="flex items-center gap-2">
-                <span className="text-white font-bold text-lg">$28.00</span>
+                <span className="text-white font-bold text-lg">{hasWon ? '$30.00' : '$28.00'}</span>
                 <span className="text-green-400 text-sm">+ $5 shipping</span>
               </div>
             </div>

@@ -1,11 +1,11 @@
 "use client"
 
+// Imports
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronRight, Dice5 } from "lucide-react"
 
-// Component for spinning team selection
-
+// NFL teams data
 const teams = [
   { name: "Chiefs", city: "Kansas City", color: "#E31837", secondary: "#FFB81C" },
   { name: "Eagles", city: "Philadelphia", color: "#004C54", secondary: "#A5ACAF" },
@@ -25,6 +25,7 @@ const teams = [
   { name: "Steelers", city: "Pittsburgh", color: "#FFB612", secondary: "#101820" },
 ]
 
+// Types
 export interface Team {
   name: string
   city: string
@@ -42,6 +43,9 @@ interface TeamSpinnerProps {
   username?: string
 }
 
+// Single die icon component
+const DieIcon = Dice5
+
 export function TeamSpinner({ 
   totalSpots, 
   availableSpots, 
@@ -58,7 +62,7 @@ export function TeamSpinner({
   const targetTeamIndexRef = useRef<number | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
 
-  // Play tick sound using Web Audio API - classic wheel clicker sound
+  // Play tick sound using Web Audio API
   const playTickSoundRef = useRef(() => {
     try {
       if (!audioContextRef.current) {
@@ -69,19 +73,16 @@ export function TeamSpinner({
         ctx.resume()
       }
       
-      // Create a short click/tick sound like a wheel peg hitting a flipper
       const oscillator = ctx.createOscillator()
       const gainNode = ctx.createGain()
       
       oscillator.connect(gainNode)
       gainNode.connect(ctx.destination)
       
-      // Higher frequency for a sharper click
       oscillator.frequency.setValueAtTime(1200, ctx.currentTime)
       oscillator.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.03)
       oscillator.type = 'square'
       
-      // Quick attack, fast decay for a click sound
       gainNode.gain.setValueAtTime(0.15, ctx.currentTime)
       gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04)
       
@@ -102,7 +103,6 @@ export function TeamSpinner({
   }, [isSpinning, spinPhase])
 
   const startSpin = useCallback(() => {
-    // Pick a completely random team at the start of the spin
     const randomIndex = Math.floor(Math.random() * teams.length)
     targetTeamIndexRef.current = randomIndex
     setSpinPhase("fast")
@@ -123,7 +123,6 @@ export function TeamSpinner({
 
   useEffect(() => {
     if (spinPhase === "fast") {
-      // Fast phase for 1.5 seconds
       const timer = setTimeout(() => {
         setSpinPhase("slowing")
       }, 1500)
@@ -133,14 +132,12 @@ export function TeamSpinner({
 
   useEffect(() => {
     if (spinPhase === "slowing" && targetTeamIndexRef.current !== null) {
-      // Gradually slow down and land on the pre-selected random team
       const targetIndex = targetTeamIndexRef.current
       const slowdownInterval = setInterval(() => {
         setSpinSpeed(prev => {
           const newSpeed = prev + 30
           if (newSpeed >= 400) {
             clearInterval(slowdownInterval)
-            // Land on the randomly selected target team
             setCurrentTeamIndex(targetIndex)
             setFinalTeamIndex(targetIndex)
             setSpinPhase("stopped")
@@ -153,7 +150,6 @@ export function TeamSpinner({
     }
   }, [spinPhase])
 
-  // Trigger winning moment when finalTeamIndex is set
   useEffect(() => {
     if (finalTeamIndex !== null && spinPhase === "stopped") {
       const timer = setTimeout(() => {
@@ -167,7 +163,6 @@ export function TeamSpinner({
 
   return (
     <div className="w-full">
-      {/* Main Container */}
       <motion.div 
         className="relative bg-black/40 backdrop-blur rounded-xl overflow-hidden"
         animate={{
@@ -177,7 +172,7 @@ export function TeamSpinner({
         }}
         transition={{ duration: 0.2 }}
       >
-        {/* Header Row - Spots Available */}
+        {/* Header Row */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <span className="text-white/70 text-sm">
             {availableSpots}/{totalSpots} spots available
@@ -198,19 +193,16 @@ export function TeamSpinner({
                   backgroundColor: spinPhase === "idle" ? "#3f3f46" : 
                                    spinPhase === "stopped" ? "#666" : currentTeam.color 
                 }}
-                animate={{
-                  scale: 1,
-                }}
+                animate={{ scale: 1 }}
                 transition={{ duration: 0.15, ease: "easeInOut" }}
               >
                 {spinPhase === "idle" ? (
-                  <Dice5 className="w-6 h-6" />
+                  <DieIcon className="w-6 h-6" />
                 ) : spinPhase === "stopped" ? (
                   "?"
                 ) : (
                   currentTeam.name.slice(0, 2).toUpperCase()
                 )}
-                {/* Shimmer effect when stopped */}
                 {spinPhase === "stopped" && (
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
@@ -241,7 +233,7 @@ export function TeamSpinner({
               </div>
             </div>
 
-            {/* Spin Button / Status */}
+            {/* Spin Button */}
             <motion.button
               onClick={spinPhase === "idle" ? startSpin : undefined}
               disabled={disabled || spinPhase !== "idle"}
@@ -256,11 +248,7 @@ export function TeamSpinner({
               {spinPhase === "idle" ? "Tap to spin" : spinPhase === "stopped" ? "Revealing..." : "Spinning"}
             </motion.button>
           </div>
-
-
         </div>
-
-
       </motion.div>
     </div>
   )
