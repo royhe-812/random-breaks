@@ -228,34 +228,39 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
               />
             </motion.div>
             
-            {/* Orbiting holographic particles */}
-            {[...Array(8)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-56 h-56"
-                animate={{ rotate: 360 }}
-                transition={{
-                  duration: 4 + i * 0.5,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-                style={{ transform: `rotate(${i * 45}deg)` }}
-              >
+            {/* Orbiting holographic particles - centered behind logo */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              {[...Array(8)].map((_, i) => (
                 <motion.div
-                  className="absolute w-3 h-3 rounded-full -top-1"
-                  style={{
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    background: i % 2 === 0 
-                      ? "linear-gradient(135deg, #a78bfa, #c4b5fd)" 
-                      : `linear-gradient(135deg, ${team.secondary}, ${team.color})`,
-                    boxShadow: `0 0 10px ${i % 2 === 0 ? "#a78bfa" : team.secondary}`,
+                  key={i}
+                  className="absolute w-40 h-40"
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    duration: 4 + i * 0.5,
+                    repeat: Infinity,
+                    ease: "linear",
                   }}
-                  animate={{ scale: 1.2 }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
-                />
-              </motion.div>
-            ))}
+                  style={{ 
+                    transformOrigin: "center center",
+                  }}
+                >
+                  <motion.div
+                    className="absolute w-3 h-3 rounded-full"
+                    style={{
+                      top: 0,
+                      left: "50%",
+                      transform: `translateX(-50%) rotate(${i * 45}deg)`,
+                      background: i % 2 === 0 
+                        ? "linear-gradient(135deg, #a78bfa, #c4b5fd)" 
+                        : `linear-gradient(135deg, ${team.secondary}, ${team.color})`,
+                      boxShadow: `0 0 10px ${i % 2 === 0 ? "#a78bfa" : team.secondary}`,
+                    }}
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
+                  />
+                </motion.div>
+              ))}
+            </div>
             
             <motion.div
               className="mt-8 text-center"
