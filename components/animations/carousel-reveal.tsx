@@ -1,0 +1,320 @@
+"use client"
+
+import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect, useRef } from "react"
+
+const teams = [
+  { name: "Chiefs", city: "Kansas City", color: "#E31837", secondary: "#FFB81C" },
+  { name: "Eagles", city: "Philadelphia", color: "#004C54", secondary: "#A5ACAF" },
+  { name: "Cowboys", city: "Dallas", color: "#003594", secondary: "#869397" },
+  { name: "Patriots", city: "New England", color: "#002244", secondary: "#C60C30" },
+  { name: "Packers", city: "Green Bay", color: "#203731", secondary: "#FFB612" },
+  { name: "49ers", city: "San Francisco", color: "#AA0000", secondary: "#B3995D" },
+  { name: "Bills", city: "Buffalo", color: "#00338D", secondary: "#C60C30" },
+  { name: "Dolphins", city: "Miami", color: "#008E97", secondary: "#FC4C02" },
+  { name: "Ravens", city: "Baltimore", color: "#241773", secondary: "#9E7C0C" },
+  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", secondary: "#000000" },
+  { name: "Browns", city: "Cleveland", color: "#311D00", secondary: "#FF3C00" },
+  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", secondary: "#101820" },
+  { name: "Texans", city: "Houston", color: "#03202F", secondary: "#A71930" },
+  { name: "Colts", city: "Indianapolis", color: "#002C5F", secondary: "#A2AAAD" },
+  { name: "Jaguars", city: "Jacksonville", color: "#101820", secondary: "#D7A22A" },
+  { name: "Titans", city: "Tennessee", color: "#0C2340", secondary: "#4B92DB" },
+  { name: "Broncos", city: "Denver", color: "#FB4F14", secondary: "#002244" },
+  { name: "Chargers", city: "Los Angeles", color: "#0080C6", secondary: "#FFC20E" },
+  { name: "Raiders", city: "Las Vegas", color: "#000000", secondary: "#A5ACAF" },
+  { name: "Jets", city: "New York", color: "#125740", secondary: "#000000" },
+  { name: "Giants", city: "New York", color: "#0B2265", secondary: "#A71930" },
+  { name: "Commanders", city: "Washington", color: "#5A1414", secondary: "#FFB612" },
+  { name: "Bears", city: "Chicago", color: "#0B162A", secondary: "#C83803" },
+  { name: "Lions", city: "Detroit", color: "#0076B6", secondary: "#B0B7BC" },
+  { name: "Vikings", city: "Minnesota", color: "#4F2683", secondary: "#FFC62F" },
+  { name: "Falcons", city: "Atlanta", color: "#A71930", secondary: "#000000" },
+  { name: "Panthers", city: "Carolina", color: "#0085CA", secondary: "#101820" },
+  { name: "Saints", city: "New Orleans", color: "#D3BC8D", secondary: "#101820" },
+  { name: "Buccaneers", city: "Tampa Bay", color: "#D50A0A", secondary: "#FF7900" },
+  { name: "Cardinals", city: "Arizona", color: "#97233F", secondary: "#000000" },
+  { name: "Rams", city: "Los Angeles", color: "#003594", secondary: "#FFA300" },
+  { name: "Seahawks", city: "Seattle", color: "#002244", secondary: "#69BE28" },
+]
+
+interface CarouselRevealProps {
+  onComplete: (team: typeof teams[0]) => void
+  isRevealing: boolean
+}
+
+export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "stopped" | "revealed">("idle")
+  const [speed, setSpeed] = useState(80)
+  const targetIndexRef = useRef<number | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
+
+  // Initialize audio context
+  useEffect(() => {
+    audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    return () => {
+      audioContextRef.current?.close()
+    }
+  }, [])
+
+  // Play tick sound
+  const playTickSound = () => {
+    if (!audioContextRef.current) return
+    const ctx = audioContextRef.current
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
+    oscillator.frequency.value = 800 + Math.random() * 400
+    oscillator.type = "sine"
+    gainNode.gain.setValueAtTime(0.1, ctx.currentTime)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05)
+    oscillator.start(ctx.currentTime)
+    oscillator.stop(ctx.currentTime + 0.05)
+  }
+
+  // Start spinning when isRevealing becomes true
+  useEffect(() => {
+    if (isRevealing && phase === "idle") {
+      const randomIndex = Math.floor(Math.random() * teams.length)
+      targetIndexRef.current = randomIndex
+      setPhase("spinning")
+      setSpeed(80)
+    }
+  }, [isRevealing, phase])
+
+  // Spinning animation
+  useEffect(() => {
+    if (phase === "spinning" || phase === "slowing") {
+      const interval = setInterval(() => {
+        setCurrentIndex(prev => {
+          const next = (prev + 1) % teams.length
+          playTickSound()
+          return next
+        })
+      }, speed)
+
+      return () => clearInterval(interval)
+    }
+  }, [phase, speed])
+
+  // Slow down after spinning for a bit
+  useEffect(() => {
+    if (phase === "spinning") {
+      const timeout = setTimeout(() => {
+        setPhase("slowing")
+      }, 2000)
+      return () => clearTimeout(timeout)
+    }
+  }, [phase])
+
+  // Gradually slow down
+  useEffect(() => {
+    if (phase === "slowing") {
+      const interval = setInterval(() => {
+        setSpeed(prev => {
+          const newSpeed = prev + 40
+          if (newSpeed >= 500) {
+            clearInterval(interval)
+            // Land on target
+            setCurrentIndex(targetIndexRef.current!)
+            setPhase("stopped")
+            return 500
+          }
+          return newSpeed
+        })
+      }, 200)
+      return () => clearInterval(interval)
+    }
+  }, [phase])
+
+  // Transition to revealed
+  useEffect(() => {
+    if (phase === "stopped") {
+      const timeout = setTimeout(() => {
+        setPhase("revealed")
+        onComplete(teams[targetIndexRef.current!])
+      }, 800)
+      return () => clearTimeout(timeout)
+    }
+  }, [phase, onComplete])
+
+  // Get visible cards (5 cards: 2 left, center, 2 right)
+  const getVisibleCards = () => {
+    const cards = []
+    for (let i = -2; i <= 2; i++) {
+      const index = (currentIndex + i + teams.length) % teams.length
+      cards.push({ team: teams[index], position: i })
+    }
+    return cards
+  }
+
+  const visibleCards = getVisibleCards()
+  const selectedTeam = teams[currentIndex]
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] relative">
+      {/* Winner announcement */}
+      <motion.div
+        className="mb-6 text-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <p className="text-green-400 text-sm font-medium uppercase tracking-wider mb-1">
+          KemMajed90 Won!
+        </p>
+        <p className="text-white/70 text-sm">Your team is...</p>
+      </motion.div>
+
+      {/* 3D Carousel */}
+      <div className="relative h-56 w-full flex items-center justify-center" style={{ perspective: "1000px" }}>
+        <AnimatePresence mode="popLayout">
+          {visibleCards.map(({ team, position }) => {
+            const isCenter = position === 0
+            const absPos = Math.abs(position)
+            
+            // Calculate 3D transforms
+            const rotateY = position * 35
+            const translateX = position * 80
+            const translateZ = isCenter ? 50 : -50 * absPos
+            const scale = isCenter ? 1 : 0.7 - absPos * 0.1
+            const opacity = isCenter ? 1 : 0.5 - absPos * 0.15
+            const zIndex = 10 - absPos
+
+            return (
+              <motion.div
+                key={`${team.name}-${position}`}
+                className="absolute"
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{
+                  rotateY,
+                  x: translateX,
+                  z: translateZ,
+                  scale,
+                  opacity,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                }}
+                style={{
+                  zIndex,
+                  transformStyle: "preserve-3d",
+                }}
+              >
+                {/* Card */}
+                <div
+                  className="w-28 h-40 rounded-xl flex flex-col items-center justify-center relative overflow-hidden"
+                  style={{
+                    background: `linear-gradient(145deg, ${team.color} 0%, ${team.color}dd 100%)`,
+                    boxShadow: isCenter && (phase === "stopped" || phase === "revealed")
+                      ? `0 0 40px ${team.color}80, 0 20px 40px rgba(0,0,0,0.4)`
+                      : `0 10px 30px rgba(0,0,0,0.3)`,
+                  }}
+                >
+                  {/* Card shine */}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(255,255,255,0.1) 100%)",
+                    }}
+                  />
+                  
+                  {/* Team initials */}
+                  <span className="text-3xl font-black text-white drop-shadow-lg relative z-10">
+                    {team.name.slice(0, 2).toUpperCase()}
+                  </span>
+                  
+                  {/* Team name */}
+                  <span className="text-xs font-medium text-white/80 mt-2 relative z-10">
+                    {team.name}
+                  </span>
+                  
+                  {/* Secondary color accent */}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 h-2"
+                    style={{ backgroundColor: team.secondary }}
+                  />
+                </div>
+
+                {/* Reflection */}
+                {isCenter && (
+                  <div
+                    className="w-28 h-20 mt-2 rounded-xl overflow-hidden"
+                    style={{
+                      background: `linear-gradient(to bottom, ${team.color}40 0%, transparent 100%)`,
+                      transform: "scaleY(-1)",
+                      opacity: 0.3,
+                      filter: "blur(2px)",
+                    }}
+                  />
+                )}
+              </motion.div>
+            )
+          })}
+        </AnimatePresence>
+
+        {/* Center glow when stopped */}
+        <AnimatePresence>
+          {(phase === "stopped" || phase === "revealed") && (
+            <motion.div
+              className="absolute inset-0 pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-48 rounded-2xl"
+                style={{
+                  background: `radial-gradient(circle, ${selectedTeam.color}40 0%, transparent 70%)`,
+                  filter: "blur(20px)",
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Team info when revealed */}
+      <AnimatePresence>
+        {phase === "revealed" && (
+          <motion.div
+            className="mt-8 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <p className="text-xs font-semibold text-white/70 uppercase tracking-wider mb-1">
+              {selectedTeam.city}
+            </p>
+            <h3 className="text-2xl font-black text-white drop-shadow-lg">
+              {selectedTeam.name}
+            </h3>
+            <motion.p
+              className="text-green-400 text-xs mt-3 font-medium"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              Your team has been revealed!
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Status indicator */}
+      {phase !== "revealed" && phase !== "idle" && (
+        <motion.div
+          className="mt-6 text-white/50 text-sm"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 1, repeat: Infinity }}
+        >
+          {phase === "spinning" || phase === "slowing" ? "Spinning..." : "Revealing..."}
+        </motion.div>
+      )}
+    </div>
+  )
+}

@@ -1,5 +1,5 @@
 "use client"
-// v16
+// v17 - useEffect and Star are imported below
 import { useState, useCallback, useEffect } from "react"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
@@ -9,11 +9,12 @@ import { ParticleAssemblyReveal } from "@/components/animations/particle-assembl
 import { GiftBoxReveal } from "@/components/animations/gift-box-reveal"
 import { BattleReveal } from "@/components/animations/battle-reveal"
 import { PickCardReveal } from "@/components/animations/pick-card-reveal"
+import { CarouselReveal } from "@/components/animations/carousel-reveal"
 import { TeamSpinner, type Team } from "@/components/team-spinner"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight, Star, ChevronsRight } from "lucide-react"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel"
 
 const animations: { id: AnimationType; name: string }[] = [
   { id: "card-flip", name: "Card Flip" },
@@ -24,6 +25,7 @@ const animations: { id: AnimationType; name: string }[] = [
   { id: "gift-box", name: "Gift Box" },
   { id: "battle", name: "Battle" },
   { id: "pick-card", name: "Pick Card" },
+  { id: "carousel", name: "Carousel" },
 ]
 
 export default function AnimationShowcase() {
@@ -84,6 +86,8 @@ export default function AnimationShowcase() {
         return <BattleReveal key={key} {...props} />
       case "pick-card":
         return <PickCardReveal key={key} {...props} />
+      case "carousel":
+        return <CarouselReveal key={key} isRevealing={isRevealing} onComplete={handleComplete} />
       default:
         return null
     }
@@ -164,8 +168,8 @@ export default function AnimationShowcase() {
           <Heart className="w-5 h-5 text-red-500 fill-red-500" />
         </div>
 
-        {/* Team Spinner with Spots Available - hidden for slot machine and battle */}
-        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && (
+        {/* Team Spinner with Spots Available - hidden for slot machine, battle, and carousel */}
+        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={16}
@@ -226,8 +230,8 @@ export default function AnimationShowcase() {
               onClick={() => {
                 if (!hasWon) {
                   setHasWon(true)
-                  // For slot-machine and battle, trigger reveal after a short delay
-                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle") {
+                  // For slot-machine, battle, and carousel, trigger reveal after a short delay
+                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel") {
                     setTimeout(() => {
                       setIsRevealing(true)
                       setKey(prev => prev + 1)

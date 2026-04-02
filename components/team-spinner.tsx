@@ -1,6 +1,6 @@
 "use client"
 
-// v23
+// v24 - spinPhase is the only dep at line 153
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight } from "lucide-react"
