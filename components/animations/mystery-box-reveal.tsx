@@ -267,62 +267,49 @@ animate={phase === "glowing" ? {
       <AnimatePresence>
         {phase === "revealed" && (
           <motion.div
-            className="flex flex-col items-center relative"
+            className="flex flex-col items-center relative z-10"
             initial={{ scale: 0, y: 50 }}
             animate={{ scale: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
           >
-            {/* Celebration elements */}
-            <CelebrationElements show={true} teamColor={team.color} />
+            {/* Celebration elements - behind everything */}
+            <div className="absolute inset-0 -z-10 pointer-events-none">
+              <CelebrationElements show={true} teamColor={team.color} />
+            </div>
             
             {/* Team logo container */}
             <motion.div
-              className="relative w-32 h-32 rounded-full flex items-center justify-center overflow-hidden"
+              className="relative w-28 h-28 rounded-full flex items-center justify-center"
               style={{
-                background: `linear-gradient(135deg, ${team.color} 0%, ${team.color}cc 100%)`,
-                boxShadow: `0 0 60px ${team.color}60, 0 0 100px rgba(167,139,250,0.3)`,
+                background: team.color,
+                boxShadow: `0 0 40px ${team.color}60`,
               }}
-              animate={{ y: [0, -10, 0] }}
+              animate={{ y: [0, -6, 0] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
               <HolographicShine />
-              <span className="text-5xl font-black text-white relative z-10 drop-shadow-lg">
+              <span className="text-4xl font-black text-white relative z-10 drop-shadow-lg">
                 {team.name.slice(0, 2).toUpperCase()}
               </span>
-              
-              {/* Orbit ring */}
-              <motion.div
-                className="absolute inset-[-12px] rounded-full border-2"
-                style={{ borderColor: "#a78bfa" }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-              >
-                <div 
-                  className="absolute w-4 h-4 rounded-full -top-2 left-1/2 -translate-x-1/2"
-                  style={{ 
-                    background: "linear-gradient(135deg, #a78bfa, #c4b5fd)",
-                    boxShadow: "0 0 10px #a78bfa",
-                  }}
-                />
-              </motion.div>
             </motion.div>
             
+            {/* Team info - clear spacing, high z-index */}
             <motion.div
-              className="mt-8 text-center"
+              className="mt-6 text-center relative z-20"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <p className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+              <p className="text-xs font-semibold text-white/70 uppercase tracking-wider mb-1">
                 {(team as typeof teams[0]).city || ""}
               </p>
-              <h3 className="text-3xl font-black text-white drop-shadow-lg">
+              <p className="text-2xl font-black text-white drop-shadow-lg">
                 {team.name}
-              </h3>
+              </p>
             </motion.div>
             
             <motion.p
-              className="text-violet-300 text-sm mt-2 font-medium"
+              className="text-violet-300 text-xs mt-3 font-medium relative z-20"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}

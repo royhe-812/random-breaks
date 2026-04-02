@@ -1,7 +1,8 @@
 "use client"
 
-// eBay Live Case Break Animation Showcase - CACHE BUST v12
+// eBay Live - v13
 import React, { useState, useCallback, useEffect } from "react"
+// useEffect and Star are imported above
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
 import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
