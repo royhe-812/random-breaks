@@ -1,6 +1,6 @@
 "use client"
 
-// eBay Live Case Break Animation Showcase - v6
+// eBay Live Case Break Animation Showcase - v7 - fixed imports
 import { useState, useCallback } from "react"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
@@ -33,6 +33,7 @@ export default function AnimationShowcase() {
   const [isSpinning, setIsSpinning] = useState(false)
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
+  const [hasWon, setHasWon] = useState(false)
 
   const handleStartSpin = useCallback(() => {
     setIsSpinning(true)
@@ -164,6 +165,7 @@ export default function AnimationShowcase() {
             isSpinning={isSpinning}
             onStartSpin={handleStartSpin}
             onSpinComplete={handleSpinComplete}
+            disabled={!hasWon}
           />
         )}
 
@@ -186,35 +188,53 @@ export default function AnimationShowcase() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-              <span className="text-green-400 font-medium text-sm">Jessica991</span>
-              <span className="text-white/60 text-sm">is winning</span>
+              <span className="text-green-400 font-medium text-sm">
+                {hasWon ? 'KemMajed90' : 'Jessica991'}
+              </span>
+              <span className="text-white/60 text-sm">
+                {hasWon ? 'won' : 'is winning'}
+              </span>
             </div>
             <div className="flex items-center gap-1.5 text-white/50">
               <div className="w-4 h-4 rounded-full border-2 border-white/40 flex items-center justify-center">
                 <div className="w-1 h-1 rounded-full bg-white/40" />
               </div>
-              <span className="font-medium text-sm">00:10</span>
+              <span className="font-medium text-sm">{hasWon ? '00:00' : '00:10'}</span>
             </div>
           </div>
           
           <div className="flex gap-3">
-            <button className="px-5 py-2.5 border border-white/30 rounded-full text-white font-medium text-sm hover:bg-white/10 transition-colors">
+            <button 
+              disabled={hasWon}
+              className={`px-5 py-2.5 border rounded-full font-medium text-sm transition-colors ${
+                hasWon 
+                  ? 'border-white/10 text-white/30 cursor-not-allowed' 
+                  : 'border-white/30 text-white hover:bg-white/10'
+              }`}
+            >
               Max bid
             </button>
             <button 
               onClick={() => {
-                if (selectedAnimation === "slot-machine" || selectedAnimation === "battle") {
-                  setIsRevealing(true)
-                  setKey(prev => prev + 1)
-                } else {
-                  handleReveal()
+                if (!hasWon) {
+                  setHasWon(true)
                 }
               }}
-              disabled={isRevealing}
-              className="flex-1 py-2.5 bg-green-500 hover:bg-green-400 disabled:bg-green-500/50 rounded-full text-black font-semibold text-sm flex items-center justify-center gap-1 transition-colors"
+              disabled={hasWon}
+              className={`flex-1 py-2.5 rounded-full font-semibold text-sm flex items-center justify-center gap-1 transition-colors ${
+                hasWon
+                  ? 'bg-zinc-700 text-white/50 cursor-not-allowed'
+                  : 'bg-green-500 hover:bg-green-400 text-black'
+              }`}
             >
-              <span>Bid $30</span>
-              <ChevronsRight className="w-4 h-4" />
+              {hasWon ? (
+                <span>Sold out</span>
+              ) : (
+                <>
+                  <span>Bid $30</span>
+                  <ChevronsRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </div>
         </div>

@@ -1,6 +1,6 @@
 "use client"
 
-// Team spinner with wheel click sound - v13
+// Team spinner with wheel click sound - v14 - fixed deps
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight } from "lucide-react"
@@ -37,6 +37,7 @@ interface TeamSpinnerProps {
   onSpinComplete: (team: Team) => void
   isSpinning: boolean
   onStartSpin: () => void
+  disabled?: boolean
 }
 
 export function TeamSpinner({ 
@@ -44,7 +45,8 @@ export function TeamSpinner({
   availableSpots, 
   onSpinComplete, 
   isSpinning, 
-  onStartSpin 
+  onStartSpin,
+  disabled = false
 }: TeamSpinnerProps) {
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0)
   const [spinPhase, setSpinPhase] = useState<"idle" | "fast" | "slowing" | "stopped">("idle")
@@ -231,9 +233,14 @@ export function TeamSpinner({
             {spinPhase === "idle" ? (
               <motion.button
                 onClick={startSpin}
-                className="px-5 py-2.5 bg-green-500 hover:bg-green-600 rounded-xl text-black font-semibold text-sm transition-colors"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                disabled={disabled}
+                className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors ${
+                  disabled 
+                    ? 'bg-zinc-700 text-white/40 cursor-not-allowed' 
+                    : 'bg-green-500 hover:bg-green-600 text-black'
+                }`}
+                whileHover={disabled ? {} : { scale: 1.02 }}
+                whileTap={disabled ? {} : { scale: 0.98 }}
               >
                 Spin
               </motion.button>
