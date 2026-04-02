@@ -1,6 +1,6 @@
 "use client"
 
-// Team spinner v21
+// Team spinner v22 - spinPhase deps only
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight } from "lucide-react"

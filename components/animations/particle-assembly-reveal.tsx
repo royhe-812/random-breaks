@@ -195,42 +195,42 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
             />
             
             {/* Logo circle with orbiting particles */}
-            <div className="relative">
-              {/* Orbiting holographic particles - centered behind logo */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
-                <div className="relative w-44 h-44">
-                  {[...Array(8)].map((_, i) => (
+            <div className="relative w-32 h-32 flex items-center justify-center">
+              {/* Orbiting holographic particles - perfectly centered */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-44 h-44 pointer-events-none -z-10">
+                {[...Array(8)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute inset-0"
+                    style={{ transformOrigin: "center center" }}
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 4 + i * 0.5,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  >
                     <motion.div
-                      key={i}
-                      className="absolute inset-0"
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 4 + i * 0.5,
-                        repeat: Infinity,
-                        ease: "linear",
+                      className="absolute w-3 h-3 rounded-full"
+                      style={{
+                        top: 0,
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        background: i % 2 === 0 
+                          ? "linear-gradient(135deg, #a78bfa, #c4b5fd)" 
+                          : `linear-gradient(135deg, ${team.secondary}, ${team.color})`,
+                        boxShadow: `0 0 10px ${i % 2 === 0 ? "#a78bfa" : team.secondary}`,
                       }}
-                    >
-                      <motion.div
-                        className="absolute w-3 h-3 rounded-full left-1/2 -translate-x-1/2"
-                        style={{
-                          top: 0,
-                          background: i % 2 === 0 
-                            ? "linear-gradient(135deg, #a78bfa, #c4b5fd)" 
-                            : `linear-gradient(135deg, ${team.secondary}, ${team.color})`,
-                          boxShadow: `0 0 10px ${i % 2 === 0 ? "#a78bfa" : team.secondary}`,
-                        }}
-                        initial={{ rotate: i * 45 }}
-                        animate={{ scale: [1, 1.3, 1] }}
-                        transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
-                      />
-                    </motion.div>
-                  ))}
-                </div>
+                      animate={{ scale: [1, 1.3, 1] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
+                    />
+                  </motion.div>
+                ))}
               </div>
               
               {/* Logo circle with premium finish */}
               <motion.div
-                className="relative w-32 h-32 rounded-full flex items-center justify-center overflow-hidden"
+                className="absolute inset-0 rounded-full flex items-center justify-center overflow-hidden"
                 style={{
                   background: `linear-gradient(135deg, ${team.color} 0%, ${team.color}dd 100%)`,
                   boxShadow: `

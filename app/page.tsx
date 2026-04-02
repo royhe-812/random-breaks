@@ -1,8 +1,7 @@
 "use client"
 
-// eBay Live Case Break Animation v14
-import React from "react"
-import { useState, useCallback, useEffect } from "react"
+// eBay Live v15 - all imports on single lines
+import React, { useState, useCallback, useEffect } from "react"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
 import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
@@ -13,8 +12,7 @@ import { BattleReveal } from "@/components/animations/battle-reveal"
 import { PickCardReveal } from "@/components/animations/pick-card-reveal"
 import { TeamSpinner, type Team } from "@/components/team-spinner"
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight } from "lucide-react"
-import { Star, ChevronsRight } from "lucide-react"
+import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight, Star, ChevronsRight } from "lucide-react"
 
 type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card"
 
