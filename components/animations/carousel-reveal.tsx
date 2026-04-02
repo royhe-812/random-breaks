@@ -129,14 +129,10 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
     }
   }, [phase])
 
-  // Transition to revealed
+  // Call onComplete when stopped (no separate reveal phase)
   useEffect(() => {
     if (phase === "stopped") {
-      const timeout = setTimeout(() => {
-        setPhase("revealed")
-        onComplete(teams[targetIndexRef.current!])
-      }, 800)
-      return () => clearTimeout(timeout)
+      onComplete(teams[targetIndexRef.current!])
     }
   }, [phase, onComplete])
 
@@ -231,7 +227,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
 
         {/* Center glow when stopped */}
         <AnimatePresence>
-          {(phase === "stopped" || phase === "revealed") && (
+          {phase === "stopped" && (
             <motion.div
               className="absolute inset-0 pointer-events-none flex items-center justify-center"
               initial={{ opacity: 0 }}
@@ -250,36 +246,14 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
         </AnimatePresence>
       </div>
 
-      {/* Team info when revealed */}
-      <AnimatePresence>
-        {phase === "revealed" && (
-          <motion.div
-            className="mt-4 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, ease: "easeOut" }}
-          >
-            <p className="text-green-400 text-sm font-medium uppercase tracking-wider mb-1">
-              KemMajed90 Won!
-            </p>
-            <p className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-1">
-              {selectedTeam.city}
-            </p>
-            <h3 className="text-2xl font-black text-white drop-shadow-lg">
-              {selectedTeam.name}
-            </h3>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Status indicator while spinning */}
-      {phase !== "revealed" && phase !== "idle" && (
+      {phase !== "stopped" && phase !== "idle" && (
         <motion.div
           className="mt-4 text-white/50 text-sm"
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 1, repeat: Infinity }}
         >
-          {phase === "stopped" ? "Revealing..." : "Spinning..."}
+          Spinning...
         </motion.div>
       )}
     </div>
