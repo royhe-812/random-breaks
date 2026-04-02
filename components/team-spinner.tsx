@@ -1,8 +1,10 @@
 "use client"
 
+import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronRight, Dice5 } from "lucide-react"
-import { useCallback, useEffect, useRef, useState } from "react"
+
+// Component for spinning team selection
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", color: "#E31837", secondary: "#FFB81C" },
@@ -234,7 +236,7 @@ export function TeamSpinner({
                   </motion.span>
                 </AnimatePresence>
                 <span className="text-white/50 text-xs">
-                  {username ? `${username}'s Spot` : "Tap to spin"}
+                  {username ? `${username}'s Spot` : "Win bid to spin"}
                 </span>
               </div>
             </div>
