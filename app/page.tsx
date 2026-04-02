@@ -1,7 +1,7 @@
 "use client"
 
 // eBay Live Case Break Animation Showcase - v7 - fixed imports
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
 import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
@@ -34,6 +34,14 @@ export default function AnimationShowcase() {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
   const [hasWon, setHasWon] = useState(false)
+
+  // Reset auction state when switching animation concepts
+  useEffect(() => {
+    setHasWon(false)
+    setIsRevealing(false)
+    setIsSpinning(false)
+    setSelectedTeam(null)
+  }, [selectedAnimation])
 
   const handleStartSpin = useCallback(() => {
     setIsSpinning(true)
