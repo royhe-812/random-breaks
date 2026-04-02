@@ -1,6 +1,6 @@
 "use client"
 
-// eBay Live Case Break Animation Showcase - v10 - useEffect Star ChevronsRight imported
+// eBay Live Case Break Animation Showcase - REBUILD v11 - all imports verified
 import { useState, useCallback, useEffect } from "react"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
@@ -174,6 +174,7 @@ export default function AnimationShowcase() {
             onStartSpin={handleStartSpin}
             onSpinComplete={handleSpinComplete}
             disabled={!hasWon}
+            username={hasWon ? "KemMajed90" : undefined}
           />
         )}
 

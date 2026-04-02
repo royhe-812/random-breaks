@@ -1,6 +1,6 @@
 "use client"
 
-// Team spinner with wheel click sound - v17 - spinPhase only dep
+// Team spinner with wheel click sound - REBUILD v18 - deps verified
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight } from "lucide-react"
@@ -38,6 +38,7 @@ interface TeamSpinnerProps {
   isSpinning: boolean
   onStartSpin: () => void
   disabled?: boolean
+  username?: string
 }
 
 export function TeamSpinner({ 
@@ -46,7 +47,8 @@ export function TeamSpinner({
   onSpinComplete, 
   isSpinning, 
   onStartSpin,
-  disabled = false
+  disabled = false,
+  username
 }: TeamSpinnerProps) {
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0)
   const [spinPhase, setSpinPhase] = useState<"idle" | "fast" | "slowing" | "stopped">("idle")
@@ -223,8 +225,9 @@ export function TeamSpinner({
                   </motion.span>
                 </AnimatePresence>
                 <span className="text-white/50 text-xs">
-                  {spinPhase === "idle" ? "Tap to spin" : 
-                   spinPhase === "stopped" ? "Get ready..." : "Spinning..."}
+                  {spinPhase === "idle" 
+                    ? (username ? `${username}'s Spot` : "Tap to spin")
+                    : spinPhase === "stopped" ? "Get ready..." : "Spinning..."}
                 </span>
               </div>
             </div>
@@ -242,7 +245,7 @@ export function TeamSpinner({
                 whileHover={disabled ? {} : { scale: 1.02 }}
                 whileTap={disabled ? {} : { scale: 0.98 }}
               >
-                Spin
+                Tap to spin
               </motion.button>
             ) : (
               <motion.div
