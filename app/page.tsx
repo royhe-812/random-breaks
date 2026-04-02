@@ -1,8 +1,10 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import * as React from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight, Star, ChevronsRight } from "lucide-react"
+
+const { useState, useCallback, useEffect } = React
 import { TeamSpinner, type Team } from "@/components/team-spinner"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"

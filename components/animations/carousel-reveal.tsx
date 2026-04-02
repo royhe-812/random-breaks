@@ -21,7 +21,9 @@ interface CarouselRevealProps {
 export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps) {
   const [rotation, setRotation] = useState(0)
   const [isSpinning, setIsSpinning] = useState(false)
-  const targetRotationRef = useRef(0)
+  const [hasStopped, setHasStopped] = useState(false)
+  const [winningTeam, setWinningTeam] = useState(teams[0])
+  const hasStartedRef = useRef(false)
   const audioContextRef = useRef<AudioContext | null>(null)
 
   // Initialize audio context
@@ -50,8 +52,8 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
 
   // Start spinning when isRevealing becomes true
   useEffect(() => {
-    if (isRevealing && !isSpinning) {
-      setIsSpinning(true)
+    if (isRevealing && !hasStartedRef.current) {
+      hasStartedRef.current = true
       
       // Pick random target card
       const targetIndex = Math.floor(Math.random() * teams.length)
@@ -59,10 +61,14 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
       // Spin multiple rotations plus land on target
       const spins = 3 + Math.random() * 2 // 3-5 full rotations
       const targetRotation = (spins * 360) + (targetIndex * anglePerCard)
-      targetRotationRef.current = targetRotation
       
-      // Animate rotation
-      setRotation(targetRotation)
+      setWinningTeam(teams[targetIndex])
+      
+      // Small delay before starting spin
+      setTimeout(() => {
+        setIsSpinning(true)
+        setRotation(targetRotation)
+      }, 100)
       
       // Play tick sounds during spin
       let tickCount = 0
@@ -75,12 +81,13 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
         }
       }, 100)
       
-      // Call onComplete after spin finishes
+      // Mark as stopped and call onComplete after spin finishes
       setTimeout(() => {
+        setHasStopped(true)
         onComplete(teams[targetIndex])
-      }, 3500)
+      }, 3600)
     }
-  }, [isRevealing, isSpinning, onComplete])
+  }, [isRevealing, onComplete])
 
   const cardsInRing = teams.length
   const anglePerCard = 360 / cardsInRing
@@ -122,7 +129,9 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
                   className="w-full h-full rounded-xl flex flex-col items-center justify-center relative overflow-hidden"
                   style={{
                     background: `linear-gradient(145deg, ${team.color} 0%, ${team.color}dd 100%)`,
-                    boxShadow: `0 10px 25px rgba(0,0,0,0.4)`,
+                    boxShadow: hasStopped && team.name === winningTeam.name
+                      ? `0 0 60px ${team.color}90, 0 0 100px ${team.color}60, 0 20px 40px rgba(0,0,0,0.5)`
+                      : `0 10px 25px rgba(0,0,0,0.4)`,
                   }}
                 >
                   {/* Card shine */}
