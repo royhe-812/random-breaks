@@ -234,27 +234,6 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
               </div>
             </motion.div>
 
-            {/* Winner text */}
-            <motion.div
-              className="absolute bottom-4 flex flex-col items-center z-50"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <span className="text-white/80 text-sm font-semibold uppercase tracking-wider">
-                {winningTeam.city}
-              </span>
-              <span 
-                className="text-3xl font-black"
-                style={{ color: winningTeam.color }}
-              >
-                {winningTeam.name.toUpperCase()}
-              </span>
-              <span className="text-violet-300 text-sm font-semibold tracking-widest mt-1">
-                WINS!
-              </span>
-            </motion.div>
-
             {/* Confetti burst */}
             {[...Array(20)].map((_, i) => (
               <motion.div
@@ -280,6 +259,31 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
               />
             ))}
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Winner text - below carousel */}
+      <AnimatePresence>
+        {hasStopped && (
+          <motion.div
+            className="mt-6 flex flex-col items-center text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <span className="text-white/80 text-sm font-semibold uppercase tracking-wider">
+              {winningTeam.city}
+            </span>
+            <span 
+              className="text-3xl font-black"
+              style={{ color: winningTeam.color }}
+            >
+              {winningTeam.name.toUpperCase()}
+            </span>
+            <span className="text-violet-300 text-sm font-semibold tracking-widest mt-1">
+              WINS!
+            </span>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
