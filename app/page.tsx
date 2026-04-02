@@ -1,6 +1,18 @@
 "use client"
-// v17 - useEffect and Star are imported below
+
 import { useState, useCallback, useEffect } from "react"
+import { 
+  ChevronDown, 
+  Heart, 
+  MoreHorizontal, 
+  Wallet, 
+  LayoutGrid, 
+  ChevronRight, 
+  Star, 
+  ChevronsRight 
+} from "lucide-react"
+import { AnimatePresence, motion } from "framer-motion"
+import { TeamSpinner, type Team } from "@/components/team-spinner"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
 import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
@@ -10,9 +22,6 @@ import { GiftBoxReveal } from "@/components/animations/gift-box-reveal"
 import { BattleReveal } from "@/components/animations/battle-reveal"
 import { PickCardReveal } from "@/components/animations/pick-card-reveal"
 import { CarouselReveal } from "@/components/animations/carousel-reveal"
-import { TeamSpinner, type Team } from "@/components/team-spinner"
-import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, Heart, MoreHorizontal, Wallet, LayoutGrid, ChevronRight, Star, ChevronsRight } from "lucide-react"
 
 type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel"
 
