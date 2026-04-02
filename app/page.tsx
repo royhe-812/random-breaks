@@ -209,8 +209,8 @@ export default function AnimationShowcase() {
           <Heart className="w-5 h-5 text-red-500 fill-red-500" />
         </div>
 
-        {/* Team Spinner with Spots Available - hidden for slot machine, battle, and carousel */}
-        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
+        {/* Team Spinner with Spots Available - hidden for slot machine, battle, carousel, and pick-card */}
+        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={16}
@@ -271,8 +271,8 @@ export default function AnimationShowcase() {
               onClick={() => {
                 if (!hasWon) {
                   setHasWon(true)
-                  // For slot-machine, battle, and carousel, trigger reveal after a short delay
-                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel") {
+                  // For slot-machine, battle, carousel, and pick-card, trigger reveal after a short delay
+                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card") {
                     setTimeout(() => {
                       setIsRevealing(true)
                       setKey(prev => prev + 1)
