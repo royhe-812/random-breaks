@@ -225,43 +225,25 @@ export function TeamSpinner({
                   </motion.span>
                 </AnimatePresence>
                 <span className="text-white/50 text-xs">
-                  {spinPhase === "idle" 
-                    ? (username ? `${username}'s Spot` : "Tap to spin")
-                    : spinPhase === "stopped" ? "Get ready..." : "Spinning..."}
+                  {username ? `${username}'s Spot` : "Tap to spin"}
                 </span>
               </div>
             </div>
 
             {/* Spin Button / Status */}
-            {spinPhase === "idle" ? (
-              <motion.button
-                onClick={startSpin}
-                disabled={disabled}
-                className={`px-5 py-2.5 rounded-full font-semibold text-sm transition-colors ${
-                  disabled 
-                    ? 'bg-zinc-700 text-white/40 cursor-not-allowed' 
-                    : 'bg-green-500 hover:bg-green-600 text-black'
-                }`}
-                whileHover={disabled ? {} : { scale: 1.02 }}
-                whileTap={disabled ? {} : { scale: 0.98 }}
-              >
-                Tap to spin
-              </motion.button>
-            ) : (
-              <motion.div
-                className="px-4 py-2 rounded-xl font-medium text-sm"
-                style={{ 
-                  backgroundColor: "rgba(255,255,255,0.1)",
-                  color: "white"
-                }}
-                animate={{
-                  scale: 1,
-                }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-              >
-                {spinPhase === "stopped" ? "Revealing..." : "..."}
-              </motion.div>
-            )}
+            <motion.button
+              onClick={spinPhase === "idle" ? startSpin : undefined}
+              disabled={disabled || spinPhase !== "idle"}
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm transition-colors ${
+                disabled || spinPhase !== "idle"
+                  ? 'bg-zinc-700 text-white/40 cursor-not-allowed' 
+                  : 'bg-green-500 hover:bg-green-600 text-black'
+              }`}
+              whileHover={disabled || spinPhase !== "idle" ? {} : { scale: 1.02 }}
+              whileTap={disabled || spinPhase !== "idle" ? {} : { scale: 0.98 }}
+            >
+              {spinPhase === "idle" ? "Tap to spin" : "Spinning"}
+            </motion.button>
           </div>
 
 
