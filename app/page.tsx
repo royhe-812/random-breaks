@@ -1,6 +1,6 @@
 "use client"
 
-// eBay Live Case Break Animation Showcase - v8
+// eBay Live Case Break Animation Showcase - v9 - imports fixed
 import { useState, useCallback, useEffect } from "react"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
@@ -178,7 +178,7 @@ export default function AnimationShowcase() {
         )}
 
         {/* Auction Card */}
-        <div className="bg-zinc-900/95 backdrop-blur rounded-2xl p-4">
+        <div className="bg-black/40 backdrop-blur rounded-2xl p-4">
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 pr-2">
               <p className="text-sm text-white mb-1 line-clamp-2">

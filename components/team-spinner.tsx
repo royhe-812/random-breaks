@@ -1,6 +1,6 @@
 "use client"
 
-// Team spinner with wheel click sound - v15
+// Team spinner with wheel click sound - v16 - deps fixed
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight } from "lucide-react"
@@ -166,7 +166,7 @@ export function TeamSpinner({
     <div className="w-full">
       {/* Main Container */}
       <motion.div 
-        className="relative bg-zinc-900/90 backdrop-blur rounded-xl overflow-hidden"
+        className="relative bg-black/40 backdrop-blur rounded-xl overflow-hidden"
         animate={{
           boxShadow: spinPhase !== "idle" 
             ? `0 0 20px ${currentTeam.color}40, 0 0 40px ${currentTeam.color}20`
