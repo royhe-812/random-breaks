@@ -1,7 +1,6 @@
 "use client"
 
-// Team spinner - v20
-// spinPhase is the only dependency
+// Team spinner v21
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronRight } from "lucide-react"

@@ -194,72 +194,73 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
               transition={{ duration: 1 }}
             />
             
-            {/* Logo circle with premium finish */}
-            <motion.div
-              className="relative w-32 h-32 rounded-full flex items-center justify-center overflow-hidden"
-              style={{
-                background: `linear-gradient(135deg, ${team.color} 0%, ${team.color}dd 100%)`,
-                boxShadow: `
-                  0 0 60px ${team.color}60, 
-                  0 0 100px rgba(167,139,250,0.4),
-                  inset 0 -8px 20px rgba(0,0,0,0.3)
-                `,
-              }}
-              initial={{ rotate: -180 }}
-              animate={{ rotate: 0 }}
-              transition={{ type: "spring", stiffness: 100 }}
-            >
-              <HolographicShine />
-              <motion.span 
-                className="text-5xl font-black text-white relative z-10 drop-shadow-lg"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: "spring" }}
-              >
-                {team.name.slice(0, 2).toUpperCase()}
-              </motion.span>
+            {/* Logo circle with orbiting particles */}
+            <div className="relative">
+              {/* Orbiting holographic particles - centered behind logo */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
+                <div className="relative w-44 h-44">
+                  {[...Array(8)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute inset-0"
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 4 + i * 0.5,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    >
+                      <motion.div
+                        className="absolute w-3 h-3 rounded-full left-1/2 -translate-x-1/2"
+                        style={{
+                          top: 0,
+                          background: i % 2 === 0 
+                            ? "linear-gradient(135deg, #a78bfa, #c4b5fd)" 
+                            : `linear-gradient(135deg, ${team.secondary}, ${team.color})`,
+                          boxShadow: `0 0 10px ${i % 2 === 0 ? "#a78bfa" : team.secondary}`,
+                        }}
+                        initial={{ rotate: i * 45 }}
+                        animate={{ scale: [1, 1.3, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
               
-              {/* Inner shine */}
-              <div
-                className="absolute inset-0 rounded-full"
+              {/* Logo circle with premium finish */}
+              <motion.div
+                className="relative w-32 h-32 rounded-full flex items-center justify-center overflow-hidden"
                 style={{
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.35) 0%, transparent 50%)",
+                  background: `linear-gradient(135deg, ${team.color} 0%, ${team.color}dd 100%)`,
+                  boxShadow: `
+                    0 0 60px ${team.color}60, 
+                    0 0 100px rgba(167,139,250,0.4),
+                    inset 0 -8px 20px rgba(0,0,0,0.3)
+                  `,
                 }}
-              />
-            </motion.div>
-            
-            {/* Orbiting holographic particles - centered behind logo */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              {[...Array(8)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-40 h-40"
-                  animate={{ rotate: 360 }}
-                  transition={{
-                    duration: 4 + i * 0.5,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                  style={{ 
-                    transformOrigin: "center center",
-                  }}
+                initial={{ rotate: -180 }}
+                animate={{ rotate: 0 }}
+                transition={{ type: "spring", stiffness: 100 }}
+              >
+                <HolographicShine />
+                <motion.span 
+                  className="text-5xl font-black text-white relative z-10 drop-shadow-lg"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring" }}
                 >
-                  <motion.div
-                    className="absolute w-3 h-3 rounded-full"
-                    style={{
-                      top: 0,
-                      left: "50%",
-                      transform: `translateX(-50%) rotate(${i * 45}deg)`,
-                      background: i % 2 === 0 
-                        ? "linear-gradient(135deg, #a78bfa, #c4b5fd)" 
-                        : `linear-gradient(135deg, ${team.secondary}, ${team.color})`,
-                      boxShadow: `0 0 10px ${i % 2 === 0 ? "#a78bfa" : team.secondary}`,
-                    }}
-                    animate={{ scale: [1, 1.3, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
-                  />
-                </motion.div>
-              ))}
+                  {team.name.slice(0, 2).toUpperCase()}
+                </motion.span>
+                
+                {/* Inner shine */}
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.35) 0%, transparent 50%)",
+                  }}
+                />
+              </motion.div>
             </div>
             
             <motion.div
