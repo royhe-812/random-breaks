@@ -1,8 +1,8 @@
 "use client"
-// Team spinner component - fixed dependencies
+
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronRight, Ticket } from "lucide-react"
+import { ChevronRight, Dices } from "lucide-react"
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", color: "#E31837", secondary: "#FFB81C" },
@@ -202,7 +202,7 @@ export function TeamSpinner({
                 transition={{ duration: 0.15, ease: "easeInOut" }}
               >
                 {spinPhase === "idle" ? (
-                  <Ticket className="w-6 h-6" />
+                  <Dices className="w-6 h-6" />
                 ) : spinPhase === "stopped" ? (
                   "?"
                 ) : (
