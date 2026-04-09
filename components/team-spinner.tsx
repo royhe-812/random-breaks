@@ -228,7 +228,7 @@ export function TeamSpinner({
                   </motion.span>
                 </AnimatePresence>
                 <span className="text-white/50 text-xs">
-                  {username ? `${username}'s Spot` : "Win bid to spin"}
+                  {username ? `${username}'s Spot` : "Win a spot to spin"}
                 </span>
               </div>
             </div>
