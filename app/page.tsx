@@ -98,10 +98,14 @@ export default function AnimationShowcase() {
   }, [])
 
   const handleComplete = useCallback(() => {
+    // Keep the winning moment visible for 3 seconds, then reset everything
     setTimeout(() => {
       setIsRevealing(false)
       setIsSpinning(false)
-    }, 1500)
+      setHasWon(false)
+      setSelectedTeam(null)
+      setKey(prev => prev + 1)
+    }, 3000)
   }, [])
 
   const renderAnimation = () => {
