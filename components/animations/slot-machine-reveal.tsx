@@ -158,9 +158,11 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
                     clearInterval(intervalRef.current)
                   }
                   setTimeout(() => {
+                    console.log("[v0] Slot machine landed!")
                     setPhase("landed")
                     playWinSound()
                     setTimeout(() => {
+                      console.log("[v0] Slot machine celebrating!")
                       setPhase("celebrate")
                     }, 300)
                   }, 100)
@@ -176,10 +178,11 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
         slowDown()
       }, 1200)
 
-      // Complete after multi-color pulse animation (2.5s pulse + buffer)
+      // Complete after multi-color pulse animation (2s pulse + spin time + buffer)
       const completeTimer = setTimeout(() => {
+        console.log("[v0] Slot machine completing, calling onComplete")
         onComplete()
-      }, 5500)
+      }, 6000)
 
       return () => {
         if (intervalRef.current) {
@@ -250,6 +253,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
               {visibleTeams.map((team, index) => {
                 const isCenter = index === 1
                 const isLanded = phase === "landed" || phase === "celebrate"
+                const shouldAnimate = isCenter && isLanded
                 
                 return (
                   <motion.div
@@ -266,55 +270,64 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
                     {isCenter ? (
                       <motion.div 
                         className="w-full py-3 px-4 rounded-xl text-center"
-                        style={{
-                          backgroundColor: isLanded ? `${finalTeam.color}30` : "rgba(255,255,255,0.1)",
-                          borderWidth: isLanded ? 2 : 0,
-                          borderColor: isLanded ? finalTeam.color : "transparent",
-                        }}
-                        animate={isLanded ? { 
-                          scale: [1, 1.05, 1, 1.05, 1, 1.05, 1],
+                        key={shouldAnimate ? "animating" : "idle"}
+                        initial={false}
+                        animate={shouldAnimate ? { 
+                          scale: [1, 1.08, 1, 1.08, 1, 1.08, 1],
                           backgroundColor: [
-                            `${finalTeam.color}30`,
-                            "rgba(255, 215, 0, 0.4)",
-                            "rgba(147, 51, 234, 0.4)",
-                            "rgba(59, 130, 246, 0.4)",
-                            "rgba(236, 72, 153, 0.4)",
-                            "rgba(34, 197, 94, 0.4)",
-                            `${finalTeam.color}30`,
+                            `${teams[currentIndex].color}40`,
+                            "rgba(255, 215, 0, 0.5)",
+                            "rgba(147, 51, 234, 0.5)",
+                            "rgba(59, 130, 246, 0.5)",
+                            "rgba(236, 72, 153, 0.5)",
+                            "rgba(34, 197, 94, 0.5)",
+                            `${teams[currentIndex].color}40`,
                           ],
                           boxShadow: [
-                            `0 0 20px ${finalTeam.color}50`,
-                            "0 0 40px rgba(255, 215, 0, 0.6)",
-                            "0 0 40px rgba(147, 51, 234, 0.6)",
-                            "0 0 40px rgba(59, 130, 246, 0.6)",
-                            "0 0 40px rgba(236, 72, 153, 0.6)",
-                            "0 0 40px rgba(34, 197, 94, 0.6)",
-                            `0 0 20px ${finalTeam.color}50`,
+                            `0 0 30px ${teams[currentIndex].color}70`,
+                            "0 0 50px rgba(255, 215, 0, 0.8)",
+                            "0 0 50px rgba(147, 51, 234, 0.8)",
+                            "0 0 50px rgba(59, 130, 246, 0.8)",
+                            "0 0 50px rgba(236, 72, 153, 0.8)",
+                            "0 0 50px rgba(34, 197, 94, 0.8)",
+                            `0 0 30px ${teams[currentIndex].color}70`,
                           ],
-                        } : {}}
+                        } : {
+                          scale: 1,
+                          backgroundColor: "rgba(255,255,255,0.1)",
+                          boxShadow: "none",
+                        }}
                         transition={{ 
-                          duration: 2.5, 
+                          duration: 2, 
                           ease: "easeInOut",
+                        }}
+                        style={{
+                          borderWidth: shouldAnimate ? 2 : 0,
+                          borderColor: shouldAnimate ? teams[currentIndex].color : "transparent",
+                          borderRadius: 12,
                         }}
                       >
                         <motion.span 
                           className="font-bold text-xl inline-block"
-                          animate={isLanded ? { 
+                          key={shouldAnimate ? "text-animating" : "text-idle"}
+                          initial={false}
+                          animate={shouldAnimate ? { 
                             color: [
-                              finalTeam.color,
+                              teams[currentIndex].color,
                               "#FFD700",
                               "#9333EA",
                               "#3B82F6",
                               "#EC4899",
                               "#22C55E",
-                              finalTeam.color,
+                              teams[currentIndex].color,
                             ],
-                          } : {}}
+                          } : {
+                            color: "white",
+                          }}
                           transition={{ 
-                            duration: 2.5, 
+                            duration: 2, 
                             ease: "easeInOut",
                           }}
-                          style={{ color: isLanded ? finalTeam.color : "white" }}
                         >
                           {team.city} {team.name}
                         </motion.span>
