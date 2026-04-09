@@ -45,9 +45,42 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
   const [spinOffset, setSpinOffset] = useState(0)
   const animationRef = useRef<number | null>(null)
   const speedRef = useRef(0)
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const lastTickRef = useRef(0)
 
   const repeatedTeams = [...teams, ...teams, ...teams, ...teams, ...teams]
   const itemHeight = 64
+
+  // Play tick sound using Web Audio API (same as randomizer)
+  const playTickSound = () => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+      }
+      const ctx = audioContextRef.current
+      if (ctx.state === 'suspended') {
+        ctx.resume()
+      }
+      
+      const oscillator = ctx.createOscillator()
+      const gainNode = ctx.createGain()
+      
+      oscillator.connect(gainNode)
+      gainNode.connect(ctx.destination)
+      
+      oscillator.frequency.setValueAtTime(1200, ctx.currentTime)
+      oscillator.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.03)
+      oscillator.type = 'square'
+      
+      gainNode.gain.setValueAtTime(0.15, ctx.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04)
+      
+      oscillator.start(ctx.currentTime)
+      oscillator.stop(ctx.currentTime + 0.04)
+    } catch {
+      // Silently fail if audio context isn't available
+    }
+  }
 
   useEffect(() => {
     if (isRevealing) {
@@ -63,6 +96,14 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
 
         setSpinOffset(prev => {
           const newOffset = prev + speedRef.current * delta
+          
+          // Play tick sound when passing each team (every itemHeight pixels)
+          const prevTeamIndex = Math.floor(prev / itemHeight)
+          const newTeamIndex = Math.floor(newOffset / itemHeight)
+          if (newTeamIndex !== prevTeamIndex && speedRef.current > 0) {
+            playTickSound()
+          }
+          
           if (newOffset > teams.length * itemHeight) {
             return newOffset - teams.length * itemHeight
           }
