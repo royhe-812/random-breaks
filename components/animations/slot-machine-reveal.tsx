@@ -292,50 +292,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
             </AnimatePresence>
           </div>
 
-          {/* Side lights with holographic colors */}
-          <div className="absolute top-16 bottom-20 left-2 flex flex-col justify-around">
-            {[...Array(5)].map((_, i) => (
-              <motion.div
-                key={`left-${i}`}
-                className="w-2 h-2 rounded-full"
-                animate={{
-                  backgroundColor: phase === "spinning" || phase === "slowing"
-                    ? ["#a78bfa", "#c4b5fd", "#e9d5ff", "#a78bfa"]
-                    : phase === "landed" || phase === "explode" ? "#22c55e" : "#6b7280",
-scale: phase === "explode" ? 1.3 : 1,
-                  boxShadow: phase === "explode"
-                    ? "0 0 16px #22c55e"
-                    : "none",
-                }}
-                transition={{ 
-                  duration: phase === "spinning" ? 0.2 : 0.5,
-                  repeat: phase === "spinning" || phase === "slowing" || phase === "explode" ? Infinity : 0,
-                  delay: i * 0.05,
-                  ease: "easeInOut",
-                }}
-              />
-            ))}
-          </div>
-          <div className="absolute top-16 bottom-20 right-2 flex flex-col justify-around">
-            {[...Array(5)].map((_, i) => (
-              <motion.div
-                key={`right-${i}`}
-                className="w-2 h-2 rounded-full"
-                animate={{
-                  backgroundColor: phase === "spinning" || phase === "slowing"
-                    ? ["#e9d5ff", "#a78bfa", "#c4b5fd", "#e9d5ff"]
-                    : phase === "landed" || phase === "explode" ? "#22c55e" : "#6b7280",
-                  scale: phase === "explode" ? 1.3 : 1,
-                }}
-                transition={{ 
-                  duration: phase === "spinning" ? 0.2 : 0.5,
-                  repeat: phase === "spinning" || phase === "slowing" ? Infinity : 0,
-                  delay: i * 0.05,
-                  ease: "easeInOut",
-                }}
-              />
-            ))}
-          </div>
+
 
           {/* Bottom area with result */}
           <div className="h-20 flex items-center justify-center relative">
