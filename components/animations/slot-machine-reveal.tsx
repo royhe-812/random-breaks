@@ -176,10 +176,10 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
         slowDown()
       }, 1200)
 
-      // Complete after animation
+      // Complete after pulse animation (3 pulses at 0.8s each = 2.4s + buffer)
       const completeTimer = setTimeout(() => {
         onComplete()
-      }, 5000)
+      }, 4000)
 
       return () => {
         if (intervalRef.current) {
@@ -270,16 +270,36 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
                           backgroundColor: isLanded ? `${finalTeam.color}30` : "rgba(255,255,255,0.1)",
                           borderWidth: isLanded ? 2 : 0,
                           borderColor: isLanded ? finalTeam.color : "transparent",
+                          boxShadow: isLanded ? `0 0 20px ${finalTeam.color}50` : "none",
                         }}
-                        animate={isLanded ? { scale: [1, 1.02, 1] } : {}}
-                        transition={{ duration: 0.3 }}
+                        animate={isLanded ? { 
+                          scale: [1, 1.05, 1],
+                          boxShadow: [
+                            `0 0 20px ${finalTeam.color}50`,
+                            `0 0 40px ${finalTeam.color}80`,
+                            `0 0 20px ${finalTeam.color}50`,
+                          ],
+                        } : {}}
+                        transition={{ 
+                          duration: 0.8, 
+                          repeat: isLanded ? 3 : 0,
+                          ease: "easeInOut",
+                        }}
                       >
-                        <span 
-                          className="font-bold text-xl"
+                        <motion.span 
+                          className="font-bold text-xl inline-block"
                           style={{ color: isLanded ? finalTeam.color : "white" }}
+                          animate={isLanded ? { 
+                            scale: [1, 1.02, 1],
+                          } : {}}
+                          transition={{ 
+                            duration: 0.8, 
+                            repeat: isLanded ? 3 : 0,
+                            ease: "easeInOut",
+                          }}
                         >
                           {team.city} {team.name}
-                        </span>
+                        </motion.span>
                       </motion.div>
                     ) : (
                       <span className="text-white/40 text-lg font-medium">
