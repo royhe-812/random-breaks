@@ -8,14 +8,14 @@ const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayL
 const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
 
 const teams = [
-  { name: "Chiefs", city: "Kansas City", color: "#E31837", secondary: "#FFB81C" },
-  { name: "Eagles", city: "Philadelphia", color: "#004C54", secondary: "#A5ACAF" },
-  { name: "Cowboys", city: "Dallas", color: "#003594", secondary: "#869397" },
-  { name: "Patriots", city: "New England", color: "#002244", secondary: "#C60C30" },
-  { name: "Packers", city: "Green Bay", color: "#203731", secondary: "#FFB612" },
-  { name: "49ers", city: "San Francisco", color: "#AA0000", secondary: "#B3995D" },
-  { name: "Bills", city: "Buffalo", color: "#00338D", secondary: "#C60C30" },
-  { name: "Dolphins", city: "Miami", color: "#008E97", secondary: "#FC4C02" },
+  { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
+  { name: "Eagles", city: "Philadelphia", abbrev: "PHI", color: "#004C54", secondary: "#A5ACAF" },
+  { name: "Cowboys", city: "Dallas", abbrev: "DAL", color: "#003594", secondary: "#869397" },
+  { name: "Patriots", city: "New England", abbrev: "NE", color: "#002244", secondary: "#C60C30" },
+  { name: "Packers", city: "Green Bay", abbrev: "GB", color: "#203731", secondary: "#FFB612" },
+  { name: "49ers", city: "San Francisco", abbrev: "SF", color: "#AA0000", secondary: "#B3995D" },
+  { name: "Bills", city: "Buffalo", abbrev: "BUF", color: "#00338D", secondary: "#C60C30" },
+  { name: "Dolphins", city: "Miami", abbrev: "MIA", color: "#008E97", secondary: "#FC4C02" },
 ]
 
 interface CarouselRevealProps {
@@ -153,7 +153,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
                   
                   {/* Team initials */}
                   <span className="text-4xl font-black text-white drop-shadow-lg relative z-10">
-                    {team.name.slice(0, 2).toUpperCase()}
+                    {team.abbrev}
                   </span>
                   
                   {/* Team name */}

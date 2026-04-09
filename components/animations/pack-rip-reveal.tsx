@@ -10,26 +10,27 @@ const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayL
 const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
 
 const teams = [
-  { name: "Chiefs", city: "Kansas City", color: "#E31837", secondary: "#FFB81C" },
-  { name: "Eagles", city: "Philadelphia", color: "#004C54", secondary: "#A5ACAF" },
-  { name: "Cowboys", city: "Dallas", color: "#003594", secondary: "#869397" },
-  { name: "49ers", city: "San Francisco", color: "#AA0000", secondary: "#B3995D" },
-  { name: "Bills", city: "Buffalo", color: "#00338D", secondary: "#C60C30" },
-  { name: "Dolphins", city: "Miami", color: "#008E97", secondary: "#FC4C02" },
-  { name: "Ravens", city: "Baltimore", color: "#241773", secondary: "#9E7C0C" },
-  { name: "Lions", city: "Detroit", color: "#0076B6", secondary: "#B0B7BC" },
-  { name: "Packers", city: "Green Bay", color: "#203731", secondary: "#FFB612" },
-  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", secondary: "#000000" },
-  { name: "Jets", city: "New York", color: "#125740", secondary: "#000000" },
-  { name: "Broncos", city: "Denver", color: "#FB4F14", secondary: "#002244" },
-  { name: "Chargers", city: "Los Angeles", color: "#0080C6", secondary: "#FFC20E" },
-  { name: "Colts", city: "Indianapolis", color: "#002C5F", secondary: "#A2AAAD" },
-  { name: "Texans", city: "Houston", color: "#03202F", secondary: "#A71930" },
-  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", secondary: "#101820" },
+  { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
+  { name: "Eagles", city: "Philadelphia", abbrev: "PHI", color: "#004C54", secondary: "#A5ACAF" },
+  { name: "Cowboys", city: "Dallas", abbrev: "DAL", color: "#003594", secondary: "#869397" },
+  { name: "49ers", city: "San Francisco", abbrev: "SF", color: "#AA0000", secondary: "#B3995D" },
+  { name: "Bills", city: "Buffalo", abbrev: "BUF", color: "#00338D", secondary: "#C60C30" },
+  { name: "Dolphins", city: "Miami", abbrev: "MIA", color: "#008E97", secondary: "#FC4C02" },
+  { name: "Ravens", city: "Baltimore", abbrev: "BAL", color: "#241773", secondary: "#9E7C0C" },
+  { name: "Lions", city: "Detroit", abbrev: "DET", color: "#0076B6", secondary: "#B0B7BC" },
+  { name: "Packers", city: "Green Bay", abbrev: "GB", color: "#203731", secondary: "#FFB612" },
+  { name: "Bengals", city: "Cincinnati", abbrev: "CIN", color: "#FB4F14", secondary: "#000000" },
+  { name: "Jets", city: "New York", abbrev: "NYJ", color: "#125740", secondary: "#000000" },
+  { name: "Broncos", city: "Denver", abbrev: "DEN", color: "#FB4F14", secondary: "#002244" },
+  { name: "Chargers", city: "Los Angeles", abbrev: "LAC", color: "#0080C6", secondary: "#FFC20E" },
+  { name: "Colts", city: "Indianapolis", abbrev: "IND", color: "#002C5F", secondary: "#A2AAAD" },
+  { name: "Texans", city: "Houston", abbrev: "HOU", color: "#03202F", secondary: "#A71930" },
+  { name: "Steelers", city: "Pittsburgh", abbrev: "PIT", color: "#FFB612", secondary: "#101820" },
 ]
 
 interface Team {
   name: string
+  abbrev?: string
   color: string
   secondary: string
 }
@@ -300,7 +301,7 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
               }}
             >
               <span className="text-xl font-black" style={{ color: team.color }}>
-                {team.name.slice(0, 2).toUpperCase()}
+                {(team as typeof teams[0]).abbrev || team.name.slice(0, 2).toUpperCase()}
               </span>
             </motion.div>
 
