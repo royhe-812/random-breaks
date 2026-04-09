@@ -8,24 +8,22 @@ const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayL
 const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
 
 const teams = [
-  { name: "Chiefs", city: "Kansas City", color: "#E31837", abbrev: "KC" },
-  { name: "Eagles", city: "Philadelphia", color: "#004C54", abbrev: "PHI" },
-  { name: "Cowboys", city: "Dallas", color: "#003594", abbrev: "DAL" },
-  { name: "49ers", city: "San Francisco", color: "#AA0000", abbrev: "SF" },
-  { name: "Bills", city: "Buffalo", color: "#00338D", abbrev: "BUF" },
-  { name: "Dolphins", city: "Miami", color: "#008E97", abbrev: "MIA" },
-  { name: "Ravens", city: "Baltimore", color: "#241773", abbrev: "BAL" },
-  { name: "Lions", city: "Detroit", color: "#0076B6", abbrev: "DET" },
-  { name: "Packers", city: "Green Bay", color: "#203731", abbrev: "GB" },
-  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", abbrev: "CIN" },
-  { name: "Jets", city: "New York", color: "#125740", abbrev: "NYJ" },
-  { name: "Broncos", city: "Denver", color: "#FB4F14", abbrev: "DEN" },
-  { name: "Chargers", city: "Los Angeles", color: "#0080C6", abbrev: "LAC" },
-  { name: "Colts", city: "Indianapolis", color: "#002C5F", abbrev: "IND" },
-  { name: "Texans", city: "Houston", color: "#03202F", abbrev: "HOU" },
-  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", abbrev: "PIT" },
-  { name: "Panthers", city: "Carolina", color: "#0085CA", abbrev: "CAR" },
-  { name: "Seahawks", city: "Seattle", color: "#002244", abbrev: "SEA" },
+  { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
+  { name: "Eagles", city: "Philadelphia", abbrev: "PHI", color: "#004C54", secondary: "#A5ACAF" },
+  { name: "Cowboys", city: "Dallas", abbrev: "DAL", color: "#003594", secondary: "#869397" },
+  { name: "49ers", city: "San Francisco", abbrev: "SF", color: "#AA0000", secondary: "#B3995D" },
+  { name: "Bills", city: "Buffalo", abbrev: "BUF", color: "#00338D", secondary: "#C60C30" },
+  { name: "Dolphins", city: "Miami", abbrev: "MIA", color: "#008E97", secondary: "#FC4C02" },
+  { name: "Ravens", city: "Baltimore", abbrev: "BAL", color: "#241773", secondary: "#9E7C0C" },
+  { name: "Lions", city: "Detroit", abbrev: "DET", color: "#0076B6", secondary: "#B0B7BC" },
+  { name: "Packers", city: "Green Bay", abbrev: "GB", color: "#203731", secondary: "#FFB612" },
+  { name: "Bengals", city: "Cincinnati", abbrev: "CIN", color: "#FB4F14", secondary: "#000000" },
+  { name: "Jets", city: "New York", abbrev: "NYJ", color: "#125740", secondary: "#000000" },
+  { name: "Broncos", city: "Denver", abbrev: "DEN", color: "#FB4F14", secondary: "#002244" },
+  { name: "Chargers", city: "Los Angeles", abbrev: "LAC", color: "#0080C6", secondary: "#FFC20E" },
+  { name: "Colts", city: "Indianapolis", abbrev: "IND", color: "#002C5F", secondary: "#A2AAAD" },
+  { name: "Texans", city: "Houston", abbrev: "HOU", color: "#03202F", secondary: "#A71930" },
+  { name: "Steelers", city: "Pittsburgh", abbrev: "PIT", color: "#FFB612", secondary: "#101820" },
 ]
 
 interface Team {
@@ -38,23 +36,16 @@ interface SlotMachineRevealProps {
   isRevealing: boolean
   onComplete: () => void
   team?: Team | null
-  username?: string
 }
 
-export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, username = "CardboardHero" }: SlotMachineRevealProps) {
-  const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "landed" | "celebrate">("idle")
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [finalIndex, setFinalIndex] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: SlotMachineRevealProps) {
+  const [spinning, setSpinning] = useState([true, true, true])
+  const [results, setResults] = useState([0, 0, 0])
+  const [phase, setPhase] = useState<"idle" | "spinning" | "stopping" | "won">("idle")
   const audioContextRef = useRef<AudioContext | null>(null)
   
-  const finalTeam = propTeam 
-    ? { ...propTeam, city: "", abbrev: propTeam.name.slice(0, 3).toUpperCase() } 
-    : teams[finalIndex]
+  const finalTeam = propTeam || teams[results[0]]
 
-  const itemHeight = 48
-
-  // Initialize audio context
   useEffect(() => {
     audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
     return () => {
@@ -62,23 +53,21 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
     }
   }, [])
 
-  // Play tick sound
-  const playTickSound = (frequency = 600) => {
+  const playTickSound = () => {
     if (!audioContextRef.current) return
     const ctx = audioContextRef.current
     const oscillator = ctx.createOscillator()
     const gainNode = ctx.createGain()
     oscillator.connect(gainNode)
     gainNode.connect(ctx.destination)
-    oscillator.frequency.value = frequency + Math.random() * 200
+    oscillator.frequency.value = 800 + Math.random() * 400
     oscillator.type = "sine"
-    gainNode.gain.setValueAtTime(0.08, ctx.currentTime)
+    gainNode.gain.setValueAtTime(0.1, ctx.currentTime)
     gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05)
     oscillator.start(ctx.currentTime)
     oscillator.stop(ctx.currentTime + 0.05)
   }
 
-  // Play win sound
   const playWinSound = () => {
     if (!audioContextRef.current) return
     const ctx = audioContextRef.current
@@ -99,97 +88,42 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
     })
   }
 
-  // Get visible teams (prev, current, next)
-  const getVisibleTeams = () => {
-    const prevIndex = (currentIndex - 1 + teams.length) % teams.length
-    const nextIndex = (currentIndex + 1) % teams.length
-    return [
-      teams[prevIndex],
-      teams[currentIndex],
-      teams[nextIndex],
-    ]
-  }
-
   useEffect(() => {
     if (isRevealing && phase === "idle") {
-      // Pick random final team
-      const targetIndex = Math.floor(Math.random() * teams.length)
-      setFinalIndex(targetIndex)
       setPhase("spinning")
+      setSpinning([true, true, true])
       
-      let speed = 25 // Start very fast
-      let spins = 0
-      const minSpins = teams.length * 5 // At least 5 full rotations through all teams
+      // Pick the winning team
+      const winningIndex = Math.floor(Math.random() * teams.length)
       
-      const spin = () => {
-        setCurrentIndex(prev => {
-          const next = (prev + 1) % teams.length
-          spins++
-          playTickSound(600 + (spins % 5) * 50)
-          return next
-        })
-      }
-      
-      // Fast spinning phase
-      intervalRef.current = setInterval(spin, speed)
-      
-      // Start slowing down after 1.2 seconds
+      // Stop reels one by one
       setTimeout(() => {
-        setPhase("slowing")
-        
-        let currentSpeed = speed
-        const slowDown = () => {
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current)
-          }
-          
-          currentSpeed += 20 // Slow down gradually
-          
-          if (currentSpeed < 350 && spins < minSpins + targetIndex) {
-            intervalRef.current = setInterval(() => {
-              setCurrentIndex(prev => {
-                const next = (prev + 1) % teams.length
-                spins++
-                playTickSound(500 - currentSpeed)
-                
-                // Check if we should stop
-                if (spins >= minSpins && next === targetIndex) {
-                  if (intervalRef.current) {
-                    clearInterval(intervalRef.current)
-                  }
-                  setTimeout(() => {
-                    console.log("[v0] Slot machine landed!")
-                    setPhase("landed")
-                    playWinSound()
-                    setTimeout(() => {
-                      console.log("[v0] Slot machine celebrating!")
-                      setPhase("celebrate")
-                    }, 300)
-                  }, 100)
-                }
-                return next
-              })
-            }, currentSpeed)
-            
-            setTimeout(slowDown, currentSpeed * 2)
-          }
-        }
-        
-        slowDown()
-      }, 1200)
-
-      // Complete after multi-color pulse animation (2s pulse + spin time + buffer)
-      const completeTimer = setTimeout(() => {
-        console.log("[v0] Slot machine completing, calling onComplete")
+        setSpinning([false, true, true])
+        setResults(prev => [winningIndex, prev[1], prev[2]])
+        playTickSound()
+      }, 1500)
+      
+      setTimeout(() => {
+        setSpinning([false, false, true])
+        setResults(prev => [prev[0], winningIndex, prev[2]])
+        playTickSound()
+      }, 2200)
+      
+      setTimeout(() => {
+        setSpinning([false, false, false])
+        setResults([winningIndex, winningIndex, winningIndex])
+        setPhase("stopping")
+        playTickSound()
+      }, 2900)
+      
+      setTimeout(() => {
+        setPhase("won")
+        playWinSound()
+      }, 3200)
+      
+      setTimeout(() => {
         onComplete()
-      }, 6000)
-
-      return () => {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current)
-        }
-        clearTimeout(completeTimer)
-      }
+      }, 5500)
     }
   }, [isRevealing, phase, onComplete])
 
@@ -197,178 +131,159 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
   useEffect(() => {
     if (!isRevealing) {
       setPhase("idle")
-      setCurrentIndex(0)
+      setSpinning([true, true, true])
     }
   }, [isRevealing])
 
-  const visibleTeams = getVisibleTeams()
-
   return (
-    <div className="relative flex flex-col items-center justify-center">
-      {/* Screen flash on landing */}
-      <AnimatePresence>
-        {phase === "landed" && (
-          <motion.div
-            className="fixed inset-0 bg-white pointer-events-none z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 0.6, 0] }}
-            transition={{ duration: 0.3 }}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Main container */}
+    <div className="absolute inset-0 flex items-center justify-center z-50">
+      {/* Dark overlay */}
       <motion.div
-        className="relative w-72"
-        animate={
-          phase === "landed" 
-            ? { x: [0, -8, 8, -6, 6, -3, 3, 0] }
-            : {}
-        }
-        transition={{ duration: 0.4 }}
+        className="absolute inset-0 bg-black/80"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      />
+
+      {/* Slot Machine */}
+      <motion.div
+        className="relative z-10 flex flex-col items-center"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        transition={{ type: "spring", damping: 20 }}
       >
-        {/* Slot machine container - dark blurred style matching item card */}
+        {/* Machine frame */}
         <div 
-          className="relative rounded-2xl overflow-hidden backdrop-blur-xl"
+          className="rounded-3xl p-6 backdrop-blur-xl"
           style={{
-            background: "rgba(24, 24, 27, 0.85)",
-            borderWidth: phase === "celebrate" ? 2 : 0,
-            borderColor: phase === "celebrate" ? finalTeam.color : "transparent",
-            boxShadow: phase === "celebrate" 
-              ? `0 0 40px ${finalTeam.color}60`
-              : "0 8px 32px rgba(0,0,0,0.4)",
+            background: "rgba(24, 24, 27, 0.95)",
+            boxShadow: phase === "won" 
+              ? `0 0 60px ${finalTeam.color}80, 0 20px 60px rgba(0,0,0,0.5)`
+              : "0 20px 60px rgba(0,0,0,0.5)",
           }}
         >
           {/* Header */}
-          <div className="px-5 py-4 border-b border-white/10">
-            <h3 className="text-white font-bold text-lg text-center">
-              Break spot: {username}
-            </h3>
+          <div className="text-center mb-4">
+            <h2 className="text-white font-bold text-xl">TEAM SLOTS</h2>
+            <div className="w-full h-0.5 bg-white/20 mt-2" />
           </div>
 
-          {/* Slot window */}
-          <div className="relative py-3 overflow-hidden">
-            {/* Team list */}
-            <div className="flex flex-col items-center">
-              {visibleTeams.map((team, index) => {
-                const isCenter = index === 1
-                const isLanded = phase === "landed" || phase === "celebrate"
-                const shouldAnimate = isCenter && isLanded
-                
-                return (
+          {/* Reels container */}
+          <div className="flex gap-2 p-4 rounded-2xl bg-black/50">
+            {[0, 1, 2].map((reelIndex) => (
+              <div
+                key={reelIndex}
+                className="w-20 h-24 rounded-xl overflow-hidden relative"
+                style={{
+                  background: "linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(30,30,30,0.9) 50%, rgba(0,0,0,0.8) 100%)",
+                  boxShadow: "inset 0 0 20px rgba(0,0,0,0.5)",
+                }}
+              >
+                {/* Spinning reel */}
+                {spinning[reelIndex] ? (
                   <motion.div
-                    key={`${team.abbrev}-${index}`}
-                    className={`w-full px-4 py-2 flex items-center justify-center ${
-                      isCenter ? "my-1" : ""
-                    }`}
-                    initial={false}
-                    animate={{
-                      opacity: isCenter ? 1 : 0.4,
+                    className="absolute inset-0 flex flex-col items-center justify-center"
+                    animate={{ y: [0, -80, 0] }}
+                    transition={{
+                      duration: 0.12,
+                      repeat: Infinity,
+                      ease: "linear",
                     }}
-                    transition={{ duration: 0.1 }}
                   >
-                    {isCenter ? (
-                      <motion.div 
-                        className="w-full py-3 px-4 rounded-xl text-center"
-                        key={shouldAnimate ? "animating" : "idle"}
-                        initial={false}
-                        animate={shouldAnimate ? { 
-                          scale: [1, 1.08, 1, 1.08, 1, 1.08, 1],
-                          backgroundColor: [
-                            `${teams[currentIndex].color}40`,
-                            "rgba(255, 215, 0, 0.5)",
-                            "rgba(147, 51, 234, 0.5)",
-                            "rgba(59, 130, 246, 0.5)",
-                            "rgba(236, 72, 153, 0.5)",
-                            "rgba(34, 197, 94, 0.5)",
-                            `${teams[currentIndex].color}40`,
-                          ],
-                          boxShadow: [
-                            `0 0 30px ${teams[currentIndex].color}70`,
-                            "0 0 50px rgba(255, 215, 0, 0.8)",
-                            "0 0 50px rgba(147, 51, 234, 0.8)",
-                            "0 0 50px rgba(59, 130, 246, 0.8)",
-                            "0 0 50px rgba(236, 72, 153, 0.8)",
-                            "0 0 50px rgba(34, 197, 94, 0.8)",
-                            `0 0 30px ${teams[currentIndex].color}70`,
-                          ],
-                        } : {
-                          scale: 1,
-                          backgroundColor: "rgba(255,255,255,0.1)",
-                          boxShadow: "none",
-                        }}
-                        transition={{ 
-                          duration: 2, 
-                          ease: "easeInOut",
-                        }}
-                        style={{
-                          borderWidth: shouldAnimate ? 2 : 0,
-                          borderColor: shouldAnimate ? teams[currentIndex].color : "transparent",
-                          borderRadius: 12,
-                        }}
+                    {teams.slice(0, 3).map((team, i) => (
+                      <div
+                        key={i}
+                        className="w-16 h-20 flex items-center justify-center text-2xl font-black"
+                        style={{ color: team.color }}
                       >
-                        <motion.span 
-                          className="font-bold text-xl inline-block"
-                          key={shouldAnimate ? "text-animating" : "text-idle"}
-                          initial={false}
-                          animate={shouldAnimate ? { 
-                            color: [
-                              teams[currentIndex].color,
-                              "#FFD700",
-                              "#9333EA",
-                              "#3B82F6",
-                              "#EC4899",
-                              "#22C55E",
-                              teams[currentIndex].color,
-                            ],
-                          } : {
-                            color: "white",
-                          }}
-                          transition={{ 
-                            duration: 2, 
-                            ease: "easeInOut",
-                          }}
-                        >
-                          {team.city} {team.name}
-                        </motion.span>
-                      </motion.div>
-                    ) : (
-                      <span className="text-white/40 text-lg font-medium">
-                        {team.city} {team.name}
-                      </span>
-                    )}
+                        {team.abbrev}
+                      </div>
+                    ))}
                   </motion.div>
-                )
-              })}
-            </div>
+                ) : (
+                  <motion.div
+                    className="absolute inset-0 flex items-center justify-center"
+                    initial={{ y: -20 }}
+                    animate={{ y: 0 }}
+                    transition={{ type: "spring", damping: 10 }}
+                  >
+                    <div
+                      className="text-3xl font-black"
+                      style={{ color: teams[results[reelIndex]].color }}
+                    >
+                      {teams[results[reelIndex]].abbrev}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Reel shine overlay */}
+                <div 
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.3) 100%)",
+                  }}
+                />
+              </div>
+            ))}
           </div>
+
+          {/* Winner display */}
+          <AnimatePresence>
+            {phase === "won" && (
+              <motion.div
+                className="mt-4 text-center"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+              >
+                <motion.div
+                  animate={{
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{
+                    duration: 0.5,
+                    repeat: Infinity,
+                  }}
+                >
+                  <span className="text-white/60 text-sm">YOU GOT</span>
+                  <div 
+                    className="text-2xl font-black"
+                    style={{ color: finalTeam.color }}
+                  >
+                    {teams[results[0]].city} {teams[results[0]].name}
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Celebration elements */}
+        {/* Celebration effects */}
         <AnimatePresence>
-          {phase === "celebrate" && (
+          {phase === "won" && (
             <>
               {/* Stars */}
               {[...Array(4)].map((_, i) => (
                 <motion.div
                   key={`star-${i}`}
-                  className="absolute z-30"
+                  className="absolute"
                   style={{
-                    left: `${10 + i * 25}%`,
-                    top: i % 2 === 0 ? "-10%" : "90%",
+                    left: `${20 + i * 20}%`,
+                    top: `${10 + (i % 2) * 60}%`,
                   }}
-                  initial={{ scale: 0, opacity: 0 }}
+                  initial={{ scale: 0, rotate: -30 }}
                   animate={{ 
                     scale: 1, 
-                    opacity: 1,
+                    rotate: 0,
                     y: [0, -10, 0],
                   }}
-                  transition={{ 
+                  transition={{
                     delay: i * 0.1,
-                    y: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+                    y: { duration: 2, repeat: Infinity },
                   }}
                 >
-                  <div className="relative w-8 h-8">
+                  <div className="relative w-10 h-10">
                     <Image src={STARS_URL} alt="" fill className="object-contain" />
                   </div>
                 </motion.div>
@@ -376,22 +291,22 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
 
               {/* Fire icons */}
               <motion.div
-                className="absolute -left-4 top-1/2 -translate-y-1/2 z-30"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1, rotate: [0, 5, -5, 0] }}
+                className="absolute left-4 top-1/2"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1, rotate: [0, 5, -5, 0] }}
                 transition={{ rotate: { duration: 0.5, repeat: Infinity } }}
               >
-                <div className="relative w-10 h-10">
+                <div className="relative w-12 h-12">
                   <Image src={FIRE_URL} alt="" fill className="object-contain" />
                 </div>
               </motion.div>
               <motion.div
-                className="absolute -right-4 top-1/2 -translate-y-1/2 z-30"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1, rotate: [0, -5, 5, 0] }}
+                className="absolute right-4 top-1/2"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1, rotate: [0, -5, 5, 0] }}
                 transition={{ rotate: { duration: 0.5, repeat: Infinity } }}
               >
-                <div className="relative w-10 h-10">
+                <div className="relative w-12 h-12">
                   <Image src={FIRE_URL} alt="" fill className="object-contain" />
                 </div>
               </motion.div>
@@ -400,64 +315,28 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
               {[...Array(20)].map((_, i) => (
                 <motion.div
                   key={`confetti-${i}`}
-                  className="absolute w-2 h-2 rounded-full z-20"
+                  className="absolute w-2 h-2 rounded-full"
                   style={{
-                    backgroundColor: i % 2 === 0 ? finalTeam.color : "#3b82f6",
+                    background: i % 2 === 0 ? finalTeam.color : teams[results[0]].secondary,
                     left: "50%",
                     top: "50%",
                   }}
                   initial={{ scale: 0 }}
                   animate={{
                     scale: [0, 1, 0],
-                    x: (Math.random() - 0.5) * 250,
+                    x: (Math.random() - 0.5) * 200,
                     y: (Math.random() - 0.5) * 200,
-                    rotate: Math.random() * 360,
                   }}
                   transition={{
-                    duration: 1.2,
-                    delay: Math.random() * 0.2,
-                    ease: "easeOut",
+                    duration: 1.5,
+                    delay: Math.random() * 0.3,
                   }}
                 />
               ))}
-
-              {/* Ring burst */}
-              <motion.div
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 z-0"
-                style={{ borderColor: finalTeam.color }}
-                initial={{ width: 0, height: 0, opacity: 1 }}
-                animate={{ width: 300, height: 300, opacity: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-              />
             </>
           )}
         </AnimatePresence>
       </motion.div>
-
-      {/* Winner text below */}
-      <AnimatePresence>
-        {phase === "celebrate" && (
-          <motion.div
-            className="mt-6 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <span className="text-white/80 text-sm font-semibold uppercase tracking-wider block">
-              {finalTeam.city}
-            </span>
-            <span 
-              className="text-3xl font-black block"
-              style={{ color: finalTeam.color }}
-            >
-              {finalTeam.name.toUpperCase()}
-            </span>
-            <span className="text-blue-400 text-sm font-semibold tracking-widest mt-1 block">
-              WINS!
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   )
 }
