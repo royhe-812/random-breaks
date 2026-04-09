@@ -46,12 +46,58 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
   const [currentIndex, setCurrentIndex] = useState(0)
   const [finalIndex, setFinalIndex] = useState(0)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
   
   const finalTeam = propTeam 
     ? { ...propTeam, city: "", abbrev: propTeam.name.slice(0, 3).toUpperCase() } 
     : teams[finalIndex]
 
   const itemHeight = 48
+
+  // Initialize audio context
+  useEffect(() => {
+    audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    return () => {
+      audioContextRef.current?.close()
+    }
+  }, [])
+
+  // Play tick sound
+  const playTickSound = (frequency = 600) => {
+    if (!audioContextRef.current) return
+    const ctx = audioContextRef.current
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
+    oscillator.frequency.value = frequency + Math.random() * 200
+    oscillator.type = "sine"
+    gainNode.gain.setValueAtTime(0.08, ctx.currentTime)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05)
+    oscillator.start(ctx.currentTime)
+    oscillator.stop(ctx.currentTime + 0.05)
+  }
+
+  // Play win sound
+  const playWinSound = () => {
+    if (!audioContextRef.current) return
+    const ctx = audioContextRef.current
+    const frequencies = [523.25, 659.25, 783.99, 1046.50]
+    frequencies.forEach((freq, i) => {
+      setTimeout(() => {
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.frequency.value = freq
+        osc.type = "sine"
+        gain.gain.setValueAtTime(0.15, ctx.currentTime)
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3)
+        osc.start(ctx.currentTime)
+        osc.stop(ctx.currentTime + 0.3)
+      }, i * 100)
+    })
+  }
 
   // Get visible teams (prev, current, next)
   const getVisibleTeams = () => {
@@ -71,14 +117,15 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
       setFinalIndex(targetIndex)
       setPhase("spinning")
       
-      let speed = 50 // Start fast
+      let speed = 30 // Start very fast
       let spins = 0
-      const minSpins = teams.length * 3 // At least 3 full rotations
+      const minSpins = teams.length * 4 // At least 4 full rotations
       
       const spin = () => {
         setCurrentIndex(prev => {
           const next = (prev + 1) % teams.length
           spins++
+          playTickSound(600 + (spins % 5) * 50)
           return next
         })
       }
@@ -86,7 +133,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
       // Fast spinning phase
       intervalRef.current = setInterval(spin, speed)
       
-      // Start slowing down after 1.5 seconds
+      // Start slowing down after 1.2 seconds
       setTimeout(() => {
         setPhase("slowing")
         
@@ -96,13 +143,14 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
             clearInterval(intervalRef.current)
           }
           
-          currentSpeed += 30 // Slow down
+          currentSpeed += 20 // Slow down gradually
           
-          if (currentSpeed < 400 && spins < minSpins + targetIndex) {
+          if (currentSpeed < 350 && spins < minSpins + targetIndex) {
             intervalRef.current = setInterval(() => {
               setCurrentIndex(prev => {
                 const next = (prev + 1) % teams.length
                 spins++
+                playTickSound(500 - currentSpeed)
                 
                 // Check if we should stop
                 if (spins >= minSpins && next === targetIndex) {
@@ -111,6 +159,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
                   }
                   setTimeout(() => {
                     setPhase("landed")
+                    playWinSound()
                     setTimeout(() => {
                       setPhase("celebrate")
                     }, 300)
@@ -120,12 +169,12 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
               })
             }, currentSpeed)
             
-            setTimeout(slowDown, currentSpeed * 3)
+            setTimeout(slowDown, currentSpeed * 2)
           }
         }
         
         slowDown()
-      }, 1500)
+      }, 1200)
 
       // Complete after animation
       const completeTimer = setTimeout(() => {
@@ -175,12 +224,13 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
         }
         transition={{ duration: 0.4 }}
       >
-        {/* Slot machine container - dark blurred style */}
+        {/* Slot machine container - dark blurred style matching item card */}
         <div 
-          className="relative rounded-2xl border-2 overflow-hidden backdrop-blur-xl"
+          className="relative rounded-2xl overflow-hidden backdrop-blur-xl"
           style={{
-            background: "rgba(0, 0, 0, 0.6)",
-            borderColor: phase === "celebrate" ? finalTeam.color : "rgba(59, 130, 246, 0.5)",
+            background: "rgba(24, 24, 27, 0.85)",
+            borderWidth: phase === "celebrate" ? 2 : 0,
+            borderColor: phase === "celebrate" ? finalTeam.color : "transparent",
             boxShadow: phase === "celebrate" 
               ? `0 0 40px ${finalTeam.color}60`
               : "0 8px 32px rgba(0,0,0,0.4)",
