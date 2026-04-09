@@ -184,12 +184,14 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
           <CelebrationElements show={true} teamColor={finalTeam.color} />
         )}
 
-        {/* Premium slot machine frame */}
+        {/* Premium slot machine frame - matching item card/randomizer style */}
         <div 
-          className="relative rounded-3xl border-4 overflow-hidden"
+          className="relative rounded-3xl overflow-hidden backdrop-blur-xl"
           style={{
-            background: "linear-gradient(180deg, #1f1f2e 0%, #13131a 100%)",
-            borderColor: phase === "explode" ? "#a78bfa" : "#3f3f5a",
+            background: "rgba(24, 24, 27, 0.85)",
+            borderWidth: phase === "explode" ? 2 : 1,
+            borderStyle: "solid",
+            borderColor: phase === "explode" ? "#a78bfa" : "rgba(255, 255, 255, 0.1)",
             boxShadow: phase === "explode" 
               ? "0 0 60px rgba(167,139,250,0.5), 0 0 120px rgba(167,139,250,0.2)"
               : "0 20px 60px rgba(0,0,0,0.5)",
@@ -221,7 +223,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
           </div>
 
           {/* Viewing window */}
-          <div className="relative h-24 mx-5 my-5 bg-zinc-950 rounded-xl overflow-hidden border-2 border-violet-500/30">
+          <div className="relative h-24 mx-5 my-5 rounded-xl overflow-hidden" style={{ background: "rgba(0, 0, 0, 0.4)", borderWidth: 1, borderStyle: "solid", borderColor: "rgba(255, 255, 255, 0.1)" }}>
             {/* Scrolling reel */}
             <div 
               className="absolute inset-x-0"
@@ -265,10 +267,10 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
             {/* Center selection highlight */}
             <div className="absolute inset-0 pointer-events-none">
               <div 
-                className="absolute top-1/2 -translate-y-1/2 inset-x-0 h-16 border-y-2"
-                style={{ borderColor: "#a78bfa" }}
+                className="absolute top-1/2 -translate-y-1/2 inset-x-0 h-16 border-y"
+                style={{ borderColor: "rgba(255, 255, 255, 0.2)" }}
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-transparent to-zinc-950" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80" />
             </div>
 
             {/* Glow effect on landing */}
