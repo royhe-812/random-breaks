@@ -117,9 +117,9 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
       setFinalIndex(targetIndex)
       setPhase("spinning")
       
-      let speed = 30 // Start very fast
+      let speed = 25 // Start very fast
       let spins = 0
-      const minSpins = teams.length * 4 // At least 4 full rotations
+      const minSpins = teams.length * 5 // At least 5 full rotations through all teams
       
       const spin = () => {
         setCurrentIndex(prev => {
@@ -176,10 +176,10 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
         slowDown()
       }, 1200)
 
-      // Complete after pulse animation (3 pulses at 0.8s each = 2.4s + buffer)
+      // Complete after multi-color pulse animation (2.5s pulse + buffer)
       const completeTimer = setTimeout(() => {
         onComplete()
-      }, 4000)
+      }, 5500)
 
       return () => {
         if (intervalRef.current) {
@@ -270,33 +270,51 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, use
                           backgroundColor: isLanded ? `${finalTeam.color}30` : "rgba(255,255,255,0.1)",
                           borderWidth: isLanded ? 2 : 0,
                           borderColor: isLanded ? finalTeam.color : "transparent",
-                          boxShadow: isLanded ? `0 0 20px ${finalTeam.color}50` : "none",
                         }}
                         animate={isLanded ? { 
-                          scale: [1, 1.05, 1],
+                          scale: [1, 1.05, 1, 1.05, 1, 1.05, 1],
+                          backgroundColor: [
+                            `${finalTeam.color}30`,
+                            "rgba(255, 215, 0, 0.4)",
+                            "rgba(147, 51, 234, 0.4)",
+                            "rgba(59, 130, 246, 0.4)",
+                            "rgba(236, 72, 153, 0.4)",
+                            "rgba(34, 197, 94, 0.4)",
+                            `${finalTeam.color}30`,
+                          ],
                           boxShadow: [
                             `0 0 20px ${finalTeam.color}50`,
-                            `0 0 40px ${finalTeam.color}80`,
+                            "0 0 40px rgba(255, 215, 0, 0.6)",
+                            "0 0 40px rgba(147, 51, 234, 0.6)",
+                            "0 0 40px rgba(59, 130, 246, 0.6)",
+                            "0 0 40px rgba(236, 72, 153, 0.6)",
+                            "0 0 40px rgba(34, 197, 94, 0.6)",
                             `0 0 20px ${finalTeam.color}50`,
                           ],
                         } : {}}
                         transition={{ 
-                          duration: 0.8, 
-                          repeat: isLanded ? 3 : 0,
+                          duration: 2.5, 
                           ease: "easeInOut",
                         }}
                       >
                         <motion.span 
                           className="font-bold text-xl inline-block"
-                          style={{ color: isLanded ? finalTeam.color : "white" }}
                           animate={isLanded ? { 
-                            scale: [1, 1.02, 1],
+                            color: [
+                              finalTeam.color,
+                              "#FFD700",
+                              "#9333EA",
+                              "#3B82F6",
+                              "#EC4899",
+                              "#22C55E",
+                              finalTeam.color,
+                            ],
                           } : {}}
                           transition={{ 
-                            duration: 0.8, 
-                            repeat: isLanded ? 3 : 0,
+                            duration: 2.5, 
                             ease: "easeInOut",
                           }}
+                          style={{ color: isLanded ? finalTeam.color : "white" }}
                         >
                           {team.city} {team.name}
                         </motion.span>
