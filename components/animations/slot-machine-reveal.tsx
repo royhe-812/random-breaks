@@ -273,23 +273,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
               <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80" />
             </div>
 
-            {/* Glow effect on landing */}
-            <AnimatePresence>
-              {(phase === "landed" || phase === "explode") && (
-                <motion.div
-                  className="absolute inset-0 pointer-events-none"
-                  initial={{ opacity: 0 }}
-                  animate={{ 
-                    opacity: [0, 0.5, 0.2, 0.5, 0.2],
-                  }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  style={{ 
-                    backgroundColor: finalTeam.color,
-                    boxShadow: `inset 0 0 40px ${finalTeam.color}`,
-                  }}
-                />
-              )}
-            </AnimatePresence>
+
           </div>
 
 
