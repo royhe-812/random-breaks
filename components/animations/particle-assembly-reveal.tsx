@@ -184,54 +184,8 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
             {/* Celebration elements */}
             <CelebrationElements show={true} teamColor={team.color} />
             
-            {/* Multi-ring glow effect */}
-            <motion.div
-              className="absolute w-48 h-48 rounded-full -z-10"
-              style={{
-                background: `radial-gradient(circle, 
-                  rgba(167,139,250,0.3) 0%, 
-                  ${team.color}20 40%, 
-                  transparent 70%
-                )`,
-              }}
-              animate={{ scale: 1.15, opacity: 0.7 }}
-              transition={{ duration: 1 }}
-            />
-            
-            {/* Logo circle with orbiting particles */}
+            {/* Logo circle */}
             <div className="relative w-32 h-32 flex items-center justify-center">
-              {/* Orbiting holographic particles - perfectly centered */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-44 h-44 pointer-events-none -z-10">
-                {[...Array(8)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute inset-0"
-                    style={{ transformOrigin: "center center" }}
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 4 + i * 0.5,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  >
-                    <motion.div
-                      className="absolute w-3 h-3 rounded-full"
-                      style={{
-                        top: 0,
-                        left: "50%",
-                        transform: "translateX(-50%)",
-                        background: i % 2 === 0 
-                          ? "linear-gradient(135deg, #a78bfa, #c4b5fd)" 
-                          : `linear-gradient(135deg, ${team.secondary}, ${team.color})`,
-                        boxShadow: `0 0 10px ${i % 2 === 0 ? "#a78bfa" : team.secondary}`,
-                      }}
-                      animate={{ scale: [1, 1.3, 1] }}
-                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-              
               {/* Logo circle with premium finish */}
               <motion.div
                 className="absolute inset-0 rounded-full flex items-center justify-center overflow-hidden"
@@ -281,19 +235,7 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
               </p>
             </motion.div>
             
-            <motion.div
-              className="mt-3 px-5 py-2 rounded-full text-sm font-bold"
-              style={{ 
-                background: "linear-gradient(135deg, rgba(167,139,250,0.3), rgba(196,181,253,0.2))",
-                color: "#c4b5fd",
-                border: "1px solid rgba(167,139,250,0.4)",
-              }}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              Drafted to your team!
-            </motion.div>
+
           </motion.div>
         )}
       </AnimatePresence>
