@@ -277,23 +277,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
           {/* Bottom area with result */}
         </div>
 
-        {/* Pulsing glow behind machine on win */}
-        <AnimatePresence>
-          {phase === "explode" && (
-            <motion.div
-              className="absolute inset-0 -z-10 rounded-3xl"
-              style={{ 
-                background: `linear-gradient(135deg, ${finalTeam.color}, #22c55e)`,
-              }}
-              initial={{ opacity: 0, scale: 1 }}
-animate={{
-                opacity: 0.4,
-                scale: 1.1,
-              }}
-              transition={{ duration: 0.5 }}
-            />
-          )}
-        </AnimatePresence>
+
       </motion.div>
 
 
