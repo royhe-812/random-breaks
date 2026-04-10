@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { CelebrationElements, HolographicShine } from "./celebration-elements"
+import { HolographicShine } from "./celebration-elements"
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
@@ -68,9 +68,6 @@ export function CardFlipReveal({ isRevealing, onComplete, team: propTeam }: Card
 
   return (
     <div className="relative w-52 h-80 perspective-1000">
-      {/* Celebration elements */}
-      <CelebrationElements show={isFlipped && showShine} teamColor={team.color} />
-      
       <motion.div
         className="relative w-full h-full"
         initial={false}
