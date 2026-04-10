@@ -161,7 +161,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
       <AnimatePresence>
         {phase === "landed" && (
           <motion.div
-            className="fixed inset-0 bg-violet-200 pointer-events-none z-50"
+            className="fixed inset-0 bg-green-200 pointer-events-none z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 0.9, 0] }}
             transition={{ duration: 0.3 }}
@@ -191,9 +191,9 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
             background: "rgba(24, 24, 27, 0.85)",
             borderWidth: phase === "explode" ? 2 : 1,
             borderStyle: "solid",
-            borderColor: phase === "explode" ? "#a78bfa" : "rgba(255, 255, 255, 0.1)",
+            borderColor: phase === "explode" ? "#22c55e" : "rgba(255, 255, 255, 0.1)",
             boxShadow: phase === "explode" 
-              ? "0 0 60px rgba(167,139,250,0.5), 0 0 120px rgba(167,139,250,0.2)"
+              ? "0 0 60px rgba(34,197,94,0.5), 0 0 120px rgba(34,197,94,0.2)"
               : "0 20px 60px rgba(0,0,0,0.5)",
           }}
         >
@@ -201,7 +201,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
           <div 
             className="h-14 flex items-center justify-center relative overflow-hidden"
             style={{
-              background: "linear-gradient(180deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%)",
+              background: "linear-gradient(180deg, #4ade80 0%, #22c55e 50%, #16a34a 100%)",
             }}
           >
             <motion.div
@@ -329,7 +329,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
             <motion.div
               className="absolute inset-0 -z-10 rounded-3xl"
               style={{ 
-                background: `linear-gradient(135deg, ${finalTeam.color}, #a78bfa)`,
+                background: `linear-gradient(135deg, ${finalTeam.color}, #22c55e)`,
               }}
               initial={{ opacity: 0, scale: 1 }}
 animate={{
@@ -425,9 +425,9 @@ animate={{
                   key={`burst-${i}`}
                   className="absolute w-3 h-3 z-20"
                   style={{
-                    backgroundColor: [finalTeam.color, "#a78bfa", "#c4b5fd", "#FFD700"][i % 4],
-                    borderRadius: i % 3 === 0 ? "50%" : i % 3 === 1 ? "2px" : "0",
-                    boxShadow: `0 0 6px ${["#a78bfa", "#c4b5fd", finalTeam.color][i % 3]}`,
+                  backgroundColor: [finalTeam.color, "#22c55e", "#4ade80", "#FFD700"][i % 4],
+                  borderRadius: i % 3 === 0 ? "50%" : i % 3 === 1 ? "2px" : "0",
+                  boxShadow: `0 0 6px ${["#22c55e", "#4ade80", finalTeam.color][i % 3]}`,
                     left: "50%",
                     top: "50%",
                   }}
@@ -451,7 +451,7 @@ animate={{
             {/* Ring burst effects */}
             <motion.div
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 z-0"
-              style={{ borderColor: "#a78bfa" }}
+              style={{ borderColor: "#22c55e" }}
               initial={{ width: 0, height: 0, opacity: 1 }}
               animate={{ width: 450, height: 450, opacity: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
