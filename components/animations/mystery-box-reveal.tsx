@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { CelebrationElements, HolographicShine } from "./celebration-elements"
+import { HolographicShine } from "./celebration-elements"
 import Image from "next/image"
 
 const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayLiveApp_Stars_DW_CC_v007_CC%202-OGJYd3jy5o3bamd4lN3498JekCYscy.png"
@@ -276,28 +276,55 @@ animate={phase === "glowing" ? {
             animate={{ scale: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
           >
-            {/* Celebration elements - behind everything */}
-            <div className="absolute inset-0 -z-10 pointer-events-none">
-              <CelebrationElements show={true} teamColor={team.color} />
-            </div>
-            
-            {/* Team logo container */}
+            {/* Team logo container with circular glow */}
             <motion.div
               className="relative w-28 h-28 rounded-full flex items-center justify-center"
               style={{
                 background: team.color,
-                boxShadow: `0 0 40px ${team.color}60`,
               }}
-              animate={{ y: [0, -6, 0] }}
+              animate={{ 
+                y: [0, -6, 0],
+                boxShadow: [
+                  `0 0 40px ${team.color}60, 0 0 80px ${team.color}40`,
+                  `0 0 60px ${team.color}80, 0 0 100px ${team.color}50`,
+                  `0 0 40px ${team.color}60, 0 0 80px ${team.color}40`,
+                ],
+              }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
               <HolographicShine />
               <span className="text-4xl font-black text-white relative z-10 drop-shadow-lg">
                 {(team as typeof teams[0]).abbrev || team.name.slice(0, 2).toUpperCase()}
               </span>
+              
+              {/* Floating stars next to the circle */}
+              {[...Array(3)].map((_, i) => (
+                <motion.div
+                  key={`star-${i}`}
+                  className="absolute w-8 h-8"
+                  style={{
+                    left: i === 0 ? -30 : i === 1 ? 'auto' : -20,
+                    right: i === 1 ? -30 : i === 2 ? -25 : 'auto',
+                    top: i === 0 ? 10 : i === 1 ? 20 : 'auto',
+                    bottom: i === 2 ? 5 : 'auto',
+                  }}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ 
+                    scale: 1, 
+                    opacity: 1,
+                    y: [0, -5, 0],
+                  }}
+                  transition={{ 
+                    delay: 0.2 + i * 0.1,
+                    y: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 },
+                  }}
+                >
+                  <Image src={STARS_URL} alt="" fill className="object-contain" />
+                </motion.div>
+              ))}
             </motion.div>
             
-            {/* Team info - clear spacing, high z-index */}
+            {/* Team info */}
             <motion.div
               className="mt-6 text-center relative z-20"
               initial={{ opacity: 0, y: 20 }}
@@ -313,7 +340,7 @@ animate={phase === "glowing" ? {
             </motion.div>
             
             <motion.p
-              className="text-violet-300 text-xs mt-3 font-medium relative z-20"
+              className="text-green-400 text-xs mt-3 font-medium relative z-20"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
