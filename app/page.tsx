@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 
 // External libraries
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, ChevronRight, ChevronsRight, Heart, LayoutGrid, MoreHorizontal, Star, Wallet } from "lucide-react"
+import { ChevronDown, ChevronRight, ChevronsRight, Heart, Star } from "lucide-react"
 
 // Internal components
 import { TeamSpinner, type Team } from "@/components/team-spinner"
@@ -183,7 +183,7 @@ export default function AnimationShowcase() {
         </div>
         
         {/* Right side action buttons with viewer count */}
-        <div className="absolute top-4 right-4 flex flex-col items-center gap-3">
+        <div className="absolute top-4 right-4 flex flex-col items-center gap-2">
           {/* Live stream icon with viewer count */}
           <div className="flex flex-col items-center">
             <img 
@@ -191,17 +191,52 @@ export default function AnimationShowcase() {
               alt="Live" 
               className="w-10 h-10"
             />
-            <span className="text-white text-xs font-medium mt-1">{viewerCount}</span>
+            <span className="text-white text-xs font-medium mt-0.5">{viewerCount}</span>
           </div>
-          <button className="w-10 h-10 bg-black/40 backdrop-blur rounded-xl flex items-center justify-center">
-            <LayoutGrid className="w-5 h-5 text-white" />
-          </button>
-          <button className="w-10 h-10 bg-black/40 backdrop-blur rounded-xl flex items-center justify-center">
-            <Wallet className="w-5 h-5 text-white" />
-          </button>
-          <button className="w-10 h-10 bg-black/40 backdrop-blur rounded-xl flex items-center justify-center">
-            <MoreHorizontal className="w-5 h-5 text-white" />
-          </button>
+          {/* Items */}
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img 
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/items-lRJIiXEXUI5vZJg8YwpehK7c6cPcIp.png" 
+                alt="Items" 
+                className="w-6 h-6"
+              />
+            </div>
+            <span className="text-white text-xs font-medium mt-0.5">Items</span>
+          </div>
+          {/* Wallet */}
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img 
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/wallet-DJozjl9ngzsbQkbB6XZaj8GAvfXwO3.png" 
+                alt="Wallet" 
+                className="w-6 h-6"
+              />
+            </div>
+            <span className="text-white text-xs font-medium mt-0.5">Wallet</span>
+          </div>
+          {/* Polls */}
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img 
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/polls-TLiAJGRZLHuSvOrQ9KyfrufvDyhfjC.png" 
+                alt="Polls" 
+                className="w-6 h-6"
+              />
+            </div>
+            <span className="text-white text-xs font-medium mt-0.5">Polls</span>
+          </div>
+          {/* More */}
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img 
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/more-7JAmofygtcnGhXf8oMlQuYxSkAZxTC.png" 
+                alt="More" 
+                className="w-6 h-6"
+              />
+            </div>
+            <span className="text-white text-xs font-medium mt-0.5">More</span>
+          </div>
         </div>
       </div>
 
