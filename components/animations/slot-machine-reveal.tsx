@@ -2,11 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { CelebrationElements } from "./celebration-elements"
-import Image from "next/image"
-
-const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayLiveApp_Stars_DW_CC_v007_CC%202-OGJYd3jy5o3bamd4lN3498JekCYscy.png"
-const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", color: "#E31837", abbr: "KC" },
@@ -187,11 +182,6 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
         }
         transition={{ duration: 0.5 }}
       >
-        {/* Celebration elements on win */}
-        {phase === "explode" && (
-          <CelebrationElements show={true} teamColor={finalTeam.color} />
-        )}
-
         {/* Premium slot machine frame - matching item card/randomizer style */}
         <div 
           className="relative rounded-3xl overflow-hidden backdrop-blur-xl"
@@ -306,130 +296,7 @@ animate={{
         </AnimatePresence>
       </motion.div>
 
-      {/* Explosive celebration */}
-      <AnimatePresence>
-        {phase === "explode" && (
-          <>
-            {/* Floating stars burst */}
-            {[...Array(6)].map((_, i) => {
-              const angle = (i / 6) * Math.PI * 2
-              const distance = 120 + Math.random() * 80
-              const x = Math.cos(angle) * distance
-              const y = Math.sin(angle) * distance
-              
-              return (
-                <motion.div
-                  key={`star-${i}`}
-                  className="absolute w-8 h-8 z-30"
-                  style={{
-                    left: "50%",
-                    top: "50%",
-                  }}
-                  initial={{ x: 0, y: 0, opacity: 0, scale: 0 }}
-                  animate={{
-                    x: x,
-                    y: y,
-                    opacity: [0, 1, 1, 0],
-                    scale: [0, 1.2, 1, 0.5],
-                    rotate: Math.random() * 360,
-                  }}
-                  transition={{ 
-                    duration: 1.5,
-                    ease: "easeOut",
-                    delay: i * 0.08,
-                  }}
-                >
-                  <Image src={STARS_URL} alt="" fill className="object-contain" />
-                </motion.div>
-              )
-            })}
-            
-            {/* Fire icons burst */}
-            {[...Array(4)].map((_, i) => {
-              const angle = ((i + 0.5) / 4) * Math.PI * 2
-              const distance = 100 + Math.random() * 60
-              const x = Math.cos(angle) * distance
-              const y = Math.sin(angle) * distance
-              
-              return (
-                <motion.div
-                  key={`fire-${i}`}
-                  className="absolute w-10 h-10 z-30"
-                  style={{
-                    left: "50%",
-                    top: "50%",
-                  }}
-                  initial={{ x: 0, y: 0, opacity: 0, scale: 0 }}
-                  animate={{
-                    x: x,
-                    y: y,
-                    opacity: [0, 1, 1, 0],
-                    scale: [0, 1.3, 1, 0.5],
-                  }}
-                  transition={{ 
-                    duration: 1.3,
-                    ease: "easeOut",
-                    delay: 0.1 + i * 0.1,
-                  }}
-                >
-                  <Image src={FIRE_URL} alt="" fill className="object-contain" />
-                </motion.div>
-              )
-            })}
 
-            {/* Holographic confetti */}
-            {[...Array(40)].map((_, i) => {
-              const angle = (i / 40) * Math.PI * 2
-              const distance = 150 + Math.random() * 150
-              const x = Math.cos(angle) * distance
-              const y = Math.sin(angle) * distance
-              
-              return (
-                <motion.div
-                  key={`burst-${i}`}
-                  className="absolute w-3 h-3 z-20"
-                  style={{
-                  backgroundColor: [finalTeam.color, "#22c55e", "#4ade80", "#FFD700"][i % 4],
-                  borderRadius: i % 3 === 0 ? "50%" : i % 3 === 1 ? "2px" : "0",
-                  boxShadow: `0 0 6px ${["#22c55e", "#4ade80", finalTeam.color][i % 3]}`,
-                    left: "50%",
-                    top: "50%",
-                  }}
-                  initial={{ x: 0, y: 0, opacity: 1, scale: 0 }}
-                  animate={{
-                    x: x,
-                    y: y,
-                    opacity: [1, 1, 0],
-                    scale: [0, 1.5, 0.5],
-                    rotate: Math.random() * 720,
-                  }}
-                  transition={{ 
-                    duration: 1.2,
-                    ease: "easeOut",
-                    delay: i * 0.01,
-                  }}
-                />
-              )
-            })}
-
-            {/* Ring burst effects */}
-            <motion.div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 z-0"
-              style={{ borderColor: "#22c55e" }}
-              initial={{ width: 0, height: 0, opacity: 1 }}
-              animate={{ width: 450, height: 450, opacity: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-            />
-            <motion.div
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 z-0"
-              style={{ borderColor: finalTeam.color }}
-              initial={{ width: 0, height: 0, opacity: 1 }}
-              animate={{ width: 350, height: 350, opacity: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-            />
-          </>
-        )}
-      </AnimatePresence>
     </div>
   )
 }
