@@ -39,7 +39,7 @@ interface ParticleAssemblyRevealProps {
 
 export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam }: ParticleAssemblyRevealProps) {
   const [phase, setPhase] = useState<"idle" | "scattering" | "assembling" | "revealed">("idle")
-  const [randomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
+  const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const team = propTeam || randomTeam
   
   const particles = useMemo(() => 
@@ -54,6 +54,8 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
 
   useEffect(() => {
     if (isRevealing) {
+      // Pick a new random team each reveal
+      setRandomTeam(teams[Math.floor(Math.random() * teams.length)])
       setPhase("idle")
       
       const scatterTimer = setTimeout(() => setPhase("scattering"), 100)

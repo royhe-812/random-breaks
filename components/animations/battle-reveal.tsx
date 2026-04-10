@@ -47,11 +47,14 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
   const [rightIndex, setRightIndex] = useState(4)
   const [spinSpeed, setSpinSpeed] = useState(80)
   const [leadingSide, setLeadingSide] = useState<"left" | "right" | "none">("none")
+  const [winnerSide, setWinnerSide] = useState<"left" | "right">("left")
   const audioContextRef = useRef<AudioContext | null>(null)
   
-  // Randomly select winner (left or right)
-  const [winnerSide] = useMemo(() => {
-    return [Math.random() > 0.5 ? "left" : "right"]
+  // Pick new random winner each time isRevealing becomes true
+  useEffect(() => {
+    if (isRevealing) {
+      setWinnerSide(Math.random() > 0.5 ? "left" : "right")
+    }
   }, [isRevealing])
 
   // Get the final teams when spinning stops

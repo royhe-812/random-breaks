@@ -43,11 +43,13 @@ interface GiftBoxRevealProps {
 
 export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftBoxRevealProps) {
   const [phase, setPhase] = useState<"idle" | "shaking" | "opening" | "revealed">("idle")
-  const [randomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
+  const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const team = propTeam || randomTeam
 
   useEffect(() => {
     if (isRevealing) {
+      // Pick a new random team each reveal
+      setRandomTeam(teams[Math.floor(Math.random() * teams.length)])
       setPhase("idle")
       
       const shakeTimer = setTimeout(() => setPhase("shaking"), 200)

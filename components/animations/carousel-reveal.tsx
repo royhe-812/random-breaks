@@ -32,6 +32,14 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
   const hasStartedRef = useRef(false)
   const audioContextRef = useRef<AudioContext | null>(null)
 
+  // Reset the hasStartedRef when isRevealing changes to false so next reveal works
+  useEffect(() => {
+    if (!isRevealing) {
+      hasStartedRef.current = false
+      setIsSpinning(false)
+    }
+  }, [isRevealing])
+
   // Initialize audio context
   useEffect(() => {
     audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
@@ -60,6 +68,9 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
   useEffect(() => {
     if (isRevealing && !hasStartedRef.current) {
       hasStartedRef.current = true
+      // Reset states for new reveal
+      setRotation(0)
+      setHasStopped(false)
       
       // Pick random target card
       const targetIndex = Math.floor(Math.random() * teams.length)
