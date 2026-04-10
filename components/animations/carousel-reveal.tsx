@@ -112,9 +112,9 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
 
   return (
     <div className="flex flex-col items-center justify-center h-[400px] relative">
-      {/* 3D Carousel Ring - fixed position */}
+      {/* 3D Carousel Ring */}
       <div 
-        className="absolute top-8 left-0 right-0 h-56 flex items-center justify-center"
+        className="relative h-56 w-full flex items-center justify-center"
         style={{ perspective: "1000px" }}
       >
         {/* Rotating container */}
@@ -200,8 +200,8 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
 
 
 
-      {/* Winner text - fixed position below carousel */}
-      <div className="absolute bottom-8 left-0 right-0 flex justify-center">
+      {/* Winner text - below carousel with fixed height container */}
+      <div className="h-24 flex items-center justify-center">
         <AnimatePresence>
           {hasStopped && (
             <motion.div
