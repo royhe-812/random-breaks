@@ -44,7 +44,8 @@ interface PackRipRevealProps {
 export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackRipRevealProps) {
   const [phase, setPhase] = useState<"idle" | "grip" | "tearing" | "open" | "revealed">("idle")
   const [tearProgress, setTearProgress] = useState(0)
-  const team = propTeam || teams[0]
+  const [randomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
+  const team = propTeam || randomTeam
 
   useEffect(() => {
     if (isRevealing) {

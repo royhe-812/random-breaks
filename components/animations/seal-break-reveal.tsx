@@ -33,7 +33,7 @@ interface SealBreakRevealProps {
 
 export function SealBreakReveal({ isRevealing, onComplete }: SealBreakRevealProps) {
   const [phase, setPhase] = useState<"idle" | "heating" | "cracking" | "breaking" | "revealed">("idle")
-  const team = teams[0]
+  const [team] = useState(() => teams[Math.floor(Math.random() * teams.length)])
 
   useEffect(() => {
     if (isRevealing) {

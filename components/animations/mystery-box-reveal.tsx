@@ -41,7 +41,8 @@ interface MysteryBoxRevealProps {
 
 export function MysteryBoxReveal({ isRevealing, onComplete, team: propTeam }: MysteryBoxRevealProps) {
   const [phase, setPhase] = useState<"idle" | "shaking" | "glowing" | "burst" | "revealed">("idle")
-  const team = propTeam || teams[0]
+  const [randomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
+  const team = propTeam || randomTeam
 
   useEffect(() => {
     if (isRevealing) {

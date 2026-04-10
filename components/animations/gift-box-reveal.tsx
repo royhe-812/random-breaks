@@ -43,7 +43,8 @@ interface GiftBoxRevealProps {
 
 export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftBoxRevealProps) {
   const [phase, setPhase] = useState<"idle" | "shaking" | "opening" | "revealed">("idle")
-  const team = propTeam || teams[0]
+  const [randomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
+  const team = propTeam || randomTeam
 
   useEffect(() => {
     if (isRevealing) {

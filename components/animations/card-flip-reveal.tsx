@@ -38,7 +38,8 @@ interface CardFlipRevealProps {
 
 export function CardFlipReveal({ isRevealing, onComplete, team: propTeam }: CardFlipRevealProps) {
   const [isFlipped, setIsFlipped] = useState(false)
-  const team = propTeam || teams[0]
+  const [randomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
+  const team = propTeam || randomTeam
   const [showShine, setShowShine] = useState(false)
 
   useEffect(() => {
