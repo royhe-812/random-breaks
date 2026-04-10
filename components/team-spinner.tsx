@@ -3,7 +3,7 @@
 // Imports
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronRight, Dice5 } from "lucide-react"
+import { Dice5 } from "lucide-react"
 
 // NFL teams data with official abbreviations
 const teams = [
@@ -173,18 +173,8 @@ export function TeamSpinner({
         }}
         transition={{ duration: 0.2 }}
       >
-        {/* Header Row */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-          <span className="text-white/70 text-sm">
-            {availableSpots}/{totalSpots} spots available
-          </span>
-          <button className="flex items-center gap-1 text-white font-medium text-sm">
-            View all <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-
         {/* Team Display Row */}
-        <div className="px-4 py-4">
+        <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Team/Spot Indicator */}
