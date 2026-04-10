@@ -72,6 +72,9 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
     }
   }, [isRevealing, onComplete])
 
+  // Offset to align particles/swirl with the final logo circle position
+  const logoOffsetY = -50
+
   return (
     <div className="relative w-64 h-80 flex items-center justify-center overflow-visible">
       {/* Scattered particles - holographic style */}
@@ -95,6 +98,9 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
                   boxShadow: `0 0 ${particle.size * 2}px ${
                     particle.id % 2 === 0 ? "rgba(167,139,250,0.6)" : team.color + "80"
                   }`,
+                  top: "50%",
+                  left: "50%",
+                  marginTop: logoOffsetY,
                 }}
                 initial={{
                   x: particle.startX,
@@ -146,6 +152,10 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
                   rgba(233,213,255,0.4) 75%, 
                   rgba(167,139,250,0) 100%
                 )`,
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                marginTop: logoOffsetY,
               }}
               initial={{ scale: 2.5, opacity: 0, rotate: 0 }}
               animate={{ scale: 1, opacity: 1, rotate: 720 }}
@@ -162,6 +172,10 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
                   ${team.color}60 75%, 
                   ${team.color}00 100%
                 )`,
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                marginTop: logoOffsetY,
               }}
               initial={{ scale: 2, opacity: 0, rotate: 0 }}
               animate={{ scale: 1, opacity: 1, rotate: -540 }}
@@ -176,7 +190,13 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
       <AnimatePresence>
         {phase === "revealed" && (
           <motion.div
-            className="flex flex-col items-center relative"
+            className="absolute flex flex-col items-center"
+            style={{
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              marginTop: logoOffsetY,
+            }}
             initial={{ scale: 0.3, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 12 }}
@@ -214,7 +234,7 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
             </div>
             
             <motion.div
-              className="mt-8 text-center"
+              className="mt-6 text-center"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
@@ -226,8 +246,6 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
                 {team.name}
               </p>
             </motion.div>
-            
-
           </motion.div>
         )}
       </AnimatePresence>
