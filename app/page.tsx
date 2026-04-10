@@ -235,9 +235,12 @@ export default function AnimationShowcase() {
                 <span className="text-white/50"> - 16X 2023 Panini Mosaic NFL Blaster Random #224</span>
               </p>
               <p className="text-white/50 text-sm mb-1">16/32 spots available</p>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col">
                 <span className="text-white font-bold text-lg">{hasWon ? '$30.00' : '$28.00'}</span>
-                <span className="text-green-400 text-sm">+ $5 shipping</span>
+                <div className="flex items-center gap-1">
+                  <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/truck-2xeDy1VfSM6zcBUqAJGI5v1LsF4ZXw.png" alt="" className="w-4 h-4 opacity-50" />
+                  <span className="text-white/50 text-sm">$5 shipping</span>
+                </div>
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-white/40 mt-1 flex-shrink-0" />
