@@ -180,15 +180,19 @@ export default function AnimationShowcase() {
             </div>
           </div>
           
-          {/* Viewer count */}
-          <div className="flex items-center gap-1 bg-red-500 rounded-full px-2 py-1">
-            <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-            <span className="text-white text-xs font-medium">{viewerCount}</span>
-          </div>
         </div>
         
-        {/* Right side action buttons */}
-        <div className="absolute top-16 right-4 flex flex-col items-end gap-3">
+        {/* Right side action buttons with viewer count */}
+        <div className="absolute top-4 right-4 flex flex-col items-center gap-3">
+          {/* Live stream icon with viewer count */}
+          <div className="flex flex-col items-center">
+            <img 
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Stream%20navigation%20avatar-kd9nUvhPaYGQGCKYioJLK4vLokIQ87.png" 
+              alt="Live" 
+              className="w-10 h-10"
+            />
+            <span className="text-white text-xs font-medium mt-1">{viewerCount}</span>
+          </div>
           <button className="w-10 h-10 bg-black/40 backdrop-blur rounded-xl flex items-center justify-center">
             <LayoutGrid className="w-5 h-5 text-white" />
           </button>
