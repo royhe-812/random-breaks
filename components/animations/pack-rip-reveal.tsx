@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
-import { CelebrationElements } from "./celebration-elements"
+
 
 const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayLiveApp_Stars_DW_CC_v007_CC%202-OGJYd3jy5o3bamd4lN3498JekCYscy.png"
 const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
@@ -277,13 +277,6 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
           {/* Card content */}
           <div className="relative w-full h-full flex flex-col items-center justify-center p-3">
             
-            {/* Celebration elements */}
-            <AnimatePresence>
-              {isRevealed && (
-                <CelebrationElements show={true} teamColor={team.color} />
-              )}
-            </AnimatePresence>
-
             {/* Team logo circle */}
             <motion.div
               className="relative w-14 h-14 rounded-full flex items-center justify-center mb-2"
