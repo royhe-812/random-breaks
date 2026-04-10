@@ -57,7 +57,7 @@ export function TeamSpinner({
   username
 }: TeamSpinnerProps) {
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0)
-  const [spinPhase, setSpinPhase] = useState<"idle" | "fast" | "slowing" | "stopped" | "revealing">("idle")
+  const [spinPhase, setSpinPhase] = useState<"idle" | "fast" | "slowing" | "stopped">("idle")
   const [spinSpeed, setSpinSpeed] = useState(50)
   const [finalTeamIndex, setFinalTeamIndex] = useState<number | null>(null)
   const targetTeamIndexRef = useRef<number | null>(null)
@@ -151,19 +151,9 @@ export function TeamSpinner({
     }
   }, [spinPhase])
 
-  // Transition from stopped to revealing after a brief pause
+  // Stay on "Revealing..." for 1 second then trigger the win animation
   useEffect(() => {
     if (finalTeamIndex !== null && spinPhase === "stopped") {
-      const timer = setTimeout(() => {
-        setSpinPhase("revealing")
-      }, 500)
-      return () => clearTimeout(timer)
-    }
-  }, [finalTeamIndex, spinPhase])
-
-  // Show the revealed team for 1 second then trigger completion
-  useEffect(() => {
-    if (finalTeamIndex !== null && spinPhase === "revealing") {
       const timer = setTimeout(() => {
         onSpinComplete(teams[finalTeamIndex])
       }, 1000)
@@ -193,18 +183,15 @@ export function TeamSpinner({
                 className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-lg relative overflow-hidden"
                 style={{ 
                   backgroundColor: spinPhase === "idle" ? "#3f3f46" : 
-                                   spinPhase === "stopped" ? "#666" : 
-                                   spinPhase === "revealing" ? teams[finalTeamIndex ?? 0].color : currentTeam.color 
+                                   spinPhase === "stopped" ? "#666" : currentTeam.color 
                 }}
-                animate={{ scale: spinPhase === "revealing" ? [1, 1.1, 1] : 1 }}
-                transition={{ duration: spinPhase === "revealing" ? 0.3 : 0.15, ease: "easeInOut" }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.15, ease: "easeInOut" }}
               >
                 {spinPhase === "idle" ? (
                   <DieIcon className="w-6 h-6" />
                 ) : spinPhase === "stopped" ? (
                   "?"
-                ) : spinPhase === "revealing" ? (
-                  teams[finalTeamIndex ?? 0].abbrev
                 ) : (
                   currentTeam.abbrev
                 )}
@@ -221,7 +208,7 @@ export function TeamSpinner({
               <div className="flex flex-col">
                 <AnimatePresence mode="wait">
                   <motion.span
-                    key={spinPhase === "idle" ? "idle" : spinPhase === "stopped" ? "hidden" : spinPhase === "revealing" ? "revealed" : currentTeam.name}
+                    key={spinPhase === "idle" ? "idle" : spinPhase === "stopped" ? "hidden" : currentTeam.name}
                     className="text-white font-semibold text-lg"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -230,7 +217,6 @@ export function TeamSpinner({
                   >
                     {spinPhase === "idle" ? "Your Spot Assignment" : 
                      spinPhase === "stopped" ? "???" : 
-                     spinPhase === "revealing" ? `${teams[finalTeamIndex ?? 0].city} ${teams[finalTeamIndex ?? 0].name}` :
                      `${currentTeam.city} ${currentTeam.name}`}
                   </motion.span>
                 </AnimatePresence>
@@ -252,7 +238,7 @@ export function TeamSpinner({
               whileHover={disabled || spinPhase !== "idle" ? {} : { scale: 1.02 }}
               whileTap={disabled || spinPhase !== "idle" ? {} : { scale: 0.98 }}
             >
-              {spinPhase === "idle" ? "Tap to spin" : spinPhase === "stopped" ? "Revealing..." : spinPhase === "revealing" ? "Winner!" : "Spinning"}
+              {spinPhase === "idle" ? "Tap to spin" : spinPhase === "stopped" ? "Revealing..." : "Spinning"}
             </motion.button>
           </div>
         </div>
