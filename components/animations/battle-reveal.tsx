@@ -454,7 +454,7 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
           <>
             {/* Winner text */}
             <motion.div
-              className="absolute -bottom-24 flex flex-col items-center pt-3"
+              className="absolute -bottom-32 flex flex-col items-center"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -468,35 +468,10 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
               >
                 {winner.name.toUpperCase()}
               </span>
-              <span className="text-violet-300 text-sm font-semibold tracking-widest mt-1">
+              <span className="text-green-400 text-sm font-semibold tracking-widest mt-1">
                 WINS!
               </span>
             </motion.div>
-
-            {/* Confetti burst */}
-            {[...Array(24)].map((_, i) => (
-              <motion.div
-                key={`confetti-${i}`}
-                className="absolute w-2 h-2 rounded-full"
-                style={{
-                  background: i % 2 === 0 ? winner.color : winner.secondary,
-                  left: winnerSide === "left" ? "25%" : "75%",
-                  top: "50%",
-                }}
-                initial={{ scale: 0 }}
-                animate={{
-                  scale: [0, 1, 0],
-                  x: (Math.random() - 0.5) * 250,
-                  y: (Math.random() - 0.5) * 250,
-                  opacity: [1, 1, 0],
-                }}
-                transition={{
-                  duration: 1.2,
-                  delay: 0.1 + i * 0.02,
-                  ease: "easeOut",
-                }}
-              />
-            ))}
           </>
         )}
       </AnimatePresence>
