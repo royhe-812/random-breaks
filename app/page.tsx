@@ -234,7 +234,7 @@ export default function AnimationShowcase() {
                 <span className="font-semibold">{selectedTeam ? selectedTeam.name : 'Random team'}</span>
                 <span className="text-white/50"> - 16X 2023 Panini Mosaic NFL Blaster Random #224</span>
               </p>
-              <p className="text-white/50 text-xs mb-1">16/32 spots available</p>
+              <p className="text-white/50 text-sm mb-1">16/32 spots available</p>
               <div className="flex items-center gap-2">
                 <span className="text-white font-bold text-lg">{hasWon ? '$30.00' : '$28.00'}</span>
                 <span className="text-green-400 text-sm">+ $5 shipping</span>
