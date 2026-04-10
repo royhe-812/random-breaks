@@ -277,32 +277,6 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
 
 
           {/* Bottom area with result */}
-          <div className="h-20 flex items-center justify-center relative">
-            <AnimatePresence>
-              {phase === "explode" && (
-                <motion.div
-                  className="px-8 py-3 rounded-full font-black text-white text-xl flex items-center gap-3"
-                  style={{ 
-                    backgroundColor: finalTeam.color,
-                    boxShadow: `0 8px 32px ${finalTeam.color}60`,
-                  }}
-                  initial={{ scale: 0, rotate: -10 }}
-                  animate={{ 
-                    scale: 1,
-                    rotate: 0,
-                  }}
-                  transition={{ 
-                    type: "spring", 
-                    stiffness: 400,
-                    damping: 12,
-                    mass: 1.2,
-                  }}
-                >
-                  <span>{(finalTeam as typeof teams[0]).city?.toUpperCase() || ""} {finalTeam.name.toUpperCase()}!</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
         </div>
 
         {/* Pulsing glow behind machine on win */}
