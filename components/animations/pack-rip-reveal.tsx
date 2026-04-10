@@ -78,21 +78,22 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
   const isCardOut = phase === "cardOut" || phase === "revealed"
   const isRevealed = phase === "revealed"
 
-  // Calculate pack transforms based on phase
+  // Calculate pack transforms based on phase - zooms IN closer to screen like the GIF
   const getPackTransform = () => {
     switch (phase) {
       case "idle":
-        return { scale: 1, rotate: 0, y: 0 }
+        return { scale: 0.8, rotate: 0, y: 0 }
       case "rotate":
-        return { scale: 0.9, rotate: -8, y: 20 }
+        return { scale: 1.1, rotate: -5, y: 10 }
       case "focus":
-        return { scale: 0.75, rotate: -5, y: 60 }
+        return { scale: 1.4, rotate: 0, y: 60 }
       case "rip":
       case "cardOut":
+        return { scale: 1.3, rotate: 0, y: 80 }
       case "revealed":
-        return { scale: 0.7, rotate: 0, y: 80 }
+        return { scale: 0.9, rotate: 0, y: 140 }
       default:
-        return { scale: 1, rotate: 0, y: 0 }
+        return { scale: 0.8, rotate: 0, y: 0 }
     }
   }
 
@@ -113,13 +114,13 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
             : `0 10px 30px rgba(0,0,0,0.3)`,
           border: `3px solid ${team.secondary}`,
         }}
-        initial={{ y: 100, opacity: 0, scale: 0.8 }}
+        initial={{ y: 60, opacity: 0, scale: 0.7 }}
         animate={
           isRevealed
-            ? { y: -80, opacity: 1, scale: 1.1 }
+            ? { y: -120, opacity: 1, scale: 1.15 }
             : isCardOut
-              ? { y: -40, opacity: 1, scale: 1 }
-              : { y: 100, opacity: 0, scale: 0.8 }
+              ? { y: -20, opacity: 1, scale: 1 }
+              : { y: 60, opacity: 0, scale: 0.7 }
         }
         transition={{ 
           duration: 0.6, 
