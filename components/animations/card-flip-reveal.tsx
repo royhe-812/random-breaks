@@ -207,35 +207,7 @@ export function CardFlipReveal({ isRevealing, onComplete, team: propTeam }: Card
         </div>
       </motion.div>
       
-      {/* Confetti particles with team colors */}
-      <AnimatePresence>
-        {isFlipped && showShine && (
-          <>
-            {[...Array(16)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute rounded-full"
-                style={{
-                  width: 4 + Math.random() * 6,
-                  height: 4 + Math.random() * 6,
-                  backgroundColor: i % 3 === 0 ? team.color : i % 3 === 1 ? team.secondary : "#a78bfa",
-                  boxShadow: `0 0 6px ${i % 2 === 0 ? team.color : "#a78bfa"}`,
-                  left: "50%",
-                  top: "50%",
-                }}
-                initial={{ x: 0, y: 0, opacity: 1, scale: 0 }}
-                animate={{
-                  x: (Math.random() - 0.5) * 250,
-                  y: (Math.random() - 0.5) * 250,
-                  opacity: 0,
-                  scale: 1,
-                }}
-                transition={{ duration: 1, delay: i * 0.02 }}
-              />
-            ))}
-          </>
-        )}
-      </AnimatePresence>
+
     </div>
   )
 }
