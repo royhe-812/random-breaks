@@ -90,7 +90,7 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
   return (
     <div className="relative w-48 h-72 flex items-center justify-center">
       
-      {/* Tear particles flying out from the tear line */}
+      {/* Tear particles flying out from the tear line - metallic foil pieces */}
       <AnimatePresence>
         {phase === "tearing" && (
           <>
@@ -101,9 +101,9 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
                 style={{
                   width: 2 + Math.random() * 4,
                   height: 4 + Math.random() * 8,
-                  backgroundColor: i % 3 === 0 ? "#c4b5fd" : i % 3 === 1 ? "#a78bfa" : "#e9d5ff",
+                  backgroundColor: i % 3 === 0 ? "#d4d4d4" : i % 3 === 1 ? "#a0a0a0" : "#e8e8e8",
                   right: `${20 + (tearProgress * 0.6)}%`,
-                  top: "18%",
+                  top: "15%",
                 }}
                 initial={{ y: 0, x: 0, opacity: 1, rotate: 0 }}
                 animate={{
@@ -122,72 +122,138 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
       {/* Main pack */}
       <div className="relative w-full h-full">
         
-        {/* Pack body - the main wrapper that holds everything */}
+        {/* Pack body - metallic foil wrapper */}
         <div
-          className="absolute inset-0 rounded-xl overflow-hidden"
+          className="absolute inset-0 overflow-hidden"
           style={{
-            background: "linear-gradient(160deg, #a78bfa 0%, #8b5cf6 40%, #7c3aed 70%, #6d28d9 100%)",
-            boxShadow: "0 8px 32px rgba(139, 92, 246, 0.4), inset 0 1px 2px rgba(255,255,255,0.2)",
-            border: "2px solid rgba(167, 139, 250, 0.6)",
+            background: "linear-gradient(160deg, #e8e8e8 0%, #c0c0c0 15%, #a8a8a8 30%, #d4d4d4 50%, #b0b0b0 70%, #909090 85%, #a0a0a0 100%)",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255,255,255,0.5), inset 0 -2px 4px rgba(0,0,0,0.2)",
           }}
         >
-          {/* Holographic foil pattern */}
+          {/* Top crimped edge */}
           <div 
-            className="absolute inset-0 opacity-20"
+            className="absolute top-0 left-0 right-0 h-5"
+            style={{
+              background: "linear-gradient(180deg, #d0d0d0 0%, #a0a0a0 50%, #808080 100%)",
+              borderBottom: "1px solid rgba(0,0,0,0.2)",
+            }}
+          >
+            {/* Crimp lines */}
+            <div className="absolute inset-0 flex justify-between px-1">
+              {[...Array(12)].map((_, i) => (
+                <div 
+                  key={i} 
+                  className="w-1 h-full"
+                  style={{
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.1) 50%, rgba(255,255,255,0.2) 100%)",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+          
+          {/* Bottom crimped edge */}
+          <div 
+            className="absolute bottom-0 left-0 right-0 h-5"
+            style={{
+              background: "linear-gradient(0deg, #d0d0d0 0%, #a0a0a0 50%, #808080 100%)",
+              borderTop: "1px solid rgba(0,0,0,0.2)",
+            }}
+          >
+            {/* Crimp lines */}
+            <div className="absolute inset-0 flex justify-between px-1">
+              {[...Array(12)].map((_, i) => (
+                <div 
+                  key={i} 
+                  className="w-1 h-full"
+                  style={{
+                    background: "linear-gradient(0deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.1) 50%, rgba(255,255,255,0.2) 100%)",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+          
+          {/* Holographic foil shimmer */}
+          <motion.div 
+            className="absolute inset-0 opacity-40"
+            style={{
+              background: `linear-gradient(
+                105deg,
+                transparent 20%,
+                rgba(255,255,255,0.8) 45%,
+                rgba(200,220,255,0.6) 50%,
+                rgba(255,200,255,0.4) 55%,
+                transparent 80%
+              )`
+            }}
+            animate={{ x: ["-100%", "200%"] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 2 }}
+          />
+          
+          {/* Subtle wrinkle/texture lines */}
+          <div 
+            className="absolute inset-0 opacity-10"
             style={{
               background: `repeating-linear-gradient(
-                110deg,
+                95deg,
                 transparent,
-                transparent 8px,
-                rgba(255,255,255,0.5) 8px,
-                rgba(255,255,255,0.5) 10px
+                transparent 20px,
+                rgba(0,0,0,0.15) 20px,
+                rgba(0,0,0,0.15) 21px
+              ), repeating-linear-gradient(
+                175deg,
+                transparent,
+                transparent 30px,
+                rgba(0,0,0,0.1) 30px,
+                rgba(0,0,0,0.1) 31px
               )`
             }}
           />
           
           {/* Pack branding */}
-          <div className="absolute top-24 inset-x-0 flex flex-col items-center">
-            <div className="text-violet-200/60 font-bold text-xs tracking-[0.3em]">2024</div>
-            <div className="text-white font-black text-2xl tracking-wider mt-1">PANINI</div>
-            <div className="text-violet-200/80 font-bold text-sm tracking-[0.2em] mt-1">MOSAIC</div>
-            <div className="w-16 h-0.5 bg-violet-300/40 mt-3 rounded-full" />
-            <div className="text-violet-300/60 text-[10px] font-semibold mt-2 tracking-widest">NFL</div>
+          <div className="absolute top-20 inset-x-0 flex flex-col items-center">
+            <div className="text-gray-500 font-bold text-xs tracking-[0.3em]">2024</div>
+            <div className="text-gray-700 font-black text-2xl tracking-wider mt-1 drop-shadow-sm">PANINI</div>
+            <div className="text-gray-600 font-bold text-sm tracking-[0.2em] mt-1">MOSAIC</div>
+            <div className="w-16 h-0.5 bg-gray-400/60 mt-3 rounded-full" />
+            <div className="text-gray-500 text-[10px] font-semibold mt-2 tracking-widest">NFL</div>
           </div>
+          
+          {/* Side seam lines */}
+          <div className="absolute top-5 bottom-5 left-1 w-px bg-gradient-to-b from-transparent via-black/10 to-transparent" />
+          <div className="absolute top-5 bottom-5 right-1 w-px bg-gradient-to-b from-transparent via-black/10 to-transparent" />
         </div>
 
         {/* Top sealed area - this gets torn */}
-        <div className="absolute top-0 left-0 right-0 h-20 overflow-hidden rounded-t-xl z-10">
+        <div className="absolute top-0 left-0 right-0 h-16 overflow-hidden z-10">
           {/* Untorn portion (shrinks from right as tear progresses) */}
           <motion.div
-            className="absolute top-0 left-0 h-full rounded-t-xl"
+            className="absolute top-0 left-0 h-full"
             style={{
               width: `${100 - tearProgress}%`,
-              background: "linear-gradient(160deg, #c4b5fd 0%, #a78bfa 40%, #8b5cf6 100%)",
-              borderTop: "2px solid rgba(167, 139, 250, 0.6)",
-              borderLeft: "2px solid rgba(167, 139, 250, 0.6)",
-              borderRight: isTearing ? "none" : "2px solid rgba(167, 139, 250, 0.6)",
+              background: "linear-gradient(180deg, #d0d0d0 0%, #b8b8b8 30%, #a0a0a0 70%, #888888 100%)",
             }}
           >
-            {/* Holographic shine */}
-            <div 
-              className="absolute inset-0 opacity-30"
-              style={{
-                background: `repeating-linear-gradient(
-                  110deg,
-                  transparent,
-                  transparent 8px,
-                  rgba(255,255,255,0.5) 8px,
-                  rgba(255,255,255,0.5) 10px
-                )`
-              }}
-            />
+            {/* Crimp texture on top */}
+            <div className="absolute top-0 left-0 right-0 h-5 flex justify-between px-1">
+              {[...Array(12)].map((_, i) => (
+                <div 
+                  key={i} 
+                  className="w-1 h-full"
+                  style={{
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(0,0,0,0.15) 50%, rgba(255,255,255,0.3) 100%)",
+                  }}
+                />
+              ))}
+            </div>
             
             {/* Tear here text */}
             {!isTearing && (
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-violet-300/50" />
-                <div className="text-violet-200/70 text-[8px] font-bold tracking-wider">RIP</div>
-                <div className="w-1.5 h-1.5 rounded-full bg-violet-300/50" />
+              <div className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-gray-500/50" />
+                <div className="text-gray-600/80 text-[8px] font-bold tracking-wider">TEAR</div>
+                <div className="w-1.5 h-1.5 rounded-full bg-gray-500/50" />
               </div>
             )}
           </motion.div>
@@ -200,7 +266,7 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
                 style={{
                   left: `${100 - tearProgress}%`,
                   width: `${tearProgress}%`,
-                  background: "linear-gradient(160deg, #c4b5fd 0%, #a78bfa 100%)",
+                  background: "linear-gradient(180deg, #c8c8c8 0%, #a8a8a8 50%, #909090 100%)",
                   transformOrigin: "left center",
                 }}
                 initial={{ rotateY: 0 }}
@@ -215,7 +281,7 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
                 <div 
                   className="absolute left-0 top-0 bottom-0 w-2 -ml-1"
                   style={{
-                    background: "#a78bfa",
+                    background: "linear-gradient(180deg, #b0b0b0, #909090)",
                     clipPath: "polygon(100% 0, 0 5%, 100% 10%, 0 18%, 100% 25%, 0 32%, 100% 40%, 0 48%, 100% 55%, 0 62%, 100% 70%, 0 78%, 100% 85%, 0 92%, 100% 100%, 100% 0)",
                   }}
                 />
@@ -226,9 +292,9 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
           {/* Perforated tear line indicator */}
           {!isTearing && (
             <div 
-              className="absolute bottom-0 left-0 right-0 h-1"
+              className="absolute bottom-0 left-0 right-0 h-0.5"
               style={{
-                background: "repeating-linear-gradient(90deg, transparent 0px, transparent 4px, rgba(109, 40, 217, 0.5) 4px, rgba(109, 40, 217, 0.5) 8px)",
+                background: "repeating-linear-gradient(90deg, transparent 0px, transparent 4px, rgba(0,0,0,0.3) 4px, rgba(0,0,0,0.3) 8px)",
               }}
             />
           )}
