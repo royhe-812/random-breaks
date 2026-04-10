@@ -3,7 +3,9 @@
 // Gift box reveal animation - using Lottie animation
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import Lottie, { LottieRefCurrentProps } from "lottie-react"
+import dynamic from "next/dynamic"
+
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false })
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
@@ -41,7 +43,7 @@ export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftB
   const [phase, setPhase] = useState<"idle" | "animating" | "cardReveal" | "revealed">("idle")
   const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const [animationData, setAnimationData] = useState<object | null>(null)
-  const lottieRef = useRef<LottieRefCurrentProps>(null)
+  const lottieRef = useRef<{ goToAndPlay: (frame: number) => void } | null>(null)
   const team = propTeam || randomTeam
 
   // Load Lottie animation data
