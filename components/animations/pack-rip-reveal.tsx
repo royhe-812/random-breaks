@@ -1,6 +1,6 @@
 "use client"
 
-// Pack rip reveal animation - inspired by foil pack opening
+// Pack rip reveal animation - two layer pack with card nested inside
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
@@ -41,24 +41,24 @@ interface PackRipRevealProps {
 }
 
 export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackRipRevealProps) {
-  const [phase, setPhase] = useState<"idle" | "rotate" | "focus" | "rip" | "cardOut" | "revealed">("idle")
+  const [phase, setPhase] = useState<"idle" | "zoom" | "rip" | "glow" | "cardOut" | "revealed">("idle")
   const team = propTeam || teams[0]
 
   useEffect(() => {
     if (isRevealing) {
       setPhase("idle")
       
-      const rotateTimer = setTimeout(() => setPhase("rotate"), 300)
-      const focusTimer = setTimeout(() => setPhase("focus"), 800)
-      const ripTimer = setTimeout(() => setPhase("rip"), 1300)
+      const zoomTimer = setTimeout(() => setPhase("zoom"), 200)
+      const ripTimer = setTimeout(() => setPhase("rip"), 900)
+      const glowTimer = setTimeout(() => setPhase("glow"), 1400)
       const cardOutTimer = setTimeout(() => setPhase("cardOut"), 1800)
-      const revealTimer = setTimeout(() => setPhase("revealed"), 2600)
+      const revealTimer = setTimeout(() => setPhase("revealed"), 2800)
       const completeTimer = setTimeout(() => onComplete(), 5500)
       
       return () => {
-        clearTimeout(rotateTimer)
-        clearTimeout(focusTimer)
+        clearTimeout(zoomTimer)
         clearTimeout(ripTimer)
+        clearTimeout(glowTimer)
         clearTimeout(cardOutTimer)
         clearTimeout(revealTimer)
         clearTimeout(completeTimer)
@@ -66,36 +66,36 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
     }
   }, [isRevealing, onComplete])
 
-  const isRipping = phase === "rip" || phase === "cardOut" || phase === "revealed"
+  const isRipping = phase === "rip" || phase === "glow" || phase === "cardOut" || phase === "revealed"
+  const isGlowing = phase === "glow" || phase === "cardOut" || phase === "revealed"
   const isCardOut = phase === "cardOut" || phase === "revealed"
   const isRevealed = phase === "revealed"
 
-  // Pack zooms IN closer to screen like the GIF reference
+  // Pack zooms IN to fill screen during rip
   const getPackTransform = () => {
     switch (phase) {
       case "idle":
-        return { scale: 0.7, rotate: 0, y: -20 }
-      case "rotate":
-        return { scale: 1.0, rotate: -5, y: 0 }
-      case "focus":
-        return { scale: 1.3, rotate: 0, y: 40 }
+        return { scale: 0.8, rotate: 0, y: 0 }
+      case "zoom":
+        return { scale: 1.3, rotate: -3, y: 30 }
       case "rip":
-        return { scale: 1.25, rotate: 0, y: 50 }
+      case "glow":
+        return { scale: 1.4, rotate: 0, y: 50 }
       case "cardOut":
-        return { scale: 1.1, rotate: 0, y: 70 }
+        return { scale: 1.2, rotate: 0, y: 80 }
       case "revealed":
-        return { scale: 0.75, rotate: 0, y: 120 }
+        return { scale: 0.7, rotate: 0, y: 160 }
       default:
-        return { scale: 0.7, rotate: 0, y: -20 }
+        return { scale: 0.8, rotate: 0, y: 0 }
     }
   }
 
   const packTransform = getPackTransform()
 
   return (
-    <div className="relative w-72 h-[450px] flex items-center justify-center overflow-visible">
+    <div className="relative w-72 h-[480px] flex items-center justify-center overflow-hidden">
       
-      {/* Pack container - everything moves together */}
+      {/* Pack container */}
       <motion.div
         className="relative"
         style={{ width: 160, height: 220 }}
@@ -104,29 +104,40 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
           rotate: packTransform.rotate,
           y: packTransform.y,
         }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
       >
         
-        {/* Card INSIDE the pack - starts hidden, slides up and out */}
+        {/* LAYER 1: Back of pack (z-index: 1) */}
+        <div
+          className="absolute inset-0 rounded-sm"
+          style={{
+            background: "linear-gradient(180deg, #c0bcb8 0%, #a8a4a0 100%)",
+            zIndex: 1,
+          }}
+        />
+
+        {/* LAYER 2: The Card - sandwiched between back and front (z-index: 5, then 50 when out) */}
         <motion.div
-          className="absolute left-1/2 -translate-x-1/2 rounded-xl overflow-hidden"
+          className="absolute left-1/2 rounded-lg overflow-hidden"
           style={{
             width: 130,
             height: 185,
+            marginLeft: -65,
+            top: 18,
             background: `linear-gradient(145deg, ${team.color}, ${team.color}dd)`,
             boxShadow: isRevealed 
-              ? `0 20px 60px ${team.color}60, 0 0 80px rgba(167,139,250,0.4)`
-              : `0 10px 30px rgba(0,0,0,0.3)`,
+              ? `0 25px 80px ${team.color}80, 0 0 100px ${team.color}40`
+              : `0 8px 25px rgba(0,0,0,0.4)`,
             border: `3px solid ${team.secondary}`,
             zIndex: isCardOut ? 50 : 5,
           }}
-          initial={{ y: 20 }}
           animate={{
-            y: isRevealed ? -220 : isCardOut ? -100 : 20,
+            y: isRevealed ? -280 : isCardOut ? -150 : 0,
+            scale: isRevealed ? 1.2 : 1,
           }}
           transition={{ 
-            duration: 0.7, 
-            ease: [0.34, 1.56, 0.64, 1]
+            duration: 0.8, 
+            ease: [0.25, 0.8, 0.25, 1]
           }}
         >
           {/* Card holographic shine */}
@@ -135,15 +146,15 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
             style={{
               background: `linear-gradient(105deg, 
                 transparent 0%,
-                rgba(255,255,255,0.4) 45%, 
-                rgba(255,255,255,0.7) 50%,
-                rgba(255,255,255,0.4) 55%, 
+                rgba(255,255,255,0.5) 45%, 
+                rgba(255,255,255,0.9) 50%,
+                rgba(255,255,255,0.5) 55%, 
                 transparent 100%
               )`,
             }}
             initial={{ x: "-150%" }}
             animate={isRevealed ? { x: "150%" } : { x: "-150%" }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "easeInOut" }}
+            transition={{ duration: 0.7, delay: 0.2, ease: "easeInOut" }}
           />
 
           {/* Card content */}
@@ -159,7 +170,7 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
               initial={{ scale: 0, rotate: -180 }}
               animate={isCardOut ? { scale: 1, rotate: 0 } : { scale: 0, rotate: -180 }}
               transition={{ 
-                delay: 0.2,
+                delay: 0.1,
                 type: "spring", 
                 stiffness: 200,
                 damping: 15
@@ -173,9 +184,9 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
             {/* Team name */}
             <motion.div
               className="text-center"
-              initial={{ opacity: 0, y: 15 }}
-              animate={isCardOut ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={isCardOut ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
             >
               <p className="text-[10px] font-semibold text-white/80 uppercase tracking-wider">
                 {(team as typeof teams[0]).city || ""}
@@ -193,7 +204,7 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
               className="flex items-center gap-2 mt-2"
               initial={{ opacity: 0 }}
               animate={isRevealed ? { opacity: 1 } : { opacity: 0 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.3 }}
             >
               <div className="relative w-5 h-5">
                 <Image src={FIRE_URL} alt="" fill className="object-contain" />
@@ -212,13 +223,20 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
           <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 rounded-br-sm" style={{ borderColor: team.secondary + "60" }} />
         </motion.div>
 
-        {/* Pack body - sits on top of card initially, hides the card */}
-        <div
-          className="absolute inset-0 overflow-hidden z-10"
+        {/* LAYER 3: Front of pack (z-index: 10) - covers card until ripped */}
+        <motion.div
+          className="absolute inset-0 rounded-sm overflow-hidden"
           style={{
             background: "linear-gradient(180deg, #e8e4e0 0%, #d4d0cc 30%, #c8c4c0 70%, #b8b4b0 100%)",
-            boxShadow: "0 10px 40px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.8), inset 0 -2px 4px rgba(0,0,0,0.1)",
+            boxShadow: "0 10px 40px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.8)",
+            zIndex: 10,
           }}
+          animate={{
+            clipPath: isRipping 
+              ? "polygon(0 40%, 100% 40%, 100% 100%, 0 100%)"
+              : "polygon(0 0%, 100% 0%, 100% 100%, 0 100%)"
+          }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
         >
           {/* Foil texture/wrinkles */}
           <div 
@@ -227,8 +245,7 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
               background: `
                 radial-gradient(ellipse 100% 20% at 50% 20%, rgba(255,255,255,0.6) 0%, transparent 50%),
                 radial-gradient(ellipse 80% 30% at 30% 50%, rgba(255,255,255,0.4) 0%, transparent 50%),
-                radial-gradient(ellipse 80% 30% at 70% 60%, rgba(255,255,255,0.4) 0%, transparent 50%),
-                radial-gradient(ellipse 100% 20% at 50% 80%, rgba(0,0,0,0.1) 0%, transparent 50%)
+                radial-gradient(ellipse 80% 30% at 70% 60%, rgba(255,255,255,0.4) 0%, transparent 50%)
               `
             }}
           />
@@ -241,21 +258,22 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
             <div className="w-16 h-0.5 bg-zinc-500/40 mt-3 rounded-full" />
             <div className="text-zinc-500/70 text-xs font-semibold mt-2 tracking-widest">NFL</div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Top crimped edge - sealed (hides before rip) */}
+        {/* Top crimped edge (z-index: 15) */}
         <AnimatePresence>
           {!isRipping && (
             <motion.div 
-              className="absolute -top-3 left-0 right-0 h-6 z-20"
+              className="absolute -top-3 left-0 right-0 h-5 rounded-t-sm"
               style={{
                 background: "linear-gradient(180deg, #d8d4d0 0%, #c8c4c0 100%)",
                 boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                zIndex: 15,
               }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              {[...Array(5)].map((_, i) => (
+              {[...Array(4)].map((_, i) => (
                 <div 
                   key={i}
                   className="h-[2px] w-full"
@@ -270,15 +288,16 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
           )}
         </AnimatePresence>
 
-        {/* Bottom crimped edge */}
+        {/* Bottom crimped edge (z-index: 15) */}
         <div 
-          className="absolute -bottom-3 left-0 right-0 h-6 z-20"
+          className="absolute -bottom-3 left-0 right-0 h-5 rounded-b-sm"
           style={{
             background: "linear-gradient(180deg, #c8c4c0 0%, #b8b4b0 100%)",
             boxShadow: "0 -2px 4px rgba(0,0,0,0.1)",
+            zIndex: 15,
           }}
         >
-          {[...Array(5)].map((_, i) => (
+          {[...Array(4)].map((_, i) => (
             <div 
               key={i}
               className="h-[2px] w-full"
@@ -291,70 +310,99 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
           ))}
         </div>
 
-        {/* Tear effect - top flaps peel back */}
+        {/* Rip effect - single flap peeling from right to left (z-index: 20) */}
         <AnimatePresence>
           {isRipping && (
             <>
-              {/* Left torn flap */}
+              {/* The torn top portion - peels from right to left */}
               <motion.div
-                className="absolute -top-3 left-0 h-12 origin-bottom-left z-30"
+                className="absolute -top-3 left-0 right-0 h-24 origin-left"
                 style={{
-                  width: "52%",
-                  background: "linear-gradient(180deg, #d8d4d0 0%, #c8c4c0 100%)",
+                  background: "linear-gradient(180deg, #d8d4d0 0%, #c8c4c0 30%, #e8e4e0 100%)",
+                  zIndex: 20,
+                  transformStyle: "preserve-3d",
                 }}
-                initial={{ rotateX: 0, rotateZ: 0, y: 0 }}
-                animate={{ rotateX: -140, rotateZ: -20, y: -15 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
+                initial={{ rotateY: 0, x: 0 }}
+                animate={{ rotateY: -160, x: -20 }}
+                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
               >
+                {/* Torn edge pattern on the right side */}
                 <div 
-                  className="absolute right-0 top-0 bottom-0 w-4"
+                  className="absolute right-0 top-0 bottom-0 w-6"
                   style={{
                     background: "#c8c4c0",
-                    clipPath: "polygon(0 0, 100% 8%, 20% 18%, 100% 28%, 0 38%, 100% 48%, 0 58%, 100% 68%, 20% 78%, 100% 88%, 0 100%)",
+                    clipPath: "polygon(30% 0, 100% 0, 100% 100%, 30% 100%, 0% 90%, 60% 80%, 0% 70%, 50% 60%, 0% 50%, 60% 40%, 0% 30%, 50% 20%, 0% 10%)",
                   }}
                 />
+                {/* Crimped lines on torn piece */}
+                <div className="absolute top-0 left-0 right-6 h-5">
+                  {[...Array(4)].map((_, i) => (
+                    <div 
+                      key={i}
+                      className="h-[2px] w-full"
+                      style={{ 
+                        background: i % 2 === 0 
+                          ? "linear-gradient(90deg, transparent 5%, rgba(0,0,0,0.1) 50%, transparent 95%)" 
+                          : "linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.5) 50%, transparent 95%)"
+                      }}
+                    />
+                  ))}
+                </div>
               </motion.div>
 
-              {/* Right torn flap */}
+              {/* Glow effect from inside pack when opening */}
               <motion.div
-                className="absolute -top-3 right-0 h-12 origin-bottom-right z-30"
+                className="absolute top-0 left-0 right-0 h-20 rounded-t-lg"
                 style={{
-                  width: "52%",
-                  background: "linear-gradient(180deg, #d8d4d0 0%, #c8c4c0 100%)",
+                  background: `linear-gradient(180deg, ${team.color}80 0%, ${team.color}40 40%, transparent 100%)`,
+                  zIndex: 18,
                 }}
-                initial={{ rotateX: 0, rotateZ: 0, y: 0 }}
-                animate={{ rotateX: -140, rotateZ: 20, y: -15 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-              >
-                <div 
-                  className="absolute left-0 top-0 bottom-0 w-4"
+                initial={{ opacity: 0, scaleY: 0 }}
+                animate={{ opacity: isGlowing ? 1 : 0, scaleY: isGlowing ? 1 : 0 }}
+                transition={{ duration: 0.4 }}
+              />
+
+              {/* Light rays from opening */}
+              {isGlowing && [...Array(5)].map((_, i) => (
+                <motion.div
+                  key={`ray-${i}`}
+                  className="absolute"
                   style={{
-                    background: "#c8c4c0",
-                    clipPath: "polygon(100% 0, 0 8%, 80% 18%, 0 28%, 100% 38%, 0 48%, 100% 58%, 0 68%, 80% 78%, 0 88%, 100% 100%)",
+                    top: 0,
+                    left: `${30 + i * 10}%`,
+                    width: 3,
+                    height: 60,
+                    background: `linear-gradient(180deg, ${team.color} 0%, transparent 100%)`,
+                    zIndex: 19,
+                    transformOrigin: "top center",
                   }}
+                  initial={{ scaleY: 0, opacity: 0 }}
+                  animate={{ scaleY: 1, opacity: [0, 0.8, 0] }}
+                  transition={{ duration: 0.6, delay: i * 0.05 }}
                 />
-              </motion.div>
+              ))}
 
               {/* Tear particles */}
-              {[...Array(10)].map((_, i) => (
+              {[...Array(8)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="absolute rounded-sm z-40"
+                  className="absolute rounded-sm"
                   style={{
                     width: 2 + Math.random() * 3,
                     height: 3 + Math.random() * 5,
                     backgroundColor: i % 2 === 0 ? "#d8d4d0" : "#c8c4c0",
-                    left: `${40 + Math.random() * 20}%`,
-                    top: -5,
+                    left: `${60 + Math.random() * 30}%`,
+                    top: 10,
+                    zIndex: 25,
                   }}
                   initial={{ y: 0, x: 0, opacity: 1, rotate: 0 }}
                   animate={{
-                    x: (Math.random() - 0.5) * 60,
-                    y: -15 - Math.random() * 30,
+                    x: -30 - Math.random() * 50,
+                    y: -20 - Math.random() * 30,
                     opacity: 0,
-                    rotate: Math.random() * 360,
+                    rotate: -90 - Math.random() * 180,
                   }}
-                  transition={{ duration: 0.4, delay: i * 0.02, ease: "easeOut" }}
+                  transition={{ duration: 0.5, delay: i * 0.03, ease: "easeOut" }}
                 />
               ))}
             </>
@@ -367,26 +415,26 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
         {isRevealed && (
           <>
             <motion.div
-              className="absolute -top-8 left-4 w-12 h-12 z-50"
+              className="absolute -top-12 left-8 w-12 h-12 z-50"
               initial={{ scale: 0, rotate: -30 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            >
+              <Image src={STARS_URL} alt="" fill className="object-contain" />
+            </motion.div>
+            <motion.div
+              className="absolute -top-6 right-6 w-10 h-10 z-50"
+              initial={{ scale: 0, rotate: 30 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
             >
               <Image src={STARS_URL} alt="" fill className="object-contain" />
             </motion.div>
             <motion.div
-              className="absolute -top-4 right-2 w-10 h-10 z-50"
-              initial={{ scale: 0, rotate: 30 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
-            >
-              <Image src={STARS_URL} alt="" fill className="object-contain" />
-            </motion.div>
-            <motion.div
-              className="absolute top-20 right-0 w-8 h-8 z-50"
+              className="absolute top-16 left-2 w-8 h-8 z-50"
               initial={{ scale: 0, rotate: -20 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+              transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
             >
               <Image src={STARS_URL} alt="" fill className="object-contain" />
             </motion.div>
@@ -394,17 +442,17 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
         )}
       </AnimatePresence>
 
-      {/* Glow effect */}
+      {/* Background glow */}
       <AnimatePresence>
         {isRevealed && (
           <motion.div
             className="absolute inset-0 rounded-2xl -z-10"
             style={{
-              background: `radial-gradient(circle, ${team.color}40 0%, transparent 70%)`,
+              background: `radial-gradient(circle, ${team.color}50 0%, transparent 60%)`,
             }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1.5 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6 }}
           />
         )}
       </AnimatePresence>
