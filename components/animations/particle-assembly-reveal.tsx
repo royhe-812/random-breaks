@@ -3,7 +3,7 @@
 // Particle assembly reveal animation - v7 - fixed JSX
 import { useState, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { CelebrationElements, HolographicShine } from "./celebration-elements"
+
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
@@ -181,9 +181,6 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 12 }}
           >
-            {/* Celebration elements */}
-            <CelebrationElements show={true} teamColor={team.color} />
-            
             {/* Logo circle */}
             <div className="relative w-32 h-32 flex items-center justify-center">
               {/* Logo circle with premium finish */}
@@ -191,17 +188,12 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
                 className="absolute inset-0 rounded-full flex items-center justify-center overflow-hidden"
                 style={{
                   background: `linear-gradient(135deg, ${team.color} 0%, ${team.color}dd 100%)`,
-                  boxShadow: `
-                    0 0 60px ${team.color}60, 
-                    0 0 100px rgba(167,139,250,0.4),
-                    inset 0 -8px 20px rgba(0,0,0,0.3)
-                  `,
+                  boxShadow: `0 0 40px ${team.color}60`,
                 }}
                 initial={{ rotate: -180 }}
                 animate={{ rotate: 0 }}
                 transition={{ type: "spring", stiffness: 100 }}
               >
-                <HolographicShine />
                 <motion.span 
                   className="text-5xl font-black text-white relative z-10 drop-shadow-lg"
                   initial={{ scale: 0 }}
@@ -215,7 +207,7 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
                 <div
                   className="absolute inset-0 rounded-full"
                   style={{
-                    background: "linear-gradient(135deg, rgba(255,255,255,0.35) 0%, transparent 50%)",
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%)",
                   }}
                 />
               </motion.div>
