@@ -65,14 +65,14 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
   const isRevealed = phase === "revealed"
 
   return (
-    <div className="relative w-48 h-72 flex items-center justify-center">
+    <div className="relative w-48 h-80 flex items-end justify-center pb-4">
       
       {/* Team card - positioned behind the pack, slides up when revealed */}
       <motion.div
         className="absolute left-2 right-2 rounded-lg overflow-hidden"
         style={{
-          top: "10%",
-          height: "75%",
+          bottom: "5%",
+          height: "70%",
           background: team.color,
           boxShadow: isRevealed 
             ? `0 20px 50px ${team.color}50, 0 0 40px ${team.color}40`
@@ -83,9 +83,9 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
         initial={{ y: 0, opacity: 1 }}
         animate={
           isRevealed
-            ? { y: -80, opacity: 1, scale: 1.05 }
+            ? { y: -40, opacity: 1, scale: 1.05 }
             : isOpening
-              ? { y: -30, opacity: 1, scale: 1 }
+              ? { y: -15, opacity: 1, scale: 1 }
               : { y: 0, opacity: 1, scale: 1 }
         }
         transition={{ 
