@@ -218,7 +218,7 @@ export function TeamSpinner({
                      spinPhase === "stopped" ? "???" : `${currentTeam.city} ${currentTeam.name}`}
                   </motion.span>
                 </AnimatePresence>
-                <span className="text-white/50 text-xs">
+                <span className="text-white/50 text-sm">
                   {username ? `${username}'s Spot` : "Win a spot to spin"}
                 </span>
               </div>
