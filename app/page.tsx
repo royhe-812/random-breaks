@@ -232,7 +232,7 @@ export default function AnimationShowcase() {
             <div className="flex-1 pr-2">
               <p className="text-sm text-white mb-0.5 line-clamp-2">
                 <span className="font-semibold">{selectedTeam ? selectedTeam.name : 'Random team'}</span>
-                <span className="text-white/50"> - 16X 2023 Panini Mosaic NFL Blaster Random #224</span>
+                <span className="text-white/50"> - 16X 2023 Panini Mosaic NFL Blaster</span>
               </p>
               <p className="text-white/50 text-sm mb-1">16/32 spots available</p>
               <div className="flex flex-col">
