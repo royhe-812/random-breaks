@@ -184,7 +184,7 @@ export default function AnimationShowcase() {
         
         {/* Right side action buttons with viewer count */}
         <div className="absolute top-4 right-4">
-          <div className="bg-zinc-800/90 backdrop-blur rounded-2xl px-2 py-3 flex flex-col items-center gap-2">
+          <div className="bg-black/40 backdrop-blur rounded-3xl px-2 py-3 flex flex-col items-center gap-2">
             {/* Live stream icon with viewer count */}
             <div className="flex flex-col items-center">
               <img 
