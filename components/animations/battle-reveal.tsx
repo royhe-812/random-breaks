@@ -305,6 +305,7 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
             boxShadow: leadingSide === "left" || (phase === "winner" && winnerSide === "left")
               ? `0 0 40px ${leftTeam.color}90, 0 0 60px ${leftTeam.color}50`
               : `0 0 25px ${leftTeam.color}60`,
+            zIndex: phase === "winner" ? (winnerSide === "left" ? 20 : 5) : (leadingSide === "left" ? 15 : 10),
           }}
           animate={{
             scale: leftStyle.scale,
@@ -384,6 +385,7 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
             boxShadow: leadingSide === "right" || (phase === "winner" && winnerSide === "right")
               ? `0 0 40px ${rightTeam.color}90, 0 0 60px ${rightTeam.color}50`
               : `0 0 25px ${rightTeam.color}60`,
+            zIndex: phase === "winner" ? (winnerSide === "right" ? 20 : 5) : (leadingSide === "right" ? 15 : 10),
           }}
           animate={{
             scale: rightStyle.scale,
