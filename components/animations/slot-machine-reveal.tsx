@@ -192,9 +192,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
             borderWidth: phase === "explode" ? 2 : 1,
             borderStyle: "solid",
             borderColor: phase === "explode" ? "#22c55e" : "rgba(255, 255, 255, 0.1)",
-            boxShadow: phase === "explode" 
-              ? "0 0 60px rgba(34,197,94,0.5), 0 0 120px rgba(34,197,94,0.2)"
-              : "0 20px 60px rgba(0,0,0,0.5)",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
           }}
         >
           {/* Top chrome bar with holographic finish */}
