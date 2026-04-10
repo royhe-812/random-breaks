@@ -1,12 +1,8 @@
 "use client"
 
 // Battle reveal with tension building - v5
-import { useState, useEffect, useMemo, useRef } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import Image from "next/image"
-
-const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayLiveApp_Stars_DW_CC_v007_CC%202-OGJYd3jy5o3bamd4lN3498JekCYscy.png"
-const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
@@ -456,52 +452,9 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
       <AnimatePresence>
         {phase === "winner" && (
           <>
-            {/* Floating stars */}
-            {[...Array(4)].map((_, i) => (
-              <motion.div
-                key={`star-${i}`}
-                className="absolute z-40"
-                style={{
-                  left: winnerSide === "left" ? `${10 + i * 15}%` : `${50 + i * 12}%`,
-                  top: `${15 + (i % 2) * 50}%`,
-                }}
-                initial={{ scale: 0, rotate: -30, opacity: 0 }}
-                animate={{ 
-                  scale: 1,
-                  rotate: 0,
-                  opacity: 1,
-                  y: [0, -10, 0],
-                }}
-                transition={{ 
-                  delay: i * 0.1,
-                  y: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-                }}
-              >
-                <div className="relative w-12 h-12">
-                  <Image src={STARS_URL} alt="" fill className="object-contain" />
-                </div>
-              </motion.div>
-            ))}
-
-            {/* Fire icons */}
-            <motion.div
-              className="absolute z-40"
-              style={{
-                left: winnerSide === "left" ? "5%" : "75%",
-                top: "40%",
-              }}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1, rotate: [0, 5, -5, 0] }}
-              transition={{ delay: 0.2, rotate: { duration: 0.5, repeat: Infinity } }}
-            >
-              <div className="relative w-14 h-14">
-                <Image src={FIRE_URL} alt="" fill className="object-contain" />
-              </div>
-            </motion.div>
-
             {/* Winner text */}
             <motion.div
-              className="absolute -bottom-24 flex flex-col items-center"
+              className="absolute -bottom-24 flex flex-col items-center pt-3"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
