@@ -183,59 +183,61 @@ export default function AnimationShowcase() {
         </div>
         
         {/* Right side action buttons with viewer count */}
-        <div className="absolute top-4 right-4 flex flex-col items-center gap-2">
-          {/* Live stream icon with viewer count */}
-          <div className="flex flex-col items-center">
-            <img 
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Stream%20navigation%20avatar-kd9nUvhPaYGQGCKYioJLK4vLokIQ87.png" 
-              alt="Live" 
-              className="w-10 h-10"
-            />
-            <span className="text-white text-xs font-medium mt-0.5">{viewerCount}</span>
-          </div>
-          {/* Items */}
-          <div className="flex flex-col items-center">
-            <div className="w-10 h-10 flex items-center justify-center">
+        <div className="absolute top-4 right-4">
+          <div className="bg-zinc-800/90 backdrop-blur rounded-2xl px-2 py-3 flex flex-col items-center gap-2">
+            {/* Live stream icon with viewer count */}
+            <div className="flex flex-col items-center">
               <img 
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/items-lRJIiXEXUI5vZJg8YwpehK7c6cPcIp.png" 
-                alt="Items" 
-                className="w-6 h-6"
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Stream%20navigation%20avatar-kd9nUvhPaYGQGCKYioJLK4vLokIQ87.png" 
+                alt="Live" 
+                className="w-10 h-10"
               />
+              <span className="text-white text-xs font-medium mt-0.5">{viewerCount}</span>
             </div>
-            <span className="text-white text-xs font-medium mt-0.5">Items</span>
-          </div>
-          {/* Wallet */}
-          <div className="flex flex-col items-center">
-            <div className="w-10 h-10 flex items-center justify-center">
-              <img 
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/wallet-DJozjl9ngzsbQkbB6XZaj8GAvfXwO3.png" 
-                alt="Wallet" 
-                className="w-6 h-6"
-              />
+            {/* Items */}
+            <div className="flex flex-col items-center">
+              <div className="w-10 h-10 flex items-center justify-center">
+                <img 
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/items-lRJIiXEXUI5vZJg8YwpehK7c6cPcIp.png" 
+                  alt="Items" 
+                  className="w-6 h-6"
+                />
+              </div>
+              <span className="text-white text-xs font-medium mt-0.5">Items</span>
             </div>
-            <span className="text-white text-xs font-medium mt-0.5">Wallet</span>
-          </div>
-          {/* Polls */}
-          <div className="flex flex-col items-center">
-            <div className="w-10 h-10 flex items-center justify-center">
-              <img 
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/polls-TLiAJGRZLHuSvOrQ9KyfrufvDyhfjC.png" 
-                alt="Polls" 
-                className="w-6 h-6"
-              />
+            {/* Wallet */}
+            <div className="flex flex-col items-center">
+              <div className="w-10 h-10 flex items-center justify-center">
+                <img 
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/wallet-DJozjl9ngzsbQkbB6XZaj8GAvfXwO3.png" 
+                  alt="Wallet" 
+                  className="w-6 h-6"
+                />
+              </div>
+              <span className="text-white text-xs font-medium mt-0.5">Wallet</span>
             </div>
-            <span className="text-white text-xs font-medium mt-0.5">Polls</span>
-          </div>
-          {/* More */}
-          <div className="flex flex-col items-center">
-            <div className="w-10 h-10 flex items-center justify-center">
-              <img 
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/more-7JAmofygtcnGhXf8oMlQuYxSkAZxTC.png" 
-                alt="More" 
-                className="w-6 h-6"
-              />
+            {/* Polls */}
+            <div className="flex flex-col items-center">
+              <div className="w-10 h-10 flex items-center justify-center">
+                <img 
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/polls-TLiAJGRZLHuSvOrQ9KyfrufvDyhfjC.png" 
+                  alt="Polls" 
+                  className="w-6 h-6"
+                />
+              </div>
+              <span className="text-white text-xs font-medium mt-0.5">Polls</span>
             </div>
-            <span className="text-white text-xs font-medium mt-0.5">More</span>
+            {/* More */}
+            <div className="flex flex-col items-center">
+              <div className="w-10 h-10 flex items-center justify-center">
+                <img 
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/more-7JAmofygtcnGhXf8oMlQuYxSkAZxTC.png" 
+                  alt="More" 
+                  className="w-6 h-6"
+                />
+              </div>
+              <span className="text-white text-xs font-medium mt-0.5">More</span>
+            </div>
           </div>
         </div>
       </div>
