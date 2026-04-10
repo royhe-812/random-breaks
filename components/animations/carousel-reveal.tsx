@@ -110,10 +110,10 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
   const radius = 200
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] relative">
-      {/* 3D Carousel Ring */}
+    <div className="flex flex-col items-center justify-center h-[400px] relative">
+      {/* 3D Carousel Ring - fixed position */}
       <div 
-        className="relative h-56 w-full flex items-center justify-center"
+        className="absolute top-8 left-0 right-0 h-56 flex items-center justify-center"
         style={{ perspective: "1000px" }}
       >
         {/* Rotating container */}
@@ -141,14 +141,25 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
                 }}
               >
                 {/* Card */}
-                <div
+                <motion.div
                   className="w-full h-full rounded-xl flex flex-col items-center justify-center relative overflow-hidden"
                   style={{
                     background: `linear-gradient(145deg, ${team.color} 0%, ${team.color}dd 100%)`,
-                    boxShadow: hasStopped && i === winningIndex
-                      ? `0 0 60px ${team.color}90, 0 0 100px ${team.color}60, 0 20px 40px rgba(0,0,0,0.5)`
-                      : `0 10px 25px rgba(0,0,0,0.4)`,
                   }}
+                  animate={hasStopped && i === winningIndex ? {
+                    boxShadow: [
+                      `0 0 40px ${team.color}90, 0 0 80px ${team.color}60, 0 0 120px ${team.color}40`,
+                      `0 0 60px ${team.color}aa, 0 0 100px ${team.color}80, 0 0 150px ${team.color}50`,
+                      `0 0 40px ${team.color}90, 0 0 80px ${team.color}60, 0 0 120px ${team.color}40`,
+                    ],
+                  } : {
+                    boxShadow: `0 10px 25px rgba(0,0,0,0.4)`,
+                  }}
+                  transition={hasStopped && i === winningIndex ? {
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  } : {}}
                 >
                   {/* Card shine */}
                   <div
@@ -179,7 +190,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
                     className="absolute top-0 left-0 right-0 h-1"
                     style={{ backgroundColor: team.secondary }}
                   />
-                </div>
+                </motion.div>
               </div>
             )
           })}
@@ -188,30 +199,32 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
 
 
 
-      {/* Winner text - below carousel */}
-      <AnimatePresence>
-        {hasStopped && (
-          <motion.div
-            className="mt-6 flex flex-col items-center text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <span className="text-white/80 text-sm font-semibold uppercase tracking-wider">
-              {winningTeam.city}
-            </span>
-            <span 
-              className="text-3xl font-black"
-              style={{ color: winningTeam.color }}
+      {/* Winner text - fixed position below carousel */}
+      <div className="absolute bottom-8 left-0 right-0 flex justify-center">
+        <AnimatePresence>
+          {hasStopped && (
+            <motion.div
+              className="flex flex-col items-center text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
             >
-              {winningTeam.name.toUpperCase()}
-            </span>
-            <span className="text-violet-300 text-sm font-semibold tracking-widest mt-1">
-              WINS!
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <span className="text-white/80 text-sm font-semibold uppercase tracking-wider">
+                {winningTeam.city}
+              </span>
+              <span 
+                className="text-3xl font-black"
+                style={{ color: winningTeam.color }}
+              >
+                {winningTeam.name.toUpperCase()}
+              </span>
+              <span className="text-green-400 text-sm font-semibold tracking-widest mt-1">
+                WINS!
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   )
 }
