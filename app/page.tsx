@@ -24,7 +24,7 @@ type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" |
 const animations: { id: AnimationType; name: string }[] = [
   { id: "card-flip", name: "Card Flip" },
   { id: "pack-rip", name: "Pack Rip" },
-  { id: "slot-machine", name: "Slot Machine" },
+  { id: "slot-machine", name: "Team Picker" },
   { id: "mystery-box", name: "Mystery Box" },
   { id: "particle-assembly", name: "Particles" },
   { id: "gift-box", name: "Gift Box" },
