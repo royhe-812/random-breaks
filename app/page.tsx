@@ -59,6 +59,7 @@ export default function AnimationShowcase() {
   const [key, setKey] = useState(0)
   const [hasWon, setHasWon] = useState(false)
   const [visibleMessages, setVisibleMessages] = useState(chatMessages.slice(0, 3))
+  const [viewerCount, setViewerCount] = useState(240)
   const messageIndexRef = useRef(3)
 
   // Rotate chat messages to feel alive
@@ -71,6 +72,20 @@ export default function AnimationShowcase() {
         return newMessages
       })
     }, 2500)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Fluctuate viewer count realistically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setViewerCount(prev => {
+        // Random change between -3 and +5 (slightly biased toward increases)
+        const change = Math.floor(Math.random() * 9) - 3
+        // Keep within realistic bounds (200-300)
+        const newCount = Math.max(200, Math.min(300, prev + change))
+        return newCount
+      })
+    }, 2000 + Math.random() * 2000) // Random interval between 2-4 seconds
     return () => clearInterval(interval)
   }, [])
 
@@ -168,7 +183,7 @@ export default function AnimationShowcase() {
           {/* Viewer count */}
           <div className="flex items-center gap-1 bg-red-500 rounded-full px-2 py-1">
             <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-            <span className="text-white text-xs font-medium">240</span>
+            <span className="text-white text-xs font-medium">{viewerCount}</span>
           </div>
         </div>
         
