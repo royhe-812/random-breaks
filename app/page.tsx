@@ -192,7 +192,7 @@ export default function AnimationShowcase() {
                 alt="Live" 
                 className="w-10 h-10"
               />
-              <span className="text-white text-xs font-medium mt-0.5">{viewerCount}</span>
+              <span className="text-white text-xs font-medium mt-1">{viewerCount}</span>
             </div>
             {/* Items */}
             <div className="flex flex-col items-center">
@@ -203,7 +203,7 @@ export default function AnimationShowcase() {
                   className="w-6 h-6"
                 />
               </div>
-              <span className="text-white text-xs font-medium mt-0.5">Items</span>
+              <span className="text-white text-xs font-medium mt-1">Items</span>
             </div>
             {/* Wallet */}
             <div className="flex flex-col items-center">
@@ -214,7 +214,7 @@ export default function AnimationShowcase() {
                   className="w-6 h-6"
                 />
               </div>
-              <span className="text-white text-xs font-medium mt-0.5">Wallet</span>
+              <span className="text-white text-xs font-medium mt-1">Wallet</span>
             </div>
             {/* Polls */}
             <div className="flex flex-col items-center">
@@ -225,7 +225,7 @@ export default function AnimationShowcase() {
                   className="w-6 h-6"
                 />
               </div>
-              <span className="text-white text-xs font-medium mt-0.5">Polls</span>
+              <span className="text-white text-xs font-medium mt-1">Polls</span>
             </div>
             {/* More */}
             <div className="flex flex-col items-center">
@@ -236,7 +236,7 @@ export default function AnimationShowcase() {
                   className="w-6 h-6"
                 />
               </div>
-              <span className="text-white text-xs font-medium mt-0.5">More</span>
+              <span className="text-white text-xs font-medium mt-1">More</span>
             </div>
           </div>
         </div>
