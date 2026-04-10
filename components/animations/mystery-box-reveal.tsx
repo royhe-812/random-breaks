@@ -301,12 +301,12 @@ animate={phase === "glowing" ? {
               {[...Array(3)].map((_, i) => (
                 <motion.div
                   key={`star-${i}`}
-                  className="absolute w-8 h-8"
+                  className="absolute w-12 h-12"
                   style={{
-                    left: i === 0 ? -30 : i === 1 ? 'auto' : -20,
-                    right: i === 1 ? -30 : i === 2 ? -25 : 'auto',
-                    top: i === 0 ? 10 : i === 1 ? 20 : 'auto',
-                    bottom: i === 2 ? 5 : 'auto',
+                    left: i === 0 ? -38 : i === 1 ? 'auto' : -28,
+                    right: i === 1 ? -38 : i === 2 ? -32 : 'auto',
+                    top: i === 0 ? 5 : i === 1 ? 15 : 'auto',
+                    bottom: i === 2 ? 0 : 'auto',
                   }}
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ 
