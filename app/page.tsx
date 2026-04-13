@@ -67,9 +67,9 @@ export default function AnimationShowcase() {
   const [chatPaused, setChatPaused] = useState(false)
   const messageIndexRef = useRef(3)
 
-  // Rotate chat messages to feel alive (pauses when chatPaused is true)
+  // Rotate chat messages to feel alive (pauses when chatPaused is true for in-stream)
   useEffect(() => {
-    if (chatPaused) return
+    if (selectedAnimation === "in-stream" && chatPaused) return
     
     const interval = setInterval(() => {
       setVisibleMessages(prev => {
@@ -80,7 +80,7 @@ export default function AnimationShowcase() {
       })
     }, 2500)
     return () => clearInterval(interval)
-  }, [chatPaused])
+  }, [chatPaused, selectedAnimation])
 
   // Fluctuate viewer count realistically
   useEffect(() => {
@@ -125,14 +125,10 @@ export default function AnimationShowcase() {
   const handleComplete = useCallback(() => {
     // Keep the winning moment visible for 3 seconds, then reset everything
     setTimeout(() => {
-      // Set isRevealing to false first, then increment key after a tick
-      // to prevent the new component from seeing isRevealing=true
       setIsRevealing(false)
       setIsSpinning(false)
       setHasWon(false)
       setSelectedTeam(null)
-      // Delay key increment to ensure state updates have propagated
-      setTimeout(() => setKey(prev => prev + 1), 50)
     }, 3000)
   }, [])
 
