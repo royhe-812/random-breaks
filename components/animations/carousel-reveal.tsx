@@ -213,10 +213,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
               <span className="text-white/80 text-sm font-semibold uppercase tracking-wider">
                 {winningTeam.city}
               </span>
-              <span 
-                className="text-3xl font-black"
-                style={{ color: winningTeam.color }}
-              >
+              <span className="text-3xl font-black text-white">
                 {winningTeam.name.toUpperCase()}
               </span>
               <span className="text-green-400 text-sm font-semibold tracking-widest mt-1">
