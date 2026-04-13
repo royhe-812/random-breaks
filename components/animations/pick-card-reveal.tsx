@@ -260,10 +260,7 @@ export function PickCardReveal({ isRevealing, onComplete, team: propTeam }: Pick
             <p className="text-white/80 text-xs uppercase tracking-wider">
               {winningTeam.city}
             </p>
-            <p 
-              className="text-2xl font-black"
-              style={{ color: winningTeam.color }}
-            >
+            <p className="text-2xl font-black text-white">
               {winningTeam.name.toUpperCase()}
             </p>
           </motion.div>
