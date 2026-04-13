@@ -137,7 +137,6 @@ export default function AnimationShowcase() {
       setIsSpinning(false)
       setHasWon(false)
       setSelectedTeam(null)
-      setKey(prev => prev + 1)
     }, 3000)
   }, [])
 
