@@ -155,11 +155,8 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
         clearTimeout(slowTimer)
         clearTimeout(completeTimer)
       }
-    } else {
-      setPhase("idle")
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRevealing])
+  }, [isRevealing, onComplete])
 
   return (
     <div className="relative flex flex-col items-center justify-center">

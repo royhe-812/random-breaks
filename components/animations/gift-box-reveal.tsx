@@ -62,11 +62,8 @@ export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftB
         clearTimeout(revealTimer)
         clearTimeout(completeTimer)
       }
-    } else {
-      setPhase("idle")
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRevealing])
+  }, [isRevealing, onComplete])
 
   return (
     <div className="relative w-72 h-96 flex items-center justify-center">

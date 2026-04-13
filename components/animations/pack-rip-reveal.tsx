@@ -58,12 +58,8 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
         clearTimeout(revealTimer)
         clearTimeout(completeTimer)
       }
-    } else {
-      // Reset phase when not revealing
-      setPhase("idle")
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRevealing])
+  }, [isRevealing, onComplete])
 
   const isOpening = phase === "opening" || phase === "revealed"
   const isRevealed = phase === "revealed"

@@ -104,8 +104,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
         onComplete(teams[targetIndex])
       }, 3600)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRevealing])
+  }, [isRevealing, onComplete])
 
   const cardsInRing = teams.length
   const anglePerCard = 360 / cardsInRing
