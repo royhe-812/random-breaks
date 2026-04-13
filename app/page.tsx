@@ -18,8 +18,9 @@ import { GiftBoxReveal } from "@/components/animations/gift-box-reveal"
 import { BattleReveal } from "@/components/animations/battle-reveal"
 import { PickCardReveal } from "@/components/animations/pick-card-reveal"
 import { CarouselReveal } from "@/components/animations/carousel-reveal"
+import { InStreamReveal, WinnerChatAnnouncement } from "@/components/animations/in-stream-reveal"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream"
 
 const animations: { id: AnimationType; name: string }[] = [
   { id: "card-flip", name: "Card Flip" },
@@ -31,6 +32,7 @@ const animations: { id: AnimationType; name: string }[] = [
   { id: "battle", name: "Battle" },
   { id: "pick-card", name: "Pick Card" },
   { id: "carousel", name: "Carousel" },
+  { id: "in-stream", name: "In-Stream" },
 ]
 
 const chatMessages = [
@@ -60,10 +62,15 @@ export default function AnimationShowcase() {
   const [hasWon, setHasWon] = useState(false)
   const [visibleMessages, setVisibleMessages] = useState(chatMessages.slice(0, 3))
   const [viewerCount, setViewerCount] = useState(240)
+  const [showWinnerAnnouncement, setShowWinnerAnnouncement] = useState(false)
+  const [winnerTeam, setWinnerTeam] = useState<Team | null>(null)
+  const [chatPaused, setChatPaused] = useState(false)
   const messageIndexRef = useRef(3)
 
-  // Rotate chat messages to feel alive
+  // Rotate chat messages to feel alive (pauses when chatPaused is true)
   useEffect(() => {
+    if (chatPaused) return
+    
     const interval = setInterval(() => {
       setVisibleMessages(prev => {
         const newMessages = [...prev.slice(1)]
@@ -73,7 +80,7 @@ export default function AnimationShowcase() {
       })
     }, 2500)
     return () => clearInterval(interval)
-  }, [])
+  }, [chatPaused])
 
   // Fluctuate viewer count realistically
   useEffect(() => {
@@ -95,7 +102,23 @@ export default function AnimationShowcase() {
     setIsRevealing(false)
     setIsSpinning(false)
     setSelectedTeam(null)
+    setShowWinnerAnnouncement(false)
+    setWinnerTeam(null)
+    setChatPaused(false)
   }, [selectedAnimation])
+
+  // Handler for in-stream winner announcement
+  const handleInStreamWinnerAnnouncement = useCallback((team: Team) => {
+    setWinnerTeam(team)
+    setShowWinnerAnnouncement(true)
+    setChatPaused(true)
+    
+    // Resume chat after 5 seconds
+    setTimeout(() => {
+      setChatPaused(false)
+      setShowWinnerAnnouncement(false)
+    }, 5000)
+  }, [])
 
   const handleStartSpin = useCallback(() => {
     setIsSpinning(true)
@@ -145,6 +168,8 @@ export default function AnimationShowcase() {
         return <PickCardReveal key={key} {...props} />
       case "carousel":
         return <CarouselReveal key={key} isRevealing={isRevealing} onComplete={handleComplete} />
+      case "in-stream":
+        return <InStreamReveal key={key} {...props} onWinnerAnnouncement={handleInStreamWinnerAnnouncement} />
       default:
         return null
     }
@@ -261,6 +286,15 @@ export default function AnimationShowcase() {
               </motion.div>
             ))}
           </AnimatePresence>
+          
+          {/* Winner announcement for in-stream concept */}
+          {selectedAnimation === "in-stream" && winnerTeam && (
+            <WinnerChatAnnouncement 
+              username="KemMajed90"
+              team={winnerTeam}
+              show={showWinnerAnnouncement}
+            />
+          )}
         </div>
 
         {/* Comment Input */}
@@ -270,7 +304,7 @@ export default function AnimationShowcase() {
         </div>
 
         {/* Team Spinner with Spots Available - hidden for slot machine, battle, carousel, and pick-card */}
-        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && (
+        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "in-stream" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={16}
@@ -337,8 +371,8 @@ export default function AnimationShowcase() {
               onClick={() => {
                 if (!hasWon) {
                   setHasWon(true)
-                  // For slot-machine, battle, carousel, and pick-card, trigger reveal after a short delay
-                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card") {
+                  // For slot-machine, battle, carousel, pick-card, and in-stream, trigger reveal after a short delay
+                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "in-stream") {
                     setTimeout(() => {
                       setIsRevealing(true)
                       setKey(prev => prev + 1)
