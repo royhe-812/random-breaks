@@ -223,9 +223,9 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
             className="relative h-24 mx-5 my-5 rounded-xl overflow-hidden" 
             style={{ 
               background: "rgba(0, 0, 0, 0.4)", 
-              borderWidth: phase === "explode" ? 2 : 1, 
+              borderWidth: 1, 
               borderStyle: "solid", 
-              borderColor: phase === "explode" ? "#4CE160" : "rgba(255, 255, 255, 0.1)",
+              borderColor: "rgba(255, 255, 255, 0.1)",
               boxShadow: phase === "explode" ? `0 0 30px #4CE16080, 0 0 60px ${finalTeam.color}50` : "none",
             }}
             animate={phase === "explode" ? { scale: [1, 1.02, 1] } : {}}
