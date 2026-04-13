@@ -485,7 +485,12 @@ export function InStreamExperience() {
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 pr-2">
               <p className="text-sm text-white mb-0.5 line-clamp-2">
-                <span className="font-semibold">{selectedTeam ? selectedTeam.name : 'Random team'}</span>
+                <span 
+                  className="font-semibold"
+                  style={selectedTeam ? { color: selectedTeam.color } : undefined}
+                >
+                  {selectedTeam ? `${selectedTeam.city} ${selectedTeam.name}` : 'Random team'}
+                </span>
                 <span className="text-white/50"> - 16X 2023 Panini Mosaic NFL Blaster</span>
               </p>
               <p className="text-white/50 text-sm mb-1">16/32 spots available</p>
