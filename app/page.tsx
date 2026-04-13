@@ -18,8 +18,9 @@ import { GiftBoxReveal } from "@/components/animations/gift-box-reveal"
 import { BattleReveal } from "@/components/animations/battle-reveal"
 import { PickCardReveal } from "@/components/animations/pick-card-reveal"
 import { CarouselReveal } from "@/components/animations/carousel-reveal"
+import { InStreamExperience } from "@/components/in-stream-experience"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream"
 
 const animations: { id: AnimationType; name: string }[] = [
   { id: "card-flip", name: "Card Flip" },
@@ -31,6 +32,7 @@ const animations: { id: AnimationType; name: string }[] = [
   { id: "battle", name: "Battle" },
   { id: "pick-card", name: "Pick Card" },
   { id: "carousel", name: "Carousel" },
+  { id: "in-stream", name: "In-Stream" },
 ]
 
 const chatMessages = [
@@ -148,6 +150,38 @@ export default function AnimationShowcase() {
       default:
         return null
     }
+  }
+
+  // If In-Stream is selected, render the fully isolated experience
+  if (selectedAnimation === "in-stream") {
+    return (
+      <>
+        {/* Animation Style Picker - stays on top */}
+        <motion.div
+          className="fixed top-0 left-0 right-0 z-[100] bg-zinc-900/95 backdrop-blur border-b border-white/10 px-4 py-2 safe-top"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {animations.map((animation) => (
+              <button
+                key={animation.id}
+                onClick={() => setSelectedAnimation(animation.id)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  selectedAnimation === animation.id
+                    ? "bg-green-500 text-black"
+                    : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
+                }`}
+              >
+                {animation.name}
+              </button>
+            ))}
+          </div>
+        </motion.div>
+        <InStreamExperience />
+      </>
+    )
   }
 
   return (
