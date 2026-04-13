@@ -294,12 +294,12 @@ function WinnerAnnouncement({ username, team, show }: { username: string; team: 
         <p className="text-sm flex items-center gap-2">
           <span className="font-bold text-white">{username}</span>
           <span className="text-white/90">Won</span>
-          {/* Team initials circle */}
+          {/* Team initials square */}
           <span 
-            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white"
             style={{ backgroundColor: team.color }}
           >
-            {team.name.split(' ').map(word => word[0]).join('').slice(0, 2)}
+            {team.abbrev}
           </span>
           <motion.span 
             className="font-black text-base text-white"
