@@ -132,7 +132,15 @@ export function EbayLiveBackground({ children, onTriggerReveal, isRevealing }: E
       <div className="absolute left-0 right-0 bottom-0 z-10 bg-zinc-900/95 backdrop-blur rounded-t-3xl">
         <div className="px-4 py-3 border-b border-zinc-800">
           <div className="flex items-center justify-between">
-            <span className="text-white/70 text-sm">16/32 spots available</span>
+            <span className="text-white/70 text-sm flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1" y="1" width="4" height="4" rx="1" fill="rgba(255,255,255,0.5)"/>
+                <rect x="7" y="1" width="4" height="4" rx="1" fill="rgba(255,255,255,0.5)"/>
+                <rect x="1" y="7" width="4" height="4" rx="1" fill="rgba(255,255,255,0.5)"/>
+                <rect x="7" y="7" width="4" height="4" rx="1" fill="rgba(255,255,255,0.5)"/>
+              </svg>
+              16/32 spots available
+            </span>
             <button className="flex items-center gap-1 text-white text-sm font-medium">
               View all
               <ChevronRight className="w-4 h-4" />
