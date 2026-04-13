@@ -226,36 +226,23 @@ export function WinnerChatAnnouncement({ username, team, show }: WinnerAnnouncem
     <AnimatePresence>
       {show && (
         <motion.div
-          className="relative px-3 py-2.5 rounded-xl overflow-hidden"
+          className="relative px-3 py-2.5 rounded-xl overflow-hidden bg-black/40 backdrop-blur"
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.8, y: -20 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
-          {/* Animated gradient background */}
-          <motion.div
-            className="absolute inset-0 rounded-xl"
-            style={{
-              background: `linear-gradient(135deg, ${team.color}40 0%, ${team.secondary}40 50%, ${team.color}40 100%)`,
-              backgroundSize: "200% 200%",
-            }}
-            animate={{
-              backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-          />
-          
           {/* Glow border */}
           <motion.div
-            className="absolute inset-0 rounded-xl"
+            className="absolute inset-0 rounded-xl pointer-events-none"
             style={{
-              boxShadow: `0 0 20px ${team.color}60, inset 0 0 20px ${team.color}20`,
+              boxShadow: `0 0 20px ${team.color}60, inset 0 0 15px ${team.color}15`,
             }}
             animate={{
               boxShadow: [
-                `0 0 20px ${team.color}60, inset 0 0 20px ${team.color}20`,
-                `0 0 35px ${team.color}80, inset 0 0 30px ${team.color}30`,
-                `0 0 20px ${team.color}60, inset 0 0 20px ${team.color}20`,
+                `0 0 20px ${team.color}60, inset 0 0 15px ${team.color}15`,
+                `0 0 35px ${team.color}80, inset 0 0 25px ${team.color}25`,
+                `0 0 20px ${team.color}60, inset 0 0 15px ${team.color}15`,
               ],
             }}
             transition={{ duration: 1.5, repeat: Infinity }}
