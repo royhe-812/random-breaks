@@ -209,7 +209,8 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
         clearTimeout(winnerTimer)
       }
     }
-  }, [isRevealing, onComplete])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRevealing])
 
   // Calculate card scales and positions based on phase
   const getLeftCardStyle = () => {

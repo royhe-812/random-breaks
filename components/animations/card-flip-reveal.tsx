@@ -67,7 +67,8 @@ export function CardFlipReveal({ isRevealing, onComplete, team: propTeam }: Card
         clearTimeout(completeTimer)
       }
     }
-  }, [isRevealing, onComplete])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRevealing])
 
   return (
     <div className="relative w-52 h-80 perspective-1000">

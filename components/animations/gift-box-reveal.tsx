@@ -63,7 +63,8 @@ export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftB
         clearTimeout(completeTimer)
       }
     }
-  }, [isRevealing, onComplete])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRevealing])
 
   return (
     <div className="relative w-72 h-96 flex items-center justify-center">
