@@ -125,11 +125,14 @@ export default function AnimationShowcase() {
   const handleComplete = useCallback(() => {
     // Keep the winning moment visible for 3 seconds, then reset everything
     setTimeout(() => {
+      // Set isRevealing to false first, then increment key after a tick
+      // to prevent the new component from seeing isRevealing=true
       setIsRevealing(false)
       setIsSpinning(false)
       setHasWon(false)
       setSelectedTeam(null)
-      setKey(prev => prev + 1)
+      // Delay key increment to ensure state updates have propagated
+      setTimeout(() => setKey(prev => prev + 1), 50)
     }, 3000)
   }, [])
 
