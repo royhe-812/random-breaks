@@ -291,16 +291,16 @@ export default function AnimationShowcase() {
               </motion.div>
             ))}
           </AnimatePresence>
-          
-          {/* Winner announcement for in-stream concept */}
-          {selectedAnimation === "in-stream" && winnerTeam && (
-            <WinnerChatAnnouncement 
-              username="KemMajed90"
-              team={winnerTeam}
-              show={showWinnerAnnouncement}
-            />
-          )}
         </div>
+
+        {/* Winner announcement for in-stream concept - full width like randomizer */}
+        {selectedAnimation === "in-stream" && winnerTeam && (
+          <WinnerChatAnnouncement 
+            username="KemMajed90"
+            team={winnerTeam}
+            show={showWinnerAnnouncement}
+          />
+        )}
 
         {/* Comment Input */}
         <div className="flex items-center bg-black/40 backdrop-blur rounded-full px-4 py-3">
