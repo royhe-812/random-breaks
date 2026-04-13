@@ -540,11 +540,22 @@ export function InStreamExperience() {
               Max bid
             </button>
             <button 
-              onClick={() => !hasWon && setHasWon(true)}
-              disabled={hasWon}
+              onClick={() => {
+                if (hasWon) {
+                  // Reset the entire concept
+                  setHasWon(false)
+                  setIsSpinning(false)
+                  setSelectedTeam(null)
+                  setShowWinner(false)
+                  setWinnerTeam(null)
+                  chatPausedRef.current = false
+                } else {
+                  setHasWon(true)
+                }
+              }}
               className={`flex-1 py-2.5 rounded-full font-semibold text-sm flex items-center justify-center gap-1 transition-colors ${
                 hasWon
-                  ? 'bg-zinc-700 text-white/50 cursor-not-allowed'
+                  ? 'bg-zinc-700 text-white/50 hover:bg-zinc-600 cursor-pointer'
                   : 'bg-green-500 hover:bg-green-400 text-black'
               }`}
             >
