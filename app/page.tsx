@@ -113,10 +113,14 @@ export default function AnimationShowcase() {
     setShowWinnerAnnouncement(true)
     setChatPaused(true)
     
-    // Resume chat after 5 seconds
+    // Resume chat and reset state after 5 seconds
     setTimeout(() => {
       setChatPaused(false)
       setShowWinnerAnnouncement(false)
+      setIsSpinning(false)
+      setHasWon(false)
+      setSelectedTeam(null)
+      setWinnerTeam(null)
     }, 5000)
   }, [])
 
@@ -312,10 +316,12 @@ export default function AnimationShowcase() {
             isSpinning={isSpinning}
             onStartSpin={handleStartSpin}
             onSpinComplete={(team) => {
-              handleSpinComplete(team)
-              // For in-stream, trigger the chat announcement
+              // For in-stream, only trigger chat announcement - NO reveal screen
               if (selectedAnimation === "in-stream") {
+                setSelectedTeam(team)
                 handleInStreamWinnerAnnouncement(team)
+              } else {
+                handleSpinComplete(team)
               }
             }}
             disabled={!hasWon}
