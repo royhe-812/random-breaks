@@ -345,7 +345,7 @@ animate={phase === "glowing" ? {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              Your team has been revealed!
+              Your spot has been revealed!
             </motion.p>
           </motion.div>
         )}

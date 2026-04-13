@@ -214,7 +214,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 1, ease: "easeInOut" }}
             />
             <span className="text-white font-black text-lg tracking-wider drop-shadow-lg relative z-10">
-              YOUR TEAM
+              YOUR SPOT
             </span>
           </div>
 
