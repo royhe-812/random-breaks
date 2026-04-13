@@ -18,8 +18,9 @@ import { GiftBoxReveal } from "@/components/animations/gift-box-reveal"
 import { BattleReveal } from "@/components/animations/battle-reveal"
 import { PickCardReveal } from "@/components/animations/pick-card-reveal"
 import { CarouselReveal } from "@/components/animations/carousel-reveal"
+import { WinnerChatAnnouncement } from "@/components/animations/in-stream-reveal"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream"
 
 const animations: { id: AnimationType; name: string }[] = [
   { id: "card-flip", name: "Card Flip" },
@@ -31,6 +32,7 @@ const animations: { id: AnimationType; name: string }[] = [
   { id: "battle", name: "Battle" },
   { id: "pick-card", name: "Pick Card" },
   { id: "carousel", name: "Carousel" },
+  { id: "in-stream", name: "In-Stream" },
 ]
 
 const chatMessages = [
@@ -60,11 +62,14 @@ export default function AnimationShowcase() {
   const [hasWon, setHasWon] = useState(false)
   const [visibleMessages, setVisibleMessages] = useState(chatMessages.slice(0, 3))
   const [viewerCount, setViewerCount] = useState(240)
+  const [inStreamWinner, setInStreamWinner] = useState<{ team: Team; show: boolean } | null>(null)
   const messageIndexRef = useRef(3)
+  const chatPausedRef = useRef(false)
 
-  // Rotate chat messages to feel alive
+  // Rotate chat messages to feel alive (uses ref to check pause without re-running effect)
   useEffect(() => {
     const interval = setInterval(() => {
+      if (chatPausedRef.current) return
       setVisibleMessages(prev => {
         const newMessages = [...prev.slice(1)]
         newMessages.push(chatMessages[messageIndexRef.current % chatMessages.length])
@@ -95,6 +100,8 @@ export default function AnimationShowcase() {
     setIsRevealing(false)
     setIsSpinning(false)
     setSelectedTeam(null)
+    setInStreamWinner(null)
+    chatPausedRef.current = false
   }, [selectedAnimation])
 
   const handleStartSpin = useCallback(() => {
@@ -263,6 +270,15 @@ export default function AnimationShowcase() {
           </AnimatePresence>
         </div>
 
+        {/* In-Stream Winner Announcement */}
+        {inStreamWinner && (
+          <WinnerChatAnnouncement 
+            username="KemMajed90"
+            team={inStreamWinner.team}
+            show={inStreamWinner.show}
+          />
+        )}
+
         {/* Comment Input */}
         <div className="flex items-center bg-black/40 backdrop-blur rounded-full px-4 py-3">
           <span className="text-white/50 text-sm flex-1">Add comment...</span>
@@ -276,7 +292,23 @@ export default function AnimationShowcase() {
             availableSpots={16}
             isSpinning={isSpinning}
             onStartSpin={handleStartSpin}
-            onSpinComplete={handleSpinComplete}
+            onSpinComplete={(team) => {
+              if (selectedAnimation === "in-stream") {
+                // For in-stream: show winner in chat, pause for 10 seconds
+                setSelectedTeam(team)
+                setInStreamWinner({ team, show: true })
+                chatPausedRef.current = true
+                setTimeout(() => {
+                  chatPausedRef.current = false
+                  setInStreamWinner(null)
+                  setIsSpinning(false)
+                  setHasWon(false)
+                  setSelectedTeam(null)
+                }, 10000)
+              } else {
+                handleSpinComplete(team)
+              }
+            }}
             disabled={!hasWon}
             username={hasWon ? "KemMajed90" : undefined}
           />
