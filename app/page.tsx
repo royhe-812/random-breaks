@@ -2,6 +2,7 @@
 
 // React hooks - all required hooks imported
 import { useCallback, useEffect, useRef, useState } from "react"
+import { flushSync } from "react-dom"
 
 // External libraries
 import { AnimatePresence, motion } from "framer-motion"
@@ -125,10 +126,15 @@ export default function AnimationShowcase() {
   const handleComplete = useCallback(() => {
     // Keep the winning moment visible for 3 seconds, then reset everything
     setTimeout(() => {
-      setIsRevealing(false)
+      // Use flushSync to ensure isRevealing is false before key increment
+      // This prevents the remounted component from seeing isRevealing=true
+      flushSync(() => {
+        setIsRevealing(false)
+      })
       setIsSpinning(false)
       setHasWon(false)
       setSelectedTeam(null)
+      setKey(prev => prev + 1)
     }, 3000)
   }, [])
 
