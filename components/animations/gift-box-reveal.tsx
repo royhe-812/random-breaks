@@ -7,7 +7,6 @@ import { CelebrationElements } from "./celebration-elements"
 import Image from "next/image"
 
 const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayLiveApp_Stars_DW_CC_v007_CC%202-OGJYd3jy5o3bamd4lN3498JekCYscy.png"
-const FIRE_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBay_Live_Emoji_a_v008_Fire.0072%202-IVWHtqVd8MJLUNA3EfYsVshGT1EjUg.png"
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
@@ -459,23 +458,7 @@ export function GiftBoxReveal({ isRevealing, onComplete, team: propTeam }: GiftB
               <div className="absolute bottom-3 right-3 w-3 h-3 border-r-2 border-b-2 rounded-br-sm" style={{ borderColor: team.secondary + "60" }} />
             </motion.div>
             
-            {/* Fire icons below card */}
-            <motion.div
-              className="flex items-center gap-3 mt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              <div className="relative w-7 h-7">
-                <Image src={FIRE_URL} alt="" fill className="object-contain" />
-              </div>
-              <p className="text-violet-300 text-sm font-semibold tracking-wide">
-                UNLOCKED
-              </p>
-              <div className="relative w-7 h-7">
-                <Image src={FIRE_URL} alt="" fill className="object-contain" />
-              </div>
-            </motion.div>
+
           </motion.div>
         )}
       </AnimatePresence>
