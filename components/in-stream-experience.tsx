@@ -166,7 +166,7 @@ function InStreamSpinner({
                 : 'bg-green-500 hover:bg-green-600 text-black'
             }`}
           >
-            {spinPhase === "idle" ? "Tap to spin" : "Spinning"}
+            {spinPhase === "idle" ? "Tap to spin" : spinPhase === "stopped" ? "Spot Assigned" : "Spinning"}
           </motion.button>
         </div>
       </div>
@@ -296,7 +296,7 @@ function WinnerAnnouncement({ username, team, show }: { username: string; team: 
           <span className="text-white/90">Won</span>
           {/* Team initials square */}
           <span 
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white"
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-white"
             style={{ backgroundColor: team.color }}
           >
             {team.abbrev}
