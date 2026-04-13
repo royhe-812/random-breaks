@@ -2,7 +2,6 @@
 
 // React hooks - all required hooks imported
 import { useCallback, useEffect, useRef, useState } from "react"
-import { flushSync } from "react-dom"
 
 // External libraries
 import { AnimatePresence, motion } from "framer-motion"
@@ -68,9 +67,9 @@ export default function AnimationShowcase() {
   const [chatPaused, setChatPaused] = useState(false)
   const messageIndexRef = useRef(3)
 
-  // Rotate chat messages to feel alive (pauses when chatPaused is true for in-stream)
+  // Rotate chat messages to feel alive (pauses when chatPaused is true)
   useEffect(() => {
-    if (selectedAnimation === "in-stream" && chatPaused) return
+    if (chatPaused) return
     
     const interval = setInterval(() => {
       setVisibleMessages(prev => {
@@ -81,7 +80,7 @@ export default function AnimationShowcase() {
       })
     }, 2500)
     return () => clearInterval(interval)
-  }, [chatPaused, selectedAnimation])
+  }, [chatPaused])
 
   // Fluctuate viewer count realistically
   useEffect(() => {
@@ -126,11 +125,7 @@ export default function AnimationShowcase() {
   const handleComplete = useCallback(() => {
     // Keep the winning moment visible for 3 seconds, then reset everything
     setTimeout(() => {
-      // Use flushSync to ensure isRevealing is false before key increment
-      // This prevents the remounted component from seeing isRevealing=true
-      flushSync(() => {
-        setIsRevealing(false)
-      })
+      setIsRevealing(false)
       setIsSpinning(false)
       setHasWon(false)
       setSelectedTeam(null)
