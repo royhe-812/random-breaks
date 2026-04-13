@@ -462,10 +462,7 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
               <span className="text-white/80 text-sm font-semibold uppercase tracking-wider">
                 {winner.city}
               </span>
-              <span 
-                className="text-3xl font-black"
-                style={{ color: winner.color }}
-              >
+              <span className="text-3xl font-black text-white">
                 {winner.name.toUpperCase()}
               </span>
               <span className="text-green-400 text-sm font-semibold tracking-widest mt-1">
