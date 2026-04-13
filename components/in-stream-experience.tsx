@@ -291,13 +291,19 @@ function WinnerAnnouncement({ username, team, show }: { username: string; team: 
         >
           👑
         </motion.span>
-        <p className="text-sm">
+        <p className="text-sm flex items-center gap-2">
           <span className="font-bold text-white">{username}</span>
-          <span className="text-white/90 ml-1">Won</span>
+          <span className="text-white/90">Won</span>
+          {/* Team initials circle */}
+          <span 
+            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+            style={{ backgroundColor: team.color }}
+          >
+            {team.name.split(' ').map(word => word[0]).join('').slice(0, 2)}
+          </span>
           <motion.span 
-            className="font-black ml-1 text-base"
+            className="font-black text-base text-white"
             style={{ 
-              color: team.color === "#FFB612" ? "#fff" : team.color,
               textShadow: `0 0 10px ${team.color}80`,
             }}
             animate={{
@@ -485,10 +491,7 @@ export function InStreamExperience() {
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 pr-2">
               <p className="text-sm text-white mb-0.5 line-clamp-2">
-                <span 
-                  className="font-semibold"
-                  style={selectedTeam ? { color: selectedTeam.color } : undefined}
-                >
+                <span className="font-semibold text-white">
                   {selectedTeam ? `${selectedTeam.city} ${selectedTeam.name}` : 'Random team'}
                 </span>
                 <span className="text-white/50"> - 16X 2023 Panini Mosaic NFL Blaster</span>
