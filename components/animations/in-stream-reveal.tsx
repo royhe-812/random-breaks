@@ -254,7 +254,10 @@ export function WinnerChatAnnouncement({ username, team, show }: WinnerAnnouncem
 
           {/* Sweeping gradient glow (left to right) */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-xl pointer-events-none"
+            className="absolute inset-0 rounded-xl pointer-events-none"
+            style={{
+              background: "linear-gradient(to right, transparent, #4CE16050, #4CE160, #4CE16050, transparent)",
+            }}
             animate={{ x: ["-100%", "100%"] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
           />
