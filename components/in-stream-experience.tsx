@@ -354,6 +354,11 @@ export function InStreamExperience() {
   }, [])
 
   const handleStartSpin = useCallback(() => {
+    // Reset previous winner state when starting a new spin
+    setShowWinner(false)
+    setWinnerTeam(null)
+    setSelectedTeam(null)
+    chatPausedRef.current = false
     setIsSpinning(true)
   }, [])
 
@@ -362,16 +367,7 @@ export function InStreamExperience() {
     setWinnerTeam(team)
     setShowWinner(true)
     chatPausedRef.current = true
-    
-    // After 10 seconds, reset everything
-    setTimeout(() => {
-      chatPausedRef.current = false
-      setShowWinner(false)
-      setWinnerTeam(null)
-      setIsSpinning(false)
-      setHasWon(false)
-      setSelectedTeam(null)
-    }, 10000)
+    // Chat stays paused permanently until next spin
   }, [])
 
   return (
