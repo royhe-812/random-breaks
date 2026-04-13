@@ -219,7 +219,96 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
           </div>
 
           {/* Viewing window */}
-          <div className="relative h-24 mx-5 my-5 rounded-xl overflow-hidden" style={{ background: "rgba(0, 0, 0, 0.4)", borderWidth: 1, borderStyle: "solid", borderColor: "rgba(255, 255, 255, 0.1)" }}>
+          <motion.div 
+            className="relative h-24 mx-5 my-5 rounded-xl overflow-hidden" 
+            style={{ 
+              background: "rgba(0, 0, 0, 0.4)", 
+              borderWidth: phase === "explode" ? 2 : 1, 
+              borderStyle: "solid", 
+              borderColor: phase === "explode" ? "#4CE160" : "rgba(255, 255, 255, 0.1)",
+              boxShadow: phase === "explode" ? `0 0 30px #4CE16080, 0 0 60px ${finalTeam.color}50` : "none",
+            }}
+            animate={phase === "explode" ? { scale: [1, 1.02, 1] } : {}}
+            transition={{ duration: 0.8, repeat: Infinity, repeatDelay: 0.5 }}
+          >
+            {/* Winner celebration effects - only show when explode */}
+            {phase === "explode" && (
+              <>
+                {/* Animated glow border */}
+                <motion.div
+                  className="absolute inset-0 rounded-xl pointer-events-none"
+                  animate={{
+                    boxShadow: [
+                      `inset 0 0 25px #4CE16040, 0 0 20px #4CE16060`,
+                      `inset 0 0 50px #4CE16060, 0 0 40px #4CE16080`,
+                      `inset 0 0 25px #4CE16040, 0 0 20px #4CE16060`,
+                    ],
+                  }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                />
+
+                {/* Primary sweeping wipe gradient - green */}
+                <motion.div
+                  className="absolute inset-0 rounded-xl pointer-events-none"
+                  style={{
+                    background: "linear-gradient(90deg, transparent 0%, #4CE16030 40%, #4CE160 50%, #4CE16030 60%, transparent 100%)",
+                  }}
+                  animate={{ x: ["-100%", "100%"] }}
+                  transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+                />
+
+                {/* Secondary wipe gradient - team color */}
+                <motion.div
+                  className="absolute inset-0 rounded-xl pointer-events-none"
+                  style={{
+                    background: `linear-gradient(90deg, transparent 0%, ${finalTeam.color}20 40%, ${finalTeam.color}60 50%, ${finalTeam.color}20 60%, transparent 100%)`,
+                  }}
+                  animate={{ x: ["-100%", "100%"] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: "linear", delay: 0.4 }}
+                />
+
+                {/* Sparkle particles */}
+                {[...Array(10)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute rounded-full pointer-events-none"
+                    style={{
+                      width: 3 + (i % 3),
+                      height: 3 + (i % 3),
+                      left: `${8 + i * 9}%`,
+                      top: `${15 + (i % 3) * 30}%`,
+                      background: i % 3 === 0 ? "#4CE160" : i % 3 === 1 ? finalTeam.color : "#fff",
+                    }}
+                    animate={{
+                      opacity: [0, 1, 0],
+                      scale: [0, 1.5, 0],
+                      y: [0, -8, 0],
+                    }}
+                    transition={{
+                      duration: 1.2,
+                      repeat: Infinity,
+                      delay: i * 0.12,
+                      ease: "easeOut",
+                    }}
+                  />
+                ))}
+
+                {/* Firework bursts on edges */}
+                <motion.div
+                  className="absolute -left-1 top-1/2 w-3 h-3 rounded-full pointer-events-none"
+                  style={{ background: `radial-gradient(circle, ${finalTeam.color} 0%, transparent 70%)` }}
+                  animate={{ scale: [0, 2, 0], opacity: [0, 0.8, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+                />
+                <motion.div
+                  className="absolute -right-1 top-1/2 w-3 h-3 rounded-full pointer-events-none"
+                  style={{ background: `radial-gradient(circle, #4CE160 0%, transparent 70%)` }}
+                  animate={{ scale: [0, 2, 0], opacity: [0, 0.8, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: 0.8 }}
+                />
+              </>
+            )}
+
             {/* Scrolling reel */}
             <div 
               className="absolute inset-x-0"
@@ -270,7 +359,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
             </div>
 
 
-          </div>
+          </motion.div>
 
 
 
