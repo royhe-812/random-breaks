@@ -112,16 +112,7 @@ export default function AnimationShowcase() {
     setWinnerTeam(team)
     setShowWinnerAnnouncement(true)
     setChatPaused(true)
-    
-    // Resume chat and reset state after 10 seconds
-    setTimeout(() => {
-      setChatPaused(false)
-      setShowWinnerAnnouncement(false)
-      setIsSpinning(false)
-      setHasWon(false)
-      setSelectedTeam(null)
-      setWinnerTeam(null)
-    }, 10000)
+    // Chat stays paused permanently to show the winner treatment
   }, [])
 
   const handleStartSpin = useCallback(() => {

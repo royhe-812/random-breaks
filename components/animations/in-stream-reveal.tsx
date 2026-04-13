@@ -227,22 +227,26 @@ export function WinnerChatAnnouncement({ username, team, show }: WinnerAnnouncem
       {show && (
         <motion.div
           className="relative px-3 py-2.5 rounded-xl overflow-hidden bg-black/40 backdrop-blur w-full whitespace-nowrap"
+          style={{
+            boxShadow: `0 0 30px ${team.color}50, 0 0 60px ${team.color}30, 0 0 90px ${team.color}15`,
+          }}
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.8, y: -20 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
-          {/* Glow border */}
+          {/* Animated glow border */}
           <motion.div
             className="absolute inset-0 rounded-xl pointer-events-none"
             style={{
-              boxShadow: `0 0 20px ${team.color}60, inset 0 0 15px ${team.color}15`,
+              boxShadow: `0 0 25px ${team.color}70, inset 0 0 20px ${team.color}20`,
+              border: `1px solid ${team.color}50`,
             }}
             animate={{
               boxShadow: [
-                `0 0 20px ${team.color}60, inset 0 0 15px ${team.color}15`,
-                `0 0 35px ${team.color}80, inset 0 0 25px ${team.color}25`,
-                `0 0 20px ${team.color}60, inset 0 0 15px ${team.color}15`,
+                `0 0 25px ${team.color}70, inset 0 0 20px ${team.color}20`,
+                `0 0 50px ${team.color}90, inset 0 0 35px ${team.color}35`,
+                `0 0 25px ${team.color}70, inset 0 0 20px ${team.color}20`,
               ],
             }}
             transition={{ duration: 1.5, repeat: Infinity }}
