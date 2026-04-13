@@ -18,7 +18,7 @@ import { GiftBoxReveal } from "@/components/animations/gift-box-reveal"
 import { BattleReveal } from "@/components/animations/battle-reveal"
 import { PickCardReveal } from "@/components/animations/pick-card-reveal"
 import { CarouselReveal } from "@/components/animations/carousel-reveal"
-import { InStreamReveal, WinnerChatAnnouncement } from "@/components/animations/in-stream-reveal"
+import { WinnerChatAnnouncement } from "@/components/animations/in-stream-reveal"
 
 type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream"
 
@@ -169,7 +169,8 @@ export default function AnimationShowcase() {
       case "carousel":
         return <CarouselReveal key={key} isRevealing={isRevealing} onComplete={handleComplete} />
       case "in-stream":
-        return <InStreamReveal key={key} {...props} onWinnerAnnouncement={handleInStreamWinnerAnnouncement} />
+        // In-stream uses the TeamSpinner directly, no separate reveal animation
+        return null
       default:
         return null
     }
@@ -304,13 +305,19 @@ export default function AnimationShowcase() {
         </div>
 
         {/* Team Spinner with Spots Available - hidden for slot machine, battle, carousel, and pick-card */}
-        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "in-stream" && (
+        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={16}
             isSpinning={isSpinning}
             onStartSpin={handleStartSpin}
-            onSpinComplete={handleSpinComplete}
+            onSpinComplete={(team) => {
+              handleSpinComplete(team)
+              // For in-stream, trigger the chat announcement
+              if (selectedAnimation === "in-stream") {
+                handleInStreamWinnerAnnouncement(team)
+              }
+            }}
             disabled={!hasWon}
             username={hasWon ? "KemMajed90" : undefined}
           />
@@ -371,8 +378,8 @@ export default function AnimationShowcase() {
               onClick={() => {
                 if (!hasWon) {
                   setHasWon(true)
-                  // For slot-machine, battle, carousel, pick-card, and in-stream, trigger reveal after a short delay
-                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "in-stream") {
+                  // For slot-machine, battle, carousel, and pick-card, trigger reveal after a short delay
+                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card") {
                     setTimeout(() => {
                       setIsRevealing(true)
                       setKey(prev => prev + 1)
