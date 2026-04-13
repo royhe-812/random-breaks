@@ -197,17 +197,17 @@ function WinnerAnnouncement({ username, team, show }: { username: string; team: 
         scale: { duration: 0.8, repeat: Infinity, repeatDelay: 0.5 }
       }}
     >
-      {/* Animated glow border with stronger effect */}
+      {/* Animated glow border with stronger effect - green */}
       <motion.div
         className="absolute inset-0 rounded-xl pointer-events-none"
         style={{
-          border: `2px solid ${team.color}`,
+          border: `2px solid #4CE160`,
         }}
         animate={{
           boxShadow: [
-            `inset 0 0 25px ${team.color}40, 0 0 20px ${team.color}60`,
-            `inset 0 0 50px ${team.color}60, 0 0 40px ${team.color}80`,
-            `inset 0 0 25px ${team.color}40, 0 0 20px ${team.color}60`,
+            `inset 0 0 25px #4CE16040, 0 0 20px #4CE16060`,
+            `inset 0 0 50px #4CE16060, 0 0 40px #4CE16080`,
+            `inset 0 0 25px #4CE16040, 0 0 20px #4CE16060`,
           ],
         }}
         transition={{ duration: 1, repeat: Infinity }}
