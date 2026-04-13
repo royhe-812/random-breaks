@@ -272,16 +272,16 @@ export function WinnerChatAnnouncement({ username, team, show }: WinnerAnnouncem
           {/* Content */}
           <div className="relative z-10 flex items-center gap-2">
             <span className="text-xl">👑</span>
-            <div className="flex flex-wrap items-center gap-1">
-              <span className="font-bold text-white text-sm">{username}</span>
-              <span className="text-white/80 text-sm">Won the</span>
+            <p className="text-sm">
+              <span className="font-bold text-white">{username}</span>
+              <span className="text-white/80"> Won the </span>
               <span 
-                className="font-bold text-sm"
+                className="font-bold"
                 style={{ color: team.color === "#FFB612" ? "#fff" : team.color }}
               >
                 {team.city} {team.name}!
               </span>
-            </div>
+            </p>
           </div>
         </motion.div>
       )}
