@@ -69,8 +69,11 @@ export function ParticleAssemblyReveal({ isRevealing, onComplete, team: propTeam
         clearTimeout(revealTimer)
         clearTimeout(completeTimer)
       }
+    } else {
+      setPhase("idle")
     }
-  }, [isRevealing, onComplete])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRevealing])
 
   return (
     <div className="relative w-64 h-80 flex flex-col items-center justify-center overflow-visible">

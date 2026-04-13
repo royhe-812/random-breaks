@@ -54,8 +54,11 @@ export function SealBreakReveal({ isRevealing, onComplete }: SealBreakRevealProp
         clearTimeout(revealTimer)
         clearTimeout(completeTimer)
       }
+    } else {
+      setPhase("idle")
     }
-  }, [isRevealing, onComplete])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRevealing])
 
   return (
     <div className="relative w-60 h-80 flex items-center justify-center">
