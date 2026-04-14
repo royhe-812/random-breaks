@@ -124,7 +124,7 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
           <div className="relative z-10 flex flex-col items-center gap-4">
             {/* Team abbreviation badge */}
             <motion.div
-              className="w-20 h-20 rounded-xl flex items-center justify-center text-white font-bold text-2xl"
+              className="w-20 h-20 rounded-xl flex items-center justify-center text-white font-bold text-2xl border-2 border-white"
               style={{ backgroundColor: team.color }}
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 1, repeat: Infinity }}
