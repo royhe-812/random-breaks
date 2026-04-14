@@ -90,8 +90,8 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
         <motion.div
           className="relative rounded-2xl overflow-hidden p-8"
           style={{
-            background: `linear-gradient(135deg, ${team.color}40 0%, ${team.color}20 50%, rgba(0,0,0,0.6) 100%)`,
-            boxShadow: `0 0 60px ${team.color}60, 0 0 120px ${team.color}30`,
+            background: `linear-gradient(145deg, ${team.color} 0%, ${team.color}DD 50%, ${team.color}BB 100%)`,
+            boxShadow: `0 0 60px ${team.color}80, 0 0 120px ${team.color}50`,
           }}
           initial={{ scale: 0.9 }}
           animate={{ scale: phase === "team-card" ? 1 : 0.9 }}
