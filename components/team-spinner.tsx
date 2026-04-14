@@ -3,7 +3,7 @@
 // Imports
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Dice5 } from "lucide-react"
+
 
 // NFL teams data with official abbreviations
 const teams = [
@@ -44,8 +44,15 @@ interface TeamSpinnerProps {
   username?: string
 }
 
-// Single die icon component
-const DieIcon = Dice5
+// Spots icon component (2x2 grid)
+const SpotsIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1" y="1" width="4" height="4" rx="1" fill="currentColor"/>
+    <rect x="7" y="1" width="4" height="4" rx="1" fill="currentColor"/>
+    <rect x="1" y="7" width="4" height="4" rx="1" fill="currentColor"/>
+    <rect x="7" y="7" width="4" height="4" rx="1" fill="currentColor"/>
+  </svg>
+)
 
 export function TeamSpinner({ 
   totalSpots, 
@@ -189,7 +196,7 @@ export function TeamSpinner({
                 transition={{ duration: 0.15, ease: "easeInOut" }}
               >
                 {spinPhase === "idle" ? (
-                  <DieIcon className="w-6 h-6" />
+                  <SpotsIcon className="w-6 h-6" />
                 ) : spinPhase === "stopped" ? (
                   "?"
                 ) : (
