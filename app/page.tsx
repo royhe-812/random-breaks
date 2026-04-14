@@ -33,7 +33,7 @@ const animations: { id: AnimationType; name: string }[] = [
   { id: "battle", name: "Battle" },
   { id: "pick-card", name: "Pick Card" },
   { id: "carousel", name: "Carousel" },
-  { id: "in-stream", name: "In-Stream" },
+  { id: "in-stream", name: "In-Chat" },
   { id: "winner-winner", name: "Chicken Dinner" },
 ]
 
