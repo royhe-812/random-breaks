@@ -34,7 +34,7 @@ const animations: { id: AnimationType; name: string }[] = [
   { id: "pick-card", name: "Pick Card" },
   { id: "carousel", name: "Carousel" },
   { id: "in-stream", name: "In-Stream" },
-  { id: "winner-winner", name: "Winner Winner" },
+  { id: "winner-winner", name: "Chicken Dinner" },
 ]
 
 const chatMessages = [
