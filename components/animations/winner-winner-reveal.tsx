@@ -45,7 +45,8 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRevealing])
 
-  if (!isRevealing || !team) return null
+  // Don't render anything when done or not revealing
+  if (!isRevealing || !team || phase === "done") return null
 
   return (
     <motion.div
