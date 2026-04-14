@@ -18,9 +18,10 @@ import { GiftBoxReveal } from "@/components/animations/gift-box-reveal"
 import { BattleReveal } from "@/components/animations/battle-reveal"
 import { PickCardReveal } from "@/components/animations/pick-card-reveal"
 import { CarouselReveal } from "@/components/animations/carousel-reveal"
+import { WinnerWinnerReveal } from "@/components/animations/winner-winner-reveal"
 import { InStreamExperience } from "@/components/in-stream-experience"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner"
 
 const animations: { id: AnimationType; name: string }[] = [
   { id: "card-flip", name: "Card Flip" },
@@ -33,6 +34,7 @@ const animations: { id: AnimationType; name: string }[] = [
   { id: "pick-card", name: "Pick Card" },
   { id: "carousel", name: "Carousel" },
   { id: "in-stream", name: "In-Stream" },
+  { id: "winner-winner", name: "Winner Winner" },
 ]
 
 const chatMessages = [
@@ -147,6 +149,8 @@ export default function AnimationShowcase() {
         return <PickCardReveal key={key} {...props} />
       case "carousel":
         return <CarouselReveal key={key} isRevealing={isRevealing} onComplete={handleComplete} />
+      case "winner-winner":
+        return <WinnerWinnerReveal key={key} {...props} />
       default:
         return null
     }
