@@ -497,11 +497,10 @@ export function InStreamExperience() {
                 <span className="text-white/50"> - 16X 2023 Panini Mosaic NFL Blaster</span>
               </p>
               <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="1" y="1" width="4" height="4" rx="1" fill="rgba(255,255,255,0.5)"/>
-                  <rect x="7" y="1" width="4" height="4" rx="1" fill="rgba(255,255,255,0.5)"/>
-                  <rect x="1" y="7" width="4" height="4" rx="1" fill="rgba(255,255,255,0.5)"/>
-                  <rect x="7" y="7" width="4" height="4" rx="1" fill="rgba(255,255,255,0.5)"/>
+                <svg width="12" height="12" viewBox="0 0 36 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="2" y="2" width="32" height="36" rx="4" stroke="rgba(255,255,255,0.5)" strokeWidth="3" fill="none"/>
+                  <circle cx="18" cy="14" r="5" fill="rgba(255,255,255,0.5)"/>
+                  <path d="M10 30c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="rgba(255,255,255,0.5)" strokeWidth="3" strokeLinecap="round" fill="none"/>
                 </svg>
                 16/32 spots available
               </p>
