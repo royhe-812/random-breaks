@@ -49,11 +49,21 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
+      {/* Background - similar to mystery pack with radial glow */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at center, rgba(76, 225, 96, 0.15) 0%, rgba(76, 225, 96, 0.05) 40%, transparent 70%)`,
+        }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
       {/* Team Card - Always rendered underneath, revealed when winner text slides up */}
       <motion.div
         className="absolute flex flex-col items-center gap-6"
@@ -190,10 +200,10 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
                     scale: 1,
                   }}
                   exit={{
-                    // Parallax effect - each line moves at different speed (top lines faster)
-                    y: -600 - ((6 - i) * 80),
+                    // Parallax effect - opposite of entrance (go back down with staggered speeds)
+                    y: 200 + (i * 40),
                     opacity: 0,
-                    scale: 0.9,
+                    scale: 0.7,
                   }}
                   transition={{ 
                     delay: i * 0.12,
@@ -216,10 +226,10 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
                   y: 0,
                 }}
                 exit={{
-                  // Crown exits fastest for parallax effect
-                  y: -800,
+                  // Crown exits fastest going back down (opposite of entrance)
+                  y: 300,
                   opacity: 0,
-                  scale: 0.7,
+                  scale: 0.3,
                 }}
                 transition={{ 
                   opacity: { delay: 0.8, duration: 0.4 },
@@ -268,8 +278,9 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
                   scale: [0, 1.5, 0],
                 }}
                 exit={{
-                  y: -300 - (i * 30),
+                  y: 100 + (i * 20),
                   opacity: 0,
+                  scale: 0,
                 }}
                 transition={{
                   duration: 1.2,
