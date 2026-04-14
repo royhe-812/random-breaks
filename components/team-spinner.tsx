@@ -191,7 +191,7 @@ export function TeamSpinner({
                 transition={{ duration: 0.15, ease: "easeInOut" }}
               >
                 {spinPhase === "idle" ? (
-                  <SpotsIcon className="w-6 h-6" />
+                  <SpotsIcon className="h-6 w-auto" />
                 ) : spinPhase === "stopped" ? (
                   "?"
                 ) : (
