@@ -252,10 +252,10 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
                   <Image 
                     src="/images/crown.png" 
                     alt="Crown" 
-                    width={450} 
-                    height={450}
+                    width={900} 
+                    height={900}
                     className="drop-shadow-2xl"
-                    style={{ filter: "drop-shadow(0 0 50px rgba(255, 215, 0, 0.6))" }}
+                    style={{ filter: "drop-shadow(0 0 80px rgba(255, 215, 0, 0.7))" }}
                   />
                 </motion.div>
               </motion.div>
