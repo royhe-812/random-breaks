@@ -133,11 +133,7 @@ export function EbayLiveBackground({ children, onTriggerReveal, isRevealing }: E
         <div className="px-4 py-3 border-b border-zinc-800">
           <div className="flex items-center justify-between">
             <span className="text-white/70 text-sm flex items-center gap-1">
-              <svg width="12" height="12" viewBox="0 0 36 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="2" y="2" width="32" height="36" rx="4" stroke="rgba(255,255,255,0.5)" strokeWidth="3" fill="none"/>
-                <circle cx="18" cy="14" r="5" fill="rgba(255,255,255,0.5)"/>
-                <path d="M10 30c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="rgba(255,255,255,0.5)" strokeWidth="3" strokeLinecap="round" fill="none"/>
-              </svg>
+              <img src="/images/spot-grey.png" alt="" width={12} height={12} />
               16/32 spots available
             </span>
             <button className="flex items-center gap-1 text-white text-sm font-medium">

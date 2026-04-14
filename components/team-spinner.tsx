@@ -44,13 +44,9 @@ interface TeamSpinnerProps {
   username?: string
 }
 
-// Spots icon component (badge with person)
+// Spots icon component (uses image)
 const SpotsIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 36 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="2" y="2" width="32" height="36" rx="4" stroke="currentColor" strokeWidth="3" fill="none"/>
-    <circle cx="18" cy="14" r="5" fill="currentColor"/>
-    <path d="M10 30c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none"/>
-  </svg>
+  <img src="/images/spot-white.png" alt="" className={className} />
 )
 
 export function TeamSpinner({ 
