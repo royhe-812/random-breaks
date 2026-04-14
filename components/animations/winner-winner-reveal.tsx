@@ -26,14 +26,14 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
       // Start with winner text phase
       setPhase("winner-text")
       
-      // After 3 seconds, transition to team card
-      const teamCardTimer = setTimeout(() => setPhase("team-card"), 3000)
+      // After 2.5 seconds, transition to team card
+      const teamCardTimer = setTimeout(() => setPhase("team-card"), 2500)
       
-      // After 6.5 seconds total, complete
+      // After 5.5 seconds total (3 seconds on card), complete
       const completeTimer = setTimeout(() => {
         setPhase("done")
         onComplete()
-      }, 6500)
+      }, 5500)
       
       return () => {
         clearTimeout(teamCardTimer)
@@ -251,10 +251,10 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
                   <Image 
                     src="/images/crown.png" 
                     alt="Crown" 
-                    width={360} 
-                    height={360}
+                    width={450} 
+                    height={450}
                     className="drop-shadow-2xl"
-                    style={{ filter: "drop-shadow(0 0 40px rgba(255, 215, 0, 0.5))" }}
+                    style={{ filter: "drop-shadow(0 0 50px rgba(255, 215, 0, 0.6))" }}
                   />
                 </motion.div>
               </motion.div>
