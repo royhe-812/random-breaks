@@ -440,39 +440,46 @@ export default function AnimationShowcase() {
       <AnimatePresence>
         {isRevealing && (
           <>
-            {/* Backdrop blur */}
-            <motion.div
-              className="absolute inset-0 bg-black/70 backdrop-blur-sm z-40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            />
-            
-            {/* Animation container */}
-            <motion.div
-              className="absolute inset-0 flex flex-col items-center justify-center z-50"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.3 }}
-            >
-              {/* Winner announcement */}
-              <motion.div
-                className="mb-6 text-center"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <p className="text-green-400 text-sm font-medium uppercase tracking-wider mb-1">
-                  KemMajed90 Won!
-                </p>
-                <p className="text-white/70 text-sm">Your spot is...</p>
-              </motion.div>
+            {/* Chicken Dinner handles its own overlay, so only render the animation */}
+            {selectedAnimation === "winner-winner" ? (
+              renderAnimation()
+            ) : (
+              <>
+                {/* Backdrop blur */}
+                <motion.div
+                  className="absolute inset-0 bg-black/70 backdrop-blur-sm z-40"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                />
+                
+                {/* Animation container */}
+                <motion.div
+                  className="absolute inset-0 flex flex-col items-center justify-center z-50"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {/* Winner announcement */}
+                  <motion.div
+                    className="mb-6 text-center"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <p className="text-green-400 text-sm font-medium uppercase tracking-wider mb-1">
+                      KemMajed90 Won!
+                    </p>
+                    <p className="text-white/70 text-sm">Your spot is...</p>
+                  </motion.div>
 
-              {/* The animation component */}
-              {renderAnimation()}
-            </motion.div>
+                  {/* The animation component */}
+                  {renderAnimation()}
+                </motion.div>
+              </>
+            )}
           </>
         )}
       </AnimatePresence>
