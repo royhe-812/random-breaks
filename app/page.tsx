@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, ChevronRight, ChevronsRight, Heart, Star } from "lucide-react"
 
 // Internal components
-import { TeamSpinner, type Team } from "@/components/team-spinner"
+import { TeamSpinner, type Team, teams } from "@/components/team-spinner"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
 import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
@@ -263,6 +263,7 @@ export default function AnimationShowcase() {
 
   const handleSpinComplete = useCallback((team: Team) => {
     setSelectedTeam(team)
+    setWinnerTeam(team) // Store winner team immediately so handleComplete has it
     setIsRevealing(true)
     setKey(prev => prev + 1)
   }, [])
@@ -274,8 +275,7 @@ export default function AnimationShowcase() {
 
   const handleComplete = useCallback(() => {
     // When reveal completes, show the in-chat winner treatment
-    if (selectedTeam && selectedAnimation !== "in-stream") {
-      setWinnerTeam(selectedTeam)
+    if (selectedAnimation !== "in-stream") {
       setShowWinner(true)
       chatPausedRef.current = true
     }
@@ -287,7 +287,7 @@ export default function AnimationShowcase() {
       // Don't reset hasWon, winnerTeam, or showWinner - keep winner treatment visible
       setKey(prev => prev + 1)
     }, 3000)
-  }, [selectedTeam, selectedAnimation])
+  }, [selectedAnimation])
 
   const renderAnimation = () => {
     const props = { isRevealing, onComplete: handleComplete, team: selectedTeam }
@@ -478,8 +478,8 @@ export default function AnimationShowcase() {
           <Heart className="w-5 h-5 text-red-500 fill-red-500" />
         </div>
 
-        {/* Team Spinner with Spots Available - hidden for slot machine, battle, carousel, and pick-card */}
-        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && (
+        {/* Team Spinner with Spots Available - hidden for concepts with built-in randomizer */}
+        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "winner-winner" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={16}
@@ -562,8 +562,11 @@ export default function AnimationShowcase() {
                   chatPausedRef.current = false
                 } else {
                   setHasWon(true)
-                  // For slot-machine, battle, carousel, and pick-card, trigger reveal after a short delay
-                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card") {
+                  // For concepts with built-in randomizer, set a random team and trigger reveal after a short delay
+                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "winner-winner") {
+                    const randomTeam = teams[Math.floor(Math.random() * teams.length)]
+                    setSelectedTeam(randomTeam)
+                    setWinnerTeam(randomTeam)
                     setTimeout(() => {
                       setIsRevealing(true)
                       setKey(prev => prev + 1)
