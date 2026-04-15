@@ -30,10 +30,10 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "slot-machine", name: "Team Picker" },
   { id: "mystery-box", name: "Mystery Pack" },
   { id: "battle", name: "Battle" },
-  { id: "pick-card", name: "Pick Card" },
   { id: "carousel", name: "Carousel" },
   { id: "particle-assembly", name: "Particles", disabled: true },
   { id: "gift-box", name: "Gift Box", disabled: true },
+  { id: "pick-card", name: "Pick Card", disabled: true },
 ]
 
 // Winner Chat Announcement with glow and wipe gradient
