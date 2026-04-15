@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { HolographicShine } from "./celebration-elements"
-import Image from "next/image"
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
@@ -38,7 +37,6 @@ interface CardFlipRevealProps {
 }
 
 export function CardFlipReveal({ isRevealing, onComplete, team: propTeam }: CardFlipRevealProps) {
-  const [phase, setPhase] = useState<"idle" | "winner-text" | "card-flip">("idle")
   const [isFlipped, setIsFlipped] = useState(false)
   const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const team = propTeam || randomTeam
@@ -50,158 +48,29 @@ export function CardFlipReveal({ isRevealing, onComplete, team: propTeam }: Card
       setRandomTeam(teams[Math.floor(Math.random() * teams.length)])
       setIsFlipped(false)
       setShowShine(false)
-      setPhase("winner-text")
       
-      // After 2.5 seconds, transition to card flip phase
-      const cardPhaseTimer = setTimeout(() => {
-        setPhase("card-flip")
-      }, 2500)
-      
-      // Flip the card shortly after entering card-flip phase
       const flipTimer = setTimeout(() => {
         setIsFlipped(true)
-      }, 2800)
+      }, 300)
       
       const shineTimer = setTimeout(() => {
         setShowShine(true)
-      }, 3400)
+      }, 900)
       
       const completeTimer = setTimeout(() => {
         onComplete()
-      }, 5000)
+      }, 2500)
       
       return () => {
-        clearTimeout(cardPhaseTimer)
         clearTimeout(flipTimer)
         clearTimeout(shineTimer)
         clearTimeout(completeTimer)
       }
-    } else {
-      setPhase("idle")
     }
   }, [isRevealing, onComplete])
 
   return (
     <div className="relative w-52 h-80 perspective-1000">
-      {/* Winner Text Phase - appears before card flip */}
-      <AnimatePresence>
-        {phase === "winner-text" && (
-          <motion.div
-            key="winner-text"
-            className="absolute inset-0 flex flex-col items-center justify-center z-20"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {/* Stacked WINNER text */}
-            <div className="relative flex flex-col items-center -space-y-2">
-              {[...Array(7)].map((_, i) => (
-                <motion.span
-                  key={i}
-                  className="text-4xl font-black italic text-[#4CE160] leading-none tracking-tight"
-                  style={{ 
-                    opacity: 1 - (i * 0.1),
-                  }}
-                  initial={{ opacity: 0, y: 40, scale: 0.7 }}
-                  animate={{ 
-                    opacity: 1 - (i * 0.1), 
-                    y: 0,
-                    scale: 1,
-                  }}
-                  exit={{
-                    y: -150 - (i * 30),
-                    opacity: 0,
-                    scale: 0.7,
-                  }}
-                  transition={{ 
-                    delay: i * 0.1,
-                    duration: 0.4,
-                    ease: [0.34, 1.56, 0.64, 1],
-                    exit: { duration: 0.5, ease: [0.4, 0, 0.2, 1] }
-                  }}
-                >
-                  WINNER
-                </motion.span>
-              ))}
-              
-              {/* Animated Crown */}
-              <motion.div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
-                initial={{ opacity: 0, scale: 0, y: 60 }}
-                animate={{ 
-                  opacity: 1, 
-                  scale: 1, 
-                  y: 0,
-                }}
-                exit={{
-                  y: -200,
-                  opacity: 0,
-                  scale: 0.3,
-                }}
-                transition={{ 
-                  opacity: { delay: 0.6, duration: 0.3 },
-                  scale: { delay: 0.6, duration: 0.5, type: "spring", stiffness: 200 },
-                  y: { delay: 0.6, duration: 0.5 },
-                  exit: { duration: 0.4, ease: [0.4, 0, 0.2, 1] }
-                }}
-              >
-                <motion.div
-                  animate={{ 
-                    rotate: [0, -8, 8, -8, 0],
-                    scale: [1, 1.06, 1],
-                  }}
-                  transition={{ 
-                    rotate: { duration: 0.5, repeat: Infinity, repeatDelay: 1 },
-                    scale: { duration: 0.6, repeat: Infinity, repeatDelay: 0.3 }
-                  }}
-                >
-                  <Image 
-                    src="/images/crown.png" 
-                    alt="Crown" 
-                    width={200} 
-                    height={200}
-                    className="drop-shadow-2xl"
-                    style={{ filter: "drop-shadow(0 0 40px rgba(255, 215, 0, 0.6))" }}
-                  />
-                </motion.div>
-              </motion.div>
-            </div>
-
-            {/* Sparkle particles */}
-            {[...Array(10)].map((_, i) => (
-              <motion.div
-                key={`sparkle-${i}`}
-                className="absolute rounded-full"
-                style={{
-                  width: 3 + (i % 3) * 2,
-                  height: 3 + (i % 3) * 2,
-                  background: i % 3 === 0 ? "#4CE160" : i % 3 === 1 ? "#FFD700" : "#fff",
-                  left: `${15 + (i * 7)}%`,
-                  top: `${20 + (i % 4) * 18}%`,
-                }}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{
-                  opacity: [0, 1, 0],
-                  scale: [0, 1.3, 0],
-                }}
-                exit={{
-                  y: -80,
-                  opacity: 0,
-                  scale: 0,
-                }}
-                transition={{
-                  duration: 1,
-                  repeat: Infinity,
-                  delay: 0.4 + i * 0.08,
-                  exit: { duration: 0.4 }
-                }}
-              />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <motion.div
         className="relative w-full h-full"
         initial={false}
@@ -340,8 +209,6 @@ export function CardFlipReveal({ isRevealing, onComplete, team: propTeam }: Card
           </div>
         </div>
       </motion.div>
-      
-
     </div>
   )
 }
