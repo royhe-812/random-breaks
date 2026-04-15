@@ -68,27 +68,38 @@ export function TeamSpinner({
   const [spinSpeed, setSpinSpeed] = useState(50)
   const [finalTeamIndex, setFinalTeamIndex] = useState<number | null>(null)
   const targetTeamIndexRef = useRef<number | null>(null)
-  const spinAudioRef = useRef<HTMLAudioElement | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
 
-  // Play spin sound effect
-  const playSpinSound = useCallback(() => {
+  // Play soft tick sound using Web Audio API - syncs with each team change
+  const playTickSound = useCallback(() => {
     try {
-      if (!spinAudioRef.current) {
-        spinAudioRef.current = new Audio('/sounds/spin.mp3')
-        spinAudioRef.current.volume = 0.5
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
       }
-      spinAudioRef.current.currentTime = 0
-      spinAudioRef.current.play()
+      const ctx = audioContextRef.current
+      if (ctx.state === 'suspended') {
+        ctx.resume()
+      }
+      
+      const oscillator = ctx.createOscillator()
+      const gainNode = ctx.createGain()
+      
+      oscillator.connect(gainNode)
+      gainNode.connect(ctx.destination)
+      
+      // Soft, pleasant tick - higher pitch, sine wave for smoothness
+      oscillator.frequency.setValueAtTime(800, ctx.currentTime)
+      oscillator.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.02)
+      oscillator.type = 'sine'
+      
+      // Quick fade out for a soft click
+      gainNode.gain.setValueAtTime(0.08, ctx.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03)
+      
+      oscillator.start(ctx.currentTime)
+      oscillator.stop(ctx.currentTime + 0.03)
     } catch {
-      // Silently fail if audio isn't available
-    }
-  }, [])
-
-  // Stop spin sound
-  const stopSpinSound = useCallback(() => {
-    if (spinAudioRef.current) {
-      spinAudioRef.current.pause()
-      spinAudioRef.current.currentTime = 0
+      // Silently fail if audio context isn't available
     }
   }, [])
 
@@ -98,28 +109,27 @@ export function TeamSpinner({
       setSpinPhase("idle")
       setSpinSpeed(50)
       setFinalTeamIndex(null)
-      stopSpinSound()
     }
-  }, [isSpinning, spinPhase, stopSpinSound])
+  }, [isSpinning, spinPhase])
 
   const startSpin = useCallback(() => {
     const randomIndex = Math.floor(Math.random() * teams.length)
     targetTeamIndexRef.current = randomIndex
     setSpinPhase("fast")
     setSpinSpeed(50)
-    playSpinSound()
     onStartSpin()
-  }, [onStartSpin, playSpinSound])
+  }, [onStartSpin])
 
   useEffect(() => {
     if (spinPhase === "idle" || spinPhase === "stopped") return
 
     const interval = setInterval(() => {
       setCurrentTeamIndex(prev => (prev + 1) % teams.length)
+      playTickSound()
     }, spinSpeed)
 
     return () => clearInterval(interval)
-  }, [spinPhase, spinSpeed])
+  }, [spinPhase, spinSpeed, playTickSound])
 
   useEffect(() => {
     if (spinPhase === "fast") {
@@ -141,7 +151,6 @@ export function TeamSpinner({
             setCurrentTeamIndex(targetIndex)
             setFinalTeamIndex(targetIndex)
             setSpinPhase("stopped")
-            stopSpinSound()
             return 400
           }
           return newSpeed
@@ -149,7 +158,7 @@ export function TeamSpinner({
       }, 200)
       return () => clearInterval(slowdownInterval)
     }
-  }, [spinPhase, stopSpinSound])
+  }, [spinPhase])
 
   // Stay on "Revealing..." for 1 second then trigger the win animation
   useEffect(() => {

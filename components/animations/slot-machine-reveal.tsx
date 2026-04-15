@@ -52,27 +52,38 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
 
   const repeatedTeams = [...teams, ...teams, ...teams, ...teams, ...teams]
   const itemHeight = 64
-  const spinAudioRef = useRef<HTMLAudioElement | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
 
-  // Play spin sound effect
-  const playSpinSound = () => {
+  // Play soft tick sound using Web Audio API - syncs with each team pass
+  const playTickSound = () => {
     try {
-      if (!spinAudioRef.current) {
-        spinAudioRef.current = new Audio('/sounds/spin.mp3')
-        spinAudioRef.current.volume = 0.5
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
       }
-      spinAudioRef.current.currentTime = 0
-      spinAudioRef.current.play()
+      const ctx = audioContextRef.current
+      if (ctx.state === 'suspended') {
+        ctx.resume()
+      }
+      
+      const oscillator = ctx.createOscillator()
+      const gainNode = ctx.createGain()
+      
+      oscillator.connect(gainNode)
+      gainNode.connect(ctx.destination)
+      
+      // Soft, pleasant tick - higher pitch, sine wave for smoothness
+      oscillator.frequency.setValueAtTime(800, ctx.currentTime)
+      oscillator.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.02)
+      oscillator.type = 'sine'
+      
+      // Quick fade out for a soft click
+      gainNode.gain.setValueAtTime(0.08, ctx.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03)
+      
+      oscillator.start(ctx.currentTime)
+      oscillator.stop(ctx.currentTime + 0.03)
     } catch {
-      // Silently fail if audio isn't available
-    }
-  }
-
-  // Stop spin sound
-  const stopSpinSound = () => {
-    if (spinAudioRef.current) {
-      spinAudioRef.current.pause()
-      spinAudioRef.current.currentTime = 0
+      // Silently fail if audio context isn't available
     }
   }
 
@@ -81,7 +92,6 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
       setPhase("spinning")
       setSpinOffset(0)
       speedRef.current = 50
-      playSpinSound()
 
       let lastTime = performance.now()
       
@@ -91,6 +101,13 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
 
         setSpinOffset(prev => {
           const newOffset = prev + speedRef.current * delta
+          
+          // Play tick sound when passing each team
+          const prevTeamIndex = Math.floor(prev / itemHeight)
+          const newTeamIndex = Math.floor(newOffset / itemHeight)
+          if (newTeamIndex !== prevTeamIndex && speedRef.current > 0) {
+            playTickSound()
+          }
           
           if (newOffset > teams.length * itemHeight) {
             return newOffset - teams.length * itemHeight
@@ -113,7 +130,6 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
             setTimeout(slowDown, 30)
           } else {
             speedRef.current = 0
-            stopSpinSound()
             if (animationRef.current) {
               cancelAnimationFrame(animationRef.current)
             }
@@ -138,7 +154,6 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
         if (animationRef.current) {
           cancelAnimationFrame(animationRef.current)
         }
-        stopSpinSound()
         clearTimeout(slowTimer)
         clearTimeout(completeTimer)
       }
