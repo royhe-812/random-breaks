@@ -58,7 +58,7 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
   const rightTeam = teams[rightIndex]
   const winner = winnerSide === "left" ? leftTeam : rightTeam
 
-  // Play tick sound
+  // Play battle tick sound - deeper, more impactful
   const playTickSound = () => {
     try {
       if (!audioContextRef.current) {
@@ -75,21 +75,22 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
       oscillator.connect(gainNode)
       gainNode.connect(ctx.destination)
       
-      oscillator.frequency.setValueAtTime(1200, ctx.currentTime)
-      oscillator.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.03)
-      oscillator.type = 'square'
+      // Deeper battle tick
+      oscillator.frequency.setValueAtTime(400, ctx.currentTime)
+      oscillator.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.04)
+      oscillator.type = 'triangle'
       
-      gainNode.gain.setValueAtTime(0.12, ctx.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04)
+      gainNode.gain.setValueAtTime(0.15, ctx.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05)
       
       oscillator.start(ctx.currentTime)
-      oscillator.stop(ctx.currentTime + 0.04)
+      oscillator.stop(ctx.currentTime + 0.05)
     } catch {
       // Silently fail
     }
   }
 
-  // Play dramatic sound for tension moments
+  // Play dramatic tension sound - rising or falling whoosh
   const playTensionSound = (isWin: boolean) => {
     try {
       if (!audioContextRef.current) {
@@ -100,21 +101,95 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
         ctx.resume()
       }
       
-      const oscillator = ctx.createOscillator()
-      const gainNode = ctx.createGain()
+      // Main tone
+      const osc1 = ctx.createOscillator()
+      const gain1 = ctx.createGain()
+      osc1.connect(gain1)
+      gain1.connect(ctx.destination)
       
-      oscillator.connect(gainNode)
-      gainNode.connect(ctx.destination)
+      // Harmonic layer
+      const osc2 = ctx.createOscillator()
+      const gain2 = ctx.createGain()
+      osc2.connect(gain2)
+      gain2.connect(ctx.destination)
       
-      oscillator.frequency.setValueAtTime(isWin ? 600 : 400, ctx.currentTime)
-      oscillator.frequency.exponentialRampToValueAtTime(isWin ? 900 : 200, ctx.currentTime + 0.15)
-      oscillator.type = 'triangle'
+      if (isWin) {
+        // Rising triumphant sound
+        osc1.frequency.setValueAtTime(300, ctx.currentTime)
+        osc1.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.15)
+        osc2.frequency.setValueAtTime(450, ctx.currentTime)
+        osc2.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.15)
+      } else {
+        // Falling uncertain sound
+        osc1.frequency.setValueAtTime(500, ctx.currentTime)
+        osc1.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.15)
+        osc2.frequency.setValueAtTime(750, ctx.currentTime)
+        osc2.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.15)
+      }
       
-      gainNode.gain.setValueAtTime(0.15, ctx.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2)
+      osc1.type = 'triangle'
+      osc2.type = 'sine'
       
-      oscillator.start(ctx.currentTime)
-      oscillator.stop(ctx.currentTime + 0.2)
+      gain1.gain.setValueAtTime(0.12, ctx.currentTime)
+      gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2)
+      gain2.gain.setValueAtTime(0.08, ctx.currentTime)
+      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2)
+      
+      osc1.start(ctx.currentTime)
+      osc1.stop(ctx.currentTime + 0.2)
+      osc2.start(ctx.currentTime)
+      osc2.stop(ctx.currentTime + 0.2)
+    } catch {
+      // Silently fail
+    }
+  }
+
+  // Play victory fanfare - dramatic winner sound
+  const playVictorySound = () => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+      }
+      const ctx = audioContextRef.current
+      if (ctx.state === 'suspended') {
+        ctx.resume()
+      }
+      
+      // Create a short fanfare with multiple notes
+      const notes = [523, 659, 784, 1047] // C5, E5, G5, C6 - major chord arpeggio
+      
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.08)
+        osc.type = 'triangle'
+        
+        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.08)
+        gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + i * 0.08 + 0.02)
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.08 + 0.25)
+        
+        osc.start(ctx.currentTime + i * 0.08)
+        osc.stop(ctx.currentTime + i * 0.08 + 0.3)
+      })
+      
+      // Add a final shimmer
+      const shimmer = ctx.createOscillator()
+      const shimmerGain = ctx.createGain()
+      shimmer.connect(shimmerGain)
+      shimmerGain.connect(ctx.destination)
+      
+      shimmer.frequency.setValueAtTime(1047, ctx.currentTime + 0.32)
+      shimmer.frequency.exponentialRampToValueAtTime(2094, ctx.currentTime + 0.5)
+      shimmer.type = 'sine'
+      
+      shimmerGain.gain.setValueAtTime(0.1, ctx.currentTime + 0.32)
+      shimmerGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
+      
+      shimmer.start(ctx.currentTime + 0.32)
+      shimmer.stop(ctx.currentTime + 0.6)
     } catch {
       // Silently fail
     }
@@ -166,6 +241,7 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
       playTensionSound(true)
     } else if (phase === "winner") {
       setLeadingSide(winnerSide)
+      playVictorySound()
     }
   }, [phase, winnerSide])
 
