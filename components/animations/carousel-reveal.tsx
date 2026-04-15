@@ -98,22 +98,41 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
         setRotation(targetRotation)
       }, 100)
       
-      // Play tick sounds synced to card passes - starts fast, slows down with the spin
-      const totalCards = spins * teams.length + targetIndex
-      let tickIndex = 0
-      const playNextTick = () => {
-        if (tickIndex >= totalCards) return
-        playTickSound()
-        tickIndex++
-        
-        // Easing: start fast (50ms), slow down to 200ms at the end
-        const progress = tickIndex / totalCards
-        const easedProgress = 1 - Math.pow(1 - progress, 3) // cubic ease out
-        const delay = 50 + (easedProgress * 150)
-        
-        setTimeout(playNextTick, delay)
+      // Play tick sounds synced to actual card passes using the same easing as CSS
+      const duration = 3500 // matches CSS transition duration
+      const startTime = performance.now() + 100 // account for the 100ms delay before spin starts
+      let lastCardIndex = 0
+      
+      const cubicBezier = (t: number) => {
+        // Approximation of cubic-bezier(0.2, 0.8, 0.2, 1)
+        return t < 0.5 
+          ? 4 * t * t * t 
+          : 1 - Math.pow(-2 * t + 2, 3) / 2
       }
-      playNextTick()
+      
+      const trackRotation = () => {
+        const elapsed = performance.now() - startTime
+        if (elapsed < 0) {
+          requestAnimationFrame(trackRotation)
+          return
+        }
+        
+        const progress = Math.min(elapsed / duration, 1)
+        const easedProgress = cubicBezier(progress)
+        const currentRotation = easedProgress * targetRotation
+        const currentCardIndex = Math.floor(currentRotation / anglePerCard)
+        
+        // Play tick when a new card passes
+        if (currentCardIndex > lastCardIndex) {
+          playTickSound()
+          lastCardIndex = currentCardIndex
+        }
+        
+        if (progress < 1) {
+          requestAnimationFrame(trackRotation)
+        }
+      }
+      requestAnimationFrame(trackRotation)
       
       // Mark as stopped and call onComplete after spin finishes
       setTimeout(() => {
