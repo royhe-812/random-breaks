@@ -25,6 +25,7 @@ type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" |
 
 const animations: { id: AnimationType; name: string }[] = [
   { id: "card-flip", name: "Card Flip" },
+  { id: "winner-winner", name: "Chicken Dinner" },
   { id: "pack-rip", name: "Pack Rip" },
   { id: "slot-machine", name: "Team Picker" },
   { id: "mystery-box", name: "Mystery Pack" },
@@ -34,7 +35,6 @@ const animations: { id: AnimationType; name: string }[] = [
   { id: "pick-card", name: "Pick Card" },
   { id: "carousel", name: "Carousel" },
   { id: "in-stream", name: "In-Chat" },
-  { id: "winner-winner", name: "Chicken Dinner" },
 ]
 
 // Winner Chat Announcement with glow and wipe gradient
