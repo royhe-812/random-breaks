@@ -45,20 +45,31 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
     }
   }, [])
 
-  // Play tick sound
+  // Play soft tick sound - same as randomizer and team picker
   const playTickSound = () => {
     if (!audioContextRef.current) return
     const ctx = audioContextRef.current
+    if (ctx.state === 'suspended') {
+      ctx.resume()
+    }
+    
     const oscillator = ctx.createOscillator()
     const gainNode = ctx.createGain()
+    
     oscillator.connect(gainNode)
     gainNode.connect(ctx.destination)
-    oscillator.frequency.value = 800 + Math.random() * 400
-    oscillator.type = "sine"
-    gainNode.gain.setValueAtTime(0.1, ctx.currentTime)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05)
+    
+    // Soft, pleasant tick - higher pitch, sine wave for smoothness
+    oscillator.frequency.setValueAtTime(800, ctx.currentTime)
+    oscillator.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.02)
+    oscillator.type = 'sine'
+    
+    // Quick fade out for a soft click
+    gainNode.gain.setValueAtTime(0.08, ctx.currentTime)
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03)
+    
     oscillator.start(ctx.currentTime)
-    oscillator.stop(ctx.currentTime + 0.05)
+    oscillator.stop(ctx.currentTime + 0.03)
   }
 
   // Start spinning when isRevealing becomes true
@@ -87,16 +98,22 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
         setRotation(targetRotation)
       }, 100)
       
-      // Play tick sounds during spin
-      let tickCount = 0
-      const maxTicks = 30
-      const tickInterval = setInterval(() => {
+      // Play tick sounds synced to card passes - starts fast, slows down with the spin
+      const totalCards = spins * teams.length + targetIndex
+      let tickIndex = 0
+      const playNextTick = () => {
+        if (tickIndex >= totalCards) return
         playTickSound()
-        tickCount++
-        if (tickCount >= maxTicks) {
-          clearInterval(tickInterval)
-        }
-      }, 100)
+        tickIndex++
+        
+        // Easing: start fast (50ms), slow down to 200ms at the end
+        const progress = tickIndex / totalCards
+        const easedProgress = 1 - Math.pow(1 - progress, 3) // cubic ease out
+        const delay = 50 + (easedProgress * 150)
+        
+        setTimeout(playNextTick, delay)
+      }
+      playNextTick()
       
       // Mark as stopped and call onComplete after spin finishes
       setTimeout(() => {
