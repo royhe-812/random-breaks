@@ -87,7 +87,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
     }
   }
 
-  // Play victory fanfare - dramatic winner sound
+  // Play stadium horn victory sound - football/sports style
   const playVictorySound = () => {
     try {
       if (!audioContextRef.current) {
@@ -98,41 +98,70 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
         ctx.resume()
       }
       
-      // Create a short fanfare with multiple notes
-      const notes = [523, 659, 784, 1047] // C5, E5, G5, C6 - major chord arpeggio
+      // Stadium air horn - two-tone blast (like NFL touchdown)
+      const horn1 = ctx.createOscillator()
+      const horn1Gain = ctx.createGain()
+      horn1.connect(horn1Gain)
+      horn1Gain.connect(ctx.destination)
       
-      notes.forEach((freq, i) => {
-        const osc = ctx.createOscillator()
-        const gain = ctx.createGain()
-        osc.connect(gain)
-        gain.connect(ctx.destination)
+      horn1.frequency.setValueAtTime(311, ctx.currentTime) // Eb4
+      horn1.type = 'sawtooth'
+      horn1Gain.gain.setValueAtTime(0, ctx.currentTime)
+      horn1Gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.05)
+      horn1Gain.gain.setValueAtTime(0.15, ctx.currentTime + 0.4)
+      horn1Gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
+      
+      horn1.start(ctx.currentTime)
+      horn1.stop(ctx.currentTime + 0.6)
+      
+      // Second horn tone (harmony)
+      const horn2 = ctx.createOscillator()
+      const horn2Gain = ctx.createGain()
+      horn2.connect(horn2Gain)
+      horn2Gain.connect(ctx.destination)
+      
+      horn2.frequency.setValueAtTime(415, ctx.currentTime) // Ab4
+      horn2.type = 'sawtooth'
+      horn2Gain.gain.setValueAtTime(0, ctx.currentTime)
+      horn2Gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.05)
+      horn2Gain.gain.setValueAtTime(0.12, ctx.currentTime + 0.4)
+      horn2Gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
+      
+      horn2.start(ctx.currentTime)
+      horn2.stop(ctx.currentTime + 0.6)
+      
+      // Add a quick second blast
+      setTimeout(() => {
+        const horn3 = ctx.createOscillator()
+        const horn3Gain = ctx.createGain()
+        horn3.connect(horn3Gain)
+        horn3Gain.connect(ctx.destination)
         
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.08)
-        osc.type = 'triangle'
+        horn3.frequency.setValueAtTime(311, ctx.currentTime)
+        horn3.type = 'sawtooth'
+        horn3Gain.gain.setValueAtTime(0, ctx.currentTime)
+        horn3Gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.03)
+        horn3Gain.gain.setValueAtTime(0.15, ctx.currentTime + 0.15)
+        horn3Gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25)
         
-        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.08)
-        gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + i * 0.08 + 0.02)
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.08 + 0.25)
+        horn3.start(ctx.currentTime)
+        horn3.stop(ctx.currentTime + 0.25)
         
-        osc.start(ctx.currentTime + i * 0.08)
-        osc.stop(ctx.currentTime + i * 0.08 + 0.3)
-      })
-      
-      // Add a final shimmer
-      const shimmer = ctx.createOscillator()
-      const shimmerGain = ctx.createGain()
-      shimmer.connect(shimmerGain)
-      shimmerGain.connect(ctx.destination)
-      
-      shimmer.frequency.setValueAtTime(1047, ctx.currentTime + 0.32)
-      shimmer.frequency.exponentialRampToValueAtTime(2094, ctx.currentTime + 0.5)
-      shimmer.type = 'sine'
-      
-      shimmerGain.gain.setValueAtTime(0.1, ctx.currentTime + 0.32)
-      shimmerGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
-      
-      shimmer.start(ctx.currentTime + 0.32)
-      shimmer.stop(ctx.currentTime + 0.6)
+        const horn4 = ctx.createOscillator()
+        const horn4Gain = ctx.createGain()
+        horn4.connect(horn4Gain)
+        horn4Gain.connect(ctx.destination)
+        
+        horn4.frequency.setValueAtTime(415, ctx.currentTime)
+        horn4.type = 'sawtooth'
+        horn4Gain.gain.setValueAtTime(0, ctx.currentTime)
+        horn4Gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.03)
+        horn4Gain.gain.setValueAtTime(0.12, ctx.currentTime + 0.15)
+        horn4Gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25)
+        
+        horn4.start(ctx.currentTime)
+        horn4.stop(ctx.currentTime + 0.25)
+      }, 650)
     } catch {
       // Silently fail
     }
