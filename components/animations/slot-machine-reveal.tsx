@@ -46,7 +46,6 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
     }
   }, [isRevealing])
   const [spinOffset, setSpinOffset] = useState(0)
-  const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "landed" | "explode">("idle")
   const speedRef = useRef(0)
   const animationRef = useRef<number | null>(null)
   const lastTickRef = useRef(0)
