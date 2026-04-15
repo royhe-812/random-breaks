@@ -32,7 +32,6 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "battle", name: "Battle" },
   { id: "pick-card", name: "Pick Card" },
   { id: "carousel", name: "Carousel" },
-  { id: "in-stream", name: "In-Chat" },
   { id: "particle-assembly", name: "Particles", disabled: true },
   { id: "gift-box", name: "Gift Box", disabled: true },
 ]
