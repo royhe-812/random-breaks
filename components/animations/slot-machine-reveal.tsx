@@ -53,6 +53,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
 
   const repeatedTeams = [...teams, ...teams, ...teams, ...teams, ...teams]
   const itemHeight = 64
+  const spinAudioRef = useRef<HTMLAudioElement | null>(null)
 
   // Play tick sound using Web Audio API (same as randomizer)
   const playTickSound = () => {
@@ -85,11 +86,34 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
     }
   }
 
+  // Play spin sound effect
+  const playSpinSound = () => {
+    try {
+      if (!spinAudioRef.current) {
+        spinAudioRef.current = new Audio('/sounds/spin.mp3')
+        spinAudioRef.current.volume = 0.5
+      }
+      spinAudioRef.current.currentTime = 0
+      spinAudioRef.current.play()
+    } catch {
+      // Silently fail if audio isn't available
+    }
+  }
+
+  // Stop spin sound
+  const stopSpinSound = () => {
+    if (spinAudioRef.current) {
+      spinAudioRef.current.pause()
+      spinAudioRef.current.currentTime = 0
+    }
+  }
+
   useEffect(() => {
     if (isRevealing) {
       setPhase("spinning")
       setSpinOffset(0)
       speedRef.current = 50
+      playSpinSound()
 
       let lastTime = performance.now()
       
@@ -128,6 +152,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
             setTimeout(slowDown, 30)
           } else {
             speedRef.current = 0
+            stopSpinSound()
             if (animationRef.current) {
               cancelAnimationFrame(animationRef.current)
             }
@@ -152,6 +177,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
         if (animationRef.current) {
           cancelAnimationFrame(animationRef.current)
         }
+        stopSpinSound()
         clearTimeout(slowTimer)
         clearTimeout(completeTimer)
       }
