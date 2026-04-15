@@ -264,6 +264,7 @@ export default function AnimationShowcase() {
   const handleSpinComplete = useCallback((team: Team) => {
     setSelectedTeam(team)
     setWinnerTeam(team) // Store winner team immediately so handleComplete has it
+    chatPausedRef.current = true // Pause chat immediately when team is selected
     setIsRevealing(true)
     setKey(prev => prev + 1)
   }, [])
@@ -277,7 +278,6 @@ export default function AnimationShowcase() {
     // When reveal completes, show the in-chat winner treatment
     if (selectedAnimation !== "in-stream") {
       setShowWinner(true)
-      chatPausedRef.current = true
     }
     
     // Keep the winning moment visible for 3 seconds, then close overlay
@@ -567,6 +567,7 @@ export default function AnimationShowcase() {
                     const randomTeam = teams[Math.floor(Math.random() * teams.length)]
                     setSelectedTeam(randomTeam)
                     setWinnerTeam(randomTeam)
+                    chatPausedRef.current = true // Pause chat immediately when team is selected
                     setTimeout(() => {
                       setIsRevealing(true)
                       setKey(prev => prev + 1)
