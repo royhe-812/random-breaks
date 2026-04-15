@@ -37,6 +37,155 @@ const animations: { id: AnimationType; name: string }[] = [
   { id: "winner-winner", name: "Chicken Dinner" },
 ]
 
+// Winner Chat Announcement with glow and wipe gradient
+function WinnerAnnouncement({ username, team, show }: { username: string; team: Team; show: boolean }) {
+  if (!show) return null
+  
+  return (
+    <motion.div
+      className="relative px-4 py-4 rounded-xl overflow-hidden bg-black/60 backdrop-blur w-full"
+      style={{
+        boxShadow: `0 0 40px ${team.color}80, 0 0 80px ${team.color}50, 0 0 120px ${team.color}30`,
+      }}
+      initial={{ opacity: 0, scale: 0.8, y: 30 }}
+      animate={{ 
+        opacity: 1, 
+        scale: [1, 1.02, 1],
+        y: 0 
+      }}
+      transition={{ 
+        type: "spring", 
+        stiffness: 300, 
+        damping: 20,
+        scale: { duration: 0.8, repeat: Infinity, repeatDelay: 0.5 }
+      }}
+    >
+      {/* Animated glow border with stronger effect - green */}
+      <motion.div
+        className="absolute inset-0 rounded-xl pointer-events-none"
+        style={{
+          border: `2px solid #4CE160`,
+        }}
+        animate={{
+          boxShadow: [
+            `inset 0 0 25px #4CE16040, 0 0 20px #4CE16060`,
+            `inset 0 0 50px #4CE16060, 0 0 40px #4CE16080`,
+            `inset 0 0 25px #4CE16040, 0 0 20px #4CE16060`,
+          ],
+        }}
+        transition={{ duration: 1, repeat: Infinity }}
+      />
+
+      {/* Primary sweeping wipe gradient - green */}
+      <motion.div
+        className="absolute inset-0 rounded-xl pointer-events-none"
+        style={{
+          background: "linear-gradient(90deg, transparent 0%, #4CE16030 40%, #4CE160 50%, #4CE16030 60%, transparent 100%)",
+        }}
+        animate={{ x: ["-100%", "100%"] }}
+        transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+      />
+
+      {/* Secondary wipe gradient - team color */}
+      <motion.div
+        className="absolute inset-0 rounded-xl pointer-events-none"
+        style={{
+          background: `linear-gradient(90deg, transparent 0%, ${team.color}20 40%, ${team.color}60 50%, ${team.color}20 60%, transparent 100%)`,
+        }}
+        animate={{ x: ["-100%", "100%"] }}
+        transition={{ duration: 1.8, repeat: Infinity, ease: "linear", delay: 0.4 }}
+      />
+
+      {/* Sparkle/confetti particles */}
+      {[...Array(12)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: Math.random() * 4 + 2,
+            height: Math.random() * 4 + 2,
+            left: `${10 + i * 7}%`,
+            top: `${20 + (i % 3) * 25}%`,
+            background: i % 3 === 0 ? "#4CE160" : i % 3 === 1 ? team.color : "#fff",
+          }}
+          animate={{
+            opacity: [0, 1, 0],
+            scale: [0, 1.5, 0],
+            y: [0, -10, 0],
+          }}
+          transition={{
+            duration: 1.2,
+            repeat: Infinity,
+            delay: i * 0.15,
+            ease: "easeOut",
+          }}
+        />
+      ))}
+
+      {/* Firework burst effect on edges */}
+      <motion.div
+        className="absolute -left-2 top-1/2 w-4 h-4 rounded-full pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${team.color} 0%, transparent 70%)` }}
+        animate={{
+          scale: [0, 2, 0],
+          opacity: [0, 0.8, 0],
+        }}
+        transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+      />
+      <motion.div
+        className="absolute -right-2 top-1/2 w-4 h-4 rounded-full pointer-events-none"
+        style={{ background: `radial-gradient(circle, #4CE160 0%, transparent 70%)` }}
+        animate={{
+          scale: [0, 2, 0],
+          opacity: [0, 0.8, 0],
+        }}
+        transition={{ duration: 1.5, repeat: Infinity, delay: 0.8 }}
+      />
+
+      {/* Content with enhanced styling */}
+      <div className="relative z-10 flex items-center gap-2">
+        <motion.span 
+          className="text-2xl"
+          animate={{ 
+            rotate: [0, -10, 10, -10, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 1 }}
+        >
+          👑
+        </motion.span>
+        <p className="text-sm flex items-center gap-2">
+          <span className="font-bold text-white">{username}</span>
+          <span className="text-white/90">Won</span>
+          {/* Team initials square */}
+          <span 
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-white"
+            style={{ backgroundColor: team.color }}
+          >
+            {team.abbrev}
+          </span>
+          <motion.span 
+            className="font-black text-base text-white"
+            style={{ 
+              textShadow: `0 0 10px ${team.color}80`,
+            }}
+            animate={{
+              textShadow: [
+                `0 0 10px ${team.color}80`,
+                `0 0 20px ${team.color}`,
+                `0 0 10px ${team.color}80`,
+              ],
+            }}
+            transition={{ duration: 1, repeat: Infinity }}
+          >
+            {team.city} {team.name}!
+          </motion.span>
+        </p>
+      </div>
+    </motion.div>
+  )
+}
+
 const chatMessages = [
   { user: "johnpleys", message: "Gotta try to hit this one! Love Mosaic", color: "text-white/60" },
   { user: "Chloepulls11", message: "These are so hot, get your bids in!", color: "text-yellow-400" },
@@ -64,11 +213,15 @@ export default function AnimationShowcase() {
   const [hasWon, setHasWon] = useState(false)
   const [visibleMessages, setVisibleMessages] = useState(chatMessages.slice(0, 3))
   const [viewerCount, setViewerCount] = useState(240)
+  const [winnerTeam, setWinnerTeam] = useState<Team | null>(null)
+  const [showWinner, setShowWinner] = useState(false)
   const messageIndexRef = useRef(3)
+  const chatPausedRef = useRef(false)
 
-  // Rotate chat messages to feel alive
+  // Rotate chat messages to feel alive (pauses when winner is shown)
   useEffect(() => {
     const interval = setInterval(() => {
+      if (chatPausedRef.current) return
       setVisibleMessages(prev => {
         const newMessages = [...prev.slice(1)]
         newMessages.push(chatMessages[messageIndexRef.current % chatMessages.length])
@@ -99,6 +252,9 @@ export default function AnimationShowcase() {
     setIsRevealing(false)
     setIsSpinning(false)
     setSelectedTeam(null)
+    setWinnerTeam(null)
+    setShowWinner(false)
+    chatPausedRef.current = false
   }, [selectedAnimation])
 
   const handleStartSpin = useCallback(() => {
@@ -117,15 +273,21 @@ export default function AnimationShowcase() {
   }, [])
 
   const handleComplete = useCallback(() => {
-    // Keep the winning moment visible for 3 seconds, then reset everything
+    // When reveal completes, show the in-chat winner treatment
+    if (selectedTeam && selectedAnimation !== "in-stream") {
+      setWinnerTeam(selectedTeam)
+      setShowWinner(true)
+      chatPausedRef.current = true
+    }
+    
+    // Keep the winning moment visible for 3 seconds, then close overlay
     setTimeout(() => {
       setIsRevealing(false)
       setIsSpinning(false)
-      setHasWon(false)
-      setSelectedTeam(null)
+      // Don't reset hasWon, winnerTeam, or showWinner - keep winner treatment visible
       setKey(prev => prev + 1)
     }, 3000)
-  }, [])
+  }, [selectedTeam, selectedAnimation])
 
   const renderAnimation = () => {
     const props = { isRevealing, onComplete: handleComplete, team: selectedTeam }
@@ -299,6 +461,15 @@ export default function AnimationShowcase() {
               </motion.div>
             ))}
           </AnimatePresence>
+          
+          {/* Winner Announcement - shows in chat after reveal completes */}
+          {showWinner && winnerTeam && selectedAnimation !== "in-stream" && (
+            <WinnerAnnouncement 
+              username="KemMajed90" 
+              team={winnerTeam} 
+              show={showWinner} 
+            />
+          )}
         </div>
 
         {/* Comment Input */}
@@ -381,7 +552,15 @@ export default function AnimationShowcase() {
             </button>
             <button 
               onClick={() => {
-                if (!hasWon) {
+                if (hasWon) {
+                  // Reset the entire concept
+                  setHasWon(false)
+                  setIsSpinning(false)
+                  setSelectedTeam(null)
+                  setShowWinner(false)
+                  setWinnerTeam(null)
+                  chatPausedRef.current = false
+                } else {
                   setHasWon(true)
                   // For slot-machine, battle, carousel, and pick-card, trigger reveal after a short delay
                   if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card") {
@@ -392,10 +571,9 @@ export default function AnimationShowcase() {
                   }
                 }
               }}
-              disabled={hasWon}
               className={`flex-1 py-2.5 rounded-full font-semibold text-sm flex items-center justify-center gap-1 transition-colors ${
                 hasWon
-                  ? 'bg-zinc-700 text-white/50 cursor-not-allowed'
+                  ? 'bg-zinc-700 text-white/50 hover:bg-zinc-600 cursor-pointer'
                   : 'bg-green-500 hover:bg-green-400 text-black'
               }`}
             >
