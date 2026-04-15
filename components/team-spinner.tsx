@@ -68,38 +68,29 @@ export function TeamSpinner({
   const [spinSpeed, setSpinSpeed] = useState(50)
   const [finalTeamIndex, setFinalTeamIndex] = useState<number | null>(null)
   const targetTeamIndexRef = useRef<number | null>(null)
-  const audioContextRef = useRef<AudioContext | null>(null)
+  const spinAudioRef = useRef<HTMLAudioElement | null>(null)
 
-  // Play tick sound using Web Audio API
-  const playTickSoundRef = useRef(() => {
+  // Play spin sound effect
+  const playSpinSound = useCallback(() => {
     try {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+      if (!spinAudioRef.current) {
+        spinAudioRef.current = new Audio('/sounds/spin.mp3')
+        spinAudioRef.current.volume = 0.5
       }
-      const ctx = audioContextRef.current
-      if (ctx.state === 'suspended') {
-        ctx.resume()
-      }
-      
-      const oscillator = ctx.createOscillator()
-      const gainNode = ctx.createGain()
-      
-      oscillator.connect(gainNode)
-      gainNode.connect(ctx.destination)
-      
-      oscillator.frequency.setValueAtTime(1200, ctx.currentTime)
-      oscillator.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.03)
-      oscillator.type = 'square'
-      
-      gainNode.gain.setValueAtTime(0.15, ctx.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04)
-      
-      oscillator.start(ctx.currentTime)
-      oscillator.stop(ctx.currentTime + 0.04)
+      spinAudioRef.current.currentTime = 0
+      spinAudioRef.current.play()
     } catch {
-      // Silently fail if audio context isn't available
+      // Silently fail if audio isn't available
     }
-  })
+  }, [])
+
+  // Stop spin sound
+  const stopSpinSound = useCallback(() => {
+    if (spinAudioRef.current) {
+      spinAudioRef.current.pause()
+      spinAudioRef.current.currentTime = 0
+    }
+  }, [])
 
   // Reset to idle when isSpinning becomes false
   useEffect(() => {
@@ -107,23 +98,24 @@ export function TeamSpinner({
       setSpinPhase("idle")
       setSpinSpeed(50)
       setFinalTeamIndex(null)
+      stopSpinSound()
     }
-  }, [isSpinning, spinPhase])
+  }, [isSpinning, spinPhase, stopSpinSound])
 
   const startSpin = useCallback(() => {
     const randomIndex = Math.floor(Math.random() * teams.length)
     targetTeamIndexRef.current = randomIndex
     setSpinPhase("fast")
     setSpinSpeed(50)
+    playSpinSound()
     onStartSpin()
-  }, [onStartSpin])
+  }, [onStartSpin, playSpinSound])
 
   useEffect(() => {
     if (spinPhase === "idle" || spinPhase === "stopped") return
 
     const interval = setInterval(() => {
       setCurrentTeamIndex(prev => (prev + 1) % teams.length)
-      playTickSoundRef.current()
     }, spinSpeed)
 
     return () => clearInterval(interval)
@@ -149,6 +141,7 @@ export function TeamSpinner({
             setCurrentTeamIndex(targetIndex)
             setFinalTeamIndex(targetIndex)
             setSpinPhase("stopped")
+            stopSpinSound()
             return 400
           }
           return newSpeed
@@ -156,7 +149,7 @@ export function TeamSpinner({
       }, 200)
       return () => clearInterval(slowdownInterval)
     }
-  }, [spinPhase])
+  }, [spinPhase, stopSpinSound])
 
   // Stay on "Revealing..." for 1 second then trigger the win animation
   useEffect(() => {
