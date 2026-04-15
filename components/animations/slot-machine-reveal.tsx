@@ -87,6 +87,57 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
     }
   }
 
+  // Play victory fanfare - dramatic winner sound
+  const playVictorySound = () => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+      }
+      const ctx = audioContextRef.current
+      if (ctx.state === 'suspended') {
+        ctx.resume()
+      }
+      
+      // Create a short fanfare with multiple notes
+      const notes = [523, 659, 784, 1047] // C5, E5, G5, C6 - major chord arpeggio
+      
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.08)
+        osc.type = 'triangle'
+        
+        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.08)
+        gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + i * 0.08 + 0.02)
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.08 + 0.25)
+        
+        osc.start(ctx.currentTime + i * 0.08)
+        osc.stop(ctx.currentTime + i * 0.08 + 0.3)
+      })
+      
+      // Add a final shimmer
+      const shimmer = ctx.createOscillator()
+      const shimmerGain = ctx.createGain()
+      shimmer.connect(shimmerGain)
+      shimmerGain.connect(ctx.destination)
+      
+      shimmer.frequency.setValueAtTime(1047, ctx.currentTime + 0.32)
+      shimmer.frequency.exponentialRampToValueAtTime(2094, ctx.currentTime + 0.5)
+      shimmer.type = 'sine'
+      
+      shimmerGain.gain.setValueAtTime(0.1, ctx.currentTime + 0.32)
+      shimmerGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
+      
+      shimmer.start(ctx.currentTime + 0.32)
+      shimmer.stop(ctx.currentTime + 0.6)
+    } catch {
+      // Silently fail
+    }
+  }
+
   useEffect(() => {
     if (isRevealing) {
       setPhase("spinning")
@@ -140,6 +191,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
             
             setTimeout(() => {
               setPhase("explode")
+              playVictorySound()
             }, 300)
           }
         }
