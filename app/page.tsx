@@ -23,18 +23,18 @@ import { InStreamExperience } from "@/components/in-stream-experience"
 
 type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner"
 
-const animations: { id: AnimationType; name: string }[] = [
+const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "card-flip", name: "Card Flip" },
   { id: "winner-winner", name: "Card Reveal" },
   { id: "pack-rip", name: "Pack Rip" },
   { id: "slot-machine", name: "Team Picker" },
   { id: "mystery-box", name: "Mystery Pack" },
-  { id: "particle-assembly", name: "Particles" },
-  { id: "gift-box", name: "Gift Box" },
   { id: "battle", name: "Battle" },
   { id: "pick-card", name: "Pick Card" },
   { id: "carousel", name: "Carousel" },
   { id: "in-stream", name: "In-Chat" },
+  { id: "particle-assembly", name: "Particles", disabled: true },
+  { id: "gift-box", name: "Gift Box", disabled: true },
 ]
 
 // Winner Chat Announcement with glow and wipe gradient
@@ -333,9 +333,12 @@ export default function AnimationShowcase() {
             {animations.map((animation) => (
               <button
                 key={animation.id}
-                onClick={() => setSelectedAnimation(animation.id)}
+                onClick={() => !animation.disabled && setSelectedAnimation(animation.id)}
+                disabled={animation.disabled}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  selectedAnimation === animation.id
+                  animation.disabled
+                    ? "bg-zinc-800/50 text-white/30 cursor-not-allowed"
+                    : selectedAnimation === animation.id
                     ? "bg-green-500 text-black"
                     : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
                 }`}
@@ -605,9 +608,12 @@ export default function AnimationShowcase() {
           {animations.map((animation) => (
             <button
               key={animation.id}
-              onClick={() => setSelectedAnimation(animation.id)}
+              onClick={() => !animation.disabled && setSelectedAnimation(animation.id)}
+              disabled={animation.disabled}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                selectedAnimation === animation.id
+                animation.disabled
+                  ? "bg-zinc-800/50 text-white/30 cursor-not-allowed"
+                  : selectedAnimation === animation.id
                   ? "bg-green-500 text-black"
                   : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
               }`}
