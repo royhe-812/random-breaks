@@ -181,7 +181,7 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
   const isRevealed = phase === "revealed"
 
   return (
-    <div className="relative w-48 h-80 flex items-end justify-center pb-4">
+    <div className="relative w-52 h-96 flex items-end justify-center pb-4">
       {/* Rainbow glow effect */}
       <RevealGlow isActive={showGlow} teamColor={team.color} />
       
@@ -196,25 +196,25 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
         />
       ))}
       
-      {/* Team card - positioned behind the pack, slides up when revealed */}
+      {/* Team card - matching card flip style */}
       <motion.div
-        className="absolute left-2 right-2 rounded-lg overflow-hidden"
+        className="absolute w-52 h-80 rounded-2xl overflow-hidden"
         style={{
           bottom: "5%",
-          height: "70%",
-          background: team.color,
+          background: `linear-gradient(135deg, ${team.color} 0%, ${team.color}dd 50%, ${team.color}bb 100%)`,
           boxShadow: isRevealed 
             ? `0 20px 50px ${team.color}50, 0 0 40px ${team.color}40`
             : "0 4px 16px rgba(0,0,0,0.2)",
-          border: `3px solid ${team.secondary}`,
+          borderWidth: 2,
+          borderColor: team.secondary,
           zIndex: 5,
         }}
         initial={{ y: 0, opacity: 1 }}
         animate={
           isRevealed
-            ? { y: -40, opacity: 1, scale: 1.05 }
+            ? { y: -50, opacity: 1, scale: 1 }
             : isOpening
-              ? { y: -15, opacity: 1, scale: 1 }
+              ? { y: -20, opacity: 1, scale: 1 }
               : { y: 0, opacity: 1, scale: 1 }
         }
         transition={{ 
@@ -222,43 +222,51 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
           ease: [0.34, 1.56, 0.64, 1]
         }}
       >
-        {/* Card holographic shine */}
-        <motion.div
-          className="absolute inset-0 pointer-events-none"
+        {/* Holographic shine overlay */}
+        <div 
+          className="absolute inset-0 opacity-30 pointer-events-none"
           style={{
-            background: `linear-gradient(105deg, 
-              transparent 0%,
-              rgba(255,255,255,0.35) 45%, 
-              rgba(255,255,255,0.6) 50%,
-              rgba(255,255,255,0.35) 55%, 
-              transparent 100%
+            background: `linear-gradient(135deg, 
+              rgba(255,255,255,0.3) 0%,
+              transparent 40%,
+              transparent 60%,
+              rgba(255,255,255,0.2) 100%
             )`,
           }}
-          initial={{ x: "-150%" }}
-          animate={isRevealed ? { x: "150%" } : { x: "-150%" }}
-          transition={{ duration: 0.8, delay: 0.3, ease: "easeInOut" }}
+        />
+
+        {/* Sweeping shine effect */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          initial={{ opacity: 0, x: "-100%" }}
+          animate={isRevealed ? { opacity: 1, x: "200%" } : { opacity: 0, x: "-100%" }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+          style={{
+            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)",
+            width: "50%",
+          }}
         />
 
         {/* Card content */}
-        <div className="relative w-full h-full flex flex-col items-center justify-center p-3">
+        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
           
-          {/* Team logo circle */}
+          {/* Team logo circle - matching card flip size */}
           <motion.div
-            className="relative w-16 h-16 rounded-full flex items-center justify-center mb-3"
+            className="w-28 h-28 rounded-full flex items-center justify-center mb-4 relative"
             style={{ 
               backgroundColor: team.secondary,
-              boxShadow: `0 6px 20px ${team.color}50`,
+              boxShadow: `0 8px 32px ${team.color}60, inset 0 -4px 12px rgba(0,0,0,0.2)`,
             }}
             initial={{ scale: 0.8 }}
             animate={isRevealed ? { scale: 1 } : { scale: 0.8 }}
             transition={{ 
               delay: 0.2,
               type: "spring", 
-              stiffness: 200,
+              stiffness: 300,
               damping: 15
             }}
           >
-            <span className="text-2xl font-black" style={{ color: team.color }}>
+            <span className="text-4xl font-black text-white drop-shadow-lg">
               {(team as typeof teams[0]).abbrev || team.name.slice(0, 2).toUpperCase()}
             </span>
           </motion.div>
@@ -266,27 +274,28 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
           {/* Team name */}
           <motion.div
             className="text-center"
-            initial={{ opacity: 0.5 }}
-            animate={isRevealed ? { opacity: 1 } : { opacity: 0.5 }}
+            initial={{ opacity: 0.5, y: 10 }}
+            animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0.5, y: 10 }}
             transition={{ delay: 0.3, duration: 0.4 }}
           >
-            <p className="text-[10px] font-semibold text-white/80 uppercase tracking-wider">
+            <p className="text-sm font-semibold text-white/70 uppercase tracking-wider mb-1">
               {(team as typeof teams[0]).city || ""}
             </p>
-            <p className="text-white font-black text-xl tracking-wide drop-shadow-lg">
-              {team.name.toUpperCase()}
-            </p>
-            <p className="text-[9px] mt-1 font-semibold tracking-widest" style={{ color: team.secondary }}>
-              NFL 2024
+            <p className="text-2xl font-black text-white drop-shadow-lg">
+              {team.name}
             </p>
           </motion.div>
-        </div>
 
-        {/* Corner accents */}
-        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 rounded-tl-sm" style={{ borderColor: team.secondary + "60" }} />
-        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 rounded-tr-sm" style={{ borderColor: team.secondary + "60" }} />
-        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 rounded-bl-sm" style={{ borderColor: team.secondary + "60" }} />
-        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 rounded-br-sm" style={{ borderColor: team.secondary + "60" }} />
+          {/* Your spot label */}
+          <motion.p 
+            className="text-white/50 text-xs mt-4"
+            initial={{ opacity: 0 }}
+            animate={isRevealed ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            Your spot is assigned!
+          </motion.p>
+        </div>
       </motion.div>
 
       {/* Foil pack front - slides down to reveal card */}
