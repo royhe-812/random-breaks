@@ -200,30 +200,41 @@ export function WinnerWinnerReveal({ isRevealing, team: propTeam, onComplete, us
           </div>
         </motion.div>
 
-        {/* Floating sparkles around card */}
-        {phase === "team-card" && [...Array(8)].map((_, i) => (
-          <motion.div
-            key={`card-sparkle-${i}`}
-            className="absolute rounded-full"
-            style={{
-              width: 6,
-              height: 6,
-              background: i % 2 === 0 ? team.color : "#4CE160",
-              left: `${15 + (i * 10)}%`,
-              top: `${25 + (i % 3) * 25}%`,
-            }}
-            animate={{
-              opacity: [0, 1, 0],
-              scale: [0, 1.5, 0],
-              y: [0, -15, 0],
-            }}
-            transition={{
-              duration: 1.2,
-              repeat: Infinity,
-              delay: i * 0.2,
-            }}
-          />
-        ))}
+        {/* Floating sparkles around card - star style matching card flip */}
+        {phase === "team-card" && [...Array(12)].map((_, i) => {
+          const size = 8 + (i % 4) * 4
+          return (
+            <motion.div
+              key={`card-sparkle-${i}`}
+              className="absolute pointer-events-none"
+              style={{
+                left: `${10 + (i * 7)}%`,
+                top: `${20 + (i % 4) * 20}%`,
+              }}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{
+                opacity: [0, 1, 0.3, 1, 0],
+                scale: [0, 1, 0.7, 1, 0],
+              }}
+              transition={{
+                duration: 2,
+                times: [0, 0.2, 0.5, 0.8, 1],
+                ease: "easeInOut",
+                repeat: Infinity,
+                repeatDelay: 0.5,
+                delay: i * 0.15,
+              }}
+            >
+              <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+                  fill="white"
+                  style={{ filter: "drop-shadow(0 0 4px rgba(255,255,255,0.8))" }}
+                />
+              </svg>
+            </motion.div>
+          )
+        })}
       </motion.div>
 
       {/* Winner Text Phase - slides up with parallax to reveal card */}
