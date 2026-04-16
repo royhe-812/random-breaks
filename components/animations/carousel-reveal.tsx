@@ -3,21 +3,23 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
-// Sparkle component for the reveal effect
+// Sparkle component for the reveal effect - continuously shimmering
 const Sparkle = ({ delay, x, y, size = 8 }: { delay: number; x: number; y: number; size?: number }) => (
   <motion.div
     className="absolute pointer-events-none -z-10"
     style={{ left: `${x}%`, top: `${y}%` }}
     initial={{ opacity: 0, scale: 0 }}
     animate={{ 
-      opacity: [0, 1, 1, 0],
-      scale: [0, 1, 1, 0],
+      opacity: [0, 1, 0.3, 1, 0],
+      scale: [0, 1, 0.7, 1, 0],
     }}
     transition={{ 
-      duration: 1.5, 
+      duration: 2, 
       delay,
-      times: [0, 0.2, 0.8, 1],
-      ease: "easeOut"
+      times: [0, 0.2, 0.5, 0.8, 1],
+      ease: "easeInOut",
+      repeat: Infinity,
+      repeatDelay: 0.5,
     }}
   >
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
