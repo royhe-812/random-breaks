@@ -3,11 +3,8 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { HolographicShine } from "./celebration-elements"
-import Image from "next/image"
 import Lottie, { LottieRefCurrentProps } from "lottie-react"
 import giftBoxAnimation from "@/public/animations/gift-box-open.json"
-
-const STARS_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/eBayLiveApp_Stars_DW_CC_v007_CC%202-OGJYd3jy5o3bamd4lN3498JekCYscy.png"
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
@@ -91,7 +88,7 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
               animationData={giftBoxAnimation}
               loop={false}
               autoplay={false}
-              style={{ width: 320, height: 320 }}
+              style={{ width: 960, height: 960 }}
             />
           </motion.div>
         )}
@@ -142,32 +139,6 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
               <span className="text-4xl font-black text-white relative z-10 drop-shadow-lg">
                 {(team as typeof teams[0]).abbrev || team.name.slice(0, 2).toUpperCase()}
               </span>
-              
-              {/* Floating stars next to the circle */}
-              {[...Array(3)].map((_, i) => (
-                <motion.div
-                  key={`star-${i}`}
-                  className="absolute w-12 h-12"
-                  style={{
-                    left: i === 0 ? -38 : i === 1 ? 'auto' : -28,
-                    right: i === 1 ? -38 : i === 2 ? -32 : 'auto',
-                    top: i === 0 ? 5 : i === 1 ? 15 : 'auto',
-                    bottom: i === 2 ? 0 : 'auto',
-                  }}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ 
-                    scale: 1, 
-                    opacity: 1,
-                    y: [0, -5, 0],
-                  }}
-                  transition={{ 
-                    delay: 0.2 + i * 0.1,
-                    y: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 },
-                  }}
-                >
-                  <Image src={STARS_URL} alt="" fill className="object-contain" />
-                </motion.div>
-              ))}
             </motion.div>
             
             {/* Team info */}
