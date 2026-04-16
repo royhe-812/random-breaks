@@ -115,9 +115,10 @@ interface PackRipRevealProps {
   isRevealing: boolean
   onComplete: () => void
   team?: Team | null
+  username?: string
 }
 
-export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackRipRevealProps) {
+export function PackRipReveal({ isRevealing, onComplete, team: propTeam, username = "KemMajed90" }: PackRipRevealProps) {
   const [phase, setPhase] = useState<"idle" | "shake" | "opening" | "revealed">("idle")
   const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const [showGlow, setShowGlow] = useState(false)
@@ -286,15 +287,16 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
             </p>
           </motion.div>
 
-          {/* Your spot label */}
-          <motion.p 
-            className="text-white/50 text-xs mt-4"
-            initial={{ opacity: 0 }}
-            animate={isRevealed ? { opacity: 1 } : { opacity: 0 }}
+          {/* Username and Won label */}
+          <motion.div 
+            className="flex items-center gap-2 mt-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
             transition={{ delay: 0.5 }}
           >
-            Your spot is assigned!
-          </motion.p>
+            <span className="text-white font-bold text-xl">{username}</span>
+            <span className="text-white/70 text-xl">Won!</span>
+          </motion.div>
         </div>
       </motion.div>
 
