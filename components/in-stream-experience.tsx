@@ -470,7 +470,7 @@ export function InStreamExperience() {
         {/* Winner Announcement - shows in chat area */}
         {winnerTeam && (
           <WinnerAnnouncement 
-            username="KemMajed90"
+            username="Adam007"
             team={winnerTeam}
             show={showWinner}
           />
@@ -488,7 +488,7 @@ export function InStreamExperience() {
           onStartSpin={handleStartSpin}
           onSpinComplete={handleSpinComplete}
           disabled={!hasWon}
-          username={hasWon ? "KemMajed90" : undefined}
+          username={hasWon ? "Adam007" : undefined}
         />
 
         {/* Auction Card */}
@@ -527,7 +527,7 @@ export function InStreamExperience() {
             <div className="flex items-center gap-1.5">
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
               <span className="text-green-400 font-medium text-sm">
-                {hasWon ? 'KemMajed90' : 'Jessica991'}
+                {hasWon ? 'Adam007' : 'Jessica991'}
               </span>
               <span className="text-white/60 text-sm">
                 {hasWon ? 'won' : 'is winning'}

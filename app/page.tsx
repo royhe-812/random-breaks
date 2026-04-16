@@ -473,7 +473,7 @@ export default function AnimationShowcase() {
         {/* Winner Announcement - shows in chat after reveal completes */}
         {showWinner && winnerTeam && selectedAnimation !== "in-stream" && (
           <WinnerAnnouncement 
-            username="KemMajed90" 
+            username="Adam007" 
             team={winnerTeam} 
             show={showWinner} 
           />
@@ -492,7 +492,7 @@ export default function AnimationShowcase() {
             availableSpots={16}
             isRevealing={isSpinnerRevealing}
             onSpinComplete={handleSpinComplete}
-            username={hasWon ? "KemMajed90" : undefined}
+            username={hasWon ? "Adam007" : undefined}
           />
         )}
 
@@ -530,7 +530,7 @@ export default function AnimationShowcase() {
             <div className="flex items-center gap-1.5">
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
               <span className="text-green-400 font-medium text-sm">
-                {hasWon ? 'KemMajed90' : 'Jessica991'}
+                {hasWon ? 'Adam007' : 'Jessica991'}
               </span>
               <span className="text-white/60 text-sm">
                 {hasWon ? 'won' : 'is winning'}
@@ -665,7 +665,7 @@ export default function AnimationShowcase() {
                     transition={{ delay: 0.2 }}
                   >
                     <div className="flex items-center justify-center gap-2">
-                      <span className="text-white font-bold text-xl">KemMajed90</span>
+                      <span className="text-white font-bold text-xl">Adam007</span>
                       <span className="text-white/70 text-xl">Won!</span>
                     </div>
                     <p className="text-white/50 text-sm mt-1">Your spot is revealed!</p>

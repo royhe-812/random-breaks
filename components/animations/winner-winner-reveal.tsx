@@ -30,7 +30,7 @@ const defaultTeams = [
   { name: "Dolphins", city: "Miami", color: "#008E97", secondary: "#FC4C02", abbrev: "MIA" },
 ]
 
-export function WinnerWinnerReveal({ isRevealing, team: propTeam, onComplete, username = "KemMajed90", onTeamSelected }: WinnerWinnerRevealProps) {
+export function WinnerWinnerReveal({ isRevealing, team: propTeam, onComplete, username = "Adam007", onTeamSelected }: WinnerWinnerRevealProps) {
   const [randomTeam, setRandomTeam] = useState(() => defaultTeams[Math.floor(Math.random() * defaultTeams.length)])
   const team = propTeam || randomTeam
   const [phase, setPhase] = useState<"idle" | "winner-text" | "team-card" | "done">("idle")
