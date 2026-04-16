@@ -1,8 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { HolographicShine } from "./celebration-elements"
+
+const SWOOSH_SOUND_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/universfield-swoosh-07-351043-l81HTAvQZ8cfxNXFm9ZreRxb1nKXNB.mp3"
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
@@ -41,6 +43,19 @@ export function CardFlipReveal({ isRevealing, onComplete, team: propTeam }: Card
   const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const team = propTeam || randomTeam
   const [showShine, setShowShine] = useState(false)
+  const swooshAudioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Initialize audio element
+  useEffect(() => {
+    swooshAudioRef.current = new Audio(SWOOSH_SOUND_URL)
+    swooshAudioRef.current.volume = 0.5
+    return () => {
+      if (swooshAudioRef.current) {
+        swooshAudioRef.current.pause()
+        swooshAudioRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (isRevealing) {
@@ -51,6 +66,11 @@ export function CardFlipReveal({ isRevealing, onComplete, team: propTeam }: Card
       
       const flipTimer = setTimeout(() => {
         setIsFlipped(true)
+        // Play swoosh sound synced with the flip
+        if (swooshAudioRef.current) {
+          swooshAudioRef.current.currentTime = 0
+          swooshAudioRef.current.play().catch(() => {})
+        }
       }, 300)
       
       const shineTimer = setTimeout(() => {
