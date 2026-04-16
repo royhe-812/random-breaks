@@ -103,11 +103,26 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
       const startTime = performance.now() + 100 // account for the 100ms delay before spin starts
       let lastCardIndex = 0
       
-      const cubicBezier = (t: number) => {
-        // Approximation of cubic-bezier(0.2, 0.8, 0.2, 1)
-        return t < 0.5 
-          ? 4 * t * t * t 
-          : 1 - Math.pow(-2 * t + 2, 3) / 2
+      // Attempt to match cubic-bezier(0.15, 0.6, 0.2, 1) using bezier math
+      const bezierAt = (t: number, p1: number, p2: number) => {
+        // Attempt to get cubic-bezier y value at time t
+        // Using simplified bezier formula: 3*(1-t)^2*t*p1 + 3*(1-t)*t^2*p2 + t^3
+        const oneMinusT = 1 - t
+        return 3 * oneMinusT * oneMinusT * t * p1 + 3 * oneMinusT * t * t * p2 + t * t * t
+      }
+      
+      // For cubic-bezier(0.15, 0.6, 0.2, 1), we need to solve for t given x, then get y
+      // Simplified: use y1=0.6, y2=1 for the y curve
+      const getEasedProgress = (linearProgress: number) => {
+        // Newton-Raphson to find t for given x (linearProgress)
+        let t = linearProgress
+        for (let i = 0; i < 8; i++) {
+          const x = bezierAt(t, 0.15, 0.2) - linearProgress
+          if (Math.abs(x) < 0.001) break
+          const dx = 3 * (1 - t) * (1 - t) * 0.15 + 6 * (1 - t) * t * (0.2 - 0.15) + 3 * t * t * (1 - 0.2)
+          t -= x / dx
+        }
+        return bezierAt(t, 0.6, 1)
       }
       
       const trackRotation = () => {
@@ -118,7 +133,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
         }
         
         const progress = Math.min(elapsed / duration, 1)
-        const easedProgress = cubicBezier(progress)
+        const easedProgress = getEasedProgress(progress)
         const currentRotation = easedProgress * targetRotation
         const currentCardIndex = Math.floor(currentRotation / anglePerCard)
         
