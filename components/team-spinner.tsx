@@ -223,7 +223,7 @@ export function TeamSpinner({
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: isSpinning ? 0.05 : 0.15 }}
                 >
-                  {phase === "idle" ? "Your Spot Assignment" : 
+                  {phase === "idle" ? "Win to spin" : 
                    phase === "stopped" ? "???" : 
                    `${currentTeam.city} ${currentTeam.name}`}
                 </motion.span>
