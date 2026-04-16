@@ -286,16 +286,6 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam, usernam
               {team.name}
             </p>
           </motion.div>
-
-          {/* Your spot label */}
-          <motion.p 
-            className="text-white/50 text-xs mt-4"
-            initial={{ opacity: 0 }}
-            animate={isRevealed ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            Your spot is assigned!
-          </motion.p>
         </div>
       </motion.div>
 

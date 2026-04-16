@@ -282,15 +282,6 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
                 {team.name}
               </p>
             </motion.div>
-            
-            <motion.p
-              className="text-green-400 text-xs mt-3 font-medium relative z-20"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              Your spot has been revealed!
-            </motion.p>
           </motion.div>
         )}
       </AnimatePresence>

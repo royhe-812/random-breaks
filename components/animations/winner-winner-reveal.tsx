@@ -99,13 +99,16 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
       >
         {/* Username banner */}
         <motion.div
-          className="flex items-center gap-2"
+          className="flex flex-col items-center mb-3"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: phase === "team-card" ? 1 : 0, y: phase === "team-card" ? 0 : 20 }}
           transition={{ delay: 0.2, duration: 0.4 }}
         >
-          <span className="text-white font-bold text-xl">{username}</span>
-          <span className="text-white/70 text-xl">Won!</span>
+          <div className="flex items-center gap-2">
+            <span className="text-white font-bold text-xl">{username}</span>
+            <span className="text-white/70 text-xl">Won!</span>
+          </div>
+          <span className="text-white/50 text-sm mt-1">Your spot is revealed!</span>
         </motion.div>
 
         {/* Team Card - matching card flip style */}

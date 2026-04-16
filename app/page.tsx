@@ -525,10 +525,10 @@ export default function AnimationShowcase() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-              <span className="text-green-400 font-medium text-sm">
+              <span className="text-white font-bold text-sm">
                 {hasWon ? 'KemMajed90' : 'Jessica991'}
               </span>
-              <span className="text-white/60 text-sm">
+              <span className="text-white/70 text-sm">
                 {hasWon ? 'won' : 'is winning'}
               </span>
             </div>
@@ -660,10 +660,11 @@ export default function AnimationShowcase() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <p className="text-green-400 text-sm font-medium uppercase tracking-wider mb-1">
-                      KemMajed90 Won!
-                    </p>
-                    <p className="text-white/70 text-sm">Your spot is...</p>
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <span className="text-white font-bold text-xl">KemMajed90</span>
+                      <span className="text-white/70 text-xl">Won!</span>
+                    </div>
+                    <p className="text-white/50 text-sm">Your spot is...</p>
                   </motion.div>
 
                   {/* The animation component */}
