@@ -154,12 +154,18 @@ export function WinnerWinnerReveal({ isRevealing, team: propTeam, onComplete, us
             }}
           />
 
-          {/* Sweeping shine effect */}
+          {/* Sweeping shine effect - continuous glow sweep */}
           <motion.div
             className="absolute inset-0 pointer-events-none"
             initial={{ opacity: 0, x: "-100%" }}
-            animate={{ opacity: 1, x: "200%" }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+            animate={{ opacity: [0, 1, 1, 0], x: ["-100%", "0%", "100%", "200%"] }}
+            transition={{ 
+              duration: 2, 
+              ease: "easeInOut", 
+              delay: 0.3,
+              repeat: Infinity,
+              repeatDelay: 1,
+            }}
             style={{
               background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)",
               width: "50%",
@@ -200,41 +206,6 @@ export function WinnerWinnerReveal({ isRevealing, team: propTeam, onComplete, us
           </div>
         </motion.div>
 
-        {/* Floating sparkles around card - star style matching card flip */}
-        {phase === "team-card" && [...Array(12)].map((_, i) => {
-          const size = 8 + (i % 4) * 4
-          return (
-            <motion.div
-              key={`card-sparkle-${i}`}
-              className="absolute pointer-events-none"
-              style={{
-                left: `${10 + (i * 7)}%`,
-                top: `${20 + (i % 4) * 20}%`,
-              }}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{
-                opacity: [0, 1, 0.3, 1, 0],
-                scale: [0, 1, 0.7, 1, 0],
-              }}
-              transition={{
-                duration: 2,
-                times: [0, 0.2, 0.5, 0.8, 1],
-                ease: "easeInOut",
-                repeat: Infinity,
-                repeatDelay: 0.5,
-                delay: i * 0.15,
-              }}
-            >
-              <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
-                  fill="white"
-                  style={{ filter: "drop-shadow(0 0 4px rgba(255,255,255,0.8))" }}
-                />
-              </svg>
-            </motion.div>
-          )
-        })}
       </motion.div>
 
       {/* Winner Text Phase - slides up with parallax to reveal card */}
@@ -324,47 +295,6 @@ export function WinnerWinnerReveal({ isRevealing, team: propTeam, onComplete, us
               </motion.div>
             </div>
 
-            {/* Sparkle stars - matching card flip style */}
-            {[...Array(12)].map((_, i) => {
-              const size = 8 + (i % 4) * 4
-              return (
-                <motion.div
-                  key={`sparkle-${i}`}
-                  className="absolute pointer-events-none"
-                  style={{
-                    left: `${5 + (i * 8)}%`,
-                    top: `${10 + (i % 5) * 20}%`,
-                  }}
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{
-                    opacity: [0, 1, 0.3, 1, 0],
-                    scale: [0, 1, 0.7, 1, 0],
-                  }}
-                  exit={{
-                    y: 100 + (i * 20),
-                    opacity: 0,
-                    scale: 0,
-                  }}
-                  transition={{
-                    duration: 2,
-                    times: [0, 0.2, 0.5, 0.8, 1],
-                    ease: "easeInOut",
-                    repeat: Infinity,
-                    repeatDelay: 0.5,
-                    delay: 0.5 + i * 0.1,
-                    exit: { duration: 0.5 }
-                  }}
-                >
-                  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
-                      fill="white"
-                      style={{ filter: "drop-shadow(0 0 4px rgba(255,255,255,0.8))" }}
-                    />
-                  </svg>
-                </motion.div>
-              )
-            })}
           </motion.div>
         )}
       </AnimatePresence>
