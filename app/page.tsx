@@ -507,7 +507,7 @@ export default function AnimationShowcase() {
                   <circle cx="16" cy="20" r="5" fill="rgba(255,255,255,0.5)"/>
                   <path d="M8 34c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round"/>
                 </svg>
-                16/32 spots available
+                {hasWon ? '15/32' : '16/32'} spots available
               </p>
               <div className="flex flex-col">
                 <span className="text-white font-bold text-lg">{hasWon ? '$30.00' : '$28.00'}</span>
