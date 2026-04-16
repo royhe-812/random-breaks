@@ -1,8 +1,10 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
+
+const SWOOSH_SOUND_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/universfield-swoosh-07-351043-l81HTAvQZ8cfxNXFm9ZreRxb1nKXNB.mp3"
 
 interface Team {
   name: string
@@ -20,6 +22,19 @@ interface WinnerWinnerRevealProps {
 
 export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "KemMajed90" }: WinnerWinnerRevealProps) {
   const [phase, setPhase] = useState<"idle" | "winner-text" | "team-card" | "done">("idle")
+  const swooshAudioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Initialize audio element
+  useEffect(() => {
+    swooshAudioRef.current = new Audio(SWOOSH_SOUND_URL)
+    swooshAudioRef.current.volume = 0.5
+    return () => {
+      if (swooshAudioRef.current) {
+        swooshAudioRef.current.pause()
+        swooshAudioRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (isRevealing && team) {
@@ -27,7 +42,14 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
       setPhase("winner-text")
       
       // After 2.5 seconds, transition to team card
-      const teamCardTimer = setTimeout(() => setPhase("team-card"), 2500)
+      const teamCardTimer = setTimeout(() => {
+        setPhase("team-card")
+        // Play swoosh sound as the team card appears
+        if (swooshAudioRef.current) {
+          swooshAudioRef.current.currentTime = 0
+          swooshAudioRef.current.play().catch(() => {})
+        }
+      }, 2500)
       
       // After 5.5 seconds total (3 seconds on card), complete
       const completeTimer = setTimeout(() => {
