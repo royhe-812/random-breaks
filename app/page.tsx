@@ -209,6 +209,7 @@ const chatMessages = [
 export default function AnimationShowcase() {
   const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("card-flip")
   const [isRevealing, setIsRevealing] = useState(false)
+  const [isSpinnerRevealing, setIsSpinnerRevealing] = useState(false) // For TeamSpinner cycling
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
   const [hasWon, setHasWon] = useState(false)
@@ -251,6 +252,7 @@ export default function AnimationShowcase() {
   useEffect(() => {
     setHasWon(false)
     setIsRevealing(false)
+    setIsSpinnerRevealing(false)
     setSelectedTeam(null)
     setWinnerTeam(null)
     setShowWinner(false)
@@ -260,8 +262,8 @@ export default function AnimationShowcase() {
   const handleSpinComplete = useCallback((team: Team) => {
     setSelectedTeam(team)
     setWinnerTeam(team) // Store winner team immediately so handleComplete has it
-    chatPausedRef.current = true // Pause chat immediately when team is selected
-    setIsRevealing(true)
+    setIsSpinnerRevealing(false) // Stop spinner
+    setIsRevealing(true) // Now trigger the animation reveal
     setKey(prev => prev + 1)
   }, [])
 
@@ -279,6 +281,7 @@ export default function AnimationShowcase() {
     // Keep the winning moment visible for 3 seconds, then close overlay
     setTimeout(() => {
       setIsRevealing(false)
+      setIsSpinnerRevealing(false)
       // Don't reset hasWon, winnerTeam, or showWinner - keep winner treatment visible
       setKey(prev => prev + 1)
     }, 3000)
@@ -483,7 +486,7 @@ export default function AnimationShowcase() {
           <TeamSpinner
             totalSpots={32}
             availableSpots={16}
-            isRevealing={isRevealing}
+            isRevealing={isSpinnerRevealing}
             onSpinComplete={handleSpinComplete}
             username={hasWon ? "KemMajed90" : undefined}
           />
@@ -553,6 +556,7 @@ export default function AnimationShowcase() {
                 if (hasWon) {
                   // Reset the entire concept
                   setHasWon(false)
+                  setIsSpinnerRevealing(false)
                   setSelectedTeam(null)
                   setShowWinner(false)
                   setWinnerTeam(null)
@@ -572,8 +576,8 @@ export default function AnimationShowcase() {
                     }, 1500)
                   } else {
                     // For concepts that use TeamSpinner (card-flip, pack-rip, mystery-box, back-card-flip)
-                    // Trigger revealing immediately - TeamSpinner will cycle through teams
-                    setIsRevealing(true)
+                    // Trigger spinner revealing - TeamSpinner will cycle through teams first
+                    setIsSpinnerRevealing(true)
                   }
                 }
               }}
