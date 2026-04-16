@@ -286,17 +286,19 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
                   backfaceVisibility: "hidden",
                 }}
               >
-                {/* Card */}
+                {/* Card - matching card flip style */}
                 <motion.div
-                  className="w-full h-full rounded-xl flex flex-col items-center justify-center relative overflow-hidden"
+                  className="w-full h-full rounded-2xl flex flex-col items-center justify-center relative overflow-hidden"
                   style={{
-                    background: `linear-gradient(145deg, ${team.color} 0%, ${team.color}dd 100%)`,
+                    background: `linear-gradient(135deg, ${team.color} 0%, ${team.color}dd 50%, ${team.color}bb 100%)`,
+                    borderWidth: 2,
+                    borderColor: team.secondary,
                   }}
                   animate={hasStopped && i === winningIndex ? {
                     boxShadow: [
-                      `0 0 40px ${team.color}90, 0 0 80px ${team.color}60, 0 0 120px ${team.color}40`,
-                      `0 0 60px ${team.color}aa, 0 0 100px ${team.color}80, 0 0 150px ${team.color}50`,
-                      `0 0 40px ${team.color}90, 0 0 80px ${team.color}60, 0 0 120px ${team.color}40`,
+                      `0 0 40px ${team.color}90, 0 0 80px ${team.color}60`,
+                      `0 0 60px ${team.color}aa, 0 0 100px ${team.color}80`,
+                      `0 0 40px ${team.color}90, 0 0 80px ${team.color}60`,
                     ],
                   } : {
                     boxShadow: `0 10px 25px rgba(0,0,0,0.4)`,
@@ -307,35 +309,41 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
                     ease: "easeInOut",
                   } : {}}
                 >
-                  {/* Card shine */}
-                  <div
-                    className="absolute inset-0"
+                  {/* Holographic shine overlay */}
+                  <div 
+                    className="absolute inset-0 opacity-30 pointer-events-none"
                     style={{
-                      background: "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 40%, rgba(255,255,255,0.1) 100%)",
+                      background: `linear-gradient(135deg, 
+                        rgba(255,255,255,0.3) 0%,
+                        transparent 40%,
+                        transparent 60%,
+                        rgba(255,255,255,0.2) 100%
+                      )`,
                     }}
                   />
                   
-                  {/* Team initials */}
-                  <span className="text-4xl font-black text-white drop-shadow-lg relative z-10">
-                    {team.abbrev}
-                  </span>
-                  
-                  {/* Team name */}
-                  <span className="text-sm font-semibold text-white/90 mt-2 relative z-10">
-                    {team.name}
-                  </span>
-                  
-                  {/* Secondary color accent */}
+                  {/* Team logo circle */}
                   <div
-                    className="absolute bottom-0 left-0 right-0 h-3"
-                    style={{ backgroundColor: team.secondary }}
-                  />
+                    className="w-16 h-16 rounded-full flex items-center justify-center mb-2 relative"
+                    style={{ 
+                      backgroundColor: team.secondary,
+                      boxShadow: `0 4px 16px ${team.color}60, inset 0 -2px 8px rgba(0,0,0,0.2)`,
+                    }}
+                  >
+                    <span className="text-2xl font-black text-white drop-shadow-lg">
+                      {team.abbrev}
+                    </span>
+                  </div>
                   
-                  {/* Top accent line */}
-                  <div
-                    className="absolute top-0 left-0 right-0 h-1"
-                    style={{ backgroundColor: team.secondary }}
-                  />
+                  {/* Team info */}
+                  <div className="text-center relative z-10">
+                    <p className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">
+                      {team.city}
+                    </p>
+                    <p className="text-sm font-black text-white drop-shadow-lg">
+                      {team.name}
+                    </p>
+                  </div>
                 </motion.div>
               </div>
             )
