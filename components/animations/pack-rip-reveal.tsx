@@ -116,9 +116,10 @@ interface PackRipRevealProps {
   onComplete: () => void
   team?: Team | null
   username?: string
+  onTeamSelected?: (team: Team) => void
 }
 
-export function PackRipReveal({ isRevealing, onComplete, team: propTeam, username = "KemMajed90" }: PackRipRevealProps) {
+export function PackRipReveal({ isRevealing, onComplete, team: propTeam, username = "KemMajed90", onTeamSelected }: PackRipRevealProps) {
   const [phase, setPhase] = useState<"idle" | "shake" | "opening" | "revealed">("idle")
   const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const [showGlow, setShowGlow] = useState(false)
@@ -151,7 +152,9 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam, usernam
   useEffect(() => {
     if (isRevealing) {
       // Pick a new random team each reveal
-      setRandomTeam(teams[Math.floor(Math.random() * teams.length)])
+      const newTeam = propTeam || teams[Math.floor(Math.random() * teams.length)]
+      setRandomTeam(newTeam)
+      onTeamSelected?.(newTeam)
       setPhase("idle")
       setShowGlow(false)
       

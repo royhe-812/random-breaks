@@ -15,12 +15,24 @@ interface Team {
 
 interface WinnerWinnerRevealProps {
   isRevealing: boolean
-  team: Team | null
+  team?: Team | null
   onComplete: () => void
   username?: string
+  onTeamSelected?: (team: Team) => void
 }
 
-export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "KemMajed90" }: WinnerWinnerRevealProps) {
+const defaultTeams = [
+  { name: "Chiefs", city: "Kansas City", color: "#E31837", secondary: "#FFB81C", abbrev: "KC" },
+  { name: "49ers", city: "San Francisco", color: "#AA0000", secondary: "#B3995D", abbrev: "SF" },
+  { name: "Eagles", city: "Philadelphia", color: "#004C54", secondary: "#A5ACAF", abbrev: "PHI" },
+  { name: "Cowboys", city: "Dallas", color: "#003594", secondary: "#869397", abbrev: "DAL" },
+  { name: "Bills", city: "Buffalo", color: "#00338D", secondary: "#C60C30", abbrev: "BUF" },
+  { name: "Dolphins", city: "Miami", color: "#008E97", secondary: "#FC4C02", abbrev: "MIA" },
+]
+
+export function WinnerWinnerReveal({ isRevealing, team: propTeam, onComplete, username = "KemMajed90", onTeamSelected }: WinnerWinnerRevealProps) {
+  const [randomTeam, setRandomTeam] = useState(() => defaultTeams[Math.floor(Math.random() * defaultTeams.length)])
+  const team = propTeam || randomTeam
   const [phase, setPhase] = useState<"idle" | "winner-text" | "team-card" | "done">("idle")
   const swooshAudioRef = useRef<HTMLAudioElement | null>(null)
 
@@ -37,7 +49,12 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
   }, [])
 
   useEffect(() => {
-    if (isRevealing && team) {
+    if (isRevealing) {
+      // Pick a new random team if none provided
+      const newTeam = propTeam || defaultTeams[Math.floor(Math.random() * defaultTeams.length)]
+      setRandomTeam(newTeam)
+      onTeamSelected?.(newTeam)
+      
       // Start with winner text phase
       setPhase("winner-text")
       

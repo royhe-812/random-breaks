@@ -35,9 +35,10 @@ interface BattleRevealProps {
   isRevealing: boolean
   onComplete: () => void
   team?: Team | null
+  onTeamSelected?: (team: Team) => void
 }
 
-export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
+export function BattleReveal({ isRevealing, onComplete, onTeamSelected }: BattleRevealProps) {
   const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "locked" | "tension1" | "tension2" | "tension3" | "tension4" | "winner">("idle")
   const [leftIndex, setLeftIndex] = useState(0)
   const [rightIndex, setRightIndex] = useState(4)
@@ -45,11 +46,13 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
   const [leadingSide, setLeadingSide] = useState<"left" | "right" | "none">("none")
   const [winnerSide, setWinnerSide] = useState<"left" | "right">("left")
   const audioContextRef = useRef<AudioContext | null>(null)
+  const hasCalledTeamSelected = useRef(false)
   
   // Pick new random winner each time isRevealing becomes true
   useEffect(() => {
     if (isRevealing) {
       setWinnerSide(Math.random() > 0.5 ? "left" : "right")
+      hasCalledTeamSelected.current = false
     }
   }, [isRevealing])
 
@@ -57,6 +60,14 @@ export function BattleReveal({ isRevealing, onComplete }: BattleRevealProps) {
   const leftTeam = teams[leftIndex]
   const rightTeam = teams[rightIndex]
   const winner = winnerSide === "left" ? leftTeam : rightTeam
+  
+  // Call onTeamSelected when winner is determined
+  useEffect(() => {
+    if (phase === "winner" && !hasCalledTeamSelected.current) {
+      hasCalledTeamSelected.current = true
+      onTeamSelected?.(winner)
+    }
+  }, [phase, winner, onTeamSelected])
 
   // Play battle tick sound - deeper, more impactful
   const playTickSound = () => {

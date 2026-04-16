@@ -32,9 +32,10 @@ interface SlotMachineRevealProps {
   isRevealing: boolean
   onComplete: () => void
   team?: Team | null
+  onTeamSelected?: (team: Team) => void
 }
 
-export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: SlotMachineRevealProps) {
+export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, onTeamSelected }: SlotMachineRevealProps) {
   const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "landed" | "explode">("idle")
   const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const finalTeam = propTeam ? { ...propTeam, abbr: propTeam.name.slice(0, 3).toUpperCase() } : randomTeam
@@ -42,9 +43,11 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
   // Pick a new random team each time isRevealing becomes true
   useEffect(() => {
     if (isRevealing) {
-      setRandomTeam(teams[Math.floor(Math.random() * teams.length)])
+      const newTeam = propTeam ? { ...propTeam, abbr: propTeam.name.slice(0, 3).toUpperCase() } : teams[Math.floor(Math.random() * teams.length)]
+      setRandomTeam(newTeam)
+      onTeamSelected?.(newTeam)
     }
-  }, [isRevealing])
+  }, [isRevealing, propTeam, onTeamSelected])
   const [spinOffset, setSpinOffset] = useState(0)
   const speedRef = useRef(0)
   const animationRef = useRef<number | null>(null)

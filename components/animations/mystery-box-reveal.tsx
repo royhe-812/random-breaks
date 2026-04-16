@@ -37,9 +37,10 @@ interface MysteryBoxRevealProps {
   isRevealing: boolean
   onComplete: () => void
   team?: Team | null
+  onTeamSelected?: (team: Team) => void
 }
 
-export function MysteryBoxReveal({ isRevealing, onComplete, team: propTeam }: MysteryBoxRevealProps) {
+export function MysteryBoxReveal({ isRevealing, onComplete, team: propTeam, onTeamSelected }: MysteryBoxRevealProps) {
   const [phase, setPhase] = useState<"idle" | "shaking" | "glowing" | "burst" | "revealed">("idle")
   const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const team = propTeam || randomTeam
@@ -47,7 +48,9 @@ export function MysteryBoxReveal({ isRevealing, onComplete, team: propTeam }: My
   useEffect(() => {
     if (isRevealing) {
       // Pick a new random team each reveal
-      setRandomTeam(teams[Math.floor(Math.random() * teams.length)])
+      const newTeam = propTeam || teams[Math.floor(Math.random() * teams.length)]
+      setRandomTeam(newTeam)
+      onTeamSelected?.(newTeam)
       setPhase("idle")
       
       const shakeTimer = setTimeout(() => setPhase("shaking"), 200)

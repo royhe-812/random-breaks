@@ -287,8 +287,12 @@ export default function AnimationShowcase() {
     }, 3000)
   }, [selectedAnimation])
 
+  const handleTeamSelected = useCallback((team: Team) => {
+    setWinnerTeam(team)
+  }, [])
+
   const renderAnimation = () => {
-    const props = { isRevealing, onComplete: handleComplete, team: selectedTeam }
+    const props = { isRevealing, onComplete: handleComplete, team: selectedTeam, onTeamSelected: handleTeamSelected }
     
     switch (selectedAnimation) {
       case "card-flip":
@@ -308,7 +312,7 @@ export default function AnimationShowcase() {
       case "pick-card":
         return <PickCardReveal key={key} {...props} />
       case "carousel":
-        return <CarouselReveal key={key} isRevealing={isRevealing} onComplete={handleComplete} />
+        return <CarouselReveal key={key} isRevealing={isRevealing} onComplete={(team) => { setWinnerTeam(team); handleComplete(); }} />
       case "winner-winner":
         return <WinnerWinnerReveal key={key} {...props} />
       case "gift-reveal":

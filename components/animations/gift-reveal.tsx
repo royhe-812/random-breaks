@@ -116,9 +116,10 @@ interface GiftRevealProps {
   isRevealing: boolean
   onComplete: () => void
   team?: Team | null
+  onTeamSelected?: (team: Team) => void
 }
 
-export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftRevealProps) {
+export function GiftReveal({ isRevealing, onComplete, team: propTeam, onTeamSelected }: GiftRevealProps) {
   const [phase, setPhase] = useState<"idle" | "opening" | "revealed">("idle")
   const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const lottieRef = useRef<LottieRefCurrentProps>(null)
@@ -141,7 +142,9 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
   useEffect(() => {
     if (isRevealing) {
       // Pick a new random team each reveal
-      setRandomTeam(teams[Math.floor(Math.random() * teams.length)])
+      const newTeam = propTeam || teams[Math.floor(Math.random() * teams.length)]
+      setRandomTeam(newTeam)
+      onTeamSelected?.(newTeam)
       setPhase("idle")
       
       // Start the animation and shake sound together
