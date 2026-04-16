@@ -1,8 +1,10 @@
 "use client"
 
 // Pack rip reveal animation - card slides out from behind pack
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+
+const SWOOSH_SOUND_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/universfield-swoosh-07-351043-l81HTAvQZ8cfxNXFm9ZreRxb1nKXNB.mp3"
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
@@ -40,6 +42,19 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
   const [phase, setPhase] = useState<"idle" | "shake" | "opening" | "revealed">("idle")
   const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const team = propTeam || randomTeam
+  const swooshAudioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Initialize audio element
+  useEffect(() => {
+    swooshAudioRef.current = new Audio(SWOOSH_SOUND_URL)
+    swooshAudioRef.current.volume = 0.5
+    return () => {
+      if (swooshAudioRef.current) {
+        swooshAudioRef.current.pause()
+        swooshAudioRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (isRevealing) {
@@ -48,7 +63,14 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
       setPhase("idle")
       
       const shakeTimer = setTimeout(() => setPhase("shake"), 200)
-      const openTimer = setTimeout(() => setPhase("opening"), 800)
+      const openTimer = setTimeout(() => {
+        setPhase("opening")
+        // Play swoosh sound as the card starts sliding out
+        if (swooshAudioRef.current) {
+          swooshAudioRef.current.currentTime = 0
+          swooshAudioRef.current.play().catch(() => {})
+        }
+      }, 800)
       const revealTimer = setTimeout(() => setPhase("revealed"), 1600)
       const completeTimer = setTimeout(() => onComplete(), 4500)
       
