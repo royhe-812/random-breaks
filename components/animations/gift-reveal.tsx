@@ -6,12 +6,13 @@ import { HolographicShine } from "./celebration-elements"
 import Lottie, { LottieRefCurrentProps } from "lottie-react"
 import giftBoxAnimation from "@/public/animations/gift-box-open.json"
 
-// Shaking/rattling sound for gift box
+// Shaking/wobble sound for gift box - complements the randomizer tick sound
 const useShakeSound = () => {
   const audioContextRef = useRef<AudioContext | null>(null)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutsRef = useRef<NodeJS.Timeout[]>([])
 
-  const playRattleSound = useCallback(() => {
+  // Play a wobble sound - uses sine wave like the tick but with a wobble effect
+  const playWobbleSound = useCallback((intensity: number = 1) => {
     try {
       if (!audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
@@ -21,51 +22,62 @@ const useShakeSound = () => {
         ctx.resume()
       }
 
-      // Create a short rattle/shake sound
-      const noise = ctx.createBufferSource()
-      const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate)
-      const output = noiseBuffer.getChannelData(0)
-      
-      // Fill with noise
-      for (let i = 0; i < noiseBuffer.length; i++) {
-        output[i] = Math.random() * 2 - 1
-      }
-      
-      noise.buffer = noiseBuffer
-      
-      // Filter to make it sound more like rattling
-      const filter = ctx.createBiquadFilter()
-      filter.type = 'bandpass'
-      filter.frequency.setValueAtTime(2000 + Math.random() * 1000, ctx.currentTime)
-      filter.Q.setValueAtTime(5, ctx.currentTime)
-      
+      // Create two oscillators for a wobble effect (like the tick but lower and wobbly)
+      const osc1 = ctx.createOscillator()
+      const osc2 = ctx.createOscillator()
       const gainNode = ctx.createGain()
-      gainNode.gain.setValueAtTime(0.15, ctx.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05)
       
-      noise.connect(filter)
-      filter.connect(gainNode)
+      osc1.connect(gainNode)
+      osc2.connect(gainNode)
       gainNode.connect(ctx.destination)
       
-      noise.start(ctx.currentTime)
-      noise.stop(ctx.currentTime + 0.05)
+      // Lower frequency than the tick (400-500Hz vs 600-800Hz) for a complementary sound
+      const baseFreq = 400 + Math.random() * 100
+      osc1.frequency.setValueAtTime(baseFreq, ctx.currentTime)
+      osc1.frequency.exponentialRampToValueAtTime(baseFreq * 0.8, ctx.currentTime + 0.06)
+      osc1.type = 'sine'
+      
+      // Second oscillator slightly detuned for wobble
+      osc2.frequency.setValueAtTime(baseFreq * 1.02, ctx.currentTime)
+      osc2.frequency.exponentialRampToValueAtTime(baseFreq * 0.82, ctx.currentTime + 0.06)
+      osc2.type = 'sine'
+      
+      // Quick envelope
+      gainNode.gain.setValueAtTime(0.06 * intensity, ctx.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08)
+      
+      osc1.start(ctx.currentTime)
+      osc2.start(ctx.currentTime)
+      osc1.stop(ctx.currentTime + 0.08)
+      osc2.stop(ctx.currentTime + 0.08)
     } catch {
       // Silently fail
     }
   }, [])
 
   const startShaking = useCallback(() => {
-    // Play rattles rapidly during shake
-    intervalRef.current = setInterval(() => {
-      playRattleSound()
-    }, 80)
-  }, [playRattleSound])
+    // Clear any existing timeouts
+    timeoutsRef.current.forEach(t => clearTimeout(t))
+    timeoutsRef.current = []
+    
+    // Lottie animation shakes at frames 0, 5, 10, 15, 20, 25, 30, 35, 40, 45
+    // At 25fps, each frame is 40ms, so shake events are every 200ms (5 frames)
+    // The animation starts after a 200ms delay, so offset accordingly
+    const shakeTimes = [0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800]
+    
+    shakeTimes.forEach((time, index) => {
+      const timeout = setTimeout(() => {
+        // Intensity decreases as we approach the opening
+        const intensity = 1 - (index * 0.05)
+        playWobbleSound(intensity)
+      }, time)
+      timeoutsRef.current.push(timeout)
+    })
+  }, [playWobbleSound])
 
   const stopShaking = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-      intervalRef.current = null
-    }
+    timeoutsRef.current.forEach(t => clearTimeout(t))
+    timeoutsRef.current = []
   }, [])
 
   return { startShaking, stopShaking }
@@ -117,21 +129,15 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
       setRandomTeam(teams[Math.floor(Math.random() * teams.length)])
       setPhase("idle")
       
-      // Start the shake sound
-      startShaking()
-      
-      // Start the animation
+      // Start the animation and shake sound together
       const openTimer = setTimeout(() => {
         setPhase("opening")
         if (lottieRef.current) {
           lottieRef.current.goToAndPlay(0)
         }
+        // Start shake sound synced with animation start
+        startShaking()
       }, 200)
-      
-      // Stop shaking when box opens (around 1 second in)
-      const stopShakeTimer = setTimeout(() => {
-        stopShaking()
-      }, 1000)
       
       // The Lottie is 75 frames at 25fps = 3 seconds
       // Reveal the team about 2 seconds in when the box is fully open
@@ -140,7 +146,6 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
       
       return () => {
         clearTimeout(openTimer)
-        clearTimeout(stopShakeTimer)
         clearTimeout(revealTimer)
         clearTimeout(completeTimer)
         stopShaking()
