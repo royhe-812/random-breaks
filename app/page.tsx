@@ -207,7 +207,7 @@ const chatMessages = [
 ]
 
 export default function AnimationShowcase() {
-  const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("pick-card")
+  const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("card-flip")
   const [isRevealing, setIsRevealing] = useState(false)
   const [isSpinnerRevealing, setIsSpinnerRevealing] = useState(false) // For TeamSpinner cycling
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
