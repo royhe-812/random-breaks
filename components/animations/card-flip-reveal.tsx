@@ -174,11 +174,6 @@ export function CardFlipReveal({ isRevealing, onComplete, team: propTeam }: Card
         setShowShine(true)
       }, 900)
       
-      // Keep glow visible during the reveal
-      const glowOffTimer = setTimeout(() => {
-        setShowGlow(false)
-      }, 2000)
-      
       const completeTimer = setTimeout(() => {
         onComplete()
       }, 2500)
@@ -187,7 +182,6 @@ export function CardFlipReveal({ isRevealing, onComplete, team: propTeam }: Card
         clearTimeout(glowTimer)
         clearTimeout(flipTimer)
         clearTimeout(shineTimer)
-        clearTimeout(glowOffTimer)
         clearTimeout(completeTimer)
       }
     }
