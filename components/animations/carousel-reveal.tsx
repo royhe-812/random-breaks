@@ -3,6 +3,75 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
+// Sparkle component for the reveal effect
+const Sparkle = ({ delay, x, y, size = 8 }: { delay: number; x: number; y: number; size?: number }) => (
+  <motion.div
+    className="absolute pointer-events-none z-30"
+    style={{ left: `${x}%`, top: `${y}%` }}
+    initial={{ opacity: 0, scale: 0 }}
+    animate={{ 
+      opacity: [0, 1, 1, 0],
+      scale: [0, 1, 1, 0],
+    }}
+    transition={{ 
+      duration: 1.5, 
+      delay,
+      times: [0, 0.2, 0.8, 1],
+      ease: "easeOut"
+    }}
+  >
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+        fill="white"
+        style={{ filter: "drop-shadow(0 0 4px rgba(255,255,255,0.8))" }}
+      />
+    </svg>
+  </motion.div>
+)
+
+// Rainbow glow effect during reveal
+const RevealGlow = ({ isActive, teamColor }: { isActive: boolean; teamColor: string }) => (
+  <AnimatePresence>
+    {isActive && (
+      <motion.div
+        className="absolute inset-0 z-10 pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        {/* Rainbow gradient glow */}
+        <motion.div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full"
+          style={{
+            background: `conic-gradient(from 0deg, 
+              #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff, #5f27cd, #ff6b6b
+            )`,
+            filter: "blur(40px)",
+            opacity: 0.5,
+          }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+        />
+        {/* Team color glow overlay */}
+        <motion.div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 rounded-full"
+          style={{
+            background: teamColor,
+            filter: "blur(50px)",
+            opacity: 0.4,
+          }}
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.4, 0.6, 0.4],
+          }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </motion.div>
+    )}
+  </AnimatePresence>
+)
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
@@ -28,6 +97,17 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
   const [winningIndex, setWinningIndex] = useState(0)
   const hasStartedRef = useRef(false)
   const audioContextRef = useRef<AudioContext | null>(null)
+  
+  // Generate random sparkle positions
+  const sparkles = useRef(
+    Array.from({ length: 16 }, (_, i) => ({
+      id: i,
+      x: 20 + Math.random() * 60, // Center around the carousel
+      y: 10 + Math.random() * 60,
+      delay: Math.random() * 0.8,
+      size: 6 + Math.random() * 12,
+    }))
+  ).current
 
   // Reset the hasStartedRef when isRevealing changes to false so next reveal works
   useEffect(() => {
@@ -163,6 +243,20 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
 
   return (
     <div className="flex flex-col items-center justify-center h-[400px] relative">
+      {/* Rainbow glow effect when stopped */}
+      <RevealGlow isActive={hasStopped} teamColor={winningTeam.color} />
+      
+      {/* Sparkles when stopped */}
+      {hasStopped && sparkles.map((sparkle) => (
+        <Sparkle
+          key={sparkle.id}
+          x={sparkle.x}
+          y={sparkle.y}
+          delay={sparkle.delay}
+          size={sparkle.size}
+        />
+      ))}
+      
       {/* 3D Carousel Ring */}
       <div 
         className="relative h-56 w-full flex items-center justify-center"
