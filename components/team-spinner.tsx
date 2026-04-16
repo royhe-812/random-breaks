@@ -228,8 +228,15 @@ export function TeamSpinner({
                    `${currentTeam.city} ${currentTeam.name}`}
                 </motion.span>
               </AnimatePresence>
-              <span className="text-white/50 text-sm">
-                {username ? `${username}'s Spot` : "Spot assignment"}
+              <span className="text-sm">
+                {username ? (
+                  <>
+                    <span className="text-white font-bold">{username}</span>
+                    <span className="text-white/70">&apos;s Spot</span>
+                  </>
+                ) : (
+                  <span className="text-white/50">Spot assignment</span>
+                )}
               </span>
             </div>
           </div>

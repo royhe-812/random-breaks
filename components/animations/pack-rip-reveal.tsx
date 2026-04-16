@@ -287,16 +287,15 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam, usernam
             </p>
           </motion.div>
 
-          {/* Username and Won label */}
-          <motion.div 
-            className="flex items-center gap-2 mt-4"
-            initial={{ opacity: 0, y: 10 }}
-            animate={isRevealed ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+          {/* Your spot label */}
+          <motion.p 
+            className="text-white/50 text-xs mt-4"
+            initial={{ opacity: 0 }}
+            animate={isRevealed ? { opacity: 1 } : { opacity: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <span className="text-white font-bold text-xl">{username}</span>
-            <span className="text-white/70 text-xl">Won!</span>
-          </motion.div>
+            Your spot is assigned!
+          </motion.p>
         </div>
       </motion.div>
 
