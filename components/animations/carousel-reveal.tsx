@@ -100,15 +100,20 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
   const hasStartedRef = useRef(false)
   const audioContextRef = useRef<AudioContext | null>(null)
   
-  // Generate random sparkle positions
+  // Generate sparkle positions evenly distributed around the card
   const sparkles = useRef(
-    Array.from({ length: 16 }, (_, i) => ({
-      id: i,
-      x: 20 + Math.random() * 60, // Center around the carousel
-      y: 10 + Math.random() * 60,
-      delay: Math.random() * 0.8,
-      size: 6 + Math.random() * 12,
-    }))
+    Array.from({ length: 12 }, (_, i) => {
+      // Distribute sparkles in a circular pattern around the center
+      const angle = (i / 12) * Math.PI * 2
+      const radius = 35 + (i % 3) * 10 // Varying radius for natural look
+      return {
+        id: i,
+        x: 50 + Math.cos(angle) * radius, // Center at 50%
+        y: 50 + Math.sin(angle) * radius, // Center at 50%
+        delay: (i / 12) * 0.8,
+        size: 8 + (i % 4) * 4,
+      }
+    })
   ).current
 
   // Reset the hasStartedRef when isRevealing changes to false so next reveal works
