@@ -1,8 +1,8 @@
 "use client"
 
 // Imports
-import { useCallback, useEffect, useRef, useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
+import { useEffect, useRef, useState } from "react"
+import { motion } from "framer-motion"
 
 
 // NFL teams data with official abbreviations
@@ -38,9 +38,7 @@ interface TeamSpinnerProps {
   totalSpots: number
   availableSpots: number
   onSpinComplete: (team: Team) => void
-  isSpinning: boolean
-  onStartSpin: () => void
-  disabled?: boolean
+  isRevealing: boolean
   username?: string
 }
 
@@ -58,127 +56,46 @@ export function TeamSpinner({
   totalSpots, 
   availableSpots, 
   onSpinComplete, 
-  isSpinning, 
-  onStartSpin,
-  disabled = false,
+  isRevealing,
   username
 }: TeamSpinnerProps) {
-  const [currentTeamIndex, setCurrentTeamIndex] = useState(0)
-  const [spinPhase, setSpinPhase] = useState<"idle" | "fast" | "slowing" | "stopped">("idle")
-  const [spinSpeed, setSpinSpeed] = useState(50)
-  const [finalTeamIndex, setFinalTeamIndex] = useState<number | null>(null)
-  const targetTeamIndexRef = useRef<number | null>(null)
-  const audioContextRef = useRef<AudioContext | null>(null)
+  const [phase, setPhase] = useState<"idle" | "revealing">("idle")
+  const targetTeamRef = useRef<typeof teams[0] | null>(null)
 
-  // Play soft tick sound using Web Audio API - syncs with each team change
-  const playTickSound = useCallback(() => {
-    try {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
-      }
-      const ctx = audioContextRef.current
-      if (ctx.state === 'suspended') {
-        ctx.resume()
-      }
-      
-      const oscillator = ctx.createOscillator()
-      const gainNode = ctx.createGain()
-      
-      oscillator.connect(gainNode)
-      gainNode.connect(ctx.destination)
-      
-      // Soft, pleasant tick - higher pitch, sine wave for smoothness
-      oscillator.frequency.setValueAtTime(800, ctx.currentTime)
-      oscillator.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.02)
-      oscillator.type = 'sine'
-      
-      // Quick fade out for a soft click
-      gainNode.gain.setValueAtTime(0.08, ctx.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03)
-      
-      oscillator.start(ctx.currentTime)
-      oscillator.stop(ctx.currentTime + 0.03)
-    } catch {
-      // Silently fail if audio context isn't available
-    }
-  }, [])
-
-  // Reset to idle when isSpinning becomes false
+  // Start revealing when isRevealing becomes true
   useEffect(() => {
-    if (!isSpinning && spinPhase !== "idle") {
-      setSpinPhase("idle")
-      setSpinSpeed(50)
-      setFinalTeamIndex(null)
-    }
-  }, [isSpinning, spinPhase])
-
-  const startSpin = useCallback(() => {
-    const randomIndex = Math.floor(Math.random() * teams.length)
-    targetTeamIndexRef.current = randomIndex
-    setSpinPhase("fast")
-    setSpinSpeed(50)
-    onStartSpin()
-  }, [onStartSpin])
-
-  useEffect(() => {
-    if (spinPhase === "idle" || spinPhase === "stopped") return
-
-    const interval = setInterval(() => {
-      setCurrentTeamIndex(prev => (prev + 1) % teams.length)
-      playTickSound()
-    }, spinSpeed)
-
-    return () => clearInterval(interval)
-  }, [spinPhase, spinSpeed, playTickSound])
-
-  useEffect(() => {
-    if (spinPhase === "fast") {
+    if (isRevealing && phase === "idle") {
+      // Pick a random team
+      const randomTeam = teams[Math.floor(Math.random() * teams.length)]
+      targetTeamRef.current = randomTeam
+      setPhase("revealing")
+      
+      // After 1.5 seconds, trigger completion
       const timer = setTimeout(() => {
-        setSpinPhase("slowing")
+        if (targetTeamRef.current) {
+          onSpinComplete(targetTeamRef.current)
+        }
       }, 1500)
+      
       return () => clearTimeout(timer)
     }
-  }, [spinPhase])
+  }, [isRevealing, phase, onSpinComplete])
 
+  // Reset when isRevealing becomes false
   useEffect(() => {
-    if (spinPhase === "slowing" && targetTeamIndexRef.current !== null) {
-      const targetIndex = targetTeamIndexRef.current
-      const slowdownInterval = setInterval(() => {
-        setSpinSpeed(prev => {
-          const newSpeed = prev + 30
-          if (newSpeed >= 400) {
-            clearInterval(slowdownInterval)
-            setCurrentTeamIndex(targetIndex)
-            setFinalTeamIndex(targetIndex)
-            setSpinPhase("stopped")
-            return 400
-          }
-          return newSpeed
-        })
-      }, 200)
-      return () => clearInterval(slowdownInterval)
+    if (!isRevealing && phase !== "idle") {
+      setPhase("idle")
+      targetTeamRef.current = null
     }
-  }, [spinPhase])
-
-  // Stay on "Revealing..." for 1 second then trigger the win animation
-  useEffect(() => {
-    if (finalTeamIndex !== null && spinPhase === "stopped") {
-      const timer = setTimeout(() => {
-        onSpinComplete(teams[finalTeamIndex])
-      }, 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [finalTeamIndex, spinPhase, onSpinComplete])
-
-  const currentTeam = teams[currentTeamIndex]
+  }, [isRevealing, phase])
 
   return (
     <div className="w-full">
       <motion.div 
         className="relative bg-black/40 backdrop-blur rounded-xl overflow-hidden"
         animate={{
-          boxShadow: spinPhase !== "idle" 
-            ? `0 0 20px ${currentTeam.color}40, 0 0 40px ${currentTeam.color}20`
+          boxShadow: phase === "revealing" 
+            ? "0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2)"
             : "none"
         }}
         transition={{ duration: 0.2 }}
@@ -191,20 +108,17 @@ export function TeamSpinner({
               <motion.div
                 className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-lg relative overflow-hidden"
                 style={{ 
-                  backgroundColor: spinPhase === "idle" ? "#3f3f46" : 
-                                   spinPhase === "stopped" ? "#666" : currentTeam.color 
+                  backgroundColor: phase === "idle" ? "#3f3f46" : "#666"
                 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: 0.15, ease: "easeInOut" }}
               >
-                {spinPhase === "idle" ? (
+                {phase === "idle" ? (
                   <SpotsIcon className="h-6 w-auto" />
-                ) : spinPhase === "stopped" ? (
-                  "?"
                 ) : (
-                  currentTeam.abbrev
+                  "?"
                 )}
-                {spinPhase === "stopped" && (
+                {phase === "revealing" && (
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
                     animate={{ x: [-50, 50] }}
@@ -215,40 +129,29 @@ export function TeamSpinner({
 
               {/* Team Name / Spot Assignment */}
               <div className="flex flex-col">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={spinPhase === "idle" ? "idle" : spinPhase === "stopped" ? "hidden" : currentTeam.name}
-                    className="text-white font-semibold text-lg"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: spinPhase === "fast" ? 0.05 : 0.15 }}
-                  >
-                    {spinPhase === "idle" ? "Your Spot Assignment" : 
-                     spinPhase === "stopped" ? "???" : 
-                     `${currentTeam.city} ${currentTeam.name}`}
-                  </motion.span>
-                </AnimatePresence>
+                <motion.span
+                  className="text-white font-semibold text-lg"
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: 1 }}
+                >
+                  {phase === "idle" ? "Your Spot Assignment" : "???"}
+                </motion.span>
                 <span className="text-white/50 text-sm">
-                  {username ? `${username}'s Spot` : "Win a spot to spin"}
+                  {username ? `${username}'s Spot` : "Spot assigned"}
                 </span>
               </div>
             </div>
 
-            {/* Spin Button */}
-            <motion.button
-              onClick={spinPhase === "idle" ? startSpin : undefined}
-              disabled={disabled || spinPhase !== "idle"}
-              className={`px-5 py-2.5 rounded-full font-semibold text-sm transition-colors ${
-                disabled || spinPhase !== "idle"
-                  ? 'bg-zinc-700 text-white/40 cursor-not-allowed' 
-                  : 'bg-green-500 hover:bg-green-600 text-black'
+            {/* Status indicator */}
+            <div
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm ${
+                phase === "revealing"
+                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' 
+                  : 'bg-zinc-700 text-white/40'
               }`}
-              whileHover={disabled || spinPhase !== "idle" ? {} : { scale: 1.02 }}
-              whileTap={disabled || spinPhase !== "idle" ? {} : { scale: 0.98 }}
             >
-              {spinPhase === "idle" ? "Tap to spin" : spinPhase === "stopped" ? "Revealing..." : "Spinning"}
-            </motion.button>
+              {phase === "idle" ? "Spot assigned" : "Revealing..."}
+            </div>
           </div>
         </div>
       </motion.div>

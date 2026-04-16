@@ -19,9 +19,10 @@ import { BattleReveal } from "@/components/animations/battle-reveal"
 import { PickCardReveal } from "@/components/animations/pick-card-reveal"
 import { CarouselReveal } from "@/components/animations/carousel-reveal"
 import { WinnerWinnerReveal } from "@/components/animations/winner-winner-reveal"
+import { BackCardFlipReveal } from "@/components/animations/back-card-flip-reveal"
 import { InStreamExperience } from "@/components/in-stream-experience"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner" | "back-card-flip"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "card-flip", name: "Card Flip" },
@@ -31,6 +32,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "battle", name: "Battle" },
   { id: "mystery-box", name: "Mystery Pack" },
   { id: "carousel", name: "Carousel" },
+  { id: "back-card-flip", name: "Back Card Flip" },
   { id: "particle-assembly", name: "Particles", disabled: true },
   { id: "gift-box", name: "Gift Box", disabled: true },
   { id: "pick-card", name: "Pick Card", disabled: true },
@@ -207,7 +209,6 @@ const chatMessages = [
 export default function AnimationShowcase() {
   const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("card-flip")
   const [isRevealing, setIsRevealing] = useState(false)
-  const [isSpinning, setIsSpinning] = useState(false)
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
   const [hasWon, setHasWon] = useState(false)
@@ -250,16 +251,11 @@ export default function AnimationShowcase() {
   useEffect(() => {
     setHasWon(false)
     setIsRevealing(false)
-    setIsSpinning(false)
     setSelectedTeam(null)
     setWinnerTeam(null)
     setShowWinner(false)
     chatPausedRef.current = false
   }, [selectedAnimation])
-
-  const handleStartSpin = useCallback(() => {
-    setIsSpinning(true)
-  }, [])
 
   const handleSpinComplete = useCallback((team: Team) => {
     setSelectedTeam(team)
@@ -313,6 +309,8 @@ export default function AnimationShowcase() {
         return <CarouselReveal key={key} isRevealing={isRevealing} onComplete={handleComplete} />
       case "winner-winner":
         return <WinnerWinnerReveal key={key} {...props} />
+      case "back-card-flip":
+        return <BackCardFlipReveal key={key} {...props} />
       default:
         return null
     }
@@ -486,10 +484,8 @@ export default function AnimationShowcase() {
           <TeamSpinner
             totalSpots={32}
             availableSpots={16}
-            isSpinning={isSpinning}
-            onStartSpin={handleStartSpin}
+            isRevealing={isRevealing}
             onSpinComplete={handleSpinComplete}
-            disabled={!hasWon}
             username={hasWon ? "KemMajed90" : undefined}
           />
         )}
