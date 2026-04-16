@@ -128,12 +128,12 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam, usernam
   const team = propTeam || randomTeam
   const swooshAudioRef = useRef<HTMLAudioElement | null>(null)
   
-  // Generate random sparkle positions
+  // Generate random sparkle positions - adjusted for taller container with card at bottom
   const sparkles = useRef(
     Array.from({ length: 12 }, (_, i) => ({
       id: i,
       x: Math.random() * 140 - 20,
-      y: Math.random() * 140 - 20,
+      y: 10 + Math.random() * 100, // Position sparkles around the card area (10% to 110%)
       delay: Math.random() * 0.8,
       size: 6 + Math.random() * 10,
     }))
