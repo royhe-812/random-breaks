@@ -6,6 +6,8 @@ import { HolographicShine } from "./celebration-elements"
 import Lottie, { LottieRefCurrentProps } from "lottie-react"
 import giftBoxAnimation from "@/public/animations/gift-box-open.json"
 
+const SWOOSH_SOUND_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/universfield-swoosh-07-351043-l81HTAvQZ8cfxNXFm9ZreRxb1nKXNB.mp3"
+
 // Shaking/wobble sound for gift box - complements the randomizer tick sound
 const useShakeSound = () => {
   const audioContextRef = useRef<AudioContext | null>(null)
@@ -120,8 +122,21 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
   const [phase, setPhase] = useState<"idle" | "opening" | "revealed">("idle")
   const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const lottieRef = useRef<LottieRefCurrentProps>(null)
+  const swooshAudioRef = useRef<HTMLAudioElement | null>(null)
   const { startShaking, stopShaking } = useShakeSound()
   const team = propTeam || randomTeam
+
+  // Initialize audio element
+  useEffect(() => {
+    swooshAudioRef.current = new Audio(SWOOSH_SOUND_URL)
+    swooshAudioRef.current.volume = 0.5
+    return () => {
+      if (swooshAudioRef.current) {
+        swooshAudioRef.current.pause()
+        swooshAudioRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (isRevealing) {
@@ -141,7 +156,14 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
       
       // The Lottie is 75 frames at 25fps = 3 seconds
       // Reveal the team about 2 seconds in when the box is fully open
-      const revealTimer = setTimeout(() => setPhase("revealed"), 2200)
+      const revealTimer = setTimeout(() => {
+        setPhase("revealed")
+        // Play swoosh sound as team emerges from the box
+        if (swooshAudioRef.current) {
+          swooshAudioRef.current.currentTime = 0
+          swooshAudioRef.current.play().catch(() => {})
+        }
+      }, 2200)
       const completeTimer = setTimeout(() => onComplete(), 4500)
       
       return () => {
