@@ -377,7 +377,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
                   style={{ height: itemHeight }}
                 >
                   <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg relative"
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-sm shadow-lg relative"
                     style={{ 
                       backgroundColor: team.color,
                       boxShadow: `0 4px 12px ${team.color}60`,
@@ -385,7 +385,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam }: S
                   >
                     {team.abbr}
                     <div 
-                      className="absolute inset-0 rounded-full"
+                      className="absolute inset-0 rounded-2xl"
                       style={{
                         background: "linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%)",
                       }}
