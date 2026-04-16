@@ -279,7 +279,6 @@ export default function AnimationShowcase() {
     // Keep the winning moment visible for 3 seconds, then close overlay
     setTimeout(() => {
       setIsRevealing(false)
-      setIsSpinning(false)
       // Don't reset hasWon, winnerTeam, or showWinner - keep winner treatment visible
       setKey(prev => prev + 1)
     }, 3000)
@@ -554,23 +553,27 @@ export default function AnimationShowcase() {
                 if (hasWon) {
                   // Reset the entire concept
                   setHasWon(false)
-                  setIsSpinning(false)
                   setSelectedTeam(null)
                   setShowWinner(false)
                   setWinnerTeam(null)
                   chatPausedRef.current = false
                 } else {
                   setHasWon(true)
+                  chatPausedRef.current = true // Pause chat immediately when bid is placed
+                  
                   // For concepts with built-in randomizer, set a random team and trigger reveal after a short delay
                   if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "winner-winner") {
                     const randomTeam = teams[Math.floor(Math.random() * teams.length)]
                     setSelectedTeam(randomTeam)
                     setWinnerTeam(randomTeam)
-                    chatPausedRef.current = true // Pause chat immediately when team is selected
                     setTimeout(() => {
                       setIsRevealing(true)
                       setKey(prev => prev + 1)
                     }, 1500)
+                  } else {
+                    // For concepts that use TeamSpinner (card-flip, pack-rip, mystery-box, back-card-flip)
+                    // Trigger revealing immediately - TeamSpinner will cycle through teams
+                    setIsRevealing(true)
                   }
                 }
               }}
