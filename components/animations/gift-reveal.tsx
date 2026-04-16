@@ -1,10 +1,75 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { HolographicShine } from "./celebration-elements"
 import Lottie, { LottieRefCurrentProps } from "lottie-react"
 import giftBoxAnimation from "@/public/animations/gift-box-open.json"
+
+// Shaking/rattling sound for gift box
+const useShakeSound = () => {
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  const playRattleSound = useCallback(() => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+      }
+      const ctx = audioContextRef.current
+      if (ctx.state === 'suspended') {
+        ctx.resume()
+      }
+
+      // Create a short rattle/shake sound
+      const noise = ctx.createBufferSource()
+      const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate)
+      const output = noiseBuffer.getChannelData(0)
+      
+      // Fill with noise
+      for (let i = 0; i < noiseBuffer.length; i++) {
+        output[i] = Math.random() * 2 - 1
+      }
+      
+      noise.buffer = noiseBuffer
+      
+      // Filter to make it sound more like rattling
+      const filter = ctx.createBiquadFilter()
+      filter.type = 'bandpass'
+      filter.frequency.setValueAtTime(2000 + Math.random() * 1000, ctx.currentTime)
+      filter.Q.setValueAtTime(5, ctx.currentTime)
+      
+      const gainNode = ctx.createGain()
+      gainNode.gain.setValueAtTime(0.15, ctx.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05)
+      
+      noise.connect(filter)
+      filter.connect(gainNode)
+      gainNode.connect(ctx.destination)
+      
+      noise.start(ctx.currentTime)
+      noise.stop(ctx.currentTime + 0.05)
+    } catch {
+      // Silently fail
+    }
+  }, [])
+
+  const startShaking = useCallback(() => {
+    // Play rattles rapidly during shake
+    intervalRef.current = setInterval(() => {
+      playRattleSound()
+    }, 80)
+  }, [playRattleSound])
+
+  const stopShaking = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+  }, [])
+
+  return { startShaking, stopShaking }
+}
 
 const teams = [
   { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
@@ -43,6 +108,7 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
   const [phase, setPhase] = useState<"idle" | "opening" | "revealed">("idle")
   const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const lottieRef = useRef<LottieRefCurrentProps>(null)
+  const { startShaking, stopShaking } = useShakeSound()
   const team = propTeam || randomTeam
 
   useEffect(() => {
@@ -50,6 +116,9 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
       // Pick a new random team each reveal
       setRandomTeam(teams[Math.floor(Math.random() * teams.length)])
       setPhase("idle")
+      
+      // Start the shake sound
+      startShaking()
       
       // Start the animation
       const openTimer = setTimeout(() => {
@@ -59,6 +128,11 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
         }
       }, 200)
       
+      // Stop shaking when box opens (around 1 second in)
+      const stopShakeTimer = setTimeout(() => {
+        stopShaking()
+      }, 1000)
+      
       // The Lottie is 75 frames at 25fps = 3 seconds
       // Reveal the team about 2 seconds in when the box is fully open
       const revealTimer = setTimeout(() => setPhase("revealed"), 2200)
@@ -66,11 +140,13 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
       
       return () => {
         clearTimeout(openTimer)
+        clearTimeout(stopShakeTimer)
         clearTimeout(revealTimer)
         clearTimeout(completeTimer)
+        stopShaking()
       }
     }
-  }, [isRevealing, onComplete])
+  }, [isRevealing, onComplete, startShaking, stopShaking])
 
   return (
     <div className="relative w-72 h-80 flex items-center justify-center overflow-visible">
