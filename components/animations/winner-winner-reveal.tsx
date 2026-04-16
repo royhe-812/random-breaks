@@ -180,16 +180,6 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
                 {team.name}
               </p>
             </motion.div>
-
-            {/* Your spot label */}
-            <motion.p 
-              className="text-white/50 text-xs mt-4"
-              initial={{ opacity: 0 }}
-              animate={phase === "team-card" ? { opacity: 1 } : { opacity: 0 }}
-              transition={{ delay: 0.6 }}
-            >
-              Your spot is assigned!
-            </motion.p>
           </div>
         </motion.div>
 
