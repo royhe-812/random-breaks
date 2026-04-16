@@ -77,8 +77,8 @@ export function WinnerWinnerReveal({ isRevealing, team, onComplete, username = "
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Background - similar to mystery pack with radial glow */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      {/* Background - matching card flip darker background */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <motion.div
         className="absolute inset-0 pointer-events-none"
         style={{
