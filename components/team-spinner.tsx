@@ -159,12 +159,12 @@ export function TeamSpinner({
     }
   }, [phase])
 
-  // Trigger completion after stopping
+  // Trigger completion after stopping - pause on "???" for 2 seconds
   useEffect(() => {
     if (phase === "stopped" && targetTeamIndexRef.current !== null) {
       const timer = setTimeout(() => {
         onSpinComplete(teams[targetTeamIndexRef.current!])
-      }, 1000)
+      }, 2000)
       return () => clearTimeout(timer)
     }
   }, [phase, onSpinComplete])
