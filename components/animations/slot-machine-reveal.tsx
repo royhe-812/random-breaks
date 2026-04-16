@@ -40,10 +40,15 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, onT
   const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
   const finalTeam = propTeam ? { ...propTeam, abbr: propTeam.name.slice(0, 3).toUpperCase() } : randomTeam
   
+  const targetIndexRef = useRef(0)
+  
   // Pick a new random team each time isRevealing becomes true
   useEffect(() => {
     if (isRevealing) {
-      const newTeam = propTeam ? { ...propTeam, abbr: propTeam.name.slice(0, 3).toUpperCase() } : teams[Math.floor(Math.random() * teams.length)]
+      const randomIndex = Math.floor(Math.random() * teams.length)
+      const newTeam = propTeam ? { ...propTeam, abbr: propTeam.name.slice(0, 3).toUpperCase() } : teams[randomIndex]
+      targetIndexRef.current = propTeam ? teams.findIndex(t => t.name === propTeam.name) : randomIndex
+      if (targetIndexRef.current === -1) targetIndexRef.current = randomIndex
       setRandomTeam(newTeam)
       onTeamSelected?.(newTeam)
     }
@@ -188,7 +193,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, onT
               cancelAnimationFrame(animationRef.current)
             }
             
-            const targetOffset = 0 * itemHeight
+            const targetOffset = targetIndexRef.current * itemHeight
             setSpinOffset(targetOffset)
             setPhase("landed")
             
