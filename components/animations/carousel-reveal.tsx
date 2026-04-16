@@ -3,34 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
-// Sparkle component for the reveal effect - continuously shimmering
-const Sparkle = ({ delay, x, y, size = 8 }: { delay: number; x: number; y: number; size?: number }) => (
-  <motion.div
-    className="absolute pointer-events-none z-20"
-    style={{ left: `${x}%`, top: `${y}%` }}
-    initial={{ opacity: 0, scale: 0 }}
-    animate={{ 
-      opacity: [0, 1, 0.3, 1, 0],
-      scale: [0, 1, 0.7, 1, 0],
-    }}
-    transition={{ 
-      duration: 2, 
-      delay,
-      times: [0, 0.2, 0.5, 0.8, 1],
-      ease: "easeInOut",
-      repeat: Infinity,
-      repeatDelay: 0.5,
-    }}
-  >
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
-        fill="white"
-        style={{ filter: "drop-shadow(0 0 4px rgba(255,255,255,0.8))" }}
-      />
-    </svg>
-  </motion.div>
-)
+
 
 // Rainbow glow effect during reveal
 const RevealGlow = ({ isActive, teamColor }: { isActive: boolean; teamColor: string }) => (
@@ -100,21 +73,7 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
   const hasStartedRef = useRef(false)
   const audioContextRef = useRef<AudioContext | null>(null)
   
-  // Generate sparkle positions evenly distributed around the card
-  const sparkles = useRef(
-    Array.from({ length: 12 }, (_, i) => {
-      // Distribute sparkles in a circular pattern around the center
-      const angle = (i / 12) * Math.PI * 2
-      const radius = 35 + (i % 3) * 10 // Varying radius for natural look
-      return {
-        id: i,
-        x: 50 + Math.cos(angle) * radius, // Center at 50%
-        y: 50 + Math.sin(angle) * radius, // Center at 50%
-        delay: (i / 12) * 0.8,
-        size: 8 + (i % 4) * 4,
-      }
-    })
-  ).current
+
 
   // Reset the hasStartedRef when isRevealing changes to false so next reveal works
   useEffect(() => {
@@ -252,17 +211,6 @@ export function CarouselReveal({ onComplete, isRevealing }: CarouselRevealProps)
     <div className="flex flex-col items-center justify-center h-[400px] relative">
       {/* Rainbow glow effect when stopped */}
       <RevealGlow isActive={hasStopped} teamColor={winningTeam.color} />
-      
-      {/* Sparkles when stopped */}
-      {hasStopped && sparkles.map((sparkle) => (
-        <Sparkle
-          key={sparkle.id}
-          x={sparkle.x}
-          y={sparkle.y}
-          delay={sparkle.delay}
-          size={sparkle.size}
-        />
-      ))}
       
       {/* 3D Carousel Ring */}
       <div 
