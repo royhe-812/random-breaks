@@ -660,11 +660,10 @@ export default function AnimationShowcase() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                   >
-                    <div className="flex items-center justify-center gap-2 mb-1">
+                    <div className="flex items-center justify-center gap-2">
                       <span className="text-white font-bold text-xl">KemMajed90</span>
                       <span className="text-white/70 text-xl">Won!</span>
                     </div>
-                    <p className="text-white/50 text-sm">Your spot is...</p>
                   </motion.div>
 
                   {/* The animation component */}
