@@ -525,10 +525,10 @@ export default function AnimationShowcase() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-              <span className="text-white font-bold text-sm">
+              <span className="text-green-400 font-medium text-sm">
                 {hasWon ? 'KemMajed90' : 'Jessica991'}
               </span>
-              <span className="text-white/70 text-sm">
+              <span className="text-white/60 text-sm">
                 {hasWon ? 'won' : 'is winning'}
               </span>
             </div>
@@ -664,6 +664,7 @@ export default function AnimationShowcase() {
                       <span className="text-white font-bold text-xl">KemMajed90</span>
                       <span className="text-white/70 text-xl">Won!</span>
                     </div>
+                    <p className="text-white/50 text-sm mt-1">Your spot is revealed!</p>
                   </motion.div>
 
                   {/* The animation component */}
