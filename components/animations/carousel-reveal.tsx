@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 // Sparkle component for the reveal effect - continuously shimmering
 const Sparkle = ({ delay, x, y, size = 8 }: { delay: number; x: number; y: number; size?: number }) => (
   <motion.div
-    className="absolute pointer-events-none -z-10"
+    className="absolute pointer-events-none z-20"
     style={{ left: `${x}%`, top: `${y}%` }}
     initial={{ opacity: 0, scale: 0 }}
     animate={{ 
