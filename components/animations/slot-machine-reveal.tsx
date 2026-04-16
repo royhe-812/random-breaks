@@ -200,7 +200,7 @@ export function SlotMachineReveal({ isRevealing, onComplete, team: propTeam, onT
             setTimeout(() => {
               setPhase("explode")
               playVictorySound()
-            }, 300)
+            }, 2000)
           }
         }
         slowDown()
