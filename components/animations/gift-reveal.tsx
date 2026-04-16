@@ -192,22 +192,41 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
         )}
       </AnimatePresence>
 
-      {/* Revealed team logo */}
+      {/* Revealed team logo - emerges from the box */}
       <AnimatePresence>
         {phase === "revealed" && (
           <motion.div
             className="flex flex-col items-center relative z-10"
-            initial={{ scale: 0, y: 50 }}
-            animate={{ scale: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+            initial={{ scale: 0.3, y: 150, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            transition={{ 
+              type: "spring", 
+              stiffness: 150, 
+              damping: 12,
+              mass: 0.8,
+            }}
           >
+            {/* Rising glow trail effect */}
+            <motion.div
+              className="absolute w-32 h-64 -z-10"
+              style={{
+                background: `linear-gradient(to top, ${team.color}00, ${team.color}40, ${team.color}00)`,
+                filter: 'blur(20px)',
+              }}
+              initial={{ y: 100, opacity: 0, scaleY: 0.5 }}
+              animate={{ y: -20, opacity: [0, 1, 0], scaleY: 1 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+            />
+            
             {/* Team logo container with circular glow */}
             <motion.div
               className="relative w-28 h-28 rounded-full flex items-center justify-center"
               style={{
                 background: team.color,
               }}
+              initial={{ rotateX: 45 }}
               animate={{ 
+                rotateX: 0,
                 y: [0, -6, 0],
                 boxShadow: [
                   `0 0 40px ${team.color}60, 0 0 80px ${team.color}40`,
@@ -215,7 +234,11 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
                   `0 0 40px ${team.color}60, 0 0 80px ${team.color}40`,
                 ],
               }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ 
+                rotateX: { duration: 0.4, ease: "easeOut" },
+                y: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 },
+                boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 },
+              }}
             >
               <HolographicShine />
               <span className="text-4xl font-black text-white relative z-10 drop-shadow-lg">
@@ -226,9 +249,9 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
             {/* Team info */}
             <motion.div
               className="mt-6 text-center relative z-20"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
             >
               <p className="text-xs font-semibold text-white/70 uppercase tracking-wider mb-1">
                 {(team as typeof teams[0]).city || ""}
@@ -242,7 +265,7 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
               className="text-green-400 text-xs mt-3 font-medium relative z-20"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.6 }}
             >
               Your spot has been revealed!
             </motion.p>
