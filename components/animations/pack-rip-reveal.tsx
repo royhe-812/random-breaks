@@ -6,6 +6,85 @@ import { motion, AnimatePresence } from "framer-motion"
 
 const SWOOSH_SOUND_URL = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/universfield-swoosh-07-351043-l81HTAvQZ8cfxNXFm9ZreRxb1nKXNB.mp3"
 
+// Sparkle component for the reveal effect
+const Sparkle = ({ delay, x, y, size = 8 }: { delay: number; x: number; y: number; size?: number }) => (
+  <motion.div
+    className="absolute pointer-events-none z-20"
+    style={{ left: `${x}%`, top: `${y}%` }}
+    initial={{ opacity: 0, scale: 0 }}
+    animate={{ 
+      opacity: [0, 1, 1, 0],
+      scale: [0, 1, 1, 0],
+    }}
+    transition={{ 
+      duration: 1.5, 
+      delay,
+      times: [0, 0.2, 0.8, 1],
+      ease: "easeOut"
+    }}
+  >
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+        fill="white"
+        style={{ filter: "drop-shadow(0 0 4px rgba(255,255,255,0.8))" }}
+      />
+    </svg>
+  </motion.div>
+)
+
+// Rainbow glow effect during reveal
+const RevealGlow = ({ isActive, teamColor }: { isActive: boolean; teamColor: string }) => (
+  <AnimatePresence>
+    {isActive && (
+      <motion.div
+        className="absolute inset-0 -z-10 rounded-2xl"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        {/* Rainbow gradient glow */}
+        <motion.div
+          className="absolute -inset-8 rounded-3xl"
+          style={{
+            background: `conic-gradient(from 0deg, 
+              #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff, #5f27cd, #ff6b6b
+            )`,
+            filter: "blur(30px)",
+            opacity: 0.6,
+          }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+        />
+        {/* Team color glow overlay */}
+        <motion.div
+          className="absolute -inset-6 rounded-3xl"
+          style={{
+            background: teamColor,
+            filter: "blur(40px)",
+            opacity: 0.4,
+          }}
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.4, 0.6, 0.4],
+          }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {/* Inner white glow */}
+        <motion.div
+          className="absolute -inset-4 rounded-2xl"
+          style={{
+            background: "white",
+            filter: "blur(20px)",
+            opacity: 0.3,
+          }}
+        />
+      </motion.div>
+    )}
+  </AnimatePresence>
+)
+
 const teams = [
   { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
   { name: "Eagles", city: "Philadelphia", abbrev: "PHI", color: "#004C54", secondary: "#A5ACAF" },
@@ -41,8 +120,20 @@ interface PackRipRevealProps {
 export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackRipRevealProps) {
   const [phase, setPhase] = useState<"idle" | "shake" | "opening" | "revealed">("idle")
   const [randomTeam, setRandomTeam] = useState(() => teams[Math.floor(Math.random() * teams.length)])
+  const [showGlow, setShowGlow] = useState(false)
   const team = propTeam || randomTeam
   const swooshAudioRef = useRef<HTMLAudioElement | null>(null)
+  
+  // Generate random sparkle positions
+  const sparkles = useRef(
+    Array.from({ length: 12 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 140 - 20,
+      y: Math.random() * 140 - 20,
+      delay: Math.random() * 0.8,
+      size: 6 + Math.random() * 10,
+    }))
+  ).current
 
   // Initialize audio element
   useEffect(() => {
@@ -61,6 +152,7 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
       // Pick a new random team each reveal
       setRandomTeam(teams[Math.floor(Math.random() * teams.length)])
       setPhase("idle")
+      setShowGlow(false)
       
       const shakeTimer = setTimeout(() => setPhase("shake"), 200)
       const openTimer = setTimeout(() => {
@@ -70,6 +162,8 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
           swooshAudioRef.current.currentTime = 0
           swooshAudioRef.current.play().catch(() => {})
         }
+        // Start glow effect when card appears
+        setShowGlow(true)
       }, 800)
       const revealTimer = setTimeout(() => setPhase("revealed"), 1600)
       const completeTimer = setTimeout(() => onComplete(), 4500)
@@ -88,6 +182,19 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
 
   return (
     <div className="relative w-48 h-80 flex items-end justify-center pb-4">
+      {/* Rainbow glow effect */}
+      <RevealGlow isActive={showGlow} teamColor={team.color} />
+      
+      {/* Sparkles during reveal */}
+      {showGlow && sparkles.map((sparkle) => (
+        <Sparkle
+          key={sparkle.id}
+          x={sparkle.x}
+          y={sparkle.y}
+          delay={sparkle.delay}
+          size={sparkle.size}
+        />
+      ))}
       
       {/* Team card - positioned behind the pack, slides up when revealed */}
       <motion.div
@@ -309,20 +416,6 @@ export function PackRipReveal({ isRevealing, onComplete, team: propTeam }: PackR
         )}
       </motion.div>
 
-      {/* Glow effect when revealed */}
-      <AnimatePresence>
-        {isRevealed && (
-          <motion.div
-            className="absolute inset-0 rounded-2xl -z-10"
-            style={{
-              background: `radial-gradient(circle, ${team.color}40 0%, transparent 70%)`,
-            }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1.3 }}
-            transition={{ duration: 0.5 }}
-          />
-        )}
-      </AnimatePresence>
     </div>
   )
 }
