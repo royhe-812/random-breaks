@@ -73,12 +73,13 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
   }, [isRevealing, onComplete])
 
   return (
-    <div className="relative w-72 h-80 flex items-center justify-center">
+    <div className="relative w-72 h-80 flex items-center justify-center overflow-visible">
       {/* Lottie Gift Box Animation */}
       <AnimatePresence>
         {phase !== "revealed" && (
           <motion.div
-            className="absolute inset-0 flex items-center justify-center"
+            className="absolute flex items-center justify-center"
+            style={{ width: 600, height: 600 }}
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.2 }}
             transition={{ duration: 0.3 }}
@@ -88,7 +89,7 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
               animationData={giftBoxAnimation}
               loop={false}
               autoplay={false}
-              style={{ width: 960, height: 960 }}
+              style={{ width: 600, height: 600 }}
             />
           </motion.div>
         )}
