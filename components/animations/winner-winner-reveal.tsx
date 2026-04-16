@@ -313,36 +313,47 @@ export function WinnerWinnerReveal({ isRevealing, team: propTeam, onComplete, us
               </motion.div>
             </div>
 
-            {/* Sparkle particles */}
-            {[...Array(16)].map((_, i) => (
-              <motion.div
-                key={`sparkle-${i}`}
-                className="absolute rounded-full"
-                style={{
-                  width: 4 + (i % 4) * 2,
-                  height: 4 + (i % 4) * 2,
-                  background: i % 3 === 0 ? "#4CE160" : i % 3 === 1 ? "#FFD700" : "#fff",
-                  left: `${10 + (i * 5)}%`,
-                  top: `${15 + (i % 5) * 18}%`,
-                }}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{
-                  opacity: [0, 1, 0],
-                  scale: [0, 1.5, 0],
-                }}
-                exit={{
-                  y: 100 + (i * 20),
-                  opacity: 0,
-                  scale: 0,
-                }}
-                transition={{
-                  duration: 1.2,
-                  repeat: Infinity,
-                  delay: 0.5 + i * 0.1,
-                  exit: { duration: 0.5 }
-                }}
-              />
-            ))}
+            {/* Sparkle stars - matching card flip style */}
+            {[...Array(12)].map((_, i) => {
+              const size = 8 + (i % 4) * 4
+              return (
+                <motion.div
+                  key={`sparkle-${i}`}
+                  className="absolute pointer-events-none"
+                  style={{
+                    left: `${5 + (i * 8)}%`,
+                    top: `${10 + (i % 5) * 20}%`,
+                  }}
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{
+                    opacity: [0, 1, 0.3, 1, 0],
+                    scale: [0, 1, 0.7, 1, 0],
+                  }}
+                  exit={{
+                    y: 100 + (i * 20),
+                    opacity: 0,
+                    scale: 0,
+                  }}
+                  transition={{
+                    duration: 2,
+                    times: [0, 0.2, 0.5, 0.8, 1],
+                    ease: "easeInOut",
+                    repeat: Infinity,
+                    repeatDelay: 0.5,
+                    delay: 0.5 + i * 0.1,
+                    exit: { duration: 0.5 }
+                  }}
+                >
+                  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"
+                      fill="white"
+                      style={{ filter: "drop-shadow(0 0 4px rgba(255,255,255,0.8))" }}
+                    />
+                  </svg>
+                </motion.div>
+              )
+            })}
           </motion.div>
         )}
       </AnimatePresence>
