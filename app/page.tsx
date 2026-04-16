@@ -20,9 +20,10 @@ import { PickCardReveal } from "@/components/animations/pick-card-reveal"
 import { CarouselReveal } from "@/components/animations/carousel-reveal"
 import { WinnerWinnerReveal } from "@/components/animations/winner-winner-reveal"
 import { BackCardFlipReveal } from "@/components/animations/back-card-flip-reveal"
+import { GiftReveal } from "@/components/animations/gift-reveal"
 import { InStreamExperience } from "@/components/in-stream-experience"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner" | "back-card-flip"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner" | "back-card-flip" | "gift-reveal"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "card-flip", name: "Card Flip" },
@@ -33,6 +34,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "mystery-box", name: "Mystery Pack" },
   { id: "carousel", name: "Carousel" },
   { id: "back-card-flip", name: "Back Card Flip" },
+  { id: "gift-reveal", name: "Gift Reveal" },
   { id: "particle-assembly", name: "Particles", disabled: true },
   { id: "gift-box", name: "Gift Box", disabled: true },
   { id: "pick-card", name: "Pick Card", disabled: true },
@@ -313,6 +315,8 @@ export default function AnimationShowcase() {
         return <WinnerWinnerReveal key={key} {...props} />
       case "back-card-flip":
         return <BackCardFlipReveal key={key} {...props} />
+      case "gift-reveal":
+        return <GiftReveal key={key} {...props} />
       default:
         return null
     }
