@@ -218,9 +218,9 @@ export function GiftReveal({ isRevealing, onComplete, team: propTeam }: GiftReve
               transition={{ duration: 0.6, ease: "easeOut" }}
             />
             
-            {/* Team logo container with circular glow */}
+            {/* Team logo container with rounded square */}
             <motion.div
-              className="relative w-28 h-28 rounded-full flex items-center justify-center"
+              className="relative w-28 h-28 rounded-2xl flex items-center justify-center"
               style={{
                 background: team.color,
               }}
