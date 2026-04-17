@@ -369,7 +369,7 @@ export default function AnimationShowcase() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
       
       {/* eBay Live Header */}
-      <div className="absolute top-12 left-0 right-0 z-20 p-4">
+      <div className="absolute top-[78px] left-0 right-0 z-20 p-4">
         {/* Top row - Back button, username, and viewer count aligned */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
@@ -386,7 +386,7 @@ export default function AnimationShowcase() {
         </div>
         
         {/* Right side action buttons with viewer count */}
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-[46px] right-4">
           <div className="bg-black/40 backdrop-blur rounded-3xl px-2 py-3 flex flex-col items-center gap-2">
             {/* Live stream icon with viewer count */}
             <div className="flex flex-col items-center">
