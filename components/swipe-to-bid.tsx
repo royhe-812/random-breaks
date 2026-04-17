@@ -100,13 +100,31 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
         border: "1px solid rgba(255, 255, 255, 0.3)",
       }}
     >
-      {/* Inner container with fixed gradient glow spanning entire width */}
+      {/* Inner container */}
       <div 
         className="relative h-full w-full rounded-full overflow-hidden"
         style={{ 
-          background: "linear-gradient(90deg, rgba(74, 222, 128, 0.25) 0%, rgba(74, 222, 128, 0.15) 50%, rgba(74, 222, 128, 0.05) 100%)",
+          background: "rgba(74, 222, 128, 0.1)",
         }}
       >
+      
+      {/* Animated glow sweep from left to right */}
+      <motion.div 
+        className="absolute inset-0 pointer-events-none rounded-full"
+        animate={{ 
+          background: [
+            "linear-gradient(90deg, rgba(74, 222, 128, 0.5) 0%, rgba(74, 222, 128, 0.3) 20%, transparent 40%)",
+            "linear-gradient(90deg, transparent 20%, rgba(74, 222, 128, 0.3) 50%, rgba(74, 222, 128, 0.5) 70%, transparent 90%)",
+            "linear-gradient(90deg, transparent 60%, rgba(74, 222, 128, 0.3) 80%, rgba(74, 222, 128, 0.5) 100%)",
+            "linear-gradient(90deg, rgba(74, 222, 128, 0.5) 0%, rgba(74, 222, 128, 0.3) 20%, transparent 40%)",
+          ]
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
       
       {/* Green pill containing text and chevrons */}
       <motion.div 
