@@ -76,15 +76,15 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
         style={{ border: "1px solid rgba(255, 255, 255, 0.3)" }}
       >
         <div className="h-full w-full rounded-full bg-green-400 flex items-center overflow-hidden px-3">
-          <div className="w-7 h-7 rounded-full bg-white/30 flex items-center justify-center border border-green-600/30">
-            <Check className="w-4 h-4 text-green-800" strokeWidth={3} />
+          <div className="w-7 h-7 rounded-full flex items-center justify-center border-2 border-black/70 flex-shrink-0">
+            <Check className="w-4 h-4 text-black/70" strokeWidth={3} />
           </div>
-          <div className="flex-1 flex items-center justify-center -ml-4">
+          <div className="flex-1 flex items-center justify-center">
             <span className="text-black font-semibold text-sm">Bid ${amount}</span>
           </div>
-          <div className="flex items-center">
-            <ChevronRight className="w-5 h-5 text-green-800/60" strokeWidth={2.5} />
-            <ChevronRight className="w-5 h-5 text-green-800/60 -ml-2.5" strokeWidth={2.5} />
+          <div className="flex items-center flex-shrink-0">
+            <ChevronRight className="w-5 h-5 text-black/50" strokeWidth={2.5} />
+            <ChevronRight className="w-5 h-5 text-black/50 -ml-2.5" strokeWidth={2.5} />
           </div>
         </div>
       </div>
@@ -125,17 +125,29 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
         }}
       />
       
-      {/* Green pill containing text and chevrons */}
+      {/* Green pill containing checkmark, text and chevrons */}
       <motion.div 
-        className="absolute left-0 top-0 bottom-0 rounded-full bg-green-400 flex items-center justify-between px-4 z-10"
+        className="absolute left-0 top-0 bottom-0 rounded-full bg-green-400 flex items-center px-3 z-10"
         style={{ width: greenFillWidth }}
       >
-        {/* Text inside green pill */}
-        <span className="text-black font-semibold text-sm whitespace-nowrap">Bid ${amount}</span>
+        {/* Checkmark that appears as user swipes - dark outline style */}
+        <motion.div 
+          className="w-7 h-7 rounded-full flex items-center justify-center border-2 border-black/70 flex-shrink-0"
+          style={{ 
+            opacity: checkmarkOpacity,
+          }}
+        >
+          <Check className="w-4 h-4 text-black/70" strokeWidth={3} />
+        </motion.div>
+        
+        {/* Text centered in pill */}
+        <div className="flex-1 flex items-center justify-center">
+          <span className="text-black font-semibold text-sm whitespace-nowrap">Bid ${amount}</span>
+        </div>
         
         {/* Animated double chevrons inside green pill */}
         <motion.div
-          className="flex items-center ml-4"
+          className="flex items-center flex-shrink-0"
           animate={{ x: [0, 4, 0] }}
           transition={{
             duration: 1.2,
@@ -146,17 +158,6 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
           <ChevronRight className="w-5 h-5 text-black/50" strokeWidth={2.5} />
           <ChevronRight className="w-5 h-5 text-black/50 -ml-2.5" strokeWidth={2.5} />
         </motion.div>
-      </motion.div>
-      
-      {/* Checkmark that slides in from left */}
-      <motion.div 
-        className="absolute top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/30 flex items-center justify-center border border-green-600/30 z-10"
-        style={{ 
-          x: checkmarkX,
-          opacity: checkmarkOpacity,
-        }}
-      >
-        <Check className="w-4 h-4 text-green-800" strokeWidth={3} />
       </motion.div>
       
       {/* Invisible draggable overlay */}
