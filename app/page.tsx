@@ -550,7 +550,7 @@ export default function AnimationShowcase() {
               disabled={hasWon}
               className={`px-5 py-2.5 rounded-full font-medium text-sm transition-colors ${
                 hasWon 
-                  ? 'bg-zinc-700 border border-zinc-700 text-white/50 cursor-not-allowed' 
+                  ? 'bg-zinc-700 border border-zinc-700 text-black cursor-not-allowed' 
                   : 'border border-white/30 text-white hover:bg-white/10'
               }`}
             >

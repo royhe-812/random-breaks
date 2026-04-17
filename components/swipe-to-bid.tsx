@@ -70,7 +70,7 @@ export function SwipeToBid({ amount, onBidConfirmed, onReset, isWinning = false,
         onClick={handleReset}
       >
         <div className="h-full w-full rounded-full bg-zinc-700 flex items-center justify-center hover:bg-zinc-600 transition-colors">
-          <span className="text-white/50 font-semibold text-sm">Sold out</span>
+          <span className="text-black font-semibold text-sm">Sold out</span>
         </div>
       </div>
     )

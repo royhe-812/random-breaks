@@ -157,14 +157,14 @@ export function WinnerWinnerReveal({ isRevealing, team: propTeam, onComplete, us
           {/* Sweeping shine effect - continuous glow sweep */}
           <motion.div
             className="absolute inset-0 pointer-events-none"
-            initial={{ opacity: 0, x: "-100%" }}
-            animate={{ opacity: [0, 1, 1, 0], x: ["-100%", "0%", "100%", "200%"] }}
+            initial={{ x: "-100%" }}
+            animate={{ x: "200%" }}
             transition={{ 
-              duration: 2, 
-              ease: "easeInOut", 
+              duration: 1.5, 
+              ease: "linear", 
               delay: 0.3,
               repeat: Infinity,
-              repeatDelay: 1,
+              repeatDelay: 1.5,
             }}
             style={{
               background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)",
