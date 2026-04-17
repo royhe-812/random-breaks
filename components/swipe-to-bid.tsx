@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react"
 import { motion, useMotionValue, useTransform, animate } from "framer-motion"
-import { Check, ChevronsRight } from "lucide-react"
+import { Check, ChevronRight } from "lucide-react"
 
 interface SwipeToBidProps {
   amount: number
@@ -13,21 +13,15 @@ interface SwipeToBidProps {
 
 export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled = false }: SwipeToBidProps) {
   const [isConfirmed, setIsConfirmed] = useState(false)
-  const constraintsRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const x = useMotionValue(0)
   
   // Calculate the swipe threshold (how far user needs to swipe to confirm)
-  const swipeThreshold = 120
+  const swipeThreshold = 100
   
-  // Transform x position to opacity/scale for the checkmark
-  const checkmarkOpacity = useTransform(x, [0, swipeThreshold * 0.5, swipeThreshold], [0, 0.5, 1])
-  const checkmarkScale = useTransform(x, [0, swipeThreshold], [0.5, 1])
-  
-  // Transform for chevrons - fade out as user swipes
-  const chevronsOpacity = useTransform(x, [0, swipeThreshold * 0.5], [1, 0])
-  
-  // Background fill effect
-  const backgroundWidth = useTransform(x, [0, swipeThreshold], ["0%", "100%"])
+  // Transform x position - checkmark slides in from left (starts off-screen at -28px)
+  const checkmarkX = useTransform(x, [0, swipeThreshold], [-28, 8])
+  const checkmarkOpacity = useTransform(x, [0, 20, swipeThreshold], [0, 0.8, 1])
 
   const handleDragEnd = () => {
     const currentX = x.get()
@@ -47,7 +41,7 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
     }
   }
 
-  // Winning state
+  // Winning state - solid green with centered "Winning" text
   if (isWinning) {
     return (
       <div className="relative h-11 rounded-full bg-green-500 flex items-center justify-center overflow-hidden">
@@ -65,15 +59,19 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
     )
   }
 
-  // Confirmed state (brief moment before transitioning)
+  // Confirmed state - checkmark visible, text centered
   if (isConfirmed) {
     return (
-      <div className="relative h-11 rounded-full bg-green-500 flex items-center justify-center overflow-hidden">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center">
-            <Check className="w-4 h-4 text-white" strokeWidth={3} />
-          </div>
+      <div className="relative h-11 rounded-full bg-green-500 flex items-center overflow-hidden px-3">
+        <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center border border-black/20">
+          <Check className="w-3.5 h-3.5 text-black" strokeWidth={3} />
+        </div>
+        <div className="flex-1 flex items-center justify-center">
           <span className="text-black font-semibold text-sm">Bid ${amount}</span>
+        </div>
+        <div className="flex items-center">
+          <ChevronRight className="w-4 h-4 text-black/40" strokeWidth={2.5} />
+          <ChevronRight className="w-4 h-4 text-black/40 -ml-2" strokeWidth={2.5} />
         </div>
       </div>
     )
@@ -81,35 +79,30 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
 
   return (
     <div 
-      ref={constraintsRef}
+      ref={containerRef}
       className="relative h-11 rounded-full bg-green-500 flex items-center overflow-hidden touch-none"
     >
-      {/* Background fill effect on swipe */}
+      {/* Checkmark that slides in from left as user swipes */}
       <motion.div 
-        className="absolute inset-0 bg-green-400"
-        style={{ width: backgroundWidth }}
-      />
-      
-      {/* Checkmark that appears on swipe */}
-      <motion.div 
-        className="absolute left-3 w-6 h-6 rounded-full bg-green-600 flex items-center justify-center z-10"
-        style={{ opacity: checkmarkOpacity, scale: checkmarkScale }}
+        className="absolute w-6 h-6 rounded-full bg-white/20 flex items-center justify-center border border-black/20 z-10"
+        style={{ 
+          x: checkmarkX,
+          opacity: checkmarkOpacity,
+        }}
       >
-        <Check className="w-4 h-4 text-white" strokeWidth={3} />
+        <Check className="w-3.5 h-3.5 text-black" strokeWidth={3} />
       </motion.div>
       
-      {/* Text content */}
-      <div className="flex-1 flex items-center justify-center relative z-10">
+      {/* Text - slightly left of center in default, moves with swipe */}
+      <div className="flex-1 flex items-center pl-4 relative z-10">
         <span className="text-black font-semibold text-sm">Bid ${amount}</span>
       </div>
       
-      {/* Chevrons that fade on swipe */}
-      <motion.div 
-        className="absolute right-3 flex items-center z-10"
-        style={{ opacity: chevronsOpacity }}
-      >
-        <ChevronsRight className="w-5 h-5 text-black/60" />
-      </motion.div>
+      {/* Double chevrons on right */}
+      <div className="flex items-center pr-3 z-10">
+        <ChevronRight className="w-4 h-4 text-black/40" strokeWidth={2.5} />
+        <ChevronRight className="w-4 h-4 text-black/40 -ml-2" strokeWidth={2.5} />
+      </div>
       
       {/* Draggable overlay - invisible but captures swipe */}
       <motion.div
