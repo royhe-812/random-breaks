@@ -38,12 +38,16 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
       // After 1 second, transition to winning
       setTimeout(() => {
         setButtonState("winning")
-        onBidConfirmed()
         
-        // After another 1.5 seconds, transition to sold out
+        // After 1 second on winning, transition to sold out
         setTimeout(() => {
           setButtonState("soldout")
-        }, 1500)
+          
+          // After sold out is shown, trigger the randomizer
+          setTimeout(() => {
+            onBidConfirmed()
+          }, 300)
+        }, 1000)
       }, 1000)
     } else {
       animate(x, 0, { type: "spring", stiffness: 500, damping: 30 })
@@ -69,10 +73,10 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
     return (
       <div 
         className="relative h-14 rounded-full p-1.5 cursor-not-allowed"
-        style={{ border: "1px solid rgba(255, 255, 255, 0.2)" }}
+        style={{ border: "1px solid rgba(255, 255, 255, 0.4)" }}
       >
-        <div className="h-full w-full rounded-full bg-zinc-700 flex items-center justify-center">
-          <span className="text-white/50 font-semibold text-sm">Sold out</span>
+        <div className="h-full w-full rounded-full bg-zinc-500 flex items-center justify-center">
+          <span className="text-zinc-800 font-semibold text-sm">Sold out</span>
         </div>
       </div>
     )
