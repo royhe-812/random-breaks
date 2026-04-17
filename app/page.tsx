@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 
 // External libraries
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, ChevronRight, Heart, Star } from "lucide-react"
+import { ChevronRight, Heart, Star } from "lucide-react"
 
 // Internal components
 import { TeamSpinner, type Team, teams } from "@/components/team-spinner"
@@ -210,7 +210,7 @@ export default function AnimationShowcase() {
   const [key, setKey] = useState(0)
   const [hasWon, setHasWon] = useState(false)
   const [visibleMessages, setVisibleMessages] = useState(chatMessages.slice(0, 3))
-  const [viewerCount, setViewerCount] = useState(240)
+
   const [winnerTeam, setWinnerTeam] = useState<Team | null>(null)
   const [showWinner, setShowWinner] = useState(false)
   const messageIndexRef = useRef(3)
@@ -230,19 +230,7 @@ export default function AnimationShowcase() {
     return () => clearInterval(interval)
   }, [])
 
-  // Fluctuate viewer count realistically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setViewerCount(prev => {
-        // Random change between -3 and +5 (slightly biased toward increases)
-        const change = Math.floor(Math.random() * 9) - 3
-        // Keep within realistic bounds (200-300)
-        const newCount = Math.max(200, Math.min(300, prev + change))
-        return newCount
-      })
-    }, 2000 + Math.random() * 2000) // Random interval between 2-4 seconds
-    return () => clearInterval(interval)
-  }, [])
+
 
   // Reset auction state when switching animation concepts
   useEffect(() => {
@@ -368,83 +356,6 @@ export default function AnimationShowcase() {
       {/* Gradient overlays for readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
       
-      {/* eBay Live Header */}
-      <div className="absolute top-[78px] left-0 right-0 z-20 p-4">
-        {/* Top row - Back button, username, and viewer count aligned */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <button className="w-8 h-8 flex items-center justify-center">
-              <ChevronDown className="w-6 h-6 text-white" />
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500" />
-              <span className="text-white font-semibold text-sm">ryans_cardhouse</span>
-              <Heart className="w-4 h-4 text-white fill-white" />
-            </div>
-          </div>
-          
-        </div>
-        
-        {/* Right side action buttons with viewer count */}
-        <div className="absolute top-[46px] right-4">
-          <div className="bg-black/40 backdrop-blur rounded-3xl px-2 py-3 flex flex-col items-center gap-2">
-            {/* Live stream icon with viewer count */}
-            <div className="flex flex-col items-center">
-              <img 
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Stream%20navigation%20avatar-kd9nUvhPaYGQGCKYioJLK4vLokIQ87.png" 
-                alt="Live" 
-                className="w-10 h-10"
-              />
-              <span className="text-white text-xs font-medium mt-1">{viewerCount}</span>
-            </div>
-            {/* Items */}
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 flex items-center justify-center">
-                <img 
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/items-lRJIiXEXUI5vZJg8YwpehK7c6cPcIp.png" 
-                  alt="Items" 
-                  className="w-6 h-6"
-                />
-              </div>
-              <span className="text-white text-xs font-medium mt-1">Items</span>
-            </div>
-            {/* Wallet */}
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 flex items-center justify-center">
-                <img 
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/wallet-DJozjl9ngzsbQkbB6XZaj8GAvfXwO3.png" 
-                  alt="Wallet" 
-                  className="w-6 h-6"
-                />
-              </div>
-              <span className="text-white text-xs font-medium mt-1">Wallet</span>
-            </div>
-            {/* Polls */}
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 flex items-center justify-center">
-                <img 
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/polls-TLiAJGRZLHuSvOrQ9KyfrufvDyhfjC.png" 
-                  alt="Polls" 
-                  className="w-6 h-6"
-                />
-              </div>
-              <span className="text-white text-xs font-medium mt-1">Polls</span>
-            </div>
-            {/* More */}
-            <div className="flex flex-col items-center">
-              <div className="w-10 h-10 flex items-center justify-center">
-                <img 
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/more-7JAmofygtcnGhXf8oMlQuYxSkAZxTC.png" 
-                  alt="More" 
-                  className="w-6 h-6"
-                />
-              </div>
-              <span className="text-white text-xs font-medium mt-1">More</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Bottom UI Stack - Chat, Comment, Spinner, Auction Card */}
       <div className="absolute left-4 right-4 bottom-4 z-20 flex flex-col gap-3">
         {/* Chat Messages */}
