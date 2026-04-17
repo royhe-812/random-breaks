@@ -121,7 +121,7 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
         }}
         style={{
           width: "50%",
-          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+          background: "linear-gradient(90deg, transparent, rgba(74, 222, 128, 0.6), transparent)",
         }}
       />
       
