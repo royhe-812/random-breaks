@@ -104,25 +104,24 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
       <div 
         className="relative h-full w-full rounded-full overflow-hidden"
         style={{ 
-          background: "rgba(74, 222, 128, 0.1)",
+          background: "linear-gradient(90deg, rgba(74, 222, 128, 0.3) 0%, rgba(74, 222, 128, 0.15) 50%, rgba(74, 222, 128, 0.05) 100%)",
         }}
       >
       
-      {/* Animated glow sweep from left to right */}
+      {/* Sweeping shine effect - like card shine */}
       <motion.div 
-        className="absolute inset-0 pointer-events-none rounded-full z-0"
-        animate={{ 
-          background: [
-            "linear-gradient(90deg, rgba(74, 222, 128, 0.5) 0%, rgba(74, 222, 128, 0.3) 20%, transparent 40%)",
-            "linear-gradient(90deg, transparent 20%, rgba(74, 222, 128, 0.3) 50%, rgba(74, 222, 128, 0.5) 70%, transparent 90%)",
-            "linear-gradient(90deg, transparent 60%, rgba(74, 222, 128, 0.3) 80%, rgba(74, 222, 128, 0.5) 100%)",
-            "linear-gradient(90deg, rgba(74, 222, 128, 0.5) 0%, rgba(74, 222, 128, 0.3) 20%, transparent 40%)",
-          ]
-        }}
+        className="absolute inset-0 pointer-events-none z-0"
+        initial={{ x: "-100%" }}
+        animate={{ x: "200%" }}
         transition={{
           duration: 2,
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: "easeInOut",
+          repeatDelay: 1,
+        }}
+        style={{
+          width: "50%",
+          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
         }}
       />
       
