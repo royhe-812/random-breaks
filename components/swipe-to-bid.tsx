@@ -43,8 +43,13 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
   // Winning state
   if (isWinning) {
     return (
-      <div className="relative h-11 rounded-full bg-green-400 flex items-center justify-center overflow-hidden">
-        <span className="text-black font-semibold text-sm">Winning</span>
+      <div 
+        className="relative h-14 rounded-full p-1.5"
+        style={{ border: "1px solid rgba(255, 255, 255, 0.3)" }}
+      >
+        <div className="h-full w-full rounded-full bg-green-400 flex items-center justify-center">
+          <span className="text-black font-semibold text-sm">Winning</span>
+        </div>
       </div>
     )
   }
@@ -52,8 +57,13 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
   // Disabled state
   if (disabled) {
     return (
-      <div className="relative h-11 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden cursor-not-allowed">
-        <span className="text-white/50 font-semibold text-sm">Sold out</span>
+      <div 
+        className="relative h-14 rounded-full p-1.5 cursor-not-allowed"
+        style={{ border: "1px solid rgba(255, 255, 255, 0.2)" }}
+      >
+        <div className="h-full w-full rounded-full bg-zinc-700 flex items-center justify-center">
+          <span className="text-white/50 font-semibold text-sm">Sold out</span>
+        </div>
       </div>
     )
   }
@@ -61,16 +71,21 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
   // Confirmed state
   if (isConfirmed) {
     return (
-      <div className="relative h-11 rounded-full bg-green-400 flex items-center overflow-hidden px-3">
-        <div className="w-7 h-7 rounded-full bg-white/30 flex items-center justify-center border border-green-600/30">
-          <Check className="w-4 h-4 text-green-800" strokeWidth={3} />
-        </div>
-        <div className="flex-1 flex items-center justify-center -ml-4">
-          <span className="text-black font-semibold text-sm">Bid ${amount}</span>
-        </div>
-        <div className="flex items-center">
-          <ChevronRight className="w-5 h-5 text-green-800/60" strokeWidth={2.5} />
-          <ChevronRight className="w-5 h-5 text-green-800/60 -ml-2.5" strokeWidth={2.5} />
+      <div 
+        className="relative h-14 rounded-full p-1.5"
+        style={{ border: "1px solid rgba(255, 255, 255, 0.3)" }}
+      >
+        <div className="h-full w-full rounded-full bg-green-400 flex items-center overflow-hidden px-3">
+          <div className="w-7 h-7 rounded-full bg-white/30 flex items-center justify-center border border-green-600/30">
+            <Check className="w-4 h-4 text-green-800" strokeWidth={3} />
+          </div>
+          <div className="flex-1 flex items-center justify-center -ml-4">
+            <span className="text-black font-semibold text-sm">Bid ${amount}</span>
+          </div>
+          <div className="flex items-center">
+            <ChevronRight className="w-5 h-5 text-green-800/60" strokeWidth={2.5} />
+            <ChevronRight className="w-5 h-5 text-green-800/60 -ml-2.5" strokeWidth={2.5} />
+          </div>
         </div>
       </div>
     )
@@ -79,11 +94,19 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
   return (
     <div 
       ref={containerRef}
-      className="relative h-11 rounded-full overflow-hidden touch-none"
+      className="relative h-14 rounded-full touch-none p-1.5"
       style={{ 
-        background: "linear-gradient(90deg, rgba(74, 222, 128, 0.08) 0%, transparent 100%)",
+        background: "transparent",
+        border: "1px solid rgba(255, 255, 255, 0.3)",
       }}
     >
+      {/* Inner container with gradient background */}
+      <div 
+        className="relative h-full w-full rounded-full overflow-hidden"
+        style={{ 
+          background: "linear-gradient(90deg, rgba(74, 222, 128, 0.08) 0%, transparent 100%)",
+        }}
+      >
       {/* Animated sweeping gradient glow that extends beyond the pill */}
       <motion.div 
         className="absolute inset-0 pointer-events-none rounded-full"
@@ -144,6 +167,7 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
         onDragEnd={handleDragEnd}
         style={{ x }}
       />
+      </div>
     </div>
   )
 }
