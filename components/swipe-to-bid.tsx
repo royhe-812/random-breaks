@@ -66,10 +66,13 @@ export function SwipeToBid({ amount, onBidConfirmed, onReset, isWinning = false,
     return (
       <div 
         className="relative h-14 rounded-full p-1.5 cursor-pointer"
-        style={{ border: "1px solid rgba(113, 113, 122, 1)" }}
+        style={{ border: "1px solid #8F8F8F" }}
         onClick={handleReset}
       >
-        <div className="h-full w-full rounded-full bg-zinc-700 flex items-center justify-center hover:bg-zinc-600 transition-colors">
+        <div 
+          className="h-full w-full rounded-full flex items-center justify-center transition-colors"
+          style={{ backgroundColor: '#8F8F8F' }}
+        >
           <span className="text-black font-semibold text-sm">Sold out</span>
         </div>
       </div>
