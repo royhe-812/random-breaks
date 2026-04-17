@@ -558,6 +558,7 @@ export default function AnimationShowcase() {
             </button>
             <div className="flex-1">
               <SwipeToBid 
+                key={selectedAnimation}
                 amount={30}
                 isWinning={hasWon && !showWinner}
                 disabled={showWinner}
