@@ -97,16 +97,16 @@ export function SwipeToBid({ amount, onBidConfirmed, onReset, isWinning = false,
         className="relative h-14 rounded-full p-1.5"
         style={{ border: "1px solid rgba(255, 255, 255, 0.3)" }}
       >
-        <div className="h-full w-full rounded-full bg-zinc-800 flex items-center overflow-hidden px-3">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center bg-green-400 flex-shrink-0">
-            <Check className="w-4 h-4 text-black/70" strokeWidth={3} />
+        <div className="h-full w-full rounded-full bg-green-400 flex items-center overflow-hidden px-3">
+          <div className="w-7 h-7 rounded-full flex items-center justify-center bg-black/70 flex-shrink-0">
+            <Check className="w-4 h-4 text-green-400" strokeWidth={3} />
           </div>
           <div className="flex-1 flex items-center justify-center">
-            <span className="text-white font-semibold text-sm">Bid ${amount}</span>
+            <span className="text-black font-semibold text-sm">Bid ${amount}</span>
           </div>
           <div className="flex items-center flex-shrink-0">
-            <ChevronRight className="w-5 h-5 text-white/50" strokeWidth={2.5} />
-            <ChevronRight className="w-5 h-5 text-white/50 -ml-2.5" strokeWidth={2.5} />
+            <ChevronRight className="w-5 h-5 text-black/50" strokeWidth={2.5} />
+            <ChevronRight className="w-5 h-5 text-black/50 -ml-2.5" strokeWidth={2.5} />
           </div>
         </div>
       </div>
