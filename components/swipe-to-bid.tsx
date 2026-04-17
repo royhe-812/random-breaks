@@ -110,7 +110,7 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
       
       {/* Animated glow sweep from left to right */}
       <motion.div 
-        className="absolute inset-0 pointer-events-none rounded-full"
+        className="absolute inset-0 pointer-events-none rounded-full z-0"
         animate={{ 
           background: [
             "linear-gradient(90deg, rgba(74, 222, 128, 0.5) 0%, rgba(74, 222, 128, 0.3) 20%, transparent 40%)",
@@ -128,7 +128,7 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
       
       {/* Green pill containing text and chevrons */}
       <motion.div 
-        className="absolute left-0 top-0 bottom-0 rounded-full bg-green-400 flex items-center justify-between px-4"
+        className="absolute left-0 top-0 bottom-0 rounded-full bg-green-400 flex items-center justify-between px-4 z-10"
         style={{ width: greenFillWidth }}
       >
         {/* Text inside green pill */}
