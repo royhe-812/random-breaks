@@ -581,6 +581,16 @@ export default function AnimationShowcase() {
                     setIsSpinnerRevealing(true)
                   }
                 }}
+                onReset={() => {
+                  // Reset the entire concept
+                  setHasWon(false)
+                  setIsSpinnerRevealing(false)
+                  setSelectedTeam(null)
+                  setShowWinner(false)
+                  setWinnerTeam(null)
+                  setIsRevealing(false)
+                  chatPausedRef.current = false
+                }}
               />
             </div>
           </div>

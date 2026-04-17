@@ -7,13 +7,14 @@ import { Check, ChevronRight } from "lucide-react"
 interface SwipeToBidProps {
   amount: number
   onBidConfirmed: () => void
+  onReset?: () => void
   isWinning?: boolean
   disabled?: boolean
 }
 
 type ButtonState = "idle" | "confirmed" | "winning" | "soldout"
 
-export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled = false }: SwipeToBidProps) {
+export function SwipeToBid({ amount, onBidConfirmed, onReset, isWinning = false, disabled = false }: SwipeToBidProps) {
   const [buttonState, setButtonState] = useState<ButtonState>("idle")
   const containerRef = useRef<HTMLDivElement>(null)
   const x = useMotionValue(0)
@@ -56,12 +57,19 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
 
   // Sold out / Disabled state - check first so isWinning prop doesn't override
   if (buttonState === "soldout" || disabled) {
+    const handleReset = () => {
+      setButtonState("idle")
+      x.set(0)
+      onReset?.()
+    }
+    
     return (
       <div 
-        className="relative h-14 rounded-full p-1.5 cursor-not-allowed"
+        className="relative h-14 rounded-full p-1.5 cursor-pointer"
         style={{ border: "1px solid rgba(113, 113, 122, 1)" }}
+        onClick={handleReset}
       >
-        <div className="h-full w-full rounded-full bg-zinc-700 flex items-center justify-center">
+        <div className="h-full w-full rounded-full bg-zinc-700 flex items-center justify-center hover:bg-zinc-600 transition-colors">
           <span className="text-white/50 font-semibold text-sm">Sold out</span>
         </div>
       </div>
