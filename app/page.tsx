@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 
 // External libraries
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, ChevronRight, ChevronsRight, Heart, Star } from "lucide-react"
+import { ChevronDown, ChevronRight, Heart, Star } from "lucide-react"
 
 // Internal components
 import { TeamSpinner, type Team, teams } from "@/components/team-spinner"
@@ -21,6 +21,7 @@ import { CarouselReveal } from "@/components/animations/carousel-reveal"
 import { WinnerWinnerReveal } from "@/components/animations/winner-winner-reveal"
 import { GiftReveal } from "@/components/animations/gift-reveal"
 import { InStreamExperience } from "@/components/in-stream-experience"
+import { SwipeToBid } from "@/components/swipe-to-bid"
 
 type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner" | "gift-reveal"
 
@@ -555,17 +556,12 @@ export default function AnimationShowcase() {
             >
               Max bid
             </button>
-            <button 
-              onClick={() => {
-                if (hasWon) {
-                  // Reset the entire concept
-                  setHasWon(false)
-                  setIsSpinnerRevealing(false)
-                  setSelectedTeam(null)
-                  setShowWinner(false)
-                  setWinnerTeam(null)
-                  chatPausedRef.current = false
-                } else {
+            <div className="flex-1">
+              <SwipeToBid 
+                amount={30}
+                isWinning={hasWon && !showWinner}
+                disabled={showWinner}
+                onBidConfirmed={() => {
                   setHasWon(true)
                   chatPausedRef.current = true // Pause chat immediately when bid is placed
                   
@@ -583,23 +579,9 @@ export default function AnimationShowcase() {
                     // Trigger spinner revealing - TeamSpinner will cycle through teams first
                     setIsSpinnerRevealing(true)
                   }
-                }
-              }}
-              className={`flex-1 py-2.5 rounded-full font-semibold text-sm flex items-center justify-center gap-1 transition-colors ${
-                hasWon
-                  ? 'bg-zinc-700 text-white/50 hover:bg-zinc-600 cursor-pointer'
-                  : 'bg-green-500 hover:bg-green-400 text-black'
-              }`}
-            >
-              {hasWon ? (
-                <span>Sold out</span>
-              ) : (
-                <>
-                  <span>Bid $30</span>
-                  <ChevronsRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
