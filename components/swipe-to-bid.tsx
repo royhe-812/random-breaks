@@ -54,6 +54,20 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
     }
   }
 
+  // Sold out / Disabled state - check first so isWinning prop doesn't override
+  if (buttonState === "soldout" || disabled) {
+    return (
+      <div 
+        className="relative h-14 rounded-full p-1.5 cursor-not-allowed"
+        style={{ border: "1px solid rgba(255, 255, 255, 0.4)" }}
+      >
+        <div className="h-full w-full rounded-full bg-zinc-500 flex items-center justify-center">
+          <span className="text-zinc-800 font-semibold text-sm">Sold out</span>
+        </div>
+      </div>
+    )
+  }
+
   // Winning state (internal or from prop)
   if (buttonState === "winning" || isWinning) {
     return (
@@ -63,20 +77,6 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
       >
         <div className="h-full w-full rounded-full bg-green-400 flex items-center justify-center">
           <span className="text-black font-semibold text-sm">Winning</span>
-        </div>
-      </div>
-    )
-  }
-
-  // Sold out / Disabled state
-  if (buttonState === "soldout" || disabled) {
-    return (
-      <div 
-        className="relative h-14 rounded-full p-1.5 cursor-not-allowed"
-        style={{ border: "1px solid rgba(255, 255, 255, 0.4)" }}
-      >
-        <div className="h-full w-full rounded-full bg-zinc-500 flex items-center justify-center">
-          <span className="text-zinc-800 font-semibold text-sm">Sold out</span>
         </div>
       </div>
     )
