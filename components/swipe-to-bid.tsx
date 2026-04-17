@@ -19,8 +19,8 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
   // Swipe threshold
   const swipeThreshold = 120
   
-  // Transform for the green fill that extends as user swipes
-  const greenFillWidth = useTransform(x, [0, swipeThreshold], ["55%", "100%"])
+  // Transform for the green fill that extends as user swipes - starts at 75%
+  const greenFillWidth = useTransform(x, [0, swipeThreshold], ["75%", "100%"])
   
   // Transform for checkmark sliding in
   const checkmarkX = useTransform(x, [0, swipeThreshold], [-30, 12])
@@ -100,27 +100,13 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
         border: "1px solid rgba(255, 255, 255, 0.3)",
       }}
     >
-      {/* Inner container with gradient background */}
+      {/* Inner container with fixed gradient glow spanning entire width */}
       <div 
         className="relative h-full w-full rounded-full overflow-hidden"
         style={{ 
-          background: "linear-gradient(90deg, rgba(74, 222, 128, 0.08) 0%, transparent 100%)",
+          background: "linear-gradient(90deg, rgba(74, 222, 128, 0.25) 0%, rgba(74, 222, 128, 0.15) 50%, rgba(74, 222, 128, 0.05) 100%)",
         }}
       >
-      {/* Animated sweeping gradient glow that extends to the end of container */}
-      <motion.div 
-        className="absolute inset-0 pointer-events-none rounded-full"
-        initial={{ x: "-100%" }}
-        animate={{ x: "100%" }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-        style={{
-          background: "linear-gradient(90deg, transparent 0%, rgba(74, 222, 128, 0.3) 50%, transparent 100%)",
-        }}
-      />
       
       {/* Green pill containing text and chevrons */}
       <motion.div 
