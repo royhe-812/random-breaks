@@ -107,20 +107,18 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
           background: "linear-gradient(90deg, rgba(74, 222, 128, 0.08) 0%, transparent 100%)",
         }}
       >
-      {/* Animated sweeping gradient glow that extends beyond the pill */}
+      {/* Animated sweeping gradient glow that extends to the end of container */}
       <motion.div 
         className="absolute inset-0 pointer-events-none rounded-full"
-        animate={{
-          boxShadow: [
-            "inset 60px 0 30px -20px rgba(74, 222, 128, 0.2)",
-            "inset 200px 0 40px -20px rgba(74, 222, 128, 0.15)",
-            "inset 60px 0 30px -20px rgba(74, 222, 128, 0.2)",
-          ]
-        }}
+        initial={{ x: "-100%" }}
+        animate={{ x: "100%" }}
         transition={{
           duration: 2,
           repeat: Infinity,
           ease: "easeInOut"
+        }}
+        style={{
+          background: "linear-gradient(90deg, transparent 0%, rgba(74, 222, 128, 0.3) 50%, transparent 100%)",
         }}
       />
       
