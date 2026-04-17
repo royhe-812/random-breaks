@@ -68,11 +68,11 @@ export function WinnerWinnerReveal({ isRevealing, team: propTeam, onComplete, us
         }
       }, 2500)
       
-      // After 5.5 seconds total (3 seconds on card), complete
+      // After 7 seconds total (4.5 seconds on card), complete
       const completeTimer = setTimeout(() => {
         setPhase("done")
         onComplete()
-      }, 5500)
+      }, 7000)
       
       return () => {
         clearTimeout(teamCardTimer)
