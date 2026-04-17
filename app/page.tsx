@@ -213,8 +213,19 @@ export default function AnimationShowcase() {
   const [viewerCount, setViewerCount] = useState(240)
   const [winnerTeam, setWinnerTeam] = useState<Team | null>(null)
   const [showWinner, setShowWinner] = useState(false)
+  const [reactionMessages, setReactionMessages] = useState<{ user: string; message: string; color: string }[]>([])
   const messageIndexRef = useRef(3)
   const chatPausedRef = useRef(false)
+  
+  // Random reaction usernames and message templates
+  const reactionUsers = [
+    { user: "cardking99", color: "text-blue-400" },
+    { user: "packripperz", color: "text-purple-400" },
+    { user: "sportsfan22", color: "text-green-400" },
+    { user: "rookie_hunter", color: "text-orange-400" },
+    { user: "breaker_joe", color: "text-yellow-400" },
+    { user: "pullemall", color: "text-pink-400" },
+  ]
 
   // Rotate chat messages to feel alive (pauses when winner is shown)
   useEffect(() => {
@@ -252,8 +263,50 @@ export default function AnimationShowcase() {
     setSelectedTeam(null)
     setWinnerTeam(null)
     setShowWinner(false)
+    setReactionMessages([])
     chatPausedRef.current = false
   }, [selectedAnimation])
+  
+  // Add reaction messages after winner is shown
+  useEffect(() => {
+    if (showWinner && winnerTeam) {
+      // Pick 2 random unique users
+      const shuffledUsers = [...reactionUsers].sort(() => Math.random() - 0.5)
+      const user1 = shuffledUsers[0]
+      const user2 = shuffledUsers[1]
+      
+      const reactionTemplates1 = [
+        `Wow ${winnerTeam.name}! Nice pull!`,
+        `${winnerTeam.name} lets gooo!`,
+        `Lucky! ${winnerTeam.name} is fire`,
+        `GG! ${winnerTeam.name} hit!`,
+      ]
+      
+      const reactionTemplates2 = [
+        `Adam007 always wins the good ones`,
+        `So lucky! Congrats Adam007`,
+        `Adam007 on a heater tonight`,
+        `Nice hit Adam007!`,
+      ]
+      
+      // First reaction after 2 seconds
+      const timer1 = setTimeout(() => {
+        const msg1 = reactionTemplates1[Math.floor(Math.random() * reactionTemplates1.length)]
+        setReactionMessages([{ user: user1.user, message: msg1, color: user1.color }])
+      }, 2000)
+      
+      // Second reaction after 3.5 seconds
+      const timer2 = setTimeout(() => {
+        const msg2 = reactionTemplates2[Math.floor(Math.random() * reactionTemplates2.length)]
+        setReactionMessages(prev => [...prev, { user: user2.user, message: msg2, color: user2.color }])
+      }, 3500)
+      
+      return () => {
+        clearTimeout(timer1)
+        clearTimeout(timer2)
+      }
+    }
+  }, [showWinner, winnerTeam])
 
   const handleSpinComplete = useCallback((team: Team) => {
     setSelectedTeam(team)
@@ -473,6 +526,26 @@ export default function AnimationShowcase() {
             team={winnerTeam} 
             show={showWinner} 
           />
+        )}
+        
+        {/* Reaction messages after winner announcement */}
+        {showWinner && reactionMessages.length > 0 && (
+          <div className="space-y-1.5 max-w-[280px]">
+            <AnimatePresence mode="popLayout">
+              {reactionMessages.map((msg, index) => (
+                <motion.div
+                  key={`reaction-${msg.user}-${index}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  layout
+                >
+                  <span className={`${msg.color} font-semibold text-sm`}>{msg.user}</span>
+                  <span className="text-white/80 text-sm ml-1">{msg.message}</span>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
         )}
 
         {/* Comment Input */}
