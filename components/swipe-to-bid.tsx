@@ -81,32 +81,48 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
       ref={containerRef}
       className="relative h-11 rounded-full overflow-hidden touch-none"
       style={{ 
-        background: "linear-gradient(90deg, rgba(74, 222, 128, 0.15) 0%, rgba(74, 222, 128, 0.05) 100%)",
-        border: "1px solid rgba(74, 222, 128, 0.2)"
+        background: "linear-gradient(90deg, rgba(74, 222, 128, 0.08) 0%, transparent 100%)",
       }}
     >
-      {/* Animated sweeping gradient beneath */}
+      {/* Animated sweeping gradient glow that extends beyond the pill */}
       <motion.div 
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none rounded-full"
         animate={{
-          background: [
-            "linear-gradient(90deg, rgba(74, 222, 128, 0.3) 0%, rgba(74, 222, 128, 0) 30%)",
-            "linear-gradient(90deg, rgba(74, 222, 128, 0) 70%, rgba(74, 222, 128, 0.3) 100%)",
-            "linear-gradient(90deg, rgba(74, 222, 128, 0.3) 0%, rgba(74, 222, 128, 0) 30%)",
+          boxShadow: [
+            "inset 60px 0 30px -20px rgba(74, 222, 128, 0.2)",
+            "inset 200px 0 40px -20px rgba(74, 222, 128, 0.15)",
+            "inset 60px 0 30px -20px rgba(74, 222, 128, 0.2)",
           ]
         }}
         transition={{
-          duration: 2.5,
+          duration: 2,
           repeat: Infinity,
           ease: "easeInOut"
         }}
       />
       
-      {/* Green fill that extends with swipe - starts at ~55% width */}
+      {/* Green pill containing text and chevrons */}
       <motion.div 
-        className="absolute left-0 top-0 bottom-0 rounded-full bg-green-400"
+        className="absolute left-0 top-0 bottom-0 rounded-full bg-green-400 flex items-center justify-between px-4"
         style={{ width: greenFillWidth }}
-      />
+      >
+        {/* Text inside green pill */}
+        <span className="text-black font-semibold text-sm whitespace-nowrap">Bid ${amount}</span>
+        
+        {/* Animated double chevrons inside green pill */}
+        <motion.div
+          className="flex items-center ml-4"
+          animate={{ x: [0, 4, 0] }}
+          transition={{
+            duration: 1.2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <ChevronRight className="w-5 h-5 text-black/50" strokeWidth={2.5} />
+          <ChevronRight className="w-5 h-5 text-black/50 -ml-2.5" strokeWidth={2.5} />
+        </motion.div>
+      </motion.div>
       
       {/* Checkmark that slides in from left */}
       <motion.div 
@@ -118,27 +134,6 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
       >
         <Check className="w-4 h-4 text-green-800" strokeWidth={3} />
       </motion.div>
-      
-      {/* Text */}
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-        <span className="text-black font-semibold text-sm">Bid ${amount}</span>
-      </div>
-      
-      {/* Animated double chevrons on right */}
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center z-10">
-        <motion.div
-          className="flex items-center"
-          animate={{ x: [0, 4, 0] }}
-          transition={{
-            duration: 1.2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <ChevronRight className="w-5 h-5 text-green-800/70" strokeWidth={2.5} />
-          <ChevronRight className="w-5 h-5 text-green-800/70 -ml-2.5" strokeWidth={2.5} />
-        </motion.div>
-      </div>
       
       {/* Invisible draggable overlay */}
       <motion.div
