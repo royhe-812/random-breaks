@@ -11,8 +11,10 @@ interface SwipeToBidProps {
   disabled?: boolean
 }
 
+type ButtonState = "idle" | "confirmed" | "winning" | "soldout"
+
 export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled = false }: SwipeToBidProps) {
-  const [isConfirmed, setIsConfirmed] = useState(false)
+  const [buttonState, setButtonState] = useState<ButtonState>("idle")
   const containerRef = useRef<HTMLDivElement>(null)
   const x = useMotionValue(0)
   
@@ -30,18 +32,26 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
     const currentX = x.get()
     
     if (currentX >= swipeThreshold * 0.8) {
-      setIsConfirmed(true)
+      setButtonState("confirmed")
       animate(x, swipeThreshold, { duration: 0.2 })
+      
+      // After 1 second, transition to winning
       setTimeout(() => {
+        setButtonState("winning")
         onBidConfirmed()
-      }, 300)
+        
+        // After another 1.5 seconds, transition to sold out
+        setTimeout(() => {
+          setButtonState("soldout")
+        }, 1500)
+      }, 1000)
     } else {
       animate(x, 0, { type: "spring", stiffness: 500, damping: 30 })
     }
   }
 
-  // Winning state
-  if (isWinning) {
+  // Winning state (internal or from prop)
+  if (buttonState === "winning" || isWinning) {
     return (
       <div 
         className="relative h-14 rounded-full p-1.5"
@@ -54,8 +64,8 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
     )
   }
 
-  // Disabled state
-  if (disabled) {
+  // Sold out / Disabled state
+  if (buttonState === "soldout" || disabled) {
     return (
       <div 
         className="relative h-14 rounded-full p-1.5 cursor-not-allowed"
@@ -69,7 +79,7 @@ export function SwipeToBid({ amount, onBidConfirmed, isWinning = false, disabled
   }
 
   // Confirmed state - dark background with filled green checkmark
-  if (isConfirmed) {
+  if (buttonState === "confirmed") {
     return (
       <div 
         className="relative h-14 rounded-full p-1.5"
