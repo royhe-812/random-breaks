@@ -266,41 +266,43 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
         </div>
         
         {/* Footer stats section */}
-        <div className="mt-3 pt-2 border-t border-white/10 flex items-center justify-between">
-          {/* Left side - Spots and Last winner */}
-          <div className="flex items-center gap-4">
+        <div className="mt-3 pt-2 border-t border-white/10">
+          {/* Top row - Spots left and Hide sold toggle */}
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <span className="text-white/50 text-xs">Spots left:</span>
               <span className="text-white font-semibold text-xs">{spotsLeft}</span>
             </div>
-            {lastWinner && (
-              <div className="flex items-center gap-1.5">
-                <span className="text-white/50 text-xs">Last winner:</span>
-                <span className="text-white text-xs">
-                  <span className="font-semibold">{lastWinner.username}</span>
-                  <span className="text-white/50"> won </span>
-                  <span className="font-semibold">{lastWinner.team}</span>
-                </span>
-              </div>
-            )}
+            
+            {/* Hide sold toggle */}
+            <div className="flex items-center gap-2">
+              <span className="text-white/50 text-xs">Hide sold</span>
+              <button
+                onClick={() => setHideSold(!hideSold)}
+                className={`relative w-9 h-5 rounded-full transition-colors ${
+                  hideSold ? 'bg-green-500' : 'bg-white/20'
+                }`}
+              >
+                <div 
+                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    hideSold ? 'translate-x-4' : 'translate-x-0.5'
+                  }`}
+                />
+              </button>
+            </div>
           </div>
           
-          {/* Right side - Hide sold toggle */}
-          <div className="flex items-center gap-2">
-            <span className="text-white/50 text-xs">Hide sold</span>
-            <button
-              onClick={() => setHideSold(!hideSold)}
-              className={`relative w-9 h-5 rounded-full transition-colors ${
-                hideSold ? 'bg-green-500' : 'bg-white/20'
-              }`}
-            >
-              <div 
-                className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                  hideSold ? 'translate-x-4' : 'translate-x-0.5'
-                }`}
-              />
-            </button>
-          </div>
+          {/* Second row - Last winner */}
+          {lastWinner && (
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <span className="text-white/50 text-xs">Last winner:</span>
+              <span className="text-white text-xs">
+                <span className="font-semibold">{lastWinner.username}</span>
+                <span className="text-white/50"> won </span>
+                <span className="font-semibold">{lastWinner.team}</span>
+              </span>
+            </div>
+          )}
         </div>
         
         {/* Winner display */}
