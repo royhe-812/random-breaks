@@ -70,14 +70,15 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
     oscillator.connect(gainNode)
     gainNode.connect(ctx.destination)
     
-    oscillator.frequency.value = 800 + Math.random() * 400
+    oscillator.frequency.setValueAtTime(800, ctx.currentTime)
+    oscillator.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.02)
     oscillator.type = 'sine'
     
-    gainNode.gain.setValueAtTime(0.1, ctx.currentTime)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05)
+    gainNode.gain.setValueAtTime(0.08, ctx.currentTime)
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03)
     
     oscillator.start(ctx.currentTime)
-    oscillator.stop(ctx.currentTime + 0.05)
+    oscillator.stop(ctx.currentTime + 0.03)
   }
 
   // Play winner sound
