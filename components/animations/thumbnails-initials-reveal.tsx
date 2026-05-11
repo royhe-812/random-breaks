@@ -230,9 +230,11 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
                   className={`relative w-full aspect-square rounded-lg overflow-hidden flex items-center justify-center transition-all duration-150 ${
                     isSelected 
                       ? 'ring-2 ring-white' 
-                      : isSold
-                        ? 'opacity-50'
-                        : ''
+                      : isHighlighted
+                        ? 'ring-2 ring-white'
+                        : isSold
+                          ? 'opacity-50'
+                          : ''
                   }`}
                   style={{ backgroundColor: team.color }}
                 >
