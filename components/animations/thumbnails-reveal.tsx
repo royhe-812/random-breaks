@@ -162,6 +162,25 @@ export function ThumbnailsReveal({ isRevealing, onComplete, team: propTeam, onTe
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
+      {/* Winner announcement - shows above grid during reveal */}
+      <AnimatePresence>
+        {phase !== "idle" && (
+          <motion.div
+            className="mb-4 text-center"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <span className="text-white font-bold text-xl">Adam007</span>
+              <span className="text-white/70 text-xl">Won!</span>
+            </div>
+            <p className="text-white/50 text-sm mt-1">Your spot is revealed!</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       {/* Grid of team thumbnails - always visible */}
       <motion.div
         className="grid grid-cols-4 gap-3 p-4"
