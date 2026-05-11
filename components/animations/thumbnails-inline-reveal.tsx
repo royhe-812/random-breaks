@@ -304,29 +304,6 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
             </div>
           )}
         </div>
-        
-        {/* Winner display */}
-        <AnimatePresence>
-          {phase === "selected" && selectedTeam && (
-            <motion.div
-              className="mt-2 text-center"
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <span className="text-white/60 text-[10px] uppercase tracking-wider block">
-                {selectedTeam.city}
-              </span>
-              <span 
-                className="text-sm font-bold block"
-                style={{ color: selectedTeam.color }}
-              >
-                {selectedTeam.name}
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   )
