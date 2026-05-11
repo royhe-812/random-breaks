@@ -28,6 +28,7 @@ interface Team {
   city?: string
   color: string
   logo?: string
+  abbrev?: string
 }
 
 interface ThumbnailsRevealProps {
@@ -77,15 +78,15 @@ export function ThumbnailsReveal({ isRevealing, onComplete, team: propTeam, onTe
     oscillator.stop(ctx.currentTime + 0.03)
   }
 
-  // Reset when isRevealing changes to false
+  // Reset when isRevealing changes to false, but only if we're in idle or done phase
   useEffect(() => {
-    if (!isRevealing) {
+    if (!isRevealing && phase === "done") {
       hasStartedRef.current = false
       setPhase("idle")
       setHighlightedIndex(null)
       setSelectedIndex(null)
     }
-  }, [isRevealing])
+  }, [isRevealing, phase])
 
   useEffect(() => {
     if (isRevealing && !hasStartedRef.current) {
@@ -117,6 +118,7 @@ export function ThumbnailsReveal({ isRevealing, onComplete, team: propTeam, onTe
               city: selectedTeam.city,
               color: selectedTeam.color,
               logo: selectedTeam.logo,
+              abbrev: selectedTeam.abbrev,
             })
           }
           
