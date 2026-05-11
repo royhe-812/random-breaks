@@ -171,7 +171,7 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
   const selectedTeam = selectedIndex !== null ? teams[selectedIndex] : null
 
   return (
-    <div className="absolute top-12 left-4 right-16 z-30">
+    <div className="absolute top-28 left-4 right-16 z-30">
       {/* Container matching stream UI style - full width panel */}
       <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10">
         {/* Header */}
