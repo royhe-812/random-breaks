@@ -4,22 +4,22 @@ import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
 const teams = [
-  { name: "Chiefs", city: "Kansas City", color: "#E31837", initials: "KC" },
-  { name: "Eagles", city: "Philadelphia", color: "#004C54", initials: "PHI" },
-  { name: "Cowboys", city: "Dallas", color: "#003594", initials: "DAL" },
-  { name: "49ers", city: "San Francisco", color: "#AA0000", initials: "SF" },
-  { name: "Bills", city: "Buffalo", color: "#00338D", initials: "BUF" },
-  { name: "Dolphins", city: "Miami", color: "#008E97", initials: "MIA" },
-  { name: "Ravens", city: "Baltimore", color: "#241773", initials: "BAL" },
-  { name: "Lions", city: "Detroit", color: "#0076B6", initials: "DET" },
-  { name: "Packers", city: "Green Bay", color: "#203731", initials: "GB" },
-  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", initials: "CIN" },
-  { name: "Jets", city: "New York", color: "#125740", initials: "NYJ" },
-  { name: "Broncos", city: "Denver", color: "#FB4F14", initials: "DEN" },
-  { name: "Chargers", city: "Los Angeles", color: "#0080C6", initials: "LAC" },
-  { name: "Colts", city: "Indianapolis", color: "#002C5F", initials: "IND" },
-  { name: "Texans", city: "Houston", color: "#03202F", initials: "HOU" },
-  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", initials: "PIT" },
+  { name: "Chiefs", city: "Kansas City", color: "#E31837", initials: "KC", abbrev: "KC" },
+  { name: "Eagles", city: "Philadelphia", color: "#004C54", initials: "PHI", abbrev: "PHI" },
+  { name: "Cowboys", city: "Dallas", color: "#003594", initials: "DAL", abbrev: "DAL" },
+  { name: "49ers", city: "San Francisco", color: "#AA0000", initials: "SF", abbrev: "SF" },
+  { name: "Bills", city: "Buffalo", color: "#00338D", initials: "BUF", abbrev: "BUF" },
+  { name: "Dolphins", city: "Miami", color: "#008E97", initials: "MIA", abbrev: "MIA" },
+  { name: "Ravens", city: "Baltimore", color: "#241773", initials: "BAL", abbrev: "BAL" },
+  { name: "Lions", city: "Detroit", color: "#0076B6", initials: "DET", abbrev: "DET" },
+  { name: "Packers", city: "Green Bay", color: "#203731", initials: "GB", abbrev: "GB" },
+  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", initials: "CIN", abbrev: "CIN" },
+  { name: "Jets", city: "New York", color: "#125740", initials: "NYJ", abbrev: "NYJ" },
+  { name: "Broncos", city: "Denver", color: "#FB4F14", initials: "DEN", abbrev: "DEN" },
+  { name: "Chargers", city: "Los Angeles", color: "#0080C6", initials: "LAC", abbrev: "LAC" },
+  { name: "Colts", city: "Indianapolis", color: "#002C5F", initials: "IND", abbrev: "IND" },
+  { name: "Texans", city: "Houston", color: "#03202F", initials: "HOU", abbrev: "HOU" },
+  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", initials: "PIT", abbrev: "PIT" },
 ]
 
 interface Team {
