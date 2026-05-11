@@ -20,10 +20,11 @@ import { PickCardReveal } from "@/components/animations/pick-card-reveal"
 import { CarouselReveal } from "@/components/animations/carousel-reveal"
 import { WinnerWinnerReveal } from "@/components/animations/winner-winner-reveal"
 import { GiftReveal } from "@/components/animations/gift-reveal"
+import { ThumbnailsReveal } from "@/components/animations/thumbnails-reveal"
 import { InStreamExperience } from "@/components/in-stream-experience"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner" | "gift-reveal"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner" | "gift-reveal" | "thumbnails"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "card-flip", name: "Card Flip" },
@@ -33,6 +34,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "battle", name: "Battle" },
   { id: "carousel", name: "Carousel" },
   { id: "gift-reveal", name: "Gift Reveal" },
+  { id: "thumbnails", name: "Thumbnails" },
 ]
 
 // Winner Chat Announcement with glow and wipe gradient
@@ -364,10 +366,12 @@ export default function AnimationShowcase() {
         return <CarouselReveal key={key} isRevealing={isRevealing} onComplete={(team) => { setWinnerTeam(team); handleComplete(); }} />
       case "winner-winner":
         return <WinnerWinnerReveal key={key} {...props} />
-      case "gift-reveal":
-        return <GiftReveal key={key} {...props} />
-      default:
-        return null
+case "gift-reveal":
+return <GiftReveal key={key} {...props} />
+case "thumbnails":
+return <ThumbnailsReveal key={key} {...props} />
+default:
+return null
     }
   }
 
@@ -555,7 +559,7 @@ export default function AnimationShowcase() {
         </div>
 
         {/* Team Spinner with Spots Available - hidden for concepts with built-in randomizer */}
-        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "winner-winner" && !showWinner && (
+        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "winner-winner" && selectedAnimation !== "thumbnails" && !showWinner && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={16}
@@ -636,7 +640,7 @@ export default function AnimationShowcase() {
                   chatPausedRef.current = true // Pause chat immediately when bid is placed
                   
                   // For concepts with built-in randomizer, set a random team and trigger reveal after a short delay
-                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "winner-winner") {
+                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "winner-winner" || selectedAnimation === "thumbnails") {
                     const randomTeam = teams[Math.floor(Math.random() * teams.length)]
                     setSelectedTeam(randomTeam)
                     setWinnerTeam(randomTeam)
