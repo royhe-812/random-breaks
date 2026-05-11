@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 
@@ -38,13 +38,58 @@ interface ThumbnailsRevealProps {
 }
 
 export function ThumbnailsReveal({ isRevealing, onComplete, team: propTeam, onTeamSelected }: ThumbnailsRevealProps) {
-  const [phase, setPhase] = useState<"idle" | "cycling" | "selected" | "zooming" | "done">("idle")
+  const [phase, setPhase] = useState<"idle" | "cycling" | "selected" | "done">("idle")
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
-  const [cycleSpeed, setCycleSpeed] = useState(50)
+  const hasStartedRef = useRef(false)
+  const audioContextRef = useRef<AudioContext | null>(null)
+
+  // Initialize audio context
+  useEffect(() => {
+    audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    return () => {
+      audioContextRef.current?.close()
+    }
+  }, [])
+
+  // Play tick sound
+  const playTickSound = () => {
+    if (!audioContextRef.current) return
+    const ctx = audioContextRef.current
+    if (ctx.state === 'suspended') {
+      ctx.resume()
+    }
+    
+    const oscillator = ctx.createOscillator()
+    const gainNode = ctx.createGain()
+    
+    oscillator.connect(gainNode)
+    gainNode.connect(ctx.destination)
+    
+    oscillator.frequency.setValueAtTime(800, ctx.currentTime)
+    oscillator.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.02)
+    oscillator.type = 'sine'
+    
+    gainNode.gain.setValueAtTime(0.08, ctx.currentTime)
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03)
+    
+    oscillator.start(ctx.currentTime)
+    oscillator.stop(ctx.currentTime + 0.03)
+  }
+
+  // Reset when isRevealing changes to false
+  useEffect(() => {
+    if (!isRevealing) {
+      hasStartedRef.current = false
+      setPhase("idle")
+      setHighlightedIndex(null)
+      setSelectedIndex(null)
+    }
+  }, [isRevealing])
 
   useEffect(() => {
-    if (isRevealing && phase === "idle") {
+    if (isRevealing && !hasStartedRef.current) {
+      hasStartedRef.current = true
       setPhase("cycling")
       
       // Determine target team
@@ -52,28 +97,18 @@ export function ThumbnailsReveal({ isRevealing, onComplete, team: propTeam, onTe
       const targetIndex = teams.findIndex(t => t.name === targetTeam.name)
       const finalIndex = targetIndex >= 0 ? targetIndex : Math.floor(Math.random() * teams.length)
       
-      // Fast cycling through teams
+      // Cycling animation with decreasing speed
       let currentIndex = 0
-      let speed = 50
-      let cycles = 0
-      const maxCycles = 40 + Math.floor(Math.random() * 20) // 40-60 cycles
+      let cycleCount = 0
+      const totalCycles = 30 + Math.floor(Math.random() * 15) // 30-45 cycles
       
-      const cycleInterval = setInterval(() => {
-        currentIndex = (currentIndex + 1) % teams.length
-        setHighlightedIndex(currentIndex)
-        cycles++
-        
-        // Gradually slow down after halfway
-        if (cycles > maxCycles / 2) {
-          speed = Math.min(speed + 15, 400)
-          setCycleSpeed(speed)
-        }
-        
-        // Stop on the target team
-        if (cycles >= maxCycles && currentIndex === finalIndex) {
-          clearInterval(cycleInterval)
+      const runCycle = () => {
+        if (cycleCount >= totalCycles) {
+          // Land on target
+          setHighlightedIndex(finalIndex)
           setSelectedIndex(finalIndex)
           setPhase("selected")
+          playTickSound()
           
           const selectedTeam = teams[finalIndex]
           if (onTeamSelected) {
@@ -85,199 +120,153 @@ export function ThumbnailsReveal({ isRevealing, onComplete, team: propTeam, onTe
             })
           }
           
-          // Zoom in on selected team after a pause
+          // Complete after showing selection
           setTimeout(() => {
-            setPhase("zooming")
-            
-            // Complete after zoom animation
-            setTimeout(() => {
-              setPhase("done")
-              onComplete()
-            }, 2500)
-          }, 800)
+            setPhase("done")
+            onComplete()
+          }, 3000)
+          return
         }
-      }, speed)
-      
-      // Update interval speed dynamically
-      const speedUpdateInterval = setInterval(() => {
-        if (phase === "cycling") {
-          // Speed already updated in main interval
+        
+        // Move towards target in final cycles
+        if (cycleCount >= totalCycles - 5) {
+          // Final approach - move towards target
+          const stepsToTarget = (finalIndex - currentIndex + teams.length) % teams.length
+          if (stepsToTarget > 0) {
+            currentIndex = (currentIndex + 1) % teams.length
+          }
+        } else {
+          // Random jumping during fast phase
+          currentIndex = (currentIndex + 1 + Math.floor(Math.random() * 3)) % teams.length
         }
-      }, 100)
-      
-      return () => {
-        clearInterval(cycleInterval)
-        clearInterval(speedUpdateInterval)
+        
+        setHighlightedIndex(currentIndex)
+        playTickSound()
+        cycleCount++
+        
+        // Calculate delay - starts fast, slows down
+        const progress = cycleCount / totalCycles
+        const baseDelay = 50
+        const maxDelay = 300
+        const delay = baseDelay + (maxDelay - baseDelay) * Math.pow(progress, 2)
+        
+        setTimeout(runCycle, delay)
       }
+      
+      // Start cycling after brief delay
+      setTimeout(runCycle, 300)
     }
-  }, [isRevealing, phase, propTeam, onTeamSelected, onComplete])
-
-  // Reset when not revealing
-  useEffect(() => {
-    if (!isRevealing) {
-      setPhase("idle")
-      setHighlightedIndex(null)
-      setSelectedIndex(null)
-      setCycleSpeed(50)
-    }
-  }, [isRevealing])
+  }, [isRevealing, propTeam, onTeamSelected, onComplete])
 
   const selectedTeam = selectedIndex !== null ? teams[selectedIndex] : null
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-      <AnimatePresence mode="wait">
-        {phase === "zooming" && selectedTeam ? (
-          // Zoomed in view of selected team
-          <motion.div
-            key="zoomed"
-            className="absolute inset-0 flex flex-col items-center justify-center"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          >
-            {/* Glow background */}
+    <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
+      {/* Grid of team thumbnails - always visible */}
+      <motion.div
+        className="grid grid-cols-4 gap-3 p-4"
+        layout
+      >
+        {teams.map((team, index) => {
+          const isHighlighted = highlightedIndex === index
+          const isSelected = selectedIndex === index && phase === "selected"
+          
+          return (
             <motion.div
-              className="absolute inset-0"
+              key={team.name}
+              className="relative w-14 h-14 rounded-xl overflow-hidden cursor-pointer"
               style={{
-                background: `radial-gradient(circle at center, ${selectedTeam.color}40 0%, transparent 70%)`,
+                background: isSelected 
+                  ? team.color 
+                  : isHighlighted 
+                    ? `${team.color}90` 
+                    : "rgba(255,255,255,0.08)",
               }}
               animate={{
-                opacity: [0.5, 1, 0.5],
+                scale: isSelected ? 1.25 : isHighlighted ? 1.1 : 1,
+                zIndex: isSelected ? 20 : isHighlighted ? 10 : 1,
               }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            />
-            
-            {/* Large logo */}
-            <motion.div
-              className="relative w-48 h-48 mb-6"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 400, 
+                damping: 25,
+                duration: 0.15 
+              }}
             >
-              <div
-                className="absolute inset-0 rounded-full blur-2xl"
-                style={{ background: selectedTeam.color, opacity: 0.5 }}
-              />
-              <Image
-                src={selectedTeam.logo}
-                alt={selectedTeam.name}
-                fill
-                className="object-contain relative z-10 drop-shadow-2xl"
-                unoptimized
-              />
+              {/* Glow effect for highlighted/selected */}
+              <AnimatePresence>
+                {(isHighlighted || isSelected) && (
+                  <motion.div
+                    className="absolute inset-0 rounded-xl pointer-events-none"
+                    style={{
+                      boxShadow: isSelected 
+                        ? `0 0 30px ${team.color}, 0 0 60px ${team.color}80, inset 0 0 20px ${team.color}40`
+                        : `0 0 15px ${team.color}80`,
+                    }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.1 }}
+                  />
+                )}
+              </AnimatePresence>
+              
+              {/* Border for selected */}
+              {isSelected && (
+                <motion.div
+                  className="absolute inset-0 rounded-xl border-3 border-white pointer-events-none"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                />
+              )}
+              
+              <div className="relative w-full h-full p-1.5">
+                <Image
+                  src={team.logo}
+                  alt={team.name}
+                  fill
+                  className="object-contain"
+                  unoptimized
+                />
+              </div>
             </motion.div>
-            
-            {/* Team name */}
+          )
+        })}
+      </motion.div>
+      
+      {/* Winner display below grid */}
+      <div className="h-20 flex items-center justify-center mt-2">
+        <AnimatePresence>
+          {phase === "selected" && selectedTeam && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              className="flex flex-col items-center text-center"
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="text-center"
+              exit={{ opacity: 0 }}
+              transition={{ delay: 0.2 }}
             >
-              <p className="text-white/60 text-lg">{selectedTeam.city}</p>
-              <h2 
-                className="text-4xl font-bold"
+              <span className="text-white/70 text-xs font-semibold uppercase tracking-wider">
+                {selectedTeam.city}
+              </span>
+              <span 
+                className="text-2xl font-black"
                 style={{ color: selectedTeam.color }}
               >
-                {selectedTeam.name}
-              </h2>
+                {selectedTeam.name.toUpperCase()}
+              </span>
+              <motion.span 
+                className="text-green-400 text-xs font-bold tracking-widest mt-0.5"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                WINNER!
+              </motion.span>
             </motion.div>
-            
-            {/* Celebration particles */}
-            {[...Array(20)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-2 h-2 rounded-full"
-                style={{
-                  background: i % 2 === 0 ? selectedTeam.color : "#fff",
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                }}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{
-                  opacity: [0, 1, 0],
-                  scale: [0, 1.5, 0],
-                  y: [0, -30, -60],
-                }}
-                transition={{
-                  duration: 1.5,
-                  delay: 0.3 + i * 0.05,
-                  repeat: Infinity,
-                  repeatDelay: 1,
-                }}
-              />
-            ))}
-          </motion.div>
-        ) : (
-          // Grid of team thumbnails
-          <motion.div
-            key="grid"
-            className="grid grid-cols-4 gap-2 p-4"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.3 }}
-          >
-            {teams.map((team, index) => {
-              const isHighlighted = highlightedIndex === index
-              const isSelected = selectedIndex === index
-              
-              return (
-                <motion.div
-                  key={team.name}
-                  className="relative w-16 h-16 rounded-lg overflow-hidden"
-                  style={{
-                    background: isSelected 
-                      ? team.color 
-                      : isHighlighted 
-                        ? `${team.color}80` 
-                        : "rgba(255,255,255,0.1)",
-                  }}
-                  animate={{
-                    scale: isHighlighted || isSelected ? 1.15 : 1,
-                    borderWidth: isHighlighted || isSelected ? 2 : 0,
-                    borderColor: isHighlighted || isSelected ? "#fff" : "transparent",
-                  }}
-                  transition={{ duration: 0.1 }}
-                >
-                  {/* Glow effect for highlighted/selected */}
-                  {(isHighlighted || isSelected) && (
-                    <motion.div
-                      className="absolute inset-0 rounded-lg"
-                      style={{
-                        boxShadow: `0 0 20px ${team.color}, 0 0 40px ${team.color}80`,
-                      }}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                    />
-                  )}
-                  
-                  <div className="relative w-full h-full p-2">
-                    <Image
-                      src={team.logo}
-                      alt={team.name}
-                      fill
-                      className="object-contain p-1"
-                      unoptimized
-                    />
-                  </div>
-                  
-                  {/* Selection indicator */}
-                  {isSelected && (
-                    <motion.div
-                      className="absolute inset-0 border-4 border-white rounded-lg"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.2 }}
-                    />
-                  )}
-                </motion.div>
-              )
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   )
 }
