@@ -41,6 +41,10 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
   const [phase, setPhase] = useState<"idle" | "cycling" | "selected" | "done">("idle")
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  const [hideSold, setHideSold] = useState(false)
+  const [spotsLeft, setSpotsLeft] = useState(16)
+  const [lastWinner, setLastWinner] = useState<{ username: string; team: string } | null>(null)
+  const [soldTeams, setSoldTeams] = useState<number[]>([])
   const hasStartedRef = useRef(false)
   const audioContextRef = useRef<AudioContext | null>(null)
 
@@ -139,6 +143,12 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
           playWinnerSound()
           
           const selectedTeam = teams[finalIndex]
+          
+          // Update stats
+          setSoldTeams(prev => [...prev, finalIndex])
+          setSpotsLeft(prev => Math.max(0, prev - 1))
+          setLastWinner({ username: "Adam007", team: selectedTeam.name })
+          
           if (onTeamSelected) {
             onTeamSelected(selectedTeam)
           }
@@ -187,6 +197,12 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
             const isHighlighted = highlightedIndex === index
             const isSelected = selectedIndex === index && phase === "selected"
             const isOther = phase === "selected" && selectedIndex !== index
+            const isSold = soldTeams.includes(index) && !isSelected
+            
+            // Hide sold teams if toggle is on
+            if (hideSold && isSold) {
+              return <div key={team.name} className="aspect-square" />
+            }
             
             return (
               <motion.div
@@ -223,7 +239,9 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
                       ? 'bg-white/20 ring-2 ring-white' 
                       : isHighlighted 
                         ? 'bg-white/15' 
-                        : 'bg-white/5'
+                        : isSold
+                          ? 'bg-white/5 opacity-50'
+                          : 'bg-white/5'
                   }`}
                 >
                   <Image
@@ -231,19 +249,65 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
                     alt={team.name}
                     width={40}
                     height={40}
-                    className="object-contain w-3/4 h-3/4"
+                    className={`object-contain w-3/4 h-3/4 ${isSold ? 'opacity-40' : ''}`}
                   />
+                  {/* Sold X overlay */}
+                  {isSold && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <path d="M18 6L6 18M6 6l12 12" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )
           })}
         </div>
         
+        {/* Footer stats section */}
+        <div className="mt-3 pt-2 border-t border-white/10 flex items-center justify-between">
+          {/* Left side - Spots and Last winner */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <span className="text-white/50 text-xs">Spots left:</span>
+              <span className="text-white font-semibold text-xs">{spotsLeft}</span>
+            </div>
+            {lastWinner && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-white/50 text-xs">Last winner:</span>
+                <span className="text-white text-xs">
+                  <span className="font-semibold">{lastWinner.username}</span>
+                  <span className="text-white/50"> won </span>
+                  <span className="font-semibold">{lastWinner.team}</span>
+                </span>
+              </div>
+            )}
+          </div>
+          
+          {/* Right side - Hide sold toggle */}
+          <div className="flex items-center gap-2">
+            <span className="text-white/50 text-xs">Hide sold</span>
+            <button
+              onClick={() => setHideSold(!hideSold)}
+              className={`relative w-9 h-5 rounded-full transition-colors ${
+                hideSold ? 'bg-green-500' : 'bg-white/20'
+              }`}
+            >
+              <div 
+                className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                  hideSold ? 'translate-x-4' : 'translate-x-0.5'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+        
         {/* Winner display */}
         <AnimatePresence>
           {phase === "selected" && selectedTeam && (
             <motion.div
-              className="mt-3 pt-2 border-t border-white/10 text-center"
+              className="mt-2 text-center"
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
