@@ -701,8 +701,8 @@ return null
       <AnimatePresence>
         {isRevealing && (
           <>
-            {/* Some animations handle their own overlay, so only render the animation */}
-            {selectedAnimation === "winner-winner" || selectedAnimation === "thumbnails" ? (
+            {/* Chicken Dinner handles its own overlay, so only render the animation */}
+            {selectedAnimation === "winner-winner" ? (
               renderAnimation()
             ) : (
               <>
