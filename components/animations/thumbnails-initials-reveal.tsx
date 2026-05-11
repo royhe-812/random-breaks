@@ -237,7 +237,7 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
                   style={{ backgroundColor: team.color }}
                 >
                   <span 
-                    className={`font-bold text-white text-base ${isSold ? 'opacity-40' : ''}`}
+                    className={`font-bold text-white text-sm ${isSold ? 'opacity-40' : ''}`}
                     style={{ textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}
                   >
                     {team.initials}
