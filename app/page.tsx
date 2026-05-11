@@ -21,10 +21,11 @@ import { CarouselReveal } from "@/components/animations/carousel-reveal"
 import { WinnerWinnerReveal } from "@/components/animations/winner-winner-reveal"
 import { GiftReveal } from "@/components/animations/gift-reveal"
 import { ThumbnailsReveal } from "@/components/animations/thumbnails-reveal"
+import { ThumbnailsInlineReveal } from "@/components/animations/thumbnails-inline-reveal"
 import { InStreamExperience } from "@/components/in-stream-experience"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner" | "gift-reveal" | "thumbnails"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner" | "gift-reveal" | "thumbnails" | "thumbnails-2"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "card-flip", name: "Card Flip" },
@@ -35,6 +36,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "carousel", name: "Carousel" },
   { id: "gift-reveal", name: "Gift Reveal" },
   { id: "thumbnails", name: "Thumbnails" },
+  { id: "thumbnails-2", name: "Thumbnails 2" },
 ]
 
 // Winner Chat Announcement with glow and wipe gradient
@@ -369,9 +371,11 @@ export default function AnimationShowcase() {
 case "gift-reveal":
 return <GiftReveal key={key} {...props} />
 case "thumbnails":
-return <ThumbnailsReveal key={key} {...props} />
-default:
-return null
+  return <ThumbnailsReveal key={key} {...props} />
+case "thumbnails-2":
+  return null // Thumbnails 2 renders inline with stream UI, not in the reveal area
+  default:
+  return null
     }
   }
 
@@ -424,6 +428,21 @@ return null
       
       {/* Gradient overlays for readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
+      
+      {/* Thumbnails 2 - Inline with stream UI */}
+      {selectedAnimation === "thumbnails-2" && (
+        <ThumbnailsInlineReveal 
+          isRevealing={isRevealing}
+          onComplete={() => {
+            setShowWinner(true)
+            chatPausedRef.current = false
+          }}
+          onTeamSelected={(team) => {
+            setWinnerTeam(team)
+            setSelectedTeam(team)
+          }}
+        />
+      )}
       
       {/* eBay Live Header */}
       <div className="absolute top-12 left-0 right-0 z-20 p-4">
@@ -559,7 +578,7 @@ return null
         </div>
 
         {/* Team Spinner with Spots Available - hidden for concepts with built-in randomizer */}
-        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "winner-winner" && selectedAnimation !== "thumbnails" && !showWinner && (
+        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "winner-winner" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && !showWinner && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={16}
@@ -640,7 +659,7 @@ return null
                   chatPausedRef.current = true // Pause chat immediately when bid is placed
                   
                   // For concepts with built-in randomizer, set a random team and trigger reveal after a short delay
-                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "winner-winner" || selectedAnimation === "thumbnails") {
+                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "winner-winner" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2") {
                     const randomTeam = teams[Math.floor(Math.random() * teams.length)]
                     setSelectedTeam(randomTeam)
                     setWinnerTeam(randomTeam)
@@ -702,7 +721,7 @@ return null
         {isRevealing && (
           <>
             {/* Some animations handle their own overlay, so only render the animation */}
-            {selectedAnimation === "winner-winner" || selectedAnimation === "thumbnails" ? (
+            {selectedAnimation === "winner-winner" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" ? (
               renderAnimation()
             ) : (
               <>
