@@ -171,18 +171,18 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
   const selectedTeam = selectedIndex !== null ? teams[selectedIndex] : null
 
   return (
-    <div className="absolute top-16 right-16 z-30">
-      {/* Container matching stream UI style */}
-      <div className="bg-black/40 backdrop-blur-md rounded-2xl p-3 border border-white/10">
+    <div className="absolute top-12 left-4 right-16 z-30">
+      {/* Container matching stream UI style - full width panel */}
+      <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10">
         {/* Header */}
-        <div className="text-center mb-2">
+        <div className="text-center mb-3">
           <span className="text-white/70 text-xs font-medium uppercase tracking-wider">
-            {phase === "idle" ? "Available Teams" : phase === "cycling" ? "Selecting..." : "Your Team"}
+            {phase === "idle" ? "Your Team" : phase === "cycling" ? "Selecting..." : "Your Team"}
           </span>
         </div>
         
-        {/* Grid of team thumbnails - 4x4 compact grid */}
-        <div className="grid grid-cols-4 gap-1.5">
+        {/* Grid of team thumbnails - 8x2 horizontal grid to span width */}
+        <div className="grid grid-cols-8 gap-2">
           {teams.map((team, index) => {
             const isHighlighted = highlightedIndex === index
             const isSelected = selectedIndex === index && phase === "selected"
@@ -218,7 +218,7 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
                 
                 {/* Team logo container */}
                 <div 
-                  className={`relative w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center transition-all duration-150 ${
+                  className={`relative w-full aspect-square rounded-xl overflow-hidden flex items-center justify-center transition-all duration-150 ${
                     isSelected 
                       ? 'bg-white/20 ring-2 ring-white' 
                       : isHighlighted 
@@ -229,9 +229,9 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
                   <Image
                     src={team.logo}
                     alt={team.name}
-                    width={32}
-                    height={32}
-                    className="object-contain"
+                    width={40}
+                    height={40}
+                    className="object-contain w-3/4 h-3/4"
                   />
                 </div>
               </motion.div>
