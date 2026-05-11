@@ -185,13 +185,6 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
     <div className="absolute top-28 left-4 right-20 z-30">
       {/* Container matching stream UI style - full width panel */}
       <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-        {/* Header */}
-        <div className="text-center mb-3">
-          <span className="text-white/70 text-xs font-medium uppercase tracking-wider">
-            {phase === "idle" ? "Your Team" : phase === "cycling" ? "Selecting..." : "Your Team"}
-          </span>
-        </div>
-        
         {/* Grid of team thumbnails - 8x2 horizontal grid to span width */}
         <div className="grid grid-cols-8 gap-2">
           {teams.map((team, index) => {
