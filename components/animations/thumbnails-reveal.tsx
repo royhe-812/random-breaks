@@ -161,7 +161,18 @@ export function ThumbnailsReveal({ isRevealing, onComplete, team: propTeam, onTe
   const selectedTeam = selectedIndex !== null ? teams[selectedIndex] : null
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
+    <div className="absolute inset-0 z-40">
+      {/* Black overlay backdrop */}
+      <motion.div
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+      />
+      
+      {/* Content container */}
+      <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden z-10">
       {/* Winner announcement - shows above grid during reveal */}
       <AnimatePresence>
         {phase !== "idle" && (
@@ -285,6 +296,7 @@ export function ThumbnailsReveal({ isRevealing, onComplete, team: propTeam, onTe
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
       </div>
     </div>
   )
