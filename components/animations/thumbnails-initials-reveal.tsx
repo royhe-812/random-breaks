@@ -184,8 +184,8 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
     <div className="absolute top-28 left-4 right-20 z-30">
       {/* Container matching stream UI style - full width panel */}
       <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-        {/* Grid of team thumbnails - 8x2 horizontal grid to span width */}
-        <div className="grid grid-cols-8 gap-2">
+        {/* Grid of team thumbnails - 6 columns for larger, more legible initials */}
+        <div className="grid grid-cols-6 gap-3">
           {teams.map((team, index) => {
             const isHighlighted = highlightedIndex === index
             const isSelected = selectedIndex === index && phase === "selected"
@@ -227,7 +227,7 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
                 
                 {/* Team color box with initials */}
                 <div 
-                  className={`relative w-full aspect-square rounded-xl overflow-hidden flex items-center justify-center transition-all duration-150 ${
+                  className={`relative w-full aspect-square rounded-lg overflow-hidden flex items-center justify-center transition-all duration-150 ${
                     isSelected 
                       ? 'ring-2 ring-white' 
                       : isSold
@@ -237,8 +237,8 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
                   style={{ backgroundColor: team.color }}
                 >
                   <span 
-                    className={`font-bold text-white text-sm ${isSold ? 'opacity-40' : ''}`}
-                    style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}
+                    className={`font-bold text-white text-base ${isSold ? 'opacity-40' : ''}`}
+                    style={{ textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}
                   >
                     {team.initials}
                   </span>
