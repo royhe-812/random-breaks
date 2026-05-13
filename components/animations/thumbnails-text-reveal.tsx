@@ -193,7 +193,7 @@ export function ThumbnailsTextReveal({ isRevealing, onComplete, team: propTeam, 
             const isHighlighted = highlightedIndex === index
             const isSelected = selectedIndex === index && phase === "selected"
             const isOther = phase === "selected" && selectedIndex !== index
-            const isSold = soldTeams.includes(index) && !isSelected
+            const isSold = soldTeams.includes(index)
             
             // Hide sold teams if toggle is on
             if (hideSold && isSold) {
@@ -204,21 +204,21 @@ export function ThumbnailsTextReveal({ isRevealing, onComplete, team: propTeam, 
               <motion.div
                 key={team.name}
                 className={`relative px-2 py-1 rounded-md transition-all duration-100 ${
-                  isSelected 
-                    ? 'bg-white text-black' 
-                    : isHighlighted 
-                      ? 'bg-white/20 text-white' 
-                      : isSold
-                        ? 'text-white/30 line-through'
+                  isSold
+                    ? 'text-white/30 line-through'
+                    : isSelected 
+                      ? 'bg-white text-black' 
+                      : isHighlighted 
+                        ? 'bg-white/20 text-white' 
                         : 'text-white/70'
                 }`}
                 animate={{
-                  scale: isSelected ? 1.05 : 1,
+                  scale: isSelected && !isSold ? 1.05 : 1,
                   opacity: isOther ? 0.4 : 1,
                 }}
                 transition={{ duration: 0.1 }}
               >
-                <span className={`text-sm font-medium ${isSelected ? 'font-bold' : ''}`}>
+                <span className={`text-sm font-medium ${isSelected && !isSold ? 'font-bold' : ''}`}>
                   {team.name}
                 </span>
               </motion.div>

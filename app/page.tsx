@@ -44,7 +44,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
 ]
 
 // Winner Chat Announcement with glow and wipe gradient
-function WinnerAnnouncement({ username, team, show }: { username: string; team: Team; show: boolean }) {
+function WinnerAnnouncement({ username, team, show, hideTeamBlock = false }: { username: string; team: Team; show: boolean; hideTeamBlock?: boolean }) {
   if (!show) return null
   
   return (
@@ -163,13 +163,15 @@ function WinnerAnnouncement({ username, team, show }: { username: string; team: 
         <p className="text-sm flex items-center gap-2">
           <span className="font-bold text-white">{username}</span>
           <span className="text-white/90">Won</span>
-          {/* Team initials square */}
-          <span 
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-white"
-            style={{ backgroundColor: team.color }}
-          >
-            {team.abbrev}
-          </span>
+          {/* Team initials square - hidden for text-only concepts */}
+          {!hideTeamBlock && (
+            <span 
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-white"
+              style={{ backgroundColor: team.color }}
+            >
+              {team.abbrev}
+            </span>
+          )}
           <motion.span 
             className="font-black text-base text-white"
             style={{ 
@@ -580,14 +582,15 @@ case "thumbnails-4":
           </AnimatePresence>
         </div>
         
-        {/* Winner Announcement - shows in chat after reveal completes */}
-        {showWinner && winnerTeam && selectedAnimation !== "in-stream" && (
-          <WinnerAnnouncement 
-            username="Adam007" 
-            team={winnerTeam} 
-            show={showWinner} 
-          />
-        )}
+{/* Winner Announcement - shows in chat after reveal completes */}
+  {showWinner && winnerTeam && selectedAnimation !== "in-stream" && (
+  <WinnerAnnouncement
+  username="Adam007"
+  team={winnerTeam}
+  show={showWinner}
+  hideTeamBlock={selectedAnimation === "thumbnails-4"}
+  />
+  )}
         
         {/* Reaction messages after winner announcement */}
         {showWinner && reactionMessages.length > 0 && (
