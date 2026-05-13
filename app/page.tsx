@@ -40,7 +40,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "thumbnails", name: "Thumbnails" },
   { id: "thumbnails-2", name: "Thumbnails 2" },
   { id: "thumbnails-3", name: "Thumbnails 3" },
-  { id: "thumbnails-4", name: "Thumbnails 4" },
+  { id: "thumbnails-4", name: "Text" },
 ]
 
 // Winner Chat Announcement with glow and wipe gradient
