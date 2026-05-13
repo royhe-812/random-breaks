@@ -291,7 +291,7 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
                   className="h-full rounded-full transition-all duration-300"
                   style={{ 
                     backgroundColor: '#AD9EFA',
-                    width: `${((32 - spotsLeft) / 32) * 100}%` 
+                    width: `${(spotsLeft / 32) * 100}%` 
                   }}
                 />
               </div>
