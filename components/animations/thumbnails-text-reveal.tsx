@@ -220,7 +220,7 @@ export function ThumbnailsTextReveal({ isRevealing, onComplete, team: propTeam, 
             return (
               <motion.div
                 key={team.name}
-                className={`relative px-2 py-1 rounded-md transition-all duration-100 ${
+                className={`relative px-2 py-1 rounded-md transition-all duration-100 overflow-hidden ${
                   isSold
                     ? 'text-white/30 line-through'
                     : isSelected 
@@ -235,7 +235,7 @@ export function ThumbnailsTextReveal({ isRevealing, onComplete, team: propTeam, 
                 }}
                 transition={{ duration: 0.1 }}
               >
-                <span className={`text-sm font-medium ${isSelected && !isSold ? 'font-bold' : ''}`}>
+                <span className={`text-sm font-medium truncate block ${isSelected && !isSold ? 'font-bold' : ''}`}>
                   {team.name}
                 </span>
               </motion.div>
