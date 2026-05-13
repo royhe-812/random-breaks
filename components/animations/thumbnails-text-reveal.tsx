@@ -41,7 +41,7 @@ export function ThumbnailsTextReveal({ isRevealing, onComplete, team: propTeam, 
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [hideSold, setHideSold] = useState(false)
-  const [spotsLeft, setSpotsLeft] = useState(32)
+  const [spotsLeft, setSpotsLeft] = useState(16)
   const [lastWinner, setLastWinner] = useState<{ username: string; team: string } | null>(null)
   const [soldTeams, setSoldTeams] = useState<number[]>([])
   const hasStartedRef = useRef(false)
@@ -236,7 +236,7 @@ export function ThumbnailsTextReveal({ isRevealing, onComplete, team: propTeam, 
                 <div 
                   className="h-full rounded-full transition-all duration-300"
                   style={{ 
-                    backgroundColor: '#A78BFA',
+                    backgroundColor: '#AD9EFA',
                     width: `${((32 - spotsLeft) / 32) * 100}%` 
                   }}
                 />
