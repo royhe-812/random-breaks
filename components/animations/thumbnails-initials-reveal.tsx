@@ -260,11 +260,16 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
         
         {/* Footer stats section */}
         <div className="mt-3 pt-2 border-t border-white/10">
-          {/* Top row - Spots left and Hide sold toggle */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <span className="text-white/50 text-xs">Spots left:</span>
-              <span className="text-white font-semibold text-xs">{spotsLeft}</span>
+          {/* Spots available with progress bar */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-col gap-1 flex-1 mr-4">
+              <span className="text-white text-xs font-medium">{spotsLeft}/16 spots available</span>
+              <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-purple-400 rounded-full transition-all duration-300"
+                  style={{ width: `${((16 - spotsLeft) / 16) * 100}%` }}
+                />
+              </div>
             </div>
             
             {/* Hide sold toggle */}
