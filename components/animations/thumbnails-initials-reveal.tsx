@@ -143,11 +143,16 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
       hasStartedRef.current = true
       setPhase("cycling")
       
-      // Random final selection
-      const finalIndex = Math.floor(Math.random() * teams.length)
+      // Get available (not sold) team indices
+      const availableIndices = teams
+        .map((_, index) => index)
+        .filter(index => !soldTeams.includes(index))
       
-      // Cycling animation with slowdown
-      let currentIndex = 0
+      // Random final selection from available teams only
+      const finalIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)]
+      
+      // Cycling animation with slowdown - only cycle through available teams
+      let currentAvailableIndex = 0
       let delay = 50
       const maxDelay = 300
       const totalCycles = 25 + Math.floor(Math.random() * 10)
@@ -180,8 +185,8 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
           return
         }
         
-        currentIndex = (currentIndex + 1) % teams.length
-        setHighlightedIndex(currentIndex)
+        currentAvailableIndex = (currentAvailableIndex + 1) % availableIndices.length
+        setHighlightedIndex(availableIndices[currentAvailableIndex])
         playTickSound()
         
         cycleCount++
