@@ -213,7 +213,7 @@ export function TeamSpinner({
             </motion.div>
 
             {/* Team Name / Spot Assignment */}
-            <div className="flex flex-col">
+            <div className="flex flex-col flex-1">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={phase === "idle" ? "idle" : phase === "stopped" ? "hidden" : currentTeam.name}
@@ -232,6 +232,22 @@ export function TeamSpinner({
                 {availableSpots}/{totalSpots} spots available
               </span>
             </div>
+            
+            {/* View all link */}
+            <button className="flex items-center gap-1 text-white/50 hover:text-white/70 transition-colors">
+              <span className="text-sm">View all</span>
+              <svg 
+                className="w-4 h-4" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
           </div>
         </div>
       </motion.div>
