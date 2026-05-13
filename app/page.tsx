@@ -615,7 +615,7 @@ case "thumbnails-3":
                 <span className="font-semibold">{showWinner && winnerTeam ? `${winnerTeam.city} ${winnerTeam.name}` : 'Random team'}</span>
                 <span className="text-white/50"> - 16X 2023 Panini Mosaic NFL Blaster</span>
               </p>
-              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && (
+              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "card-flip" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && (
                 <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
                   <svg width="12" height="15" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="2" y="2" width="28" height="36" rx="3" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5"/>

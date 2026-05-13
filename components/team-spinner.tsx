@@ -229,7 +229,7 @@ export function TeamSpinner({
                 </motion.span>
               </AnimatePresence>
               <span className="text-sm text-white/50">
-                {username ? `${username}'s Spot` : "Spot assignment"}
+                {availableSpots}/{totalSpots} spots available
               </span>
             </div>
           </div>
