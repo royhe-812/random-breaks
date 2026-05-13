@@ -41,7 +41,7 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [hideSold, setHideSold] = useState(false)
-  const [spotsLeft, setSpotsLeft] = useState(16)
+  const [spotsLeft, setSpotsLeft] = useState(32)
   const [lastWinner, setLastWinner] = useState<{ username: string; team: string } | null>(null)
   const [soldTeams, setSoldTeams] = useState<number[]>([])
   const hasStartedRef = useRef(false)
@@ -263,11 +263,14 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
           {/* Spots available with progress bar */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex flex-col gap-1 flex-1 mr-4">
-              <span className="text-white text-xs font-medium">{spotsLeft}/16 spots available</span>
-              <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+              <span className="text-white text-xs font-medium">{spotsLeft}/32 spots available</span>
+              <div className="w-full h-1.5 bg-white/30 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-purple-400 rounded-full transition-all duration-300"
-                  style={{ width: `${((16 - spotsLeft) / 16) * 100}%` }}
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{ 
+                    backgroundColor: '#A78BFA',
+                    width: `${((32 - spotsLeft) / 32) * 100}%` 
+                  }}
                 />
               </div>
             </div>
