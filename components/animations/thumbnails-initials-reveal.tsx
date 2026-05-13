@@ -20,7 +20,26 @@ const teams = [
   { name: "Colts", city: "Indianapolis", color: "#002C5F", initials: "IND", abbrev: "IND" },
   { name: "Texans", city: "Houston", color: "#03202F", initials: "HOU", abbrev: "HOU" },
   { name: "Steelers", city: "Pittsburgh", color: "#FFB612", initials: "PIT", abbrev: "PIT" },
+  { name: "Patriots", city: "New England", color: "#002244", initials: "NE", abbrev: "NE" },
+  { name: "Giants", city: "New York", color: "#0B2265", initials: "NYG", abbrev: "NYG" },
+  { name: "Commanders", city: "Washington", color: "#5A1414", initials: "WAS", abbrev: "WAS" },
+  { name: "Bears", city: "Chicago", color: "#0B162A", initials: "CHI", abbrev: "CHI" },
+  { name: "Vikings", city: "Minnesota", color: "#4F2683", initials: "MIN", abbrev: "MIN" },
+  { name: "Saints", city: "New Orleans", color: "#D3BC8D", initials: "NO", abbrev: "NO" },
+  { name: "Falcons", city: "Atlanta", color: "#A71930", initials: "ATL", abbrev: "ATL" },
+  { name: "Panthers", city: "Carolina", color: "#0085CA", initials: "CAR", abbrev: "CAR" },
+  { name: "Buccaneers", city: "Tampa Bay", color: "#D50A0A", initials: "TB", abbrev: "TB" },
+  { name: "Cardinals", city: "Arizona", color: "#97233F", initials: "ARI", abbrev: "ARI" },
+  { name: "Rams", city: "Los Angeles", color: "#003594", initials: "LAR", abbrev: "LAR" },
+  { name: "Seahawks", city: "Seattle", color: "#002244", initials: "SEA", abbrev: "SEA" },
+  { name: "Raiders", city: "Las Vegas", color: "#000000", initials: "LV", abbrev: "LV" },
+  { name: "Jaguars", city: "Jacksonville", color: "#006778", initials: "JAX", abbrev: "JAX" },
+  { name: "Titans", city: "Tennessee", color: "#0C2340", initials: "TEN", abbrev: "TEN" },
+  { name: "Browns", city: "Cleveland", color: "#311D00", initials: "CLE", abbrev: "CLE" },
 ]
+
+// Pre-sold team indices (16 teams already sold to match 16/32 spots available)
+const initialSoldTeams = [0, 3, 5, 7, 10, 12, 14, 17, 19, 21, 23, 25, 27, 29, 30, 31]
 
 interface Team {
   name: string
@@ -43,7 +62,7 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
   const [hideSold, setHideSold] = useState(false)
   const [spotsLeft, setSpotsLeft] = useState(16)
   const [lastWinner, setLastWinner] = useState<{ username: string; team: string } | null>(null)
-  const [soldTeams, setSoldTeams] = useState<number[]>([])
+  const [soldTeams, setSoldTeams] = useState<number[]>(initialSoldTeams)
   const hasStartedRef = useRef(false)
   const audioContextRef = useRef<AudioContext | null>(null)
 

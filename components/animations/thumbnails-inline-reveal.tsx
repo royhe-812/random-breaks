@@ -21,7 +21,26 @@ const teams = [
   { name: "Colts", city: "Indianapolis", color: "#002C5F", abbrev: "IND", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ind.png" },
   { name: "Texans", city: "Houston", color: "#03202F", abbrev: "HOU", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/hou.png" },
   { name: "Steelers", city: "Pittsburgh", color: "#FFB612", abbrev: "PIT", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png" },
+  { name: "Patriots", city: "New England", color: "#002244", abbrev: "NE", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png" },
+  { name: "Giants", city: "New York", color: "#0B2265", abbrev: "NYG", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png" },
+  { name: "Commanders", city: "Washington", color: "#5A1414", abbrev: "WAS", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png" },
+  { name: "Bears", city: "Chicago", color: "#0B162A", abbrev: "CHI", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" },
+  { name: "Vikings", city: "Minnesota", color: "#4F2683", abbrev: "MIN", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/min.png" },
+  { name: "Saints", city: "New Orleans", color: "#D3BC8D", abbrev: "NO", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/no.png" },
+  { name: "Falcons", city: "Atlanta", color: "#A71930", abbrev: "ATL", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/atl.png" },
+  { name: "Panthers", city: "Carolina", color: "#0085CA", abbrev: "CAR", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/car.png" },
+  { name: "Buccaneers", city: "Tampa Bay", color: "#D50A0A", abbrev: "TB", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/tb.png" },
+  { name: "Cardinals", city: "Arizona", color: "#97233F", abbrev: "ARI", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ari.png" },
+  { name: "Rams", city: "Los Angeles", color: "#003594", abbrev: "LAR", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png" },
+  { name: "Seahawks", city: "Seattle", color: "#002244", abbrev: "SEA", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png" },
+  { name: "Raiders", city: "Las Vegas", color: "#000000", abbrev: "LV", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lv.png" },
+  { name: "Jaguars", city: "Jacksonville", color: "#006778", abbrev: "JAX", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/jax.png" },
+  { name: "Titans", city: "Tennessee", color: "#0C2340", abbrev: "TEN", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ten.png" },
+  { name: "Browns", city: "Cleveland", color: "#311D00", abbrev: "CLE", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/cle.png" },
 ]
+
+// Pre-sold team indices (16 teams already sold to match 16/32 spots available)
+const initialSoldTeams = [0, 3, 5, 7, 10, 12, 14, 17, 19, 21, 23, 25, 27, 29, 30, 31]
 
 interface Team {
   name: string
@@ -44,7 +63,7 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
   const [hideSold, setHideSold] = useState(false)
   const [spotsLeft, setSpotsLeft] = useState(16)
   const [lastWinner, setLastWinner] = useState<{ username: string; team: string } | null>(null)
-  const [soldTeams, setSoldTeams] = useState<number[]>([])
+  const [soldTeams, setSoldTeams] = useState<number[]>(initialSoldTeams)
   const hasStartedRef = useRef(false)
   const audioContextRef = useRef<AudioContext | null>(null)
 

@@ -20,7 +20,26 @@ const teams = [
   { name: "Colts", city: "Indianapolis", abbrev: "IND" },
   { name: "Texans", city: "Houston", abbrev: "HOU" },
   { name: "Steelers", city: "Pittsburgh", abbrev: "PIT" },
+  { name: "Patriots", city: "New England", abbrev: "NE" },
+  { name: "Giants", city: "New York", abbrev: "NYG" },
+  { name: "Commanders", city: "Washington", abbrev: "WAS" },
+  { name: "Bears", city: "Chicago", abbrev: "CHI" },
+  { name: "Vikings", city: "Minnesota", abbrev: "MIN" },
+  { name: "Saints", city: "New Orleans", abbrev: "NO" },
+  { name: "Falcons", city: "Atlanta", abbrev: "ATL" },
+  { name: "Panthers", city: "Carolina", abbrev: "CAR" },
+  { name: "Buccaneers", city: "Tampa Bay", abbrev: "TB" },
+  { name: "Cardinals", city: "Arizona", abbrev: "ARI" },
+  { name: "Rams", city: "Los Angeles", abbrev: "LAR" },
+  { name: "Seahawks", city: "Seattle", abbrev: "SEA" },
+  { name: "Raiders", city: "Las Vegas", abbrev: "LV" },
+  { name: "Jaguars", city: "Jacksonville", abbrev: "JAX" },
+  { name: "Titans", city: "Tennessee", abbrev: "TEN" },
+  { name: "Browns", city: "Cleveland", abbrev: "CLE" },
 ]
+
+// Pre-sold team indices (16 teams already sold to match 16/32 spots available)
+const initialSoldTeams = [0, 3, 5, 7, 10, 12, 14, 17, 19, 21, 23, 25, 27, 29, 30, 31]
 
 interface Team {
   name: string
@@ -43,7 +62,7 @@ export function ThumbnailsTextReveal({ isRevealing, onComplete, team: propTeam, 
   const [hideSold, setHideSold] = useState(false)
   const [spotsLeft, setSpotsLeft] = useState(16)
   const [lastWinner, setLastWinner] = useState<{ username: string; team: string } | null>(null)
-  const [soldTeams, setSoldTeams] = useState<number[]>([])
+  const [soldTeams, setSoldTeams] = useState<number[]>(initialSoldTeams)
   const hasStartedRef = useRef(false)
   const audioContextRef = useRef<AudioContext | null>(null)
 
