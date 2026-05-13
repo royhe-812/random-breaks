@@ -23,10 +23,11 @@ import { GiftReveal } from "@/components/animations/gift-reveal"
 import { ThumbnailsReveal } from "@/components/animations/thumbnails-reveal"
 import { ThumbnailsInlineReveal } from "@/components/animations/thumbnails-inline-reveal"
 import { ThumbnailsInitialsReveal } from "@/components/animations/thumbnails-initials-reveal"
+import { ThumbnailsTextReveal } from "@/components/animations/thumbnails-text-reveal"
 import { InStreamExperience } from "@/components/in-stream-experience"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "card-flip", name: "Card Flip" },
@@ -39,6 +40,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "thumbnails", name: "Thumbnails" },
   { id: "thumbnails-2", name: "Thumbnails 2" },
   { id: "thumbnails-3", name: "Thumbnails 3" },
+  { id: "thumbnails-4", name: "Thumbnails 4" },
 ]
 
 // Winner Chat Announcement with glow and wipe gradient
@@ -378,6 +380,8 @@ case "thumbnails-2":
   return null // Thumbnails 2 renders inline with stream UI, not in the reveal area
 case "thumbnails-3":
   return null // Thumbnails 3 renders inline with stream UI, not in the reveal area
+case "thumbnails-4":
+  return null // Thumbnails 4 renders inline with stream UI, not in the reveal area
   default:
   return null
     }
@@ -451,6 +455,21 @@ case "thumbnails-3":
   {/* Thumbnails 3 - Inline with stream UI using colors and initials */}
   {selectedAnimation === "thumbnails-3" && (
   <ThumbnailsInitialsReveal
+  isRevealing={isRevealing}
+  onComplete={() => {
+  setShowWinner(true)
+  chatPausedRef.current = false
+  }}
+  onTeamSelected={(team) => {
+  setWinnerTeam(team)
+  setSelectedTeam(team)
+  }}
+  />
+  )}
+  
+  {/* Thumbnails 4 - Inline with stream UI using text only */}
+  {selectedAnimation === "thumbnails-4" && (
+  <ThumbnailsTextReveal
   isRevealing={isRevealing}
   onComplete={() => {
   setShowWinner(true)
@@ -597,7 +616,7 @@ case "thumbnails-3":
         </div>
 
         {/* Team Spinner with Spots Available - hidden for concepts with built-in randomizer */}
-        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "winner-winner" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && !showWinner && (
+        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "winner-winner" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && !showWinner && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={16}
@@ -615,7 +634,7 @@ case "thumbnails-3":
                 <span className="font-semibold">{showWinner && winnerTeam ? `${winnerTeam.city} ${winnerTeam.name}` : 'Random team'}</span>
                 <span className="text-white/50"> - 16X 2023 Panini Mosaic NFL Blaster</span>
               </p>
-              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "card-flip" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && (
+              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && (
                 <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
                   <svg width="12" height="15" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="2" y="2" width="28" height="36" rx="3" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5"/>
@@ -680,7 +699,7 @@ case "thumbnails-3":
                   chatPausedRef.current = true // Pause chat immediately when bid is placed
                   
                   // For concepts with built-in randomizer, set a random team and trigger reveal after a short delay
-                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "winner-winner" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3") {
+                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "winner-winner" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" || selectedAnimation === "thumbnails-4") {
                     const randomTeam = teams[Math.floor(Math.random() * teams.length)]
                     setSelectedTeam(randomTeam)
                     setWinnerTeam(randomTeam)
@@ -742,7 +761,7 @@ case "thumbnails-3":
         {isRevealing && (
           <>
             {/* Some animations handle their own overlay, so only render the animation */}
-            {selectedAnimation === "winner-winner" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" ? (
+            {selectedAnimation === "winner-winner" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" || selectedAnimation === "thumbnails-4" ? (
               renderAnimation()
             ) : (
               <>
