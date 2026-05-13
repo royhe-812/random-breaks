@@ -206,16 +206,14 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
       <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10">
         {/* Grid of team thumbnails - 8x2 horizontal grid to span width */}
         <div className="grid grid-cols-8 gap-2">
-          {teams.map((team, index) => {
-            const isHighlighted = highlightedIndex === index
-            const isSelected = selectedIndex === index && phase === "selected"
-            const isOther = phase === "selected" && selectedIndex !== index
-            const isSold = soldTeams.includes(index) && !isSelected
-            
-            // Hide sold teams if toggle is on
-            if (hideSold && isSold) {
-              return <div key={team.name} className="aspect-square" />
-            }
+          {teams
+            .map((team, index) => ({ team, originalIndex: index }))
+            .filter(({ originalIndex }) => !hideSold || !soldTeams.includes(originalIndex))
+            .map(({ team, originalIndex }) => {
+            const isHighlighted = highlightedIndex === originalIndex
+            const isSelected = selectedIndex === originalIndex && phase === "selected"
+            const isOther = phase === "selected" && selectedIndex !== originalIndex
+            const isSold = soldTeams.includes(originalIndex) && !isSelected
             
             return (
               <motion.div

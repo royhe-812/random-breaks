@@ -208,16 +208,14 @@ export function ThumbnailsTextReveal({ isRevealing, onComplete, team: propTeam, 
       <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10">
         {/* Grid of team names - 4 columns for readability */}
         <div className="grid grid-cols-4 gap-x-4 gap-y-2">
-          {teams.map((team, index) => {
-            const isHighlighted = highlightedIndex === index
-            const isSelected = selectedIndex === index && phase === "selected"
-            const isOther = phase === "selected" && selectedIndex !== index
-            const isSold = soldTeams.includes(index)
-            
-            // Hide sold teams if toggle is on
-            if (hideSold && isSold) {
-              return <div key={team.name} className="h-7" />
-            }
+          {teams
+            .map((team, index) => ({ team, originalIndex: index }))
+            .filter(({ originalIndex }) => !hideSold || !soldTeams.includes(originalIndex))
+            .map(({ team, originalIndex }) => {
+            const isHighlighted = highlightedIndex === originalIndex
+            const isSelected = selectedIndex === originalIndex && phase === "selected"
+            const isOther = phase === "selected" && selectedIndex !== originalIndex
+            const isSold = soldTeams.includes(originalIndex)
             
             return (
               <motion.div
