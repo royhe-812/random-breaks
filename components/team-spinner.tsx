@@ -55,7 +55,7 @@ const SpotsIcon = ({ className }: { className?: string }) => (
 // Circular progress component
 const CircularProgress = ({ available, total, size = 16 }: { available: number; total: number; size?: number }) => {
   const percentage = (available / total) * 100
-  const strokeWidth = 2
+  const strokeWidth = 3
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (percentage / 100) * circumference
