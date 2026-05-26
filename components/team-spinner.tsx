@@ -228,7 +228,7 @@ export function TeamSpinner({
                    `${currentTeam.city} ${currentTeam.name}`}
                 </motion.span>
               </AnimatePresence>
-              <span className="text-sm text-white/50">
+              <span className="text-sm text-white">
                 {availableSpots}/{totalSpots} spots available
               </span>
             </div>
