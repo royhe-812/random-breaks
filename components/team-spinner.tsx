@@ -50,9 +50,43 @@ const SpotsIcon = ({ className }: { className?: string }) => (
     <circle cx="16" cy="20" r="5" fill="currentColor"/>
     <path d="M8 34c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
   </svg>
-)
+  )
 
-export function TeamSpinner({ 
+// Circular progress component
+const CircularProgress = ({ available, total, size = 16 }: { available: number; total: number; size?: number }) => {
+  const percentage = (available / total) * 100
+  const strokeWidth = 2
+  const radius = (size - strokeWidth) / 2
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference - (percentage / 100) * circumference
+  
+  return (
+    <svg className="transform -rotate-90" width={size} height={size}>
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="rgba(255,255,255,0.2)"
+        strokeWidth={strokeWidth}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="#AD9EFA"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={strokeDashoffset}
+        style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+      />
+    </svg>
+  )
+}
+  
+  export function TeamSpinner({
   totalSpots, 
   availableSpots, 
   onSpinComplete, 
@@ -228,9 +262,12 @@ export function TeamSpinner({
                    `${currentTeam.city} ${currentTeam.name}`}
                 </motion.span>
               </AnimatePresence>
-              <span className="text-sm text-white">
-                {availableSpots}/{totalSpots} spots available
-              </span>
+              <div className="flex items-center gap-1.5">
+                <CircularProgress available={availableSpots} total={totalSpots} size={16} />
+                <span className="text-sm text-white">
+                  {availableSpots}/{totalSpots} spots available
+                </span>
+              </div>
             </div>
             
             {/* View all link */}
