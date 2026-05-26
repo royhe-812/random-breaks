@@ -619,10 +619,10 @@ case "thumbnails-4":
         </div>
 
         {/* Team Spinner with Spots Available - hidden for concepts with built-in randomizer */}
-        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "winner-winner" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && !showWinner && (
+        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "winner-winner" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
           <TeamSpinner
             totalSpots={32}
-            availableSpots={16}
+            availableSpots={hasWon ? 15 : 16}
             isRevealing={isSpinnerRevealing}
             onSpinComplete={handleSpinComplete}
             username={hasWon ? "Adam007" : undefined}
