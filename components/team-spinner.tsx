@@ -254,20 +254,30 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
             </motion.div>
 
             {/* Team Name / Spot Assignment */}
-            <div className="flex flex-col flex-1">
+            <div className="flex flex-col flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
-                <motion.span
-                  key={phase === "idle" ? "idle" : phase === "stopped" ? "hidden" : currentTeam.name}
-                  className="text-white font-semibold text-sm"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: isSpinning ? 0.05 : 0.15 }}
-                >
-                  {phase === "idle" ? "Win to spin" : 
-                   phase === "stopped" ? "???" : 
-                   `${currentTeam.city} ${currentTeam.name}`}
-                </motion.span>
+                {phase === "idle" ? (
+                  <div className="overflow-hidden">
+                    <motion.div
+                      className="text-white font-semibold text-sm whitespace-nowrap"
+                      animate={{ x: ["0%", "-50%"] }}
+                      transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                    >
+                      2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp; 2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp;
+                    </motion.div>
+                  </div>
+                ) : (
+                  <motion.span
+                    key={phase === "stopped" ? "hidden" : currentTeam.name}
+                    className="text-white font-semibold text-sm"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: isSpinning ? 0.05 : 0.15 }}
+                  >
+                    {phase === "stopped" ? "???" : `${currentTeam.city} ${currentTeam.name}`}
+                  </motion.span>
+                )}
               </AnimatePresence>
               <button 
                 onClick={() => {

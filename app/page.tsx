@@ -635,7 +635,6 @@ case "thumbnails-4":
             <div className="flex-1 pr-2">
               <p className="text-sm text-white mb-0.5 line-clamp-2">
                 <span className="font-semibold">{showWinner && winnerTeam ? `${winnerTeam.city} ${winnerTeam.name}` : 'Random team'}</span>
-                <span className="text-white/50"> - 16X 2023 Panini Mosaic NFL Blaster</span>
               </p>
               {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && (
                 <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
