@@ -231,14 +231,18 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
             <motion.div
               className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white text-xs relative overflow-hidden"
               style={{ 
-                backgroundColor: phase === "idle" ? "#3f3f46" : 
+                backgroundColor: phase === "idle" ? "transparent" : 
                                  phase === "stopped" ? "#666" : currentTeam.color 
               }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.15, ease: "easeInOut" }}
             >
               {phase === "idle" ? (
-                <SpotsIcon className="h-4 w-auto" />
+                <img 
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png" 
+                  alt="Panini Mosaic NFL Box"
+                  className="w-full h-full object-cover rounded-lg"
+                />
               ) : phase === "stopped" ? (
                 "?"
               ) : (
