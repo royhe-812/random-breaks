@@ -102,6 +102,7 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0)
   const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "stopped">("idle")
   const [spinSpeed, setSpinSpeed] = useState(50)
+  const [demoSpots, setDemoSpots] = useState<number | null>(null) // For demo cycling through color states
   const targetTeamIndexRef = useRef<number | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
 
@@ -268,12 +269,21 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
                    `${currentTeam.city} ${currentTeam.name}`}
                 </motion.span>
               </AnimatePresence>
-              <div className="flex items-center gap-1.5">
-                <CircularProgress available={availableSpots} total={totalSpots} size={16} />
+              <button 
+                onClick={() => {
+                  // Cycle through demo states: null (actual) -> 20 (green >50%) -> 12 (yellow 30-50%) -> 5 (red <30%) -> null
+                  if (demoSpots === null) setDemoSpots(20)
+                  else if (demoSpots === 20) setDemoSpots(12)
+                  else if (demoSpots === 12) setDemoSpots(5)
+                  else setDemoSpots(null)
+                }}
+                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+              >
+                <CircularProgress available={demoSpots ?? availableSpots} total={totalSpots} size={16} />
                 <span className="text-sm text-white">
-                  {availableSpots}/{totalSpots} spots available
+                  {demoSpots ?? availableSpots}/{totalSpots} spots available
                 </span>
-              </div>
+              </button>
             </div>
             
             {/* View all link */}
