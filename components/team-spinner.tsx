@@ -60,6 +60,12 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (percentage / 100) * circumference
   
+  const getProgressColor = (pct: number) => {
+    if (pct > 50) return "#4CE160" // Green
+    if (pct > 30) return "#F5A623" // Yellow/Orange
+    return "#FF4444" // Red
+  }
+  
   return (
     <svg className="transform -rotate-90" width={size} height={size}>
       <circle
@@ -75,12 +81,12 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="#AD9EFA"
+        stroke={getProgressColor(percentage)}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         strokeDasharray={circumference}
         strokeDashoffset={strokeDashoffset}
-        style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+        style={{ transition: 'stroke-dashoffset 0.3s ease, stroke 0.3s ease' }}
       />
     </svg>
   )
