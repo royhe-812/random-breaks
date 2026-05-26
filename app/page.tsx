@@ -562,7 +562,7 @@ case "thumbnails-4":
       </div>
 
       {/* Bottom UI Stack - Chat, Comment, Spinner, Auction Card */}
-      <div className="absolute left-4 right-4 bottom-4 z-20 flex flex-col gap-3">
+      <div className="absolute left-4 right-4 bottom-4 z-20 flex flex-col gap-2">
         {/* Chat Messages */}
         <div className="space-y-1.5 max-w-[280px]">
           <AnimatePresence mode="popLayout">
