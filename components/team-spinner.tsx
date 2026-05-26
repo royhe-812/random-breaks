@@ -235,7 +235,7 @@ export function TeamSpinner({
             
             {/* View all link */}
             <button className="flex items-center gap-1 text-white/50 hover:text-white/70 transition-colors">
-              <span className="text-sm">View all</span>
+              <span className="text-sm">View spots</span>
               <svg 
                 className="w-4 h-4" 
                 viewBox="0 0 24 24" 
