@@ -188,7 +188,7 @@ export function TeamSpinner({
           <div className="flex items-center gap-3">
             {/* Team/Spot Indicator */}
             <motion.div
-              className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-lg relative overflow-hidden"
+              className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white text-xs relative overflow-hidden"
               style={{ 
                 backgroundColor: phase === "idle" ? "#3f3f46" : 
                                  phase === "stopped" ? "#666" : currentTeam.color 
@@ -197,7 +197,7 @@ export function TeamSpinner({
               transition={{ duration: 0.15, ease: "easeInOut" }}
             >
               {phase === "idle" ? (
-                <SpotsIcon className="h-6 w-auto" />
+                <SpotsIcon className="h-4 w-auto" />
               ) : phase === "stopped" ? (
                 "?"
               ) : (
