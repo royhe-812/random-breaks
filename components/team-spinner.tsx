@@ -217,7 +217,7 @@ export function TeamSpinner({
               <AnimatePresence mode="wait">
                 <motion.span
                   key={phase === "idle" ? "idle" : phase === "stopped" ? "hidden" : currentTeam.name}
-                  className="text-white font-semibold text-lg"
+                  className="text-white font-semibold text-sm"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
