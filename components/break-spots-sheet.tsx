@@ -346,7 +346,6 @@ function BreakSpotsSheet({
                   )}
                 </AnimatePresence>
               </div>
-              </div>
             </div>
               </>
             )}
