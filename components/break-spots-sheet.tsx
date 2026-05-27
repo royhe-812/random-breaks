@@ -11,6 +11,40 @@ const getProgressColor = (percentage: number) => {
   return "#FF4444" // Red
 }
 
+// Circular progress component (same as in team-spinner)
+const CircularProgress = ({ available, total, size = 16 }: { available: number; total: number; size?: number }) => {
+  const percentage = (available / total) * 100
+  const strokeWidth = 3
+  const radius = (size - strokeWidth) / 2
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference - (percentage / 100) * circumference
+  
+  return (
+    <svg className="transform -rotate-90" width={size} height={size}>
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="rgba(255,255,255,0.2)"
+        strokeWidth={strokeWidth}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={getProgressColor(percentage)}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={strokeDashoffset}
+        style={{ transition: 'stroke-dashoffset 0.3s ease, stroke 0.3s ease' }}
+      />
+    </svg>
+  )
+}
+
 // All 32 NFL teams
 const allTeams = [
   { city: "Kansas City", name: "Chiefs", abbrev: "KC" },
@@ -161,18 +195,9 @@ function BreakSpotsSheet({
                       <h3 className="text-white font-medium text-sm mb-2 leading-tight">
                         16X 2023 Panini Mosaic NFL Blaster PYT RAndom #224
                       </h3>
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <CircularProgress available={spotsAvailable} total={spotsTotal} size={16} />
                         <span className="text-white/60 text-xs">{spotsAvailable}/{spotsTotal} spots available</span>
-                      </div>
-                      {/* Progress Bar */}
-                      <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full rounded-full transition-all duration-300"
-                          style={{ 
-                            backgroundColor: getProgressColor(percentage),
-                            width: `${percentage}%` 
-                          }}
-                        />
                       </div>
                     </div>
                   </div>
