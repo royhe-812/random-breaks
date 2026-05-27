@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, Search } from "lucide-react"
+import { ChevronLeft, ChevronDown, ChevronUp, Search } from "lucide-react"
 
 // Helper function for progress color
 const getProgressColor = (percentage: number) => {
@@ -11,49 +11,51 @@ const getProgressColor = (percentage: number) => {
   return "#FF4444" // Red
 }
 
-// Circular progress component
-const CircularProgress = ({ available, total, size = 16 }: { available: number; total: number; size?: number }) => {
-  const percentage = (available / total) * 100
-  const strokeWidth = 3
-  const radius = (size - strokeWidth) / 2
-  const circumference = 2 * Math.PI * radius
-  const strokeDashoffset = circumference - (percentage / 100) * circumference
-  
-  return (
-    <svg className="transform -rotate-90" width={size} height={size}>
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        fill="none"
-        stroke="rgba(255,255,255,0.2)"
-        strokeWidth={strokeWidth}
-      />
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        fill="none"
-        stroke={getProgressColor(percentage)}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={strokeDashoffset}
-        style={{ transition: 'stroke-dashoffset 0.3s ease, stroke 0.3s ease' }}
-      />
-    </svg>
-  )
-}
-
-// Sample teams data
-const teams = [
+// All 32 NFL teams
+const allTeams = [
   { city: "Kansas City", name: "Chiefs", abbrev: "KC" },
   { city: "Philadelphia", name: "Eagles", abbrev: "PHI" },
-  { city: "San Francisco", name: "49ers", abbrev: "SF" },
   { city: "Dallas", name: "Cowboys", abbrev: "DAL" },
+  { city: "San Francisco", name: "49ers", abbrev: "SF" },
   { city: "Buffalo", name: "Bills", abbrev: "BUF" },
   { city: "Miami", name: "Dolphins", abbrev: "MIA" },
+  { city: "Baltimore", name: "Ravens", abbrev: "BAL" },
+  { city: "Detroit", name: "Lions", abbrev: "DET" },
+  { city: "Green Bay", name: "Packers", abbrev: "GB" },
+  { city: "Cincinnati", name: "Bengals", abbrev: "CIN" },
+  { city: "New York", name: "Jets", abbrev: "NYJ" },
+  { city: "Denver", name: "Broncos", abbrev: "DEN" },
+  { city: "Los Angeles", name: "Chargers", abbrev: "LAC" },
+  { city: "Indianapolis", name: "Colts", abbrev: "IND" },
+  { city: "Houston", name: "Texans", abbrev: "HOU" },
+  { city: "Pittsburgh", name: "Steelers", abbrev: "PIT" },
+  { city: "New England", name: "Patriots", abbrev: "NE" },
+  { city: "New York", name: "Giants", abbrev: "NYG" },
+  { city: "Washington", name: "Commanders", abbrev: "WAS" },
+  { city: "Chicago", name: "Bears", abbrev: "CHI" },
+  { city: "Minnesota", name: "Vikings", abbrev: "MIN" },
+  { city: "New Orleans", name: "Saints", abbrev: "NO" },
+  { city: "Atlanta", name: "Falcons", abbrev: "ATL" },
+  { city: "Carolina", name: "Panthers", abbrev: "CAR" },
+  { city: "Tampa Bay", name: "Buccaneers", abbrev: "TB" },
+  { city: "Arizona", name: "Cardinals", abbrev: "ARI" },
+  { city: "Los Angeles", name: "Rams", abbrev: "LAR" },
+  { city: "Seattle", name: "Seahawks", abbrev: "SEA" },
+  { city: "Las Vegas", name: "Raiders", abbrev: "LV" },
+  { city: "Jacksonville", name: "Jaguars", abbrev: "JAX" },
+  { city: "Tennessee", name: "Titans", abbrev: "TEN" },
+  { city: "Cleveland", name: "Browns", abbrev: "CLE" },
 ]
+
+// Pre-sold teams (16 sold to match 16/32 available)
+const soldTeamIndices = [0, 3, 5, 7, 10, 12, 14, 17, 19, 21, 23, 25, 27, 29, 30, 31]
+const soldTeams = soldTeamIndices.map((index, i) => ({
+  ...allTeams[index],
+  buyer: ["KemMajed90", "BestCollector", "CardKing22", "SportsGuru", "PackRipper", "HobbyFan", "CardChaser", "BigHits", "TopPulls", "RookieHunter", "GradedGems", "WaxBreaker", "HitMaker", "CardShark", "BoxBreaker", "SerialHunter"][i],
+  price: [28, 35, 22, 45, 18, 32, 25, 40, 30, 28, 35, 22, 45, 18, 32, 25][i]
+}))
+
+const availableTeams = allTeams.filter((_, index) => !soldTeamIndices.includes(index))
 
 // Break Spots Sheet Component
 function BreakSpotsSheet({ 
@@ -67,12 +69,12 @@ function BreakSpotsSheet({
   spotsAvailable: number
   spotsTotal: number
 }) {
-  const [activeFilter, setActiveFilter] = useState("Auctions")
-  const [showHowItWorks, setShowHowItWorks] = useState(false)
-  const filters = ["Available", "Deals", "Auctions", "Buy It"]
+  const [activeFilter, setActiveFilter] = useState("Available")
+  const [availableExpanded, setAvailableExpanded] = useState(true)
+  const [soldExpanded, setSoldExpanded] = useState(true)
+  const filters = ["Available", "Sold", "Auctions", "Buy It Now"]
   
-  const featuredTeam = teams[0]
-  const otherTeams = teams.slice(1, 6)
+  const percentage = (spotsAvailable / spotsTotal) * 100
   
   return (
     <AnimatePresence>
@@ -95,177 +97,170 @@ function BreakSpotsSheet({
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
           >
-            {showHowItWorks ? (
-              <>
-                {/* How It Works Header */}
-                <div className="flex items-center gap-3 px-4 py-4">
-                  <button 
-                    onClick={() => setShowHowItWorks(false)}
-                    className="w-8 h-8 flex items-center justify-center"
-                  >
-                    <ChevronLeft className="w-6 h-6 text-white" />
-                  </button>
-                  <h2 className="text-white font-semibold text-lg">How it works</h2>
-                </div>
-                
-                {/* How It Works Content */}
-                <div className="flex-1 overflow-y-auto px-4 pb-8">
-                  <h3 className="text-white font-semibold text-lg mb-4">How Case Breaks Work</h3>
-                  
-                  <div className="space-y-4">
-                    <div className="flex gap-3">
-                      <div className="w-6 h-6 rounded-full bg-[#4CE160] text-black flex items-center justify-center text-sm font-semibold flex-shrink-0">1</div>
-                      <div>
-                        <p className="text-white font-medium mb-1">Choose Your Spot</p>
-                        <p className="text-white/60 text-sm">Select a team or player from the board. Each spot gives you all cards from that team/player.</p>
-                      </div>
+            {/* Handle */}
+            <div className="flex justify-center pt-2 pb-1">
+              <div className="w-10 h-1 bg-white/30 rounded-full" />
+            </div>
+            
+            {/* Header */}
+            <div className="flex items-center gap-3 px-4 py-3">
+              <button 
+                onClick={onClose}
+                className="w-8 h-8 flex items-center justify-center"
+              >
+                <ChevronLeft className="w-6 h-6 text-white" />
+              </button>
+              <h2 className="text-white font-semibold text-lg">Break spots</h2>
+            </div>
+            
+            {/* Search Bar */}
+            <div className="px-4 mb-3">
+              <div className="flex items-center gap-2 bg-[#2a2a2a] rounded-full px-4 py-2.5">
+                <Search className="w-4 h-4 text-white/50" />
+                <input
+                  type="text"
+                  placeholder="Search item title"
+                  className="flex-1 bg-transparent text-white text-sm placeholder:text-white/50 outline-none"
+                />
+              </div>
+            </div>
+            
+            {/* Filter Tabs */}
+            <div className="flex gap-2 px-4 mb-4 overflow-x-auto">
+              {filters.map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveFilter(filter)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                    activeFilter === filter
+                      ? "bg-white text-black"
+                      : "bg-[#2a2a2a] text-white"
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+            
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto px-4 pb-8">
+              {/* Product Info Card */}
+              <div className="relative mb-6">
+                <div className="bg-[#2a2a2a] rounded-2xl p-3">
+                  <div className="flex gap-3">
+                    {/* Product Image */}
+                    <div className="w-20 h-20 bg-[#3a3a3a] rounded-xl flex items-center justify-center overflow-hidden">
+                      <img 
+                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png"
+                        alt="Product"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    
-                    <div className="flex gap-3">
-                      <div className="w-6 h-6 rounded-full bg-[#4CE160] text-black flex items-center justify-center text-sm font-semibold flex-shrink-0">2</div>
-                      <div>
-                        <p className="text-white font-medium mb-1">Random Selection</p>
-                        <p className="text-white/60 text-sm">When you bid, you&apos;re entered into a randomizer that selects your team. The more you bid, the more chances to win!</p>
+                    {/* Product Info */}
+                    <div className="flex-1">
+                      <h3 className="text-white font-medium text-sm mb-2 leading-tight">
+                        16X 2023 Panini Mosaic NFL Blaster PYT RAndom #224
+                      </h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-white/60 text-xs">{spotsAvailable}/{spotsTotal} spots available</span>
                       </div>
-                    </div>
-                    
-                    <div className="flex gap-3">
-                      <div className="w-6 h-6 rounded-full bg-[#4CE160] text-black flex items-center justify-center text-sm font-semibold flex-shrink-0">3</div>
-                      <div>
-                        <p className="text-white font-medium mb-1">Watch Live</p>
-                        <p className="text-white/60 text-sm">The streamer opens packs live on camera. When your team&apos;s cards are pulled, they&apos;re yours!</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-3">
-                      <div className="w-6 h-6 rounded-full bg-[#4CE160] text-black flex items-center justify-center text-sm font-semibold flex-shrink-0">4</div>
-                      <div>
-                        <p className="text-white font-medium mb-1">Cards Ship</p>
-                        <p className="text-white/60 text-sm">After the break, all your cards are shipped directly to you. Hits and base cards included.</p>
+                      {/* Progress Bar */}
+                      <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full rounded-full transition-all duration-300"
+                          style={{ 
+                            backgroundColor: getProgressColor(percentage),
+                            width: `${percentage}%` 
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
-              </>
-            ) : (
-              <>
-                {/* Header */}
-                <div className="flex items-center gap-3 px-4 py-4">
-                  <button 
-                    onClick={onClose}
-                    className="w-8 h-8 flex items-center justify-center"
-                  >
-                    <ChevronLeft className="w-6 h-6 text-white" />
-                  </button>
-                  <h2 className="text-white font-semibold text-lg">Break spots</h2>
-                </div>
+              </div>
+              
+              {/* Available Section */}
+              <div className="mb-4">
+                <button 
+                  onClick={() => setAvailableExpanded(!availableExpanded)}
+                  className="flex items-center justify-between w-full py-3"
+                >
+                  <span className="text-white font-semibold text-base">Available</span>
+                  {availableExpanded ? (
+                    <ChevronUp className="w-5 h-5 text-white" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-white" />
+                  )}
+                </button>
                 
-                {/* Search Bar */}
-                <div className="px-4 mb-3">
-                  <div className="flex items-center gap-2 bg-[#2a2a2a] rounded-full px-4 py-2.5">
-                    <Search className="w-4 h-4 text-white/50" />
-                    <input
-                      type="text"
-                      placeholder="Search item title"
-                      className="flex-1 bg-transparent text-white text-sm placeholder:text-white/50 outline-none"
-                    />
-                  </div>
-                </div>
-                
-                {/* Filter Tabs */}
-                <div className="flex gap-2 px-4 mb-4 overflow-x-auto">
-                  {filters.map((filter) => (
-                    <button
-                      key={filter}
-                      onClick={() => setActiveFilter(filter)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                        activeFilter === filter
-                          ? "bg-white text-black"
-                          : "bg-[#2a2a2a] text-white"
-                      }`}
+                <AnimatePresence>
+                  {availableExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
                     >
-                      {filter === "Deals" && "⚡ "}
-                      {filter}
-                    </button>
-                  ))}
-                </div>
-                
-                {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto px-4 pb-8">
-                  {/* Product Info Card */}
-                  <div className="relative mb-4">
-                    <div className="bg-[#2a2a2a] rounded-2xl p-3">
-                      <div className="flex gap-3">
-                        {/* Product Image */}
-                        <div className="w-24 h-24 bg-[#3a3a3a] rounded-xl flex items-center justify-center overflow-hidden">
-                          <img 
-                            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Image-pTVuzQXm3tPfRoutZsJGiWKXwCK9yL.png"
-                            alt="Product"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        {/* Product Info */}
-                        <div className="flex-1">
-                          <h3 className="text-white font-medium text-sm mb-1">
-                            2025 Panini Luminance Football Hobby PYT Box Break #903
-                          </h3>
-                          <div className="flex items-center gap-1.5">
-                            <CircularProgress available={spotsAvailable} total={spotsTotal} size={16} />
-                            <span className="text-white/60 text-xs">{spotsAvailable}/{spotsTotal} spots available</span>
+                      <div className="space-y-0">
+                        {availableTeams.map((team) => (
+                          <div key={team.abbrev} className="py-2">
+                            <span className="text-white text-sm">{team.city} {team.name}</span>
                           </div>
-                          <button 
-                            onClick={() => setShowHowItWorks(true)}
-                            className="text-[#707070] text-xs font-medium underline"
-                          >
-                            How it works
-                          </button>
-                        </div>
+                        ))}
                       </div>
-                    </div>
-                  </div>
-                  
-                  {/* Featured Team Section */}
-                  <div className="mb-4 pb-4 border-b border-white/10">
-                    <div className="mb-2">
-                      <span className="text-[10px] font-semibold text-green-400 border border-green-400 rounded px-1.5 py-0.5">
-                        FEATURED
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="text-white font-medium">{featuredTeam.city} {featuredTeam.name}</p>
-                        <p className="text-white font-bold text-lg">$30.00</p>
-                        <div className="flex items-center gap-1">
-                          <span className="text-white/50 text-xs">$5 shipping</span>
-                        </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              
+              {/* Sold Section */}
+              <div className="mb-4">
+                <button 
+                  onClick={() => setSoldExpanded(!soldExpanded)}
+                  className="flex items-center justify-between w-full py-3"
+                >
+                  <span className="text-white font-semibold text-base">Sold</span>
+                  {soldExpanded ? (
+                    <ChevronUp className="w-5 h-5 text-white" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-white" />
+                  )}
+                </button>
+                
+                <AnimatePresence>
+                  {soldExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="space-y-0">
+                        {soldTeams.map((team) => (
+                          <div key={team.abbrev} className="flex items-center justify-between py-2">
+                            <div>
+                              <div className="flex items-center gap-1">
+                                <span className="text-white text-sm">{team.city} {team.name}</span>
+                                <ChevronDown className="w-3 h-3 text-white/50 rotate-[-90deg]" />
+                              </div>
+                              <span className="text-white/50 text-xs">${team.price}.00</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-white/50 text-xs">{team.buyer}</span>
+                              <span className="text-[10px] font-medium text-white/50 bg-white/10 rounded px-1.5 py-0.5">
+                                SOLD
+                              </span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <div className="flex items-center gap-1 text-red-400">
-                        <span className="text-sm font-medium">00:10</span>
-                      </div>
-                    </div>
-                    
-                    <button className="w-full bg-[#4CE160] text-black font-semibold py-3 rounded-full text-sm">
-                      Bid in stream
-                    </button>
-                  </div>
-                  
-                  {/* Other Team Spots List */}
-                  {otherTeams.map((team) => (
-                    <div key={team.abbrev} className="flex items-center justify-between py-3 border-b border-white/10">
-                      <div>
-                        <p className="text-white font-medium">{team.city} {team.name}</p>
-                        <p className="text-white font-bold">$1.00</p>
-                        <span className="text-white/50 text-xs">$5 shipping</span>
-                      </div>
-                      <span className="text-white/40 text-xs font-medium border border-white/20 rounded px-2 py-1">
-                        STARTING SOON
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
           </motion.div>
         </>
       )}
