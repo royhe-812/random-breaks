@@ -106,6 +106,7 @@ function BreakSpotsSheet({
   const [activeFilter, setActiveFilter] = useState("Available")
   const [availableExpanded, setAvailableExpanded] = useState(true)
   const [soldExpanded, setSoldExpanded] = useState(true)
+  const [showHowItWorks, setShowHowItWorks] = useState(false)
   const filters = ["Available", "Sold", "Auctions", "Buy It Now"]
   
   const percentage = (spotsAvailable / spotsTotal) * 100
@@ -136,6 +137,60 @@ function BreakSpotsSheet({
               <div className="w-10 h-1 bg-white/30 rounded-full" />
             </div>
             
+            {showHowItWorks ? (
+              <>
+                {/* How It Works Header */}
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <button 
+                    onClick={() => setShowHowItWorks(false)}
+                    className="w-8 h-8 flex items-center justify-center"
+                  >
+                    <ChevronLeft className="w-6 h-6 text-white" />
+                  </button>
+                  <h2 className="text-white font-semibold text-lg">How it works</h2>
+                </div>
+                
+                {/* How It Works Content */}
+                <div className="flex-1 overflow-y-auto px-4 pb-8">
+                  <h3 className="text-white font-semibold text-lg mb-4">How Case Breaks Work</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="flex gap-3">
+                      <div className="w-6 h-6 rounded-full bg-[#4CE160] text-black flex items-center justify-center text-sm font-semibold flex-shrink-0">1</div>
+                      <div>
+                        <p className="text-white font-medium mb-1">Choose Your Spot</p>
+                        <p className="text-white/60 text-sm">Select a team or player from the board. Each spot gives you all cards from that team/player.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3">
+                      <div className="w-6 h-6 rounded-full bg-[#4CE160] text-black flex items-center justify-center text-sm font-semibold flex-shrink-0">2</div>
+                      <div>
+                        <p className="text-white font-medium mb-1">Random Selection</p>
+                        <p className="text-white/60 text-sm">When you bid, you&apos;re entered into a randomizer that selects your team. The more you bid, the more chances to win!</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3">
+                      <div className="w-6 h-6 rounded-full bg-[#4CE160] text-black flex items-center justify-center text-sm font-semibold flex-shrink-0">3</div>
+                      <div>
+                        <p className="text-white font-medium mb-1">Watch Live</p>
+                        <p className="text-white/60 text-sm">The streamer opens packs live on camera. When your team&apos;s cards are pulled, they&apos;re yours!</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3">
+                      <div className="w-6 h-6 rounded-full bg-[#4CE160] text-black flex items-center justify-center text-sm font-semibold flex-shrink-0">4</div>
+                      <div>
+                        <p className="text-white font-medium mb-1">Cards Ship</p>
+                        <p className="text-white/60 text-sm">After the break, all your cards are shipped directly to you. Hits and base cards included.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-3">
               <button 
@@ -199,6 +254,12 @@ function BreakSpotsSheet({
                         <CircularProgress available={spotsAvailable} total={spotsTotal} size={16} />
                         <span className="text-white/60 text-xs">{spotsAvailable}/{spotsTotal} spots available</span>
                       </div>
+                      <button 
+                        onClick={() => setShowHowItWorks(true)}
+                        className="text-[#707070] text-xs mt-1 underline"
+                      >
+                        How it works
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -285,7 +346,10 @@ function BreakSpotsSheet({
                   )}
                 </AnimatePresence>
               </div>
+              </div>
             </div>
+              </>
+            )}
           </motion.div>
         </>
       )}
