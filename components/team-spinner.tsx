@@ -40,6 +40,7 @@ interface TeamSpinnerProps {
   onSpinComplete: (team: Team) => void
   isRevealing: boolean
   username?: string
+  onViewSpots?: () => void
 }
 
 // Spots icon component (trading card with person profile)
@@ -97,7 +98,8 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
   availableSpots, 
   onSpinComplete, 
   isRevealing,
-  username
+  username,
+  onViewSpots
 }: TeamSpinnerProps) {
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0)
   const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "stopped">("idle")
@@ -301,7 +303,10 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
             </div>
             
             {/* View all link */}
-            <button className="flex items-center gap-1 text-white/50 hover:text-white/70 transition-colors">
+            <button 
+              onClick={onViewSpots}
+              className="flex items-center gap-1 text-white/50 hover:text-white/70 transition-colors"
+            >
               <span className="text-sm">View spots</span>
               <svg 
                 className="w-4 h-4" 

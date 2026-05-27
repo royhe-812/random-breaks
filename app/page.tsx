@@ -26,6 +26,7 @@ import { ThumbnailsInitialsReveal } from "@/components/animations/thumbnails-ini
 import { ThumbnailsTextReveal } from "@/components/animations/thumbnails-text-reveal"
 import { InStreamExperience } from "@/components/in-stream-experience"
 import { SwipeToBid } from "@/components/swipe-to-bid"
+import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 
 type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
@@ -216,6 +217,7 @@ export default function AnimationShowcase() {
   const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("card-flip")
   const [isRevealing, setIsRevealing] = useState(false)
   const [isSpinnerRevealing, setIsSpinnerRevealing] = useState(false) // For TeamSpinner cycling
+  const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
   const [hasWon, setHasWon] = useState(false)
@@ -626,6 +628,7 @@ case "thumbnails-4":
             isRevealing={isSpinnerRevealing}
             onSpinComplete={handleSpinComplete}
             username={hasWon ? "Adam007" : undefined}
+            onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
         )}
 
@@ -806,6 +809,14 @@ case "thumbnails-4":
           </>
         )}
       </AnimatePresence>
+      
+      {/* Break Spots Sheet */}
+      <BreakSpotsSheet 
+        isOpen={isBreakSpotsOpen} 
+        onClose={() => setIsBreakSpotsOpen(false)}
+        spotsAvailable={hasWon ? 15 : 16}
+        spotsTotal={32}
+      />
     </div>
   )
 }
