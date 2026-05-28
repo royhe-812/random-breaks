@@ -3,6 +3,47 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
+// Helper function for progress color
+const getProgressColor = (percentage: number) => {
+  if (percentage > 50) return "#4CE160" // Green
+  if (percentage > 30) return "#F5A623" // Yellow/Orange
+  return "#FF4444" // Red
+}
+
+// Circular progress component
+const CircularProgress = ({ available, total, size = 16 }: { available: number; total: number; size?: number }) => {
+  const percentage = (available / total) * 100
+  const strokeWidth = 3
+  const radius = (size - strokeWidth) / 2
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference - (percentage / 100) * circumference
+  
+  return (
+    <svg className="transform -rotate-90" width={size} height={size}>
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="rgba(255,255,255,0.2)"
+        strokeWidth={strokeWidth}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={getProgressColor(percentage)}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={strokeDashoffset}
+        style={{ transition: 'stroke-dashoffset 0.3s ease, stroke 0.3s ease' }}
+      />
+    </svg>
+  )
+}
+
 const teams = [
   { name: "Chiefs", city: "Kansas City", color: "#E31837", initials: "KC", abbrev: "KC" },
   { name: "Eagles", city: "Philadelphia", color: "#004C54", initials: "PHI", abbrev: "PHI" },
@@ -284,17 +325,9 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
         <div className="mt-3 pt-2 border-t border-white/10">
           {/* Spots available with progress bar */}
           <div className="flex items-center justify-between mb-2">
-            <div className="flex flex-col gap-1 flex-1 mr-4">
+            <div className="flex items-center gap-1.5 flex-1 mr-4">
+              <CircularProgress available={spotsLeft} total={32} size={16} />
               <span className="text-white text-xs font-medium">{spotsLeft}/32 spots available</span>
-              <div className="w-full h-1.5 bg-white/30 rounded-full overflow-hidden">
-                <div 
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{ 
-                    backgroundColor: '#AD9EFA',
-                    width: `${(spotsLeft / 32) * 100}%` 
-                  }}
-                />
-              </div>
             </div>
             
             {/* Hide sold toggle */}
