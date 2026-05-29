@@ -333,8 +333,8 @@ function BreakSpotsSheet({
                               </div>
                               <span className="text-white/50 text-xs">${team.price}.00</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-white/50 text-xs">{team.buyer}</span>
+                            <div className="flex flex-col items-end gap-1">
+                              <span className="text-white/50 text-sm">{team.buyer}</span>
                               <span className="text-[10px] font-bold text-[#FF4444] border border-[#FF4444] rounded-full px-2 py-0.5">
                                 SOLD OUT
                               </span>
