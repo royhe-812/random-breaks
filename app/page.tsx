@@ -413,9 +413,11 @@ case "thumbnails-4":
                     ? "bg-zinc-800/50 text-white/30 cursor-not-allowed"
                     : selectedAnimation === animation.id
                     ? "bg-green-500 text-black"
-                    : (animation.id === "card-flip" || animation.id === "thumbnails-2")
-                    ? "bg-zinc-800 text-white/70 hover:bg-zinc-700"
-                    : "bg-zinc-800/40 text-white/30 hover:bg-zinc-800/60"
+                    : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
+                } ${
+                  (animation.id === "card-flip" || animation.id === "thumbnails-2")
+                    ? "ring-1 ring-yellow-400"
+                    : ""
                 }`}
               >
                 {animation.name}
