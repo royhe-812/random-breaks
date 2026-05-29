@@ -416,7 +416,7 @@ case "thumbnails-4":
                     : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
                 } ${
                   (animation.id === "card-flip" || animation.id === "thumbnails-2")
-                    ? "ring-1 ring-yellow-400"
+                    ? "ring-1 ring-inset ring-yellow-400"
                     : ""
                 }`}
               >
