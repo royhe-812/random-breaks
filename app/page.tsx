@@ -31,8 +31,8 @@ import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
-  { id: "card-flip", name: "Card Flip" },
-  { id: "thumbnails-2", name: "Thumbnails 2" },
+  { id: "card-flip", name: "Minimal" },
+  { id: "thumbnails-2", name: "Extended" },
   { id: "winner-winner", name: "Card Reveal" },
   { id: "pack-rip", name: "Pack Rip" },
   { id: "slot-machine", name: "Team Picker" },
