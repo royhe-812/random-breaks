@@ -1,7 +1,7 @@
 "use client"
 
 // React hooks - all required hooks imported
-import { useCallback, useEffect, useRef, useState } from "react"
+import { Fragment, useCallback, useEffect, useRef, useState } from "react"
 
 // External libraries
 import { AnimatePresence, motion } from "framer-motion"
@@ -400,24 +400,28 @@ case "thumbnails-4":
         >
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {animations.map((animation) => (
-              <button
-                key={animation.id}
-                onClick={() => !animation.disabled && setSelectedAnimation(animation.id)}
-                disabled={animation.disabled}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  animation.disabled
-                    ? "bg-zinc-800/50 text-white/30 cursor-not-allowed"
-                    : selectedAnimation === animation.id
-                    ? "bg-green-500 text-black"
-                    : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
-                } ${
-                  (animation.id === "card-flip" || animation.id === "thumbnails-2")
-                    ? "ring-1 ring-inset ring-yellow-400"
-                    : ""
-                }`}
-              >
-                {animation.name}
-              </button>
+              <Fragment key={animation.id}>
+                <button
+                  onClick={() => !animation.disabled && setSelectedAnimation(animation.id)}
+                  disabled={animation.disabled}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    animation.disabled
+                      ? "bg-zinc-800/50 text-white/30 cursor-not-allowed"
+                      : selectedAnimation === animation.id
+                      ? "bg-green-500 text-black"
+                      : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
+                  } ${
+                    (animation.id === "card-flip" || animation.id === "thumbnails-2")
+                      ? "ring-1 ring-inset ring-yellow-400"
+                      : ""
+                  }`}
+                >
+                  {animation.name}
+                </button>
+                {animation.id === "thumbnails-2" && (
+                  <div className="flex-shrink-0 self-center w-px h-5 bg-white/20 mx-1" aria-hidden="true" />
+                )}
+              </Fragment>
             ))}
           </div>
         </motion.div>
@@ -743,24 +747,28 @@ case "thumbnails-4":
       >
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {animations.map((animation) => (
-            <button
-              key={animation.id}
-              onClick={() => !animation.disabled && setSelectedAnimation(animation.id)}
-              disabled={animation.disabled}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                animation.disabled
-                  ? "bg-zinc-800/50 text-white/30 cursor-not-allowed"
-                  : selectedAnimation === animation.id
-                  ? "bg-green-500 text-black"
-                  : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
-              } ${
-                (animation.id === "card-flip" || animation.id === "thumbnails-2")
-                  ? "ring-1 ring-inset ring-yellow-400"
-                  : ""
-              }`}
-            >
-              {animation.name}
-            </button>
+            <Fragment key={animation.id}>
+              <button
+                onClick={() => !animation.disabled && setSelectedAnimation(animation.id)}
+                disabled={animation.disabled}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  animation.disabled
+                    ? "bg-zinc-800/50 text-white/30 cursor-not-allowed"
+                    : selectedAnimation === animation.id
+                    ? "bg-green-500 text-black"
+                    : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
+                } ${
+                  (animation.id === "card-flip" || animation.id === "thumbnails-2")
+                    ? "ring-1 ring-inset ring-yellow-400"
+                    : ""
+                }`}
+              >
+                {animation.name}
+              </button>
+              {animation.id === "thumbnails-2" && (
+                <div className="flex-shrink-0 self-center w-px h-5 bg-white/20 mx-1" aria-hidden="true" />
+              )}
+            </Fragment>
           ))}
         </div>
       </motion.div>
