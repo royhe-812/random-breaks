@@ -634,8 +634,9 @@ case "thumbnails-4":
             isRevealing={isSpinnerRevealing}
             onSpinComplete={handleSpinComplete}
             username={hasWon ? "Adam007" : undefined}
-            onViewSpots={() => setIsBreakSpotsOpen(true)}
-          />
+  onViewSpots={() => setIsBreakSpotsOpen(true)}
+  hideSpotsLabel={selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel"}
+  />
         )}
 
         {/* Auction Card */}
