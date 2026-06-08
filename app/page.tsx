@@ -36,10 +36,11 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "slot-machine", name: "Team Picker" },
   { id: "battle", name: "Battle" },
   { id: "carousel", name: "Carousel" },
-  { id: "gift-reveal", name: "Gift Reveal" },
-  { id: "thumbnails", name: "Thumbnails" },
+  // Temporarily hidden from the concepts list (kept for potential future use):
+  // { id: "gift-reveal", name: "Gift Reveal" },
+  // { id: "thumbnails", name: "Thumbnails" },
   { id: "thumbnails-3", name: "Thumbnails 3" },
-  { id: "thumbnails-4", name: "Text" },
+  // { id: "thumbnails-4", name: "Text" },
 ]
 
 // Winner Chat Announcement with glow and wipe gradient
