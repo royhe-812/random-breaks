@@ -41,7 +41,6 @@ interface TeamSpinnerProps {
   isRevealing: boolean
   username?: string
   onViewSpots?: () => void
-  hideSpotsLabel?: boolean
 }
 
 // Spots icon component (trading card with person profile)
@@ -101,7 +100,6 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
   isRevealing,
   username,
   onViewSpots,
-  hideSpotsLabel
 }: TeamSpinnerProps) {
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0)
   const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "stopped">("idle")
@@ -287,23 +285,21 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
                   </motion.span>
                 )}
               </AnimatePresence>
-              {!hideSpotsLabel && (
-                <button 
-                  onClick={() => {
-                    // Cycle through demo states: null (actual) -> 20 (green >50%) -> 12 (yellow 30-50%) -> 5 (red <30%) -> null
-                    if (demoSpots === null) setDemoSpots(20)
-                    else if (demoSpots === 20) setDemoSpots(12)
-                    else if (demoSpots === 12) setDemoSpots(5)
-                    else setDemoSpots(null)
-                  }}
-                  className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-                >
-                  <CircularProgress available={demoSpots ?? availableSpots} total={totalSpots} size={16} />
-                  <span className="text-sm text-white">
-                    {demoSpots ?? availableSpots}/{totalSpots} spots available
-                  </span>
-                </button>
-              )}
+              <button 
+                onClick={() => {
+                  // Cycle through demo states: null (actual) -> 20 (green >50%) -> 12 (yellow 30-50%) -> 5 (red <30%) -> null
+                  if (demoSpots === null) setDemoSpots(20)
+                  else if (demoSpots === 20) setDemoSpots(12)
+                  else if (demoSpots === 12) setDemoSpots(5)
+                  else setDemoSpots(null)
+                }}
+                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+              >
+                <CircularProgress available={demoSpots ?? availableSpots} total={totalSpots} size={16} />
+                <span className="text-sm text-white">
+                  {demoSpots ?? availableSpots}/{totalSpots} spots available
+                </span>
+              </button>
             </div>
             
             {/* View all link */}

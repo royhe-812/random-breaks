@@ -634,9 +634,8 @@ case "thumbnails-4":
             isRevealing={isSpinnerRevealing}
             onSpinComplete={handleSpinComplete}
             username={hasWon ? "Adam007" : undefined}
-  onViewSpots={() => setIsBreakSpotsOpen(true)}
-  hideSpotsLabel={selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel"}
-  />
+            onViewSpots={() => setIsBreakSpotsOpen(true)}
+          />
         )}
 
         {/* Auction Card */}
@@ -646,7 +645,7 @@ case "thumbnails-4":
               <p className="text-sm text-white mb-0.5 line-clamp-2">
                 <span className="font-semibold">{showWinner && winnerTeam ? `${winnerTeam.city} ${winnerTeam.name}` : 'Random team'}</span>
               </p>
-              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && (
+              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
                 <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
                   <svg width="12" height="15" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="2" y="2" width="28" height="36" rx="3" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5"/>
