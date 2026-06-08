@@ -624,8 +624,10 @@ case "thumbnails-4":
           <Heart className="w-5 h-5 text-red-500 fill-red-500" />
         </div>
 
-        {/* Team Spinner with Spots Available - hidden for concepts with built-in randomizer */}
-        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
+        {/* Team Spinner with Spots Available - shown for most concepts. For slot-machine (Team Picker),
+            battle, and carousel it stays in its idle/zero state (thumbnail) since those concepts
+            handle their own cycling + reveal full screen (isSpinnerRevealing is never set for them). */}
+        {selectedAnimation !== "pick-card" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
