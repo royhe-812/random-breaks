@@ -447,9 +447,9 @@ case "thumbnails-4":
       {/* Gradient overlays for readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
       
-{/* Thumbnails 2 - Inline with stream UI */}
+{/* Thumbnails 2 - "Extended" - Inline with stream UI using team colors and initials */}
   {selectedAnimation === "thumbnails-2" && (
-  <ThumbnailsInlineReveal
+  <ThumbnailsInitialsReveal
   isRevealing={isRevealing}
   onComplete={() => {
   setShowWinner(true)
@@ -462,9 +462,9 @@ case "thumbnails-4":
   />
   )}
   
-  {/* Thumbnails 3 - Inline with stream UI using colors and initials */}
+  {/* Thumbnails 3 - Inline with stream UI using team logos */}
   {selectedAnimation === "thumbnails-3" && (
-  <ThumbnailsInitialsReveal
+  <ThumbnailsInlineReveal
   isRevealing={isRevealing}
   onComplete={() => {
   setShowWinner(true)
