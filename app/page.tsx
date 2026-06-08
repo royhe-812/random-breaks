@@ -399,7 +399,7 @@ case "thumbnails-4":
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
         >
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex flex-wrap gap-2 pb-1">
             {animations.map((animation) => (
               <Fragment key={animation.id}>
                 <button
@@ -748,7 +748,7 @@ case "thumbnails-4":
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
       >
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex flex-wrap gap-2 pb-1">
           {animations.map((animation) => (
             <Fragment key={animation.id}>
               <button
