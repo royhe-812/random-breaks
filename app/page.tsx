@@ -432,7 +432,8 @@ case "thumbnails-4":
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black">
+    <div className="w-full min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="relative w-full max-w-[420px] h-screen max-h-[900px] overflow-hidden bg-black shadow-2xl sm:rounded-[2rem]">
       {/* Background Video */}
       <video
         autoPlay
@@ -832,6 +833,7 @@ case "thumbnails-4":
         spotsAvailable={hasWon ? 15 : 16}
         spotsTotal={32}
       />
+      </div>
     </div>
   )
 }
