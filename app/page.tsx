@@ -18,7 +18,6 @@ import { GiftBoxReveal } from "@/components/animations/gift-box-reveal"
 import { BattleReveal } from "@/components/animations/battle-reveal"
 import { PickCardReveal } from "@/components/animations/pick-card-reveal"
 import { CarouselReveal } from "@/components/animations/carousel-reveal"
-import { WinnerWinnerReveal } from "@/components/animations/winner-winner-reveal"
 import { GiftReveal } from "@/components/animations/gift-reveal"
 import { ThumbnailsReveal } from "@/components/animations/thumbnails-reveal"
 import { ThumbnailsInlineReveal } from "@/components/animations/thumbnails-inline-reveal"
@@ -28,12 +27,11 @@ import { InStreamExperience } from "@/components/in-stream-experience"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "winner-winner" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "card-flip", name: "Minimal" },
   { id: "thumbnails-2", name: "Extended" },
-  { id: "winner-winner", name: "Card Reveal" },
   { id: "pack-rip", name: "Pack Rip" },
   { id: "slot-machine", name: "Team Picker" },
   { id: "battle", name: "Battle" },
@@ -374,8 +372,6 @@ export default function AnimationShowcase() {
         return <PickCardReveal key={key} {...props} />
       case "carousel":
         return <CarouselReveal key={key} isRevealing={isRevealing} onComplete={(team) => { setWinnerTeam(team); handleComplete(); }} />
-      case "winner-winner":
-        return <WinnerWinnerReveal key={key} {...props} />
 case "gift-reveal":
 return <GiftReveal key={key} {...props} />
 case "thumbnails":
@@ -625,7 +621,7 @@ case "thumbnails-4":
         </div>
 
         {/* Team Spinner with Spots Available - hidden for concepts with built-in randomizer */}
-        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "winner-winner" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
+        {selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && selectedAnimation !== "pick-card" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
@@ -708,7 +704,7 @@ case "thumbnails-4":
                   chatPausedRef.current = true // Pause chat immediately when bid is placed
                   
                   // For concepts with built-in randomizer, set a random team and trigger reveal after a short delay
-                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "winner-winner" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" || selectedAnimation === "thumbnails-4") {
+                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" || selectedAnimation === "thumbnails-4") {
                     const randomTeam = teams[Math.floor(Math.random() * teams.length)]
                     setSelectedTeam(randomTeam)
                     setWinnerTeam(randomTeam)
@@ -774,7 +770,7 @@ case "thumbnails-4":
         {isRevealing && (
           <>
             {/* Some animations handle their own overlay, so only render the animation */}
-            {selectedAnimation === "winner-winner" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" || selectedAnimation === "thumbnails-4" ? (
+            {selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" || selectedAnimation === "thumbnails-4" ? (
               renderAnimation()
             ) : (
               <>
