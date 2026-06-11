@@ -102,7 +102,7 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
   onViewSpots,
 }: TeamSpinnerProps) {
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0)
-  const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "stopped">("idle")
+  const [phase, setPhase] = useState<"idle" | "pending" | "spinning" | "slowing" | "stopped">("idle")
   const [spinSpeed, setSpinSpeed] = useState(50)
   const [demoSpots, setDemoSpots] = useState<number | null>(null) // For demo cycling through color states
   const targetTeamIndexRef = useRef<number | null>(null)
@@ -141,15 +141,25 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
     }
   }, [])
 
-  // Start spinning when isRevealing becomes true
+  // Enter the pending state when isRevealing becomes true
   useEffect(() => {
     if (isRevealing && phase === "idle") {
       const randomIndex = Math.floor(Math.random() * teams.length)
       targetTeamIndexRef.current = randomIndex
-      setPhase("spinning")
+      setPhase("pending")
       setSpinSpeed(50)
     }
   }, [isRevealing, phase])
+
+  // After a brief pending period, begin cycling through the teams
+  useEffect(() => {
+    if (phase === "pending") {
+      const timer = setTimeout(() => {
+        setPhase("spinning")
+      }, 2500)
+      return () => clearTimeout(timer)
+    }
+  }, [phase])
 
   // Reset when isRevealing becomes false
   useEffect(() => {
@@ -162,7 +172,7 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
 
   // Spin through teams
   useEffect(() => {
-    if (phase === "idle" || phase === "stopped") return
+    if (phase === "idle" || phase === "pending" || phase === "stopped") return
 
     const interval = setInterval(() => {
       setCurrentTeamIndex(prev => (prev + 1) % teams.length)
@@ -233,13 +243,13 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
             <motion.div
               className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white text-xs relative overflow-hidden"
               style={{ 
-                backgroundColor: phase === "idle" ? "transparent" : 
+                backgroundColor: phase === "idle" || phase === "pending" ? "transparent" : 
                                  phase === "stopped" ? "#666" : currentTeam.color 
               }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.15, ease: "easeInOut" }}
             >
-              {phase === "idle" ? (
+              {phase === "idle" || phase === "pending" ? (
                 <img 
                   src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png" 
                   alt="Panini Mosaic NFL Box"
@@ -272,6 +282,27 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
                       2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp; 2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp;
                     </motion.div>
                   </div>
+                ) : phase === "pending" ? (
+                  <motion.div
+                    key="pending"
+                    className="flex items-center gap-2"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <span className="text-white font-semibold text-sm">Pending assignment</span>
+                    <span className="flex items-center gap-0.5">
+                      {[0, 1, 2].map((i) => (
+                        <motion.span
+                          key={i}
+                          className="w-1 h-1 rounded-full bg-white/70"
+                          animate={{ opacity: [0.3, 1, 0.3] }}
+                          transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                        />
+                      ))}
+                    </span>
+                  </motion.div>
                 ) : (
                   <motion.span
                     key={phase === "stopped" ? "hidden" : currentTeam.name}
