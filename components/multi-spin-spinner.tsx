@@ -200,12 +200,12 @@ export function MultiSpinSpinner({
     return (
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-white font-bold text-base whitespace-nowrap">Spot #{spot}:</span>
+          <span className="text-white font-bold text-sm whitespace-nowrap">Spot #{spot}:</span>
           <AnimatePresence mode="wait">
             {label && (
               <motion.span
                 key={isActive ? `${spot}-${label}` : `${spot}-final`}
-                className="text-white font-bold text-base truncate"
+                className="text-white font-bold text-sm truncate"
                 style={color ? { color: isActive ? "#fff" : color } : undefined}
                 initial={{ opacity: 0, y: isActive ? 6 : 0 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -262,7 +262,15 @@ export function MultiSpinSpinner({
             </div>
 
             <div className="flex flex-col flex-1 overflow-hidden">
-              <span className="text-white font-semibold text-sm truncate">2025 Panini Luminance</span>
+              <div className="overflow-hidden">
+                <motion.div
+                  className="text-white font-semibold text-sm whitespace-nowrap"
+                  animate={{ x: ["0%", "-50%"] }}
+                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                >
+                  2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp; 2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp;
+                </motion.div>
+              </div>
               <button onClick={onViewSpots} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                 <CircularProgress available={availableSpots} total={totalSpots} size={16} />
                 <span className="text-sm text-white">
