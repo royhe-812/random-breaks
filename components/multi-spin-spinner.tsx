@@ -290,8 +290,11 @@ export function MultiSpinSpinner({
           </div>
         </div>
 
+        {/* Divider separating the break header from the spin slots */}
+        <div className="mx-4 border-t border-white/10" />
+
         {/* Two spin slots */}
-        <div className="px-4 pb-3 pt-1 flex flex-col gap-3">
+        <div className="px-4 pb-3 pt-3 flex flex-col gap-3">
           {renderSpotRow(1)}
           {renderSpotRow(2)}
         </div>
