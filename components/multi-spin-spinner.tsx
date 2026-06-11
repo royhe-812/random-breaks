@@ -59,7 +59,7 @@ const PendingIndicator = () => (
     exit={{ opacity: 0 }}
     transition={{ duration: 0.2 }}
   >
-      <span className="text-white font-medium text-sm whitespace-nowrap">Pending</span>
+      <span className="text-white font-semibold text-sm whitespace-nowrap">Pending assignment</span>
     <span className="flex items-center gap-0.5">
       {[0, 1, 2].map((i) => (
         <motion.span
@@ -187,7 +187,6 @@ export function MultiSpinSpinner({
     const team = result
     const label = result ? `${result.city} ${result.name}` : ""
     const canSelect = !!result && pendingSpot === null
-    const isPendingHere = pendingSpot === spot
 
     return (
       <div className="flex items-center justify-between gap-3">
@@ -209,24 +208,18 @@ export function MultiSpinSpinner({
           </AnimatePresence>
         </div>
 
-        {isPendingHere ? (
-          <div className="flex-shrink-0 px-5 py-1.5 rounded-full border border-transparent">
-            <PendingIndicator />
-          </div>
-        ) : (
-          <button
-            type="button"
-            disabled={!canSelect}
-            onClick={() => team && onSelect(team, spot)}
-            className={`flex-shrink-0 px-5 py-1.5 rounded-full font-medium text-sm border transition-colors ${
-              canSelect
-                ? "border-white text-white hover:bg-white/10"
-                : "border-white/15 text-white/30 cursor-not-allowed"
-            }`}
-          >
-            Select
-          </button>
-        )}
+        <button
+          type="button"
+          disabled={!canSelect}
+          onClick={() => team && onSelect(team, spot)}
+          className={`flex-shrink-0 px-5 py-1.5 rounded-full font-medium text-sm border transition-colors ${
+            canSelect
+              ? "border-white text-white hover:bg-white/10"
+              : "border-white/15 text-white/30 cursor-not-allowed"
+          }`}
+        >
+          Select
+        </button>
       </div>
     )
   }
@@ -264,7 +257,11 @@ export function MultiSpinSpinner({
 
             <div className="flex flex-col flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
-                {isAnySpinning ? (
+                {pendingSpot !== null ? (
+                  <motion.div key="pending">
+                    <PendingIndicator />
+                  </motion.div>
+                ) : isAnySpinning ? (
                   <motion.span
                     key={teams[currentIndex].name}
                     className="text-white font-semibold text-sm truncate"
