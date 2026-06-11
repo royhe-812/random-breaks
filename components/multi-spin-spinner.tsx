@@ -218,7 +218,9 @@ export function MultiSpinSpinner({
         </div>
 
         {isPendingHere ? (
-          <PendingIndicator />
+          <div className="flex-shrink-0 px-5 py-1.5 rounded-full border border-transparent">
+            <PendingIndicator />
+          </div>
         ) : (
           <button
             type="button"
