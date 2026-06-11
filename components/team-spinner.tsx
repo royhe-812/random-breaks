@@ -39,6 +39,7 @@ interface TeamSpinnerProps {
   availableSpots: number
   onSpinComplete: (team: Team) => void
   isRevealing: boolean
+  isPending?: boolean
   username?: string
   onViewSpots?: () => void
 }
@@ -98,11 +99,12 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
   availableSpots, 
   onSpinComplete, 
   isRevealing,
+  isPending = false,
   username,
   onViewSpots,
 }: TeamSpinnerProps) {
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0)
-  const [phase, setPhase] = useState<"idle" | "pending" | "spinning" | "slowing" | "stopped">("idle")
+  const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "stopped">("idle")
   const [spinSpeed, setSpinSpeed] = useState(50)
   const [demoSpots, setDemoSpots] = useState<number | null>(null) // For demo cycling through color states
   const targetTeamIndexRef = useRef<number | null>(null)
@@ -141,25 +143,15 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
     }
   }, [])
 
-  // Enter the pending state when isRevealing becomes true
+  // Start spinning when isRevealing becomes true
   useEffect(() => {
     if (isRevealing && phase === "idle") {
       const randomIndex = Math.floor(Math.random() * teams.length)
       targetTeamIndexRef.current = randomIndex
-      setPhase("pending")
+      setPhase("spinning")
       setSpinSpeed(50)
     }
   }, [isRevealing, phase])
-
-  // After a brief pending period, begin cycling through the teams
-  useEffect(() => {
-    if (phase === "pending") {
-      const timer = setTimeout(() => {
-        setPhase("spinning")
-      }, 2500)
-      return () => clearTimeout(timer)
-    }
-  }, [phase])
 
   // Reset when isRevealing becomes false
   useEffect(() => {
@@ -172,7 +164,7 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
 
   // Spin through teams
   useEffect(() => {
-    if (phase === "idle" || phase === "pending" || phase === "stopped") return
+    if (phase === "idle" || phase === "stopped") return
 
     const interval = setInterval(() => {
       setCurrentTeamIndex(prev => (prev + 1) % teams.length)
@@ -243,13 +235,13 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
             <motion.div
               className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white text-xs relative overflow-hidden"
               style={{ 
-                backgroundColor: phase === "idle" || phase === "pending" ? "transparent" : 
+                backgroundColor: phase === "idle" ? "transparent" : 
                                  phase === "stopped" ? "#666" : currentTeam.color 
               }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.15, ease: "easeInOut" }}
             >
-              {phase === "idle" || phase === "pending" ? (
+              {phase === "idle" ? (
                 <img 
                   src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png" 
                   alt="Panini Mosaic NFL Box"
@@ -272,17 +264,7 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
             {/* Team Name / Spot Assignment */}
             <div className="flex flex-col flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
-                {phase === "idle" ? (
-                  <div className="overflow-hidden">
-                    <motion.div
-                      className="text-white font-semibold text-sm whitespace-nowrap"
-                      animate={{ x: ["0%", "-50%"] }}
-                      transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                    >
-                      2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp; 2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp;
-                    </motion.div>
-                  </div>
-                ) : phase === "pending" ? (
+                {isPending ? (
                   <motion.div
                     key="pending"
                     className="flex items-center gap-2"
@@ -303,6 +285,16 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
                       ))}
                     </span>
                   </motion.div>
+                ) : phase === "idle" ? (
+                  <div className="overflow-hidden">
+                    <motion.div
+                      className="text-white font-semibold text-sm whitespace-nowrap"
+                      animate={{ x: ["0%", "-50%"] }}
+                      transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                    >
+                      2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp; 2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp;
+                    </motion.div>
+                  </div>
                 ) : (
                   <motion.span
                     key={phase === "stopped" ? "hidden" : currentTeam.name}

@@ -216,6 +216,7 @@ export default function AnimationShowcase() {
   const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("card-flip")
   const [isRevealing, setIsRevealing] = useState(false)
   const [isSpinnerRevealing, setIsSpinnerRevealing] = useState(false) // For TeamSpinner cycling
+  const [isSpinnerPending, setIsSpinnerPending] = useState(false) // Post-reveal "pending assignment" in TeamSpinner
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
@@ -271,6 +272,7 @@ export default function AnimationShowcase() {
     setHasWon(false)
     setIsRevealing(false)
     setIsSpinnerRevealing(false)
+    setIsSpinnerPending(false)
     setSelectedTeam(null)
     setWinnerTeam(null)
     setShowWinner(false)
@@ -333,16 +335,39 @@ export default function AnimationShowcase() {
   }, [])
 
   const handleComplete = useCallback(() => {
-    // When reveal completes, show the in-chat winner treatment
-    if (selectedAnimation !== "in-stream") {
-      setShowWinner(true)
+    // The full-screen spot reveal animation just finished.
+    if (selectedAnimation === "in-stream") return
+
+    // Concepts that render the TeamSpinner show a "Pending assignment" beat in
+    // the spinner title (waiting on the seller) before the in-chat winner moment.
+    const usesSpinner =
+      selectedAnimation !== "pick-card" &&
+      selectedAnimation !== "thumbnails" &&
+      selectedAnimation !== "thumbnails-2" &&
+      selectedAnimation !== "thumbnails-3" &&
+      selectedAnimation !== "thumbnails-4"
+
+    if (usesSpinner) {
+      // Close the full-screen reveal overlay and drop the spinner back to its
+      // panel, now showing "Pending assignment" while the seller assigns.
+      setIsRevealing(false)
+      setIsSpinnerRevealing(false)
+      setIsSpinnerPending(true)
+      setKey(prev => prev + 1)
+
+      // After the seller "assigns" the spot, reveal the in-chat winner.
+      setTimeout(() => {
+        setIsSpinnerPending(false)
+        setShowWinner(true)
+      }, 3000)
+      return
     }
-    
-    // Keep the winning moment visible for 3 seconds, then close overlay
+
+    // Other concepts: show the in-chat winner treatment immediately, then close.
+    setShowWinner(true)
     setTimeout(() => {
       setIsRevealing(false)
       setIsSpinnerRevealing(false)
-      // Don't reset hasWon, winnerTeam, or showWinner - keep winner treatment visible
       setKey(prev => prev + 1)
     }, 3000)
   }, [selectedAnimation])
@@ -634,6 +659,7 @@ case "thumbnails-4":
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
             isRevealing={isSpinnerRevealing}
+            isPending={isSpinnerPending}
             onSpinComplete={handleSpinComplete}
             username={hasWon ? "Adam007" : undefined}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
@@ -730,6 +756,7 @@ case "thumbnails-4":
                   // Reset the entire concept
                   setHasWon(false)
                   setIsSpinnerRevealing(false)
+                  setIsSpinnerPending(false)
                   setSelectedTeam(null)
                   setShowWinner(false)
                   setWinnerTeam(null)
