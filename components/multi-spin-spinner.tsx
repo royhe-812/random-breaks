@@ -252,13 +252,21 @@ export function MultiSpinSpinner({
         {/* Header row: thumbnail + title + spots + view spots */}
         <div className="px-4 pt-3 pb-2">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0">
-              <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png"
-                alt="Panini Luminance box"
-                className="w-full h-full object-cover rounded-lg"
-              />
-            </div>
+            <motion.div
+              className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-white text-xs"
+              style={{ backgroundColor: isAnySpinning ? teams[currentIndex].color : "transparent" }}
+              transition={{ duration: 0.15, ease: "easeInOut" }}
+            >
+              {isAnySpinning ? (
+                teams[currentIndex].abbrev
+              ) : (
+                <img
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png"
+                  alt="Panini Luminance box"
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              )}
+            </motion.div>
 
             <div className="flex flex-col flex-1 overflow-hidden">
               <div className="overflow-hidden">
