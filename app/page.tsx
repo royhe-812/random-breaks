@@ -221,6 +221,7 @@ export default function AnimationShowcase() {
   const [isSpinnerPending, setIsSpinnerPending] = useState(false) // Post-reveal "pending assignment" in TeamSpinner
   const [isMultiSpinning, setIsMultiSpinning] = useState(false) // Multi-Spin: run the two spins
   const [multiPendingSpot, setMultiPendingSpot] = useState<1 | 2 | null>(null) // Multi-Spin: selected spot awaiting assignment
+  const [multiLastWinner, setMultiLastWinner] = useState<{ username: string; team: string } | null>(null) // Multi-Spin: dynamic last winner
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
@@ -279,6 +280,7 @@ export default function AnimationShowcase() {
     setIsSpinnerPending(false)
     setIsMultiSpinning(false)
     setMultiPendingSpot(null)
+    setMultiLastWinner(null)
     setSelectedTeam(null)
     setWinnerTeam(null)
     setShowWinner(false)
@@ -399,8 +401,10 @@ export default function AnimationShowcase() {
     setWinnerTeam(team)
     setMultiPendingSpot(_spot) // Show "Pending assignment" in place of the Select button
 
-    // After the seller "assigns" the spot, play the full-screen reveal.
+    // After the seller "assigns" the spot, update the last winner and play
+    // the full-screen reveal.
     setTimeout(() => {
+      setMultiLastWinner({ username: "Adam007", team: team.name })
       setIsRevealing(true)
       setKey(prev => prev + 1)
     }, 2500)
@@ -705,6 +709,7 @@ case "thumbnails-4":
             availableSpots={hasWon ? 15 : 16}
             isSpinning={isMultiSpinning}
             pendingSpot={multiPendingSpot}
+            lastWinner={multiLastWinner}
             onSelect={handleMultiSelect}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />

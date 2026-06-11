@@ -13,6 +13,8 @@ interface MultiSpinSpinnerProps {
   onSelect: (team: Team, spot: 1 | 2) => void
   /** The spot the buyer selected, now awaiting seller assignment. */
   pendingSpot?: 1 | 2 | null
+  /** The most recent winner, shown at the bottom. Updates after a selection. */
+  lastWinner?: { username: string; team: string } | null
   onViewSpots?: () => void
 }
 
@@ -79,6 +81,7 @@ export function MultiSpinSpinner({
   isSpinning,
   onSelect,
   pendingSpot = null,
+  lastWinner = null,
   onViewSpots,
 }: MultiSpinSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
@@ -315,9 +318,9 @@ export function MultiSpinSpinner({
             <div className="flex items-center gap-1.5">
               <span className="text-white/50 text-xs">Last winner:</span>
               <span className="text-white text-xs">
-                <span className="font-semibold">Adam007</span>
+                <span className="font-semibold">{lastWinner?.username ?? "Adam007"}</span>
                 <span className="text-white/50"> won </span>
-                <span className="font-semibold">Kansas City Chiefs</span>
+                <span className="font-semibold">{lastWinner?.team ?? "Kansas City Chiefs"}</span>
               </span>
             </div>
           </div>
