@@ -98,7 +98,7 @@ interface ThumbnailsInlineRevealProps {
 }
 
 export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam, onTeamSelected }: ThumbnailsInlineRevealProps) {
-  const [phase, setPhase] = useState<"idle" | "cycling" | "selected" | "done">("idle")
+  const [phase, setPhase] = useState<"idle" | "pending" | "cycling" | "selected" | "done">("idle")
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [hideSold, setHideSold] = useState(false)
@@ -183,64 +183,69 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
   useEffect(() => {
     if (isRevealing && !hasStartedRef.current && phase === "idle") {
       hasStartedRef.current = true
-      setPhase("cycling")
-      
-      // Get available (not sold) team indices
-      const availableIndices = teams
-        .map((_, index) => index)
-        .filter(index => !soldTeams.includes(index))
-      
-      // Random final selection from available teams only
-      const finalIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)]
-      
-      // Cycling animation with slowdown - only cycle through available teams
-      let currentAvailableIndex = 0
-      let delay = 50
-      const maxDelay = 300
-      const totalCycles = 25 + Math.floor(Math.random() * 10)
-      let cycleCount = 0
-      
-      const cycle = () => {
-        if (cycleCount >= totalCycles) {
-          // Land on final selection
-          setHighlightedIndex(finalIndex)
-          setSelectedIndex(finalIndex)
-          setPhase("selected")
-          playWinnerSound()
-          
-          const selectedTeam = teams[finalIndex]
-          
-          // Update stats
-          setSoldTeams(prev => [...prev, finalIndex])
-          setSpotsLeft(prev => Math.max(0, prev - 1))
-          setLastWinner({ username: "Adam007", team: selectedTeam.name })
-          
-          if (onTeamSelected) {
-            onTeamSelected(selectedTeam)
+      // Show a "Pending assignment" state before cycling begins
+      setPhase("pending")
+
+      setTimeout(() => {
+        setPhase("cycling")
+        
+        // Get available (not sold) team indices
+        const availableIndices = teams
+          .map((_, index) => index)
+          .filter(index => !soldTeams.includes(index))
+        
+        // Random final selection from available teams only
+        const finalIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)]
+        
+        // Cycling animation with slowdown - only cycle through available teams
+        let currentAvailableIndex = 0
+        let delay = 50
+        const maxDelay = 300
+        const totalCycles = 25 + Math.floor(Math.random() * 10)
+        let cycleCount = 0
+        
+        const cycle = () => {
+          if (cycleCount >= totalCycles) {
+            // Land on final selection
+            setHighlightedIndex(finalIndex)
+            setSelectedIndex(finalIndex)
+            setPhase("selected")
+            playWinnerSound()
+            
+            const selectedTeam = teams[finalIndex]
+            
+            // Update stats
+            setSoldTeams(prev => [...prev, finalIndex])
+            setSpotsLeft(prev => Math.max(0, prev - 1))
+            setLastWinner({ username: "Adam007", team: selectedTeam.name })
+            
+            if (onTeamSelected) {
+              onTeamSelected(selectedTeam)
+            }
+            
+            // Complete after showing winner
+            setTimeout(() => {
+              setPhase("done")
+              onComplete()
+            }, 3000)
+            return
           }
           
-          // Complete after showing winner
-          setTimeout(() => {
-            setPhase("done")
-            onComplete()
-          }, 3000)
-          return
+          currentAvailableIndex = (currentAvailableIndex + 1) % availableIndices.length
+          setHighlightedIndex(availableIndices[currentAvailableIndex])
+          playTickSound()
+          
+          cycleCount++
+          // Gradually slow down
+          if (cycleCount > totalCycles - 10) {
+            delay = Math.min(delay * 1.15, maxDelay)
+          }
+          
+          setTimeout(cycle, delay)
         }
         
-        currentAvailableIndex = (currentAvailableIndex + 1) % availableIndices.length
-        setHighlightedIndex(availableIndices[currentAvailableIndex])
-        playTickSound()
-        
-        cycleCount++
-        // Gradually slow down
-        if (cycleCount > totalCycles - 10) {
-          delay = Math.min(delay * 1.15, maxDelay)
-        }
-        
-        setTimeout(cycle, delay)
-      }
-      
-      setTimeout(cycle, 500)
+        cycle()
+      }, 2500)
     }
   }, [isRevealing, phase, onComplete, onTeamSelected])
 
@@ -349,6 +354,28 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
               </button>
             </div>
           </div>
+
+          {/* Pending assignment indicator */}
+          {phase === "pending" && (
+            <motion.div
+              className="flex items-center gap-1.5 mt-1.5"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+            >
+              <span className="text-white text-xs font-medium">Pending assignment</span>
+              <span className="flex items-center gap-0.5">
+                {[0, 1, 2].map((i) => (
+                  <motion.span
+                    key={i}
+                    className="w-1 h-1 rounded-full bg-white/70"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                  />
+                ))}
+              </span>
+            </motion.div>
+          )}
           
           {/* Second row - Last winner */}
           {lastWinner && (
