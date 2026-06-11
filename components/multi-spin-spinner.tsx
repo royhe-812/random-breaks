@@ -182,21 +182,10 @@ export function MultiSpinSpinner({
     }
   }, [])
 
-  const spotResult = (spot: 1 | 2): { label: string; color?: string } => {
-    const result = spot === 1 ? spot1 : spot2
-    if (spinningSpot === spot) {
-      const t = teams[currentIndex]
-      return { label: `${t.city} ${t.name}`, color: t.color }
-    }
-    if (result) return { label: `${result.city} ${result.name}`, color: result.color }
-    return { label: "" }
-  }
-
   const renderSpotRow = (spot: 1 | 2) => {
     const result = spot === 1 ? spot1 : spot2
     const team = result
-    const { label } = spotResult(spot)
-    const isActive = spinningSpot === spot
+    const label = result ? `${result.city} ${result.name}` : ""
     const canSelect = !!result && pendingSpot === null
     const isPendingHere = pendingSpot === spot
 
@@ -207,12 +196,12 @@ export function MultiSpinSpinner({
           <AnimatePresence mode="wait">
             {label && (
               <motion.span
-                key={isActive ? `${spot}-${label}` : `${spot}-final`}
+                key={`${spot}-final`}
                 className="text-white font-bold text-sm truncate"
-                initial={{ opacity: 0, y: isActive ? 6 : 0 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: isActive ? 0.05 : 0.2 }}
+                transition={{ duration: 0.2 }}
               >
                 {label}
               </motion.span>
@@ -274,15 +263,30 @@ export function MultiSpinSpinner({
             </motion.div>
 
             <div className="flex flex-col flex-1 overflow-hidden">
-              <div className="overflow-hidden">
-                <motion.div
-                  className="text-white font-semibold text-sm whitespace-nowrap"
-                  animate={{ x: ["0%", "-50%"] }}
-                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                >
-                  2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp; 2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp;
-                </motion.div>
-              </div>
+              <AnimatePresence mode="wait">
+                {isAnySpinning ? (
+                  <motion.span
+                    key={teams[currentIndex].name}
+                    className="text-white font-semibold text-sm truncate"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.05 }}
+                  >
+                    {teams[currentIndex].city} {teams[currentIndex].name}
+                  </motion.span>
+                ) : (
+                  <div key="marquee" className="overflow-hidden">
+                    <motion.div
+                      className="text-white font-semibold text-sm whitespace-nowrap"
+                      animate={{ x: ["0%", "-50%"] }}
+                      transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                    >
+                      2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp; 2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp;
+                    </motion.div>
+                  </div>
+                )}
+              </AnimatePresence>
               <button onClick={onViewSpots} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                 <CircularProgress available={availableSpots} total={totalSpots} size={16} />
                 <span className="text-sm text-white">
