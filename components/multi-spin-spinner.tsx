@@ -187,6 +187,7 @@ export function MultiSpinSpinner({
     const team = result
     const label = result ? `${result.city} ${result.name}` : ""
     const canSelect = !!result && pendingSpot === null
+    const isSelected = pendingSpot === spot
 
     return (
       <div className="flex items-center justify-between gap-3">
@@ -213,12 +214,14 @@ export function MultiSpinSpinner({
           disabled={!canSelect}
           onClick={() => team && onSelect(team, spot)}
           className={`flex-shrink-0 px-5 py-1.5 rounded-full font-medium text-sm border transition-colors ${
-            canSelect
-              ? "border-white text-white hover:bg-white/10"
-              : "border-white/15 text-white/30 cursor-not-allowed"
+            isSelected
+              ? "border-green-400 bg-green-400 text-black"
+              : canSelect
+                ? "border-yellow-400 text-yellow-400 hover:bg-yellow-400/10"
+                : "border-white/15 text-white/30 cursor-not-allowed"
           }`}
         >
-          Select
+          {isSelected ? "Selected" : "Select"}
         </button>
       </div>
     )
