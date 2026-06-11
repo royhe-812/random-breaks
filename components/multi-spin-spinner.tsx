@@ -192,7 +192,7 @@ export function MultiSpinSpinner({
   const renderSpotRow = (spot: 1 | 2) => {
     const result = spot === 1 ? spot1 : spot2
     const team = result
-    const { label, color } = spotResult(spot)
+    const { label } = spotResult(spot)
     const isActive = spinningSpot === spot
     const canSelect = !!result && pendingSpot === null
     const isPendingHere = pendingSpot === spot
@@ -206,7 +206,6 @@ export function MultiSpinSpinner({
               <motion.span
                 key={isActive ? `${spot}-${label}` : `${spot}-final`}
                 className="text-white font-bold text-sm truncate"
-                style={color ? { color: isActive ? "#fff" : color } : undefined}
                 initial={{ opacity: 0, y: isActive ? 6 : 0 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
