@@ -348,20 +348,6 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
             </button>
           </div>
         </div>
-
-        {/* Divider + last winner */}
-        <div className="px-4 pb-3">
-          <div className="border-t border-white/10 pt-2">
-            <div className="flex items-center gap-1.5">
-              <span className="text-white/50 text-xs">Last winner:</span>
-              <span className="text-white text-xs">
-                <span className="font-semibold">{lastWinner?.username ?? "Adam007"}</span>
-                <span className="text-white/50"> won </span>
-                <span className="font-semibold">{lastWinner?.team ?? "Kansas City Chiefs"}</span>
-              </span>
-            </div>
-          </div>
-        </div>
       </motion.div>
     </div>
   )
