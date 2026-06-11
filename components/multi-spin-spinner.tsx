@@ -304,9 +304,23 @@ export function MultiSpinSpinner({
         <div className="mx-4 border-t border-white/10" />
 
         {/* Two spin slots */}
-        <div className="px-4 pb-3 pt-3 flex flex-col gap-3">
+        <div className="px-4 pt-3 flex flex-col gap-3">
           {renderSpotRow(1)}
           {renderSpotRow(2)}
+        </div>
+
+        {/* Divider + last winner */}
+        <div className="px-4 pb-3 pt-3">
+          <div className="border-t border-white/10 pt-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-white/50 text-xs">Last winner:</span>
+              <span className="text-white text-xs">
+                <span className="font-semibold">Adam007</span>
+                <span className="text-white/50"> won </span>
+                <span className="font-semibold">Kansas City Chiefs</span>
+              </span>
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>
