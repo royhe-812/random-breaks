@@ -222,6 +222,7 @@ export default function AnimationShowcase() {
   const [isMultiSpinning, setIsMultiSpinning] = useState(false) // Multi-Spin: run the two spins
   const [multiPendingSpot, setMultiPendingSpot] = useState<1 | 2 | null>(null) // Multi-Spin: selected spot awaiting assignment
   const [multiLastWinner, setMultiLastWinner] = useState<{ username: string; team: string } | null>(null) // Multi-Spin: dynamic last winner
+  const [spinnerLastWinner, setSpinnerLastWinner] = useState<{ username: string; team: string } | null>(null) // TeamSpinner: dynamic last winner
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
@@ -279,9 +280,10 @@ export default function AnimationShowcase() {
     setIsSpinnerRevealing(false)
     setIsSpinnerPending(false)
     setIsMultiSpinning(false)
-    setMultiPendingSpot(null)
-    setMultiLastWinner(null)
-    setSelectedTeam(null)
+  setMultiPendingSpot(null)
+  setMultiLastWinner(null)
+  setSpinnerLastWinner(null)
+  setSelectedTeam(null)
     setWinnerTeam(null)
     setShowWinner(false)
     setReactionMessages([])
@@ -374,9 +376,11 @@ export default function AnimationShowcase() {
       setIsSpinnerPending(true)
       setKey(prev => prev + 1)
 
-      // After the seller "assigns" the spot, reveal the in-chat winner.
+      // After the seller "assigns" the spot, update the last winner and reveal
+      // the in-chat winner.
       setTimeout(() => {
         setIsSpinnerPending(false)
+        if (winnerTeam) setSpinnerLastWinner({ username: "Adam007", team: winnerTeam.name })
         setShowWinner(true)
       }, 3000)
       return
@@ -389,7 +393,7 @@ export default function AnimationShowcase() {
       setIsSpinnerRevealing(false)
       setKey(prev => prev + 1)
     }, 3000)
-  }, [selectedAnimation])
+  }, [selectedAnimation, winnerTeam])
 
   const handleTeamSelected = useCallback((team: Team) => {
     setWinnerTeam(team)
@@ -696,6 +700,7 @@ case "thumbnails-4":
             availableSpots={hasWon ? 15 : 16}
             isRevealing={isSpinnerRevealing}
             isPending={isSpinnerPending}
+            lastWinner={spinnerLastWinner}
             onSpinComplete={handleSpinComplete}
             username={hasWon ? "Adam007" : undefined}
             onViewSpots={() => setIsBreakSpotsOpen(true)}

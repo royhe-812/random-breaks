@@ -40,6 +40,8 @@ interface TeamSpinnerProps {
   onSpinComplete: (team: Team) => void
   isRevealing: boolean
   isPending?: boolean
+  /** The most recent winner, shown at the bottom. Updates after a win. */
+  lastWinner?: { username: string; team: string } | null
   username?: string
   onViewSpots?: () => void
 }
@@ -100,6 +102,7 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
   onSpinComplete, 
   isRevealing,
   isPending = false,
+  lastWinner = null,
   username,
   onViewSpots,
 }: TeamSpinnerProps) {
@@ -343,6 +346,20 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
                 <path d="M9 18l6-6-6-6" />
               </svg>
             </button>
+          </div>
+        </div>
+
+        {/* Divider + last winner */}
+        <div className="px-4 pb-3">
+          <div className="border-t border-white/10 pt-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-white/50 text-xs">Last winner:</span>
+              <span className="text-white text-xs">
+                <span className="font-semibold">{lastWinner?.username ?? "Adam007"}</span>
+                <span className="text-white/50"> won </span>
+                <span className="font-semibold">{lastWinner?.team ?? "Kansas City Chiefs"}</span>
+              </span>
+            </div>
           </div>
         </div>
       </motion.div>
