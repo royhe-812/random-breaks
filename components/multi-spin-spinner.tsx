@@ -57,7 +57,7 @@ const PendingIndicator = () => (
     exit={{ opacity: 0 }}
     transition={{ duration: 0.2 }}
   >
-    <span className="text-white font-medium text-sm whitespace-nowrap">Pending assignment</span>
+      <span className="text-white font-medium text-sm whitespace-nowrap">Pending</span>
     <span className="flex items-center gap-0.5">
       {[0, 1, 2].map((i) => (
         <motion.span
