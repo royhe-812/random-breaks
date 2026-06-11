@@ -9,6 +9,7 @@ import { ChevronDown, ChevronRight, Heart, Star } from "lucide-react"
 
 // Internal components
 import { TeamSpinner, type Team, teams } from "@/components/team-spinner"
+import { MultiSpinSpinner } from "@/components/multi-spin-spinner"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
 import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
@@ -27,10 +28,11 @@ import { InStreamExperience } from "@/components/in-stream-experience"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 
-type AnimationType = "card-flip" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "multi-spin" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "card-flip", name: "Minimal" },
+  { id: "multi-spin", name: "Multi-Spin" },
   { id: "thumbnails-2", name: "Extended" },
   { id: "pack-rip", name: "Pack Rip" },
   { id: "slot-machine", name: "Team Picker" },
@@ -217,6 +219,8 @@ export default function AnimationShowcase() {
   const [isRevealing, setIsRevealing] = useState(false)
   const [isSpinnerRevealing, setIsSpinnerRevealing] = useState(false) // For TeamSpinner cycling
   const [isSpinnerPending, setIsSpinnerPending] = useState(false) // Post-reveal "pending assignment" in TeamSpinner
+  const [isMultiSpinning, setIsMultiSpinning] = useState(false) // Multi-Spin: run the two spins
+  const [multiPendingSpot, setMultiPendingSpot] = useState<1 | 2 | null>(null) // Multi-Spin: selected spot awaiting assignment
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
@@ -273,6 +277,8 @@ export default function AnimationShowcase() {
     setIsRevealing(false)
     setIsSpinnerRevealing(false)
     setIsSpinnerPending(false)
+    setIsMultiSpinning(false)
+    setMultiPendingSpot(null)
     setSelectedTeam(null)
     setWinnerTeam(null)
     setShowWinner(false)
@@ -338,6 +344,17 @@ export default function AnimationShowcase() {
     // The full-screen spot reveal animation just finished.
     if (selectedAnimation === "in-stream") return
 
+    // Multi-Spin already showed its "pending assignment" beat before the
+    // full-screen reveal, so go straight to the in-chat winner moment.
+    if (selectedAnimation === "multi-spin") {
+      setIsRevealing(false)
+      setIsMultiSpinning(false)
+      setMultiPendingSpot(null)
+      setShowWinner(true)
+      setKey(prev => prev + 1)
+      return
+    }
+
     // Concepts that render the TeamSpinner show a "Pending assignment" beat in
     // the spinner title (waiting on the seller) before the in-chat winner moment.
     const usesSpinner =
@@ -376,11 +393,26 @@ export default function AnimationShowcase() {
     setWinnerTeam(team)
   }, [])
 
+  // Multi-Spin: buyer committed to one of the two spun spots.
+  const handleMultiSelect = useCallback((team: Team, _spot: 1 | 2) => {
+    setSelectedTeam(team)
+    setWinnerTeam(team)
+    setMultiPendingSpot(_spot) // Show "Pending assignment" in place of the Select button
+
+    // After the seller "assigns" the spot, play the full-screen reveal.
+    setTimeout(() => {
+      setIsRevealing(true)
+      setKey(prev => prev + 1)
+    }, 2500)
+  }, [])
+
   const renderAnimation = () => {
     const props = { isRevealing, onComplete: handleComplete, team: selectedTeam, onTeamSelected: handleTeamSelected }
     
     switch (selectedAnimation) {
       case "card-flip":
+        return <CardFlipReveal key={key} {...props} />
+      case "multi-spin":
         return <CardFlipReveal key={key} {...props} />
       case "pack-rip":
         return <PackRipReveal key={key} {...props} />
@@ -654,7 +686,7 @@ case "thumbnails-4":
         {/* Team Spinner with Spots Available - shown for most concepts. For slot-machine (Team Picker),
             battle, and carousel it stays in its idle/zero state (thumbnail) since those concepts
             handle their own cycling + reveal full screen (isSpinnerRevealing is never set for them). */}
-        {selectedAnimation !== "pick-card" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
+        {selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
@@ -666,6 +698,18 @@ case "thumbnails-4":
           />
         )}
 
+        {/* Multi-Spin: two-spot spinner that lets the buyer pick one of two spins */}
+        {selectedAnimation === "multi-spin" && (
+          <MultiSpinSpinner
+            totalSpots={32}
+            availableSpots={hasWon ? 15 : 16}
+            isSpinning={isMultiSpinning}
+            pendingSpot={multiPendingSpot}
+            onSelect={handleMultiSelect}
+            onViewSpots={() => setIsBreakSpotsOpen(true)}
+          />
+        )}
+
         {/* Auction Card */}
         <div className="bg-black/40 backdrop-blur rounded-2xl p-4">
           <div className="flex items-start justify-between mb-2">
@@ -673,7 +717,7 @@ case "thumbnails-4":
               <p className="text-sm text-white mb-0.5 line-clamp-2">
                 <span className="font-semibold">{showWinner && winnerTeam ? `${winnerTeam.city} ${winnerTeam.name}` : 'Random team'}</span>
               </p>
-              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
+              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "multi-spin" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
                 <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
                   <svg width="12" height="15" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="2" y="2" width="28" height="36" rx="3" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5"/>
@@ -746,6 +790,9 @@ case "thumbnails-4":
                       setIsRevealing(true)
                       setKey(prev => prev + 1)
                     }, 1500)
+                  } else if (selectedAnimation === "multi-spin") {
+                    // Multi-Spin: kick off two sequential spins; buyer then picks one.
+                    setIsMultiSpinning(true)
                   } else {
                     // For concepts that use TeamSpinner (card-flip, pack-rip, mystery-box, back-card-flip)
                     // Trigger spinner revealing - TeamSpinner will cycle through teams first
@@ -757,6 +804,8 @@ case "thumbnails-4":
                   setHasWon(false)
                   setIsSpinnerRevealing(false)
                   setIsSpinnerPending(false)
+                  setIsMultiSpinning(false)
+                  setMultiPendingSpot(null)
                   setSelectedTeam(null)
                   setShowWinner(false)
                   setWinnerTeam(null)
