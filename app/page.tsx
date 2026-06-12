@@ -356,7 +356,12 @@ export default function AnimationShowcase() {
 
     // Multi-Spin already showed its "pending assignment" beat before the
     // full-screen reveal, so go straight to the in-chat winner moment.
-    if (selectedAnimation === "multi-spin" || selectedAnimation === "multi-spin-4") {
+    if (
+      selectedAnimation === "multi-spin" ||
+      selectedAnimation === "multi-spin-2" ||
+      selectedAnimation === "multi-spin-4" ||
+      selectedAnimation === "multi-spin-4-auto"
+    ) {
       setIsRevealing(false)
       setIsMultiSpinning(false)
       setMultiPendingSpot(null)
@@ -732,12 +737,14 @@ case "thumbnails-4":
           />
         )}
 
-        {/* Multi-Spin 2: two-spot spinner with no select buttons */}
+        {/* Multi-Spin 2: two-spot spinner that auto-announces a spot, no select buttons */}
         {selectedAnimation === "multi-spin-2" && (
           <MultiSpin2Spinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
             isSpinning={isMultiSpinning}
+            pendingSpot={multiPendingSpot === 1 || multiPendingSpot === 2 ? multiPendingSpot : null}
+            onAnnounce={handleMultiSelect}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
         )}
@@ -755,12 +762,14 @@ case "thumbnails-4":
           />
         )}
 
-        {/* Multi-Spin 4 Auto: four-spot spinner with no select buttons */}
+        {/* Multi-Spin 4 Auto: four-spot spinner that auto-announces a spot, no select buttons */}
         {selectedAnimation === "multi-spin-4-auto" && (
           <MultiSpin4AutoSpinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
             isSpinning={isMultiSpinning}
+            pendingSpot={multiPendingSpot}
+            onAnnounce={handleMultiSelect}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
         )}

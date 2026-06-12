@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
+import { Check } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 
 type Spot = 1 | 2 | 3 | 4
@@ -11,10 +12,34 @@ interface MultiSpin4AutoSpinnerProps {
   availableSpots: number
   /** When true, kicks off the four sequential spins (one per spot). */
   isSpinning: boolean
-  /** Fired when all four spins have landed. */
-  onSpinsComplete?: (spots: Record<Spot, Team>) => void
+  /** The spot currently being announced/assigned (drives the pending state). */
+  pendingSpot?: Spot | null
+  /** Fired once a spot is auto-selected from the landed spins. */
+  onAnnounce?: (team: Team, spot: Spot) => void
   onViewSpots?: () => void
 }
+
+const PendingIndicator = () => (
+  <motion.div
+    className="flex items-center gap-2"
+    initial={{ opacity: 0, y: 6 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.2 }}
+  >
+    <span className="text-white font-semibold text-sm whitespace-nowrap">Pending assignment</span>
+    <span className="flex items-center gap-0.5">
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          className="w-1 h-1 rounded-full bg-white/70"
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+        />
+      ))}
+    </span>
+  </motion.div>
+)
 
 // Circular progress component (mirrors the one used in TeamSpinner)
 const CircularProgress = ({ available, total, size = 16 }: { available: number; total: number; size?: number }) => {
@@ -55,7 +80,8 @@ export function MultiSpin4AutoSpinner({
   totalSpots,
   availableSpots,
   isSpinning,
-  onSpinsComplete,
+  pendingSpot = null,
+  onAnnounce,
   onViewSpots,
 }: MultiSpin4AutoSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
@@ -64,8 +90,10 @@ export function MultiSpin4AutoSpinner({
   const [results, setResults] = useState<Record<Spot, Team | null>>({ 1: null, 2: null, 3: null, 4: null })
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const announceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const hasStartedRef = useRef(false)
+  const hasAnnouncedRef = useRef(false)
 
   // Soft tick sound, identical feel to the original spinner
   const playTick = useCallback(() => {
@@ -130,7 +158,6 @@ export function MultiSpin4AutoSpinner({
         if (i >= order.length) {
           setSpinningSpot(0)
           setStage("ready")
-          onSpinsComplete?.(landed)
           return
         }
         const spot = order[i]
@@ -142,13 +169,29 @@ export function MultiSpin4AutoSpinner({
       }
       runNext(0)
     }
-  }, [isSpinning, stage, runSpin, onSpinsComplete])
+  }, [isSpinning, stage, runSpin])
+
+  // Once all four spots have landed, wait a beat, then auto-select one of them,
+  // surface the "Pending assignment" state, and announce it to the parent.
+  useEffect(() => {
+    const allLanded = results[1] && results[2] && results[3] && results[4]
+    if (stage === "ready" && !hasAnnouncedRef.current && allLanded) {
+      hasAnnouncedRef.current = true
+      announceTimeoutRef.current = setTimeout(() => {
+        const pick = ((Math.floor(Math.random() * 4) + 1) as Spot)
+        const team = results[pick]
+        if (team) onAnnounce?.(team, pick)
+      }, 1500)
+    }
+  }, [stage, results, onAnnounce])
 
   // Reset internal state when the engine is turned off (concept switch / reset)
   useEffect(() => {
     if (!isSpinning && stage !== "idle") {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      if (announceTimeoutRef.current) clearTimeout(announceTimeoutRef.current)
       hasStartedRef.current = false
+      hasAnnouncedRef.current = false
       setStage("idle")
       setSpinningSpot(0)
       setResults({ 1: null, 2: null, 3: null, 4: null })
@@ -159,12 +202,14 @@ export function MultiSpin4AutoSpinner({
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      if (announceTimeoutRef.current) clearTimeout(announceTimeoutRef.current)
     }
   }, [])
 
   const renderSpotRow = (spot: Spot) => {
     const result = results[spot]
     const label = result ? `${result.city} ${result.name}` : ""
+    const isAnnounced = pendingSpot === spot
 
     return (
       <div key={spot} className="flex items-center justify-between gap-3">
@@ -174,7 +219,7 @@ export function MultiSpin4AutoSpinner({
             {label && (
               <motion.span
                 key={`${spot}-final`}
-                className="text-white font-bold text-sm truncate"
+                className={`font-bold text-sm truncate ${isAnnounced ? "text-green-400" : "text-white"}`}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
@@ -185,6 +230,18 @@ export function MultiSpin4AutoSpinner({
             )}
           </AnimatePresence>
         </div>
+
+        {isAnnounced && (
+          <motion.span
+            className="flex-shrink-0 flex items-center gap-1 text-green-400 text-sm font-semibold"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Check className="w-4 h-4" />
+            Selected
+          </motion.span>
+        )}
       </div>
     )
   }
@@ -222,7 +279,11 @@ export function MultiSpin4AutoSpinner({
 
             <div className="flex flex-col flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
-                {isAnySpinning ? (
+                {pendingSpot !== null ? (
+                  <motion.div key="pending">
+                    <PendingIndicator />
+                  </motion.div>
+                ) : isAnySpinning ? (
                   <motion.span
                     key={teams[currentIndex].name}
                     className="text-white font-semibold text-sm truncate"

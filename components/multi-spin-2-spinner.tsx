@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
+import { Check } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 
 interface MultiSpin2SpinnerProps {
@@ -9,10 +10,34 @@ interface MultiSpin2SpinnerProps {
   availableSpots: number
   /** When true, kicks off the two sequential spins (one per spot). */
   isSpinning: boolean
-  /** Fired when both spins have landed. */
-  onSpinsComplete?: (spots: { spot1: Team; spot2: Team }) => void
+  /** The spot currently being announced/assigned (drives the pending state). */
+  pendingSpot?: 1 | 2 | null
+  /** Fired once a spot is auto-selected from the landed spins. */
+  onAnnounce?: (team: Team, spot: 1 | 2) => void
   onViewSpots?: () => void
 }
+
+const PendingIndicator = () => (
+  <motion.div
+    className="flex items-center gap-2"
+    initial={{ opacity: 0, y: 6 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.2 }}
+  >
+    <span className="text-white font-semibold text-sm whitespace-nowrap">Pending assignment</span>
+    <span className="flex items-center gap-0.5">
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          className="w-1 h-1 rounded-full bg-white/70"
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+        />
+      ))}
+    </span>
+  </motion.div>
+)
 
 // Circular progress component (mirrors the one used in TeamSpinner)
 const CircularProgress = ({ available, total, size = 16 }: { available: number; total: number; size?: number }) => {
@@ -53,7 +78,8 @@ export function MultiSpin2Spinner({
   totalSpots,
   availableSpots,
   isSpinning,
-  onSpinsComplete,
+  pendingSpot = null,
+  onAnnounce,
   onViewSpots,
 }: MultiSpin2SpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
@@ -63,8 +89,10 @@ export function MultiSpin2Spinner({
   const [spot2, setSpot2] = useState<Team | null>(null)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const announceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const hasStartedRef = useRef(false)
+  const hasAnnouncedRef = useRef(false)
 
   // Soft tick sound, identical feel to the original spinner
   const playTick = useCallback(() => {
@@ -130,17 +158,31 @@ export function MultiSpin2Spinner({
           setSpot2(teamB)
           setSpinningSpot(0)
           setStage("ready")
-          onSpinsComplete?.({ spot1: teamA, spot2: teamB })
         })
       })
     }
-  }, [isSpinning, stage, runSpin, onSpinsComplete])
+  }, [isSpinning, stage, runSpin])
+
+  // Once both spots have landed, wait a beat, then auto-select one of them,
+  // surface the "Pending assignment" state, and announce it to the parent.
+  useEffect(() => {
+    if (stage === "ready" && !hasAnnouncedRef.current && spot1 && spot2) {
+      hasAnnouncedRef.current = true
+      announceTimeoutRef.current = setTimeout(() => {
+        const pick: 1 | 2 = Math.random() < 0.5 ? 1 : 2
+        const team = pick === 1 ? spot1 : spot2
+        onAnnounce?.(team, pick)
+      }, 1500)
+    }
+  }, [stage, spot1, spot2, onAnnounce])
 
   // Reset internal state when the engine is turned off (concept switch / reset)
   useEffect(() => {
     if (!isSpinning && stage !== "idle") {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      if (announceTimeoutRef.current) clearTimeout(announceTimeoutRef.current)
       hasStartedRef.current = false
+      hasAnnouncedRef.current = false
       setStage("idle")
       setSpinningSpot(0)
       setSpot1(null)
@@ -152,12 +194,14 @@ export function MultiSpin2Spinner({
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      if (announceTimeoutRef.current) clearTimeout(announceTimeoutRef.current)
     }
   }, [])
 
   const renderSpotRow = (spot: 1 | 2) => {
     const result = spot === 1 ? spot1 : spot2
     const label = result ? `${result.city} ${result.name}` : ""
+    const isAnnounced = pendingSpot === spot
 
     return (
       <div className="flex items-center justify-between gap-3">
@@ -167,7 +211,7 @@ export function MultiSpin2Spinner({
             {label && (
               <motion.span
                 key={`${spot}-final`}
-                className="text-white font-bold text-sm truncate"
+                className={`font-bold text-sm truncate ${isAnnounced ? "text-green-400" : "text-white"}`}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
@@ -178,6 +222,18 @@ export function MultiSpin2Spinner({
             )}
           </AnimatePresence>
         </div>
+
+        {isAnnounced && (
+          <motion.span
+            className="flex-shrink-0 flex items-center gap-1 text-green-400 text-sm font-semibold"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Check className="w-4 h-4" />
+            Selected
+          </motion.span>
+        )}
       </div>
     )
   }
@@ -215,7 +271,11 @@ export function MultiSpin2Spinner({
 
             <div className="flex flex-col flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
-                {isAnySpinning ? (
+                {pendingSpot !== null ? (
+                  <motion.div key="pending">
+                    <PendingIndicator />
+                  </motion.div>
+                ) : isAnySpinning ? (
                   <motion.span
                     key={teams[currentIndex].name}
                     className="text-white font-semibold text-sm truncate"
