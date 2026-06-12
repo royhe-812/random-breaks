@@ -223,7 +223,7 @@ export function MultiSpin4Spinner({
             isPendingHere
               ? "border-green-400 bg-green-400 text-black"
               : canSelect
-                ? "border-white text-white hover:bg-white/10"
+                ? "border-green-400 bg-green-400 text-black hover:bg-green-500 hover:border-green-500"
                 : "border-white/15 text-white/30 cursor-not-allowed"
           }`}
         >
