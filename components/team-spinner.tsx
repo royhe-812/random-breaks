@@ -276,7 +276,7 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <span className="text-white font-semibold text-sm">Pending assignment</span>
+                    <span className="text-white font-semibold text-sm">Pending seller</span>
                     <span className="flex items-center gap-0.5">
                       {[0, 1, 2].map((i) => (
                         <motion.span
