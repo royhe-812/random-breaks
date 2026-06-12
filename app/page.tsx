@@ -413,7 +413,7 @@ export default function AnimationShowcase() {
       setMultiLastWinner({ username: "Adam007", team: team.name })
       setIsRevealing(true)
       setKey(prev => prev + 1)
-    }, 2500)
+    }, 4000)
   }, [])
 
   const renderAnimation = () => {
