@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
+import { Loader2 } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 
 type Spot = 1 | 2 | 3 | 4
@@ -192,6 +193,7 @@ export function MultiSpin4Spinner({
     const team = result
     const label = result ? `${result.city} ${result.name}` : ""
     const canSelect = !!result && pendingSpot === null
+    const isPendingHere = pendingSpot === spot
 
     return (
       <div key={spot} className="flex items-center justify-between gap-3">
@@ -218,12 +220,18 @@ export function MultiSpin4Spinner({
           disabled={!canSelect}
           onClick={() => team && onSelect(team, spot)}
           className={`flex-shrink-0 px-5 py-1.5 rounded-full font-medium text-sm border transition-colors ${
-            canSelect
-              ? "border-white text-white hover:bg-white/10"
-              : "border-white/15 text-white/30 cursor-not-allowed"
+            isPendingHere
+              ? "border-green-400 bg-green-400 text-black"
+              : canSelect
+                ? "border-white text-white hover:bg-white/10"
+                : "border-white/15 text-white/30 cursor-not-allowed"
           }`}
         >
-          Select
+          {isPendingHere ? (
+            <Loader2 className="w-4 h-4 animate-spin" aria-label="Pending assignment" />
+          ) : (
+            "Select"
+          )}
         </button>
       </div>
     )
