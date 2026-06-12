@@ -87,9 +87,11 @@ export function MultiSpin2Spinner({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [spot1, setSpot1] = useState<Team | null>(null)
   const [spot2, setSpot2] = useState<Team | null>(null)
+  const [showPending, setShowPending] = useState(false)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const announceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const hasStartedRef = useRef(false)
   const hasAnnouncedRef = useRef(false)
@@ -163,16 +165,20 @@ export function MultiSpin2Spinner({
     }
   }, [isSpinning, stage, runSpin])
 
-  // Once both spots have landed, wait a beat, then auto-select one of them,
-  // surface the "Pending assignment" state, and announce it to the parent.
+  // Once both spots have landed: wait a beat, surface the "Pending seller"
+  // state, and only after that resolves auto-select a spot and announce it.
   useEffect(() => {
     if (stage === "ready" && !hasAnnouncedRef.current && spot1 && spot2) {
       hasAnnouncedRef.current = true
       announceTimeoutRef.current = setTimeout(() => {
-        const pick: 1 | 2 = Math.random() < 0.5 ? 1 : 2
-        const team = pick === 1 ? spot1 : spot2
-        onAnnounce?.(team, pick)
-      }, 1500)
+        setShowPending(true)
+        pendingTimeoutRef.current = setTimeout(() => {
+          setShowPending(false)
+          const pick: 1 | 2 = Math.random() < 0.5 ? 1 : 2
+          const team = pick === 1 ? spot1 : spot2
+          onAnnounce?.(team, pick)
+        }, 2500)
+      }, 1200)
     }
   }, [stage, spot1, spot2, onAnnounce])
 
@@ -181,12 +187,14 @@ export function MultiSpin2Spinner({
     if (!isSpinning && stage !== "idle") {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
       if (announceTimeoutRef.current) clearTimeout(announceTimeoutRef.current)
+      if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current)
       hasStartedRef.current = false
       hasAnnouncedRef.current = false
       setStage("idle")
       setSpinningSpot(0)
       setSpot1(null)
       setSpot2(null)
+      setShowPending(false)
       setCurrentIndex(0)
     }
   }, [isSpinning, stage])
@@ -195,6 +203,7 @@ export function MultiSpin2Spinner({
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
       if (announceTimeoutRef.current) clearTimeout(announceTimeoutRef.current)
+      if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current)
     }
   }, [])
 
@@ -271,7 +280,7 @@ export function MultiSpin2Spinner({
 
             <div className="flex flex-col flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
-                {pendingSpot !== null ? (
+                {showPending ? (
                   <motion.div key="pending">
                     <PendingIndicator />
                   </motion.div>
