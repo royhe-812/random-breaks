@@ -11,6 +11,7 @@ import { ChevronDown, ChevronRight, Heart, Star } from "lucide-react"
 import { TeamSpinner, type Team, teams } from "@/components/team-spinner"
 import { MultiSpinSpinner } from "@/components/multi-spin-spinner"
 import { MultiSpin2Spinner } from "@/components/multi-spin-2-spinner"
+import { MultiSpin4Spinner } from "@/components/multi-spin-4-spinner"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
 import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
@@ -29,12 +30,13 @@ import { InStreamExperience } from "@/components/in-stream-experience"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 
-type AnimationType = "card-flip" | "multi-spin" | "multi-spin-2" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "card-flip", name: "Minimal" },
   { id: "multi-spin", name: "Multi-Spin Select" },
   { id: "multi-spin-2", name: "Multi-Spin Auto" },
+  { id: "multi-spin-4", name: "Multi-Spin Select 4" },
   { id: "thumbnails-2", name: "Extended" },
   { id: "pack-rip", name: "Pack Rip" },
   { id: "slot-machine", name: "Team Picker" },
@@ -222,7 +224,7 @@ export default function AnimationShowcase() {
   const [isSpinnerRevealing, setIsSpinnerRevealing] = useState(false) // For TeamSpinner cycling
   const [isSpinnerPending, setIsSpinnerPending] = useState(false) // Post-reveal "pending assignment" in TeamSpinner
   const [isMultiSpinning, setIsMultiSpinning] = useState(false) // Multi-Spin: run the two spins
-  const [multiPendingSpot, setMultiPendingSpot] = useState<1 | 2 | null>(null) // Multi-Spin: selected spot awaiting assignment
+  const [multiPendingSpot, setMultiPendingSpot] = useState<1 | 2 | 3 | 4 | null>(null) // Multi-Spin: selected spot awaiting assignment
   const [multiLastWinner, setMultiLastWinner] = useState<{ username: string; team: string } | null>(null) // Multi-Spin: dynamic last winner
   const [spinnerLastWinner, setSpinnerLastWinner] = useState<{ username: string; team: string } | null>(null) // TeamSpinner: dynamic last winner
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
@@ -352,7 +354,7 @@ export default function AnimationShowcase() {
 
     // Multi-Spin already showed its "pending assignment" beat before the
     // full-screen reveal, so go straight to the in-chat winner moment.
-    if (selectedAnimation === "multi-spin") {
+    if (selectedAnimation === "multi-spin" || selectedAnimation === "multi-spin-4") {
       setIsRevealing(false)
       setIsMultiSpinning(false)
       setMultiPendingSpot(null)
@@ -402,7 +404,7 @@ export default function AnimationShowcase() {
   }, [])
 
   // Multi-Spin: buyer committed to one of the two spun spots.
-  const handleMultiSelect = useCallback((team: Team, _spot: 1 | 2) => {
+  const handleMultiSelect = useCallback((team: Team, _spot: 1 | 2 | 3 | 4) => {
     setSelectedTeam(team)
     setWinnerTeam(team)
     setMultiPendingSpot(_spot) // Show "Pending assignment" in place of the Select button
@@ -425,6 +427,8 @@ export default function AnimationShowcase() {
       case "multi-spin":
         return <CardFlipReveal key={key} {...props} />
       case "multi-spin-2":
+        return <CardFlipReveal key={key} {...props} />
+      case "multi-spin-4":
         return <CardFlipReveal key={key} {...props} />
       case "pack-rip":
         return <PackRipReveal key={key} {...props} />
@@ -481,7 +485,7 @@ case "thumbnails-4":
                       ? "bg-green-500 text-black"
                       : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
                   } ${
-                    (animation.id === "card-flip" || animation.id === "thumbnails-2" || animation.id === "multi-spin" || animation.id === "multi-spin-2")
+                    (animation.id === "card-flip" || animation.id === "thumbnails-2" || animation.id === "multi-spin" || animation.id === "multi-spin-2" || animation.id === "multi-spin-4")
                       ? "ring-1 ring-inset ring-yellow-400"
                       : ""
                   }`}
@@ -698,7 +702,7 @@ case "thumbnails-4":
         {/* Team Spinner with Spots Available - shown for most concepts. For slot-machine (Team Picker),
             battle, and carousel it stays in its idle/zero state (thumbnail) since those concepts
             handle their own cycling + reveal full screen (isSpinnerRevealing is never set for them). */}
-        {selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
+        {selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
@@ -734,6 +738,19 @@ case "thumbnails-4":
           />
         )}
 
+        {/* Multi-Spin Select 4: four-spot spinner that lets the buyer pick one of four spins */}
+        {selectedAnimation === "multi-spin-4" && (
+          <MultiSpin4Spinner
+            totalSpots={32}
+            availableSpots={hasWon ? 15 : 16}
+            isSpinning={isMultiSpinning}
+            pendingSpot={multiPendingSpot}
+            lastWinner={multiLastWinner}
+            onSelect={handleMultiSelect}
+            onViewSpots={() => setIsBreakSpotsOpen(true)}
+          />
+        )}
+
         {/* Auction Card */}
         <div className="bg-black/40 backdrop-blur rounded-2xl p-4">
           <div className="flex items-start justify-between mb-2">
@@ -741,7 +758,7 @@ case "thumbnails-4":
               <p className="text-sm text-white mb-0.5 line-clamp-2">
                 <span className="font-semibold">{showWinner && winnerTeam ? `${winnerTeam.city} ${winnerTeam.name}` : 'Random team'}</span>
               </p>
-              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
+              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
                 <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
                   <svg width="12" height="15" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="2" y="2" width="28" height="36" rx="3" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5"/>
@@ -814,8 +831,8 @@ case "thumbnails-4":
                       setIsRevealing(true)
                       setKey(prev => prev + 1)
                     }, 1500)
-                  } else if (selectedAnimation === "multi-spin" || selectedAnimation === "multi-spin-2") {
-                    // Multi-Spin: kick off two sequential spins.
+                  } else if (selectedAnimation === "multi-spin" || selectedAnimation === "multi-spin-2" || selectedAnimation === "multi-spin-4") {
+                    // Multi-Spin: kick off the sequential spins.
                     setIsMultiSpinning(true)
                   } else {
                     // For concepts that use TeamSpinner (card-flip, pack-rip, mystery-box, back-card-flip)
@@ -862,7 +879,7 @@ case "thumbnails-4":
                     ? "bg-green-500 text-black"
                     : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
                 } ${
-                  (animation.id === "card-flip" || animation.id === "thumbnails-2" || animation.id === "multi-spin" || animation.id === "multi-spin-2")
+                  (animation.id === "card-flip" || animation.id === "thumbnails-2" || animation.id === "multi-spin" || animation.id === "multi-spin-2" || animation.id === "multi-spin-4")
                     ? "ring-1 ring-inset ring-yellow-400"
                     : ""
                 }`}
