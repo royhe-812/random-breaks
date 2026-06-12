@@ -33,8 +33,8 @@ type AnimationType = "card-flip" | "multi-spin" | "multi-spin-2" | "pack-rip" | 
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "card-flip", name: "Minimal" },
-  { id: "multi-spin", name: "Multi-Spin" },
-  { id: "multi-spin-2", name: "Multi-Spin 2" },
+  { id: "multi-spin", name: "Multi-Spin Select" },
+  { id: "multi-spin-2", name: "Multi-Spin Auto" },
   { id: "thumbnails-2", name: "Extended" },
   { id: "pack-rip", name: "Pack Rip" },
   { id: "slot-machine", name: "Team Picker" },
