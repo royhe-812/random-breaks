@@ -228,7 +228,10 @@ export function MultiSpin4Spinner({
           }`}
         >
           {isPendingHere ? (
-            <Loader2 className="w-4 h-4 animate-spin" aria-label="Pending assignment" />
+            <span className="relative inline-flex items-center justify-center">
+              <span className="invisible" aria-hidden="true">Select</span>
+              <Loader2 className="w-4 h-4 animate-spin absolute" aria-label="Pending assignment" />
+            </span>
           ) : (
             "Select"
           )}
