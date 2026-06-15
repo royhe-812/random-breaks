@@ -92,6 +92,9 @@ export function MultiSpin4ChipsSpinner({
   const [spinningSpot, setSpinningSpot] = useState<0 | Spot>(0)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [results, setResults] = useState<Record<Spot, Team | null>>({ 1: null, 2: null, 3: null })
+  // Order in which spots land, oldest → newest. Chips render this reversed so the
+  // newest selection appears on the left and pushes older chips to the right.
+  const [landedOrder, setLandedOrder] = useState<Spot[]>([])
   // True briefly when a spin has landed on a spot, before the next spin starts.
   // Drives the green "locked in" flash on the header text.
   const [justLanded, setJustLanded] = useState(false)
@@ -177,6 +180,7 @@ export function MultiSpin4ChipsSpinner({
         runSpin(spot, (team) => {
           landed[spot] = team
           setResults((prev) => ({ ...prev, [spot]: team }))
+          setLandedOrder((prev) => [...prev, spot]) // newest appended last
           runNext(i + 1)
         })
       }
@@ -210,6 +214,7 @@ export function MultiSpin4ChipsSpinner({
       setStage("idle")
       setSpinningSpot(0)
       setResults({ 1: null, 2: null, 3: null })
+      setLandedOrder([])
       setCurrentIndex(0)
       setJustLanded(false)
     }
@@ -251,7 +256,8 @@ export function MultiSpin4ChipsSpinner({
 
   const isAnySpinning = spinningSpot !== 0
   const glowColor = isAnySpinning ? teams[currentIndex].color : undefined
-  const assignedSpots = SPOTS.filter((spot) => results[spot])
+  // Newest selection first (leftmost), older chips pushed to the right.
+  const assignedSpots = [...landedOrder].reverse()
 
   return (
     <div className="w-full">

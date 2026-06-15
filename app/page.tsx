@@ -256,16 +256,26 @@ export default function AnimationShowcase() {
     // The full-screen spot reveal animation just finished.
     if (selectedAnimation === "in-stream") return
 
-    // Spin concepts: the full-screen spot reveal has just finished. Now show the
-    // "Pending seller" state in the spinner, and only after that beat assign the
-    // spot (green chip + item card title) and surface the in-chat winner. The
-    // colored chip(s) persist until the user taps the "sold out" reset CTA.
+    // Multi-spin: the "Pending seller" beat and green-chip assignment already
+    // happened BEFORE this reveal, so once the reveal finishes just surface the
+    // in-chat winner. The colored chip(s) persist until the "sold out" reset CTA.
     if (
-      selectedAnimation === "card-flip" ||
-      selectedAnimation === "single-spin-populate" ||
       selectedAnimation === "multi-spin-4-chips" ||
       selectedAnimation === "multi-spin-4-chips-no-label" ||
       selectedAnimation === "multi-spin-4-auto"
+    ) {
+      setIsRevealing(false)
+      setShowWinner(true)
+      setKey(prev => prev + 1)
+      return
+    }
+
+    // Single spin: the reveal just finished. Now show the "Pending seller" state
+    // in the spinner, and only after that beat assign the spot (green chip + item
+    // card title) and surface the in-chat winner.
+    if (
+      selectedAnimation === "card-flip" ||
+      selectedAnimation === "single-spin-populate"
     ) {
       setIsRevealing(false)
       setRevealPendingSeller(true) // Spinner shows "Pending seller" after the reveal
@@ -333,17 +343,41 @@ export default function AnimationShowcase() {
     setWinnerTeam(team)
   }, [])
 
-  // Spin landed on a spot: play the full-screen spot reveal right away. The
-  // "Pending seller" state and the green-chip assignment come AFTER the reveal
-  // (see handleComplete). We remember the landed spot to assign it later.
+  // Spin landed on a spot. The reveal ordering differs by concept:
+  // - Multi-spin: the spinner shows "Pending seller", the seller then assigns a
+  //   spot (chip turns green), and ONLY THEN do we play the full-screen reveal.
+  // - Single spin: the randomizer stops on one spot, so the reveal plays right
+  //   away, and the pending/assignment beat follows after the reveal.
   const handleMultiSelect = useCallback((team: Team, _spot: 1 | 2 | 3 | 4) => {
     setSelectedTeam(team)
     setWinnerTeam(team)
     pendingSpotRef.current = _spot
     setMultiLastWinner({ username: "Adam007", team: team.name })
-    setIsRevealing(true)
-    setKey(prev => prev + 1)
-  }, [])
+
+    const isMultiSpin =
+      selectedAnimation === "multi-spin-4-chips" ||
+      selectedAnimation === "multi-spin-4-chips-no-label" ||
+      selectedAnimation === "multi-spin-4-auto"
+
+    if (isMultiSpin) {
+      // Pending seller → seller assigns the spot (green chip + title) → reveal.
+      setRevealPendingSeller(true)
+      setTimeout(() => {
+        setRevealPendingSeller(false)
+        setMultiPendingSpot(_spot) // Chip turns green / spot highlighted
+        setSpotAssigned(true) // Swap the item card title to the assigned team
+        // Brief beat so the green chip reads before the full-screen reveal.
+        setTimeout(() => {
+          setIsRevealing(true)
+          setKey(prev => prev + 1)
+        }, 900)
+      }, 6000)
+    } else {
+      // Single spin: play the reveal right after the randomizer stops.
+      setIsRevealing(true)
+      setKey(prev => prev + 1)
+    }
+  }, [selectedAnimation])
 
   // Kick off the concept's randomizer/reveal. Runs after the crown celebration.
   const startConceptReveal = useCallback(() => {
