@@ -5,7 +5,9 @@ import { AnimatePresence, motion } from "framer-motion"
 import { Check } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 
-type Spot = 1 | 2 | 3 | 4
+type Spot = 1 | 2 | 3
+
+const SPOTS: Spot[] = [1, 2, 3]
 
 interface MultiSpin4AutoSpinnerProps {
   totalSpots: number
@@ -87,7 +89,7 @@ export function MultiSpin4AutoSpinner({
   const [stage, setStage] = useState<Stage>("idle")
   const [spinningSpot, setSpinningSpot] = useState<0 | Spot>(0)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [results, setResults] = useState<Record<Spot, Team | null>>({ 1: null, 2: null, 3: null, 4: null })
+  const [results, setResults] = useState<Record<Spot, Team | null>>({ 1: null, 2: null, 3: null })
   const [showPending, setShowPending] = useState(false)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -154,7 +156,7 @@ export function MultiSpin4AutoSpinner({
     if (isSpinning && !hasStartedRef.current && stage === "idle") {
       hasStartedRef.current = true
       setStage("spinning")
-      const order: Spot[] = [1, 2, 3, 4]
+      const order: Spot[] = SPOTS
       const landed: Record<Spot, Team> = {} as Record<Spot, Team>
       const runNext = (i: number) => {
         if (i >= order.length) {
@@ -176,14 +178,14 @@ export function MultiSpin4AutoSpinner({
   // Once all four spots have landed: wait a beat, surface the "Pending seller"
   // state, and only after that resolves auto-select a spot and announce it.
   useEffect(() => {
-    const allLanded = results[1] && results[2] && results[3] && results[4]
+    const allLanded = results[1] && results[2] && results[3]
     if (stage === "ready" && !hasAnnouncedRef.current && allLanded) {
       hasAnnouncedRef.current = true
       announceTimeoutRef.current = setTimeout(() => {
         setShowPending(true)
         pendingTimeoutRef.current = setTimeout(() => {
           setShowPending(false)
-          const pick = ((Math.floor(Math.random() * 4) + 1) as Spot)
+          const pick = ((Math.floor(Math.random() * SPOTS.length) + 1) as Spot)
           const team = results[pick]
           if (team) onAnnounce?.(team, pick)
         }, 2500)
@@ -201,7 +203,7 @@ export function MultiSpin4AutoSpinner({
       hasAnnouncedRef.current = false
       setStage("idle")
       setSpinningSpot(0)
-      setResults({ 1: null, 2: null, 3: null, 4: null })
+      setResults({ 1: null, 2: null, 3: null })
       setShowPending(false)
       setCurrentIndex(0)
     }
@@ -221,23 +223,22 @@ export function MultiSpin4AutoSpinner({
     const isAnnounced = pendingSpot === spot
 
     return (
-      <div key={spot} className="flex items-center justify-between gap-3">
+      <motion.div
+        key={spot}
+        layout
+        className="flex items-center justify-between gap-3 overflow-hidden"
+        initial={{ opacity: 0, height: 0, y: -6 }}
+        animate={{ opacity: 1, height: "auto", y: 0 }}
+        exit={{ opacity: 0, height: 0, y: -6 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
         <div className="flex items-center gap-1.5 min-w-0">
           <span className="text-white font-bold text-sm whitespace-nowrap">Spot #{spot}:</span>
-          <AnimatePresence mode="wait">
-            {label && (
-              <motion.span
-                key={`${spot}-final`}
-                className={`font-bold text-sm truncate ${isAnnounced ? "text-green-400" : "text-white"}`}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.2 }}
-              >
-                {label}
-              </motion.span>
-            )}
-          </AnimatePresence>
+          {label && (
+            <span className={`font-bold text-sm truncate ${isAnnounced ? "text-green-400" : "text-white"}`}>
+              {label}
+            </span>
+          )}
         </div>
 
         {isAnnounced && (
@@ -251,12 +252,13 @@ export function MultiSpin4AutoSpinner({
             Selected
           </motion.span>
         )}
-      </div>
+      </motion.div>
     )
   }
 
   const isAnySpinning = spinningSpot !== 0
   const glowColor = isAnySpinning ? teams[currentIndex].color : undefined
+  const assignedSpots = SPOTS.filter((spot) => results[spot])
 
   return (
     <div className="w-full">
@@ -335,13 +337,30 @@ export function MultiSpin4AutoSpinner({
           </div>
         </div>
 
-        {/* Divider separating the break header from the spin slots */}
-        <div className="mx-4 border-t border-white/10" />
+        {/* Spots populate one-by-one as they get assigned; starts as a single-spin
+            style header with no slots, then expands with each landed spot. */}
+        <AnimatePresence>
+          {assignedSpots.length > 0 && (
+            <motion.div
+              key="slots"
+              layout
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Divider separating the break header from the spin slots */}
+              <div className="mx-4 border-t border-white/10" />
 
-        {/* Four spin slots (no select buttons) */}
-        <div className="px-4 pt-3 pb-3 flex flex-col gap-3">
-          {([1, 2, 3, 4] as Spot[]).map((spot) => renderSpotRow(spot))}
-        </div>
+              {/* Spin slots, added as each spot is assigned (no select buttons) */}
+              <div className="px-4 pt-3 pb-3 flex flex-col gap-3">
+                <AnimatePresence initial={false}>
+                  {assignedSpots.map((spot) => renderSpotRow(spot))}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   )

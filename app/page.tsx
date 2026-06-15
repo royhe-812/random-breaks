@@ -772,7 +772,7 @@ case "thumbnails-4":
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
             isSpinning={isMultiSpinning}
-            pendingSpot={multiPendingSpot}
+            pendingSpot={multiPendingSpot === 4 ? null : multiPendingSpot}
             onAnnounce={handleMultiSelect}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
