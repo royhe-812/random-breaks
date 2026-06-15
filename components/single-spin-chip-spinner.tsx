@@ -17,17 +17,6 @@ interface SingleSpinChipSpinnerProps {
   onViewSpots?: () => void
 }
 
-// Pick black or white text depending on the chip background luminance so light
-// team colors (e.g. Steelers gold) stay readable.
-const getReadableTextColor = (hex: string) => {
-  const c = hex.replace("#", "")
-  const r = parseInt(c.substring(0, 2), 16)
-  const g = parseInt(c.substring(2, 4), 16)
-  const b = parseInt(c.substring(4, 6), 16)
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return luminance > 0.6 ? "#101820" : "#ffffff"
-}
-
 const PendingIndicator = () => (
   <motion.div
     className="flex items-center gap-2"
@@ -309,13 +298,12 @@ export function SingleSpinChipSpinner({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
+                className="inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white"
                 style={{
-                  backgroundColor: result.color,
-                  color: getReadableTextColor(result.color),
+                  backgroundColor: "transparent",
                   boxShadow: isAnnounced
                     ? "0 0 0 2px #4CE160, 0 0 12px rgba(76,225,96,0.5)"
-                    : "inset 0 0 0 1px rgba(255,255,255,0.15)",
+                    : "inset 0 0 0 1px rgba(255,255,255,0.6)",
                 }}
               >
                 {isAnnounced && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
