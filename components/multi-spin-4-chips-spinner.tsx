@@ -90,6 +90,9 @@ export function MultiSpin4ChipsSpinner({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [results, setResults] = useState<Record<Spot, Team | null>>({ 1: null, 2: null, 3: null })
   const [showPending, setShowPending] = useState(false)
+  // True briefly when a spin has landed on a spot, before the next spin starts.
+  // Drives the green "locked in" flash on the header text.
+  const [justLanded, setJustLanded] = useState(false)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const announceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -140,7 +143,12 @@ export function MultiSpin4ChipsSpinner({
         if (elapsed > 1200) speed += 30
         if (speed >= 400) {
           setCurrentIndex(target)
-          timeoutRef.current = setTimeout(() => onDone(teams[target]), 800)
+          // Flash the landed team green, then pause before the next spin.
+          setJustLanded(true)
+          timeoutRef.current = setTimeout(() => {
+            setJustLanded(false)
+            onDone(teams[target])
+          }, 1600)
           return
         }
         timeoutRef.current = setTimeout(tick, speed)
@@ -205,6 +213,7 @@ export function MultiSpin4ChipsSpinner({
       setResults({ 1: null, 2: null, 3: null })
       setShowPending(false)
       setCurrentIndex(0)
+      setJustLanded(false)
     }
   }, [isSpinning, stage])
 
@@ -282,12 +291,12 @@ export function MultiSpin4ChipsSpinner({
                   </motion.div>
                 ) : isAnySpinning ? (
                   <motion.span
-                    key={teams[currentIndex].name}
-                    className="text-white font-semibold text-sm truncate"
+                    key={justLanded ? "landed" : teams[currentIndex].name}
+                    className="font-semibold text-sm truncate"
                     initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    animate={{ opacity: 1, y: 0, color: justLanded ? "#4CE160" : "#ffffff" }}
                     exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.05 }}
+                    transition={{ duration: justLanded ? 0.2 : 0.05 }}
                   >
                     {teams[currentIndex].city} {teams[currentIndex].name}
                   </motion.span>
