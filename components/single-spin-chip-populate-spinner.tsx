@@ -11,7 +11,9 @@ interface SingleSpinChipPopulateSpinnerProps {
   isSpinning: boolean
   /** When set (to 1), the landed chip shows the green "selected" highlight. */
   pendingSpot?: 1 | null
-  /** Fired once the spin lands and the pending beat resolves. */
+  /** When true, the spinner shows the "Pending seller" state (driven after the reveal). */
+  pendingSeller?: boolean
+  /** Fired once the spin lands, to trigger the full-screen reveal. */
   onAnnounce?: (team: Team, spot: 1) => void
   onViewSpots?: () => void
 }
@@ -78,6 +80,7 @@ export function SingleSpinChipPopulateSpinner({
   availableSpots,
   isSpinning,
   pendingSpot = null,
+  pendingSeller = false,
   onAnnounce,
   onViewSpots,
 }: SingleSpinChipPopulateSpinnerProps) {
@@ -85,7 +88,6 @@ export function SingleSpinChipPopulateSpinner({
   const [isCycling, setIsCycling] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [result, setResult] = useState<Team | null>(null)
-  const [showPending, setShowPending] = useState(false)
   // True briefly when the spin lands on a spot, before it settles. Flashes the
   // landed team green in the header (mirrors the multi-spin behavior).
   const [justLanded, setJustLanded] = useState(false)
@@ -167,17 +169,14 @@ export function SingleSpinChipPopulateSpinner({
     }
   }, [isSpinning, stage, runSpin])
 
-  // Once the chip has landed: wait a beat, surface the "Pending seller" state,
-  // then announce the landed team.
+  // Once the chip has landed: wait a short beat (so the green flash reads),
+  // then announce to trigger the full-screen reveal. The "Pending seller" state
+  // is shown after the reveal, driven by the pendingSeller prop.
   useEffect(() => {
     if (stage === "ready" && !hasAnnouncedRef.current && result) {
       hasAnnouncedRef.current = true
       announceTimeoutRef.current = setTimeout(() => {
-        setShowPending(true)
-        pendingTimeoutRef.current = setTimeout(() => {
-          setShowPending(false)
-          onAnnounce?.(result, 1)
-        }, 6000)
+        onAnnounce?.(result, 1)
       }, 1200)
     }
   }, [stage, result, onAnnounce])
@@ -193,7 +192,6 @@ export function SingleSpinChipPopulateSpinner({
       setStage("idle")
       setIsCycling(false)
       setResult(null)
-      setShowPending(false)
       setCurrentIndex(0)
       setJustLanded(false)
     }

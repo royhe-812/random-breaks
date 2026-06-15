@@ -126,6 +126,7 @@ export default function AnimationShowcase() {
   const [isMultiSpinning, setIsMultiSpinning] = useState(false) // Multi-Spin: run the two spins
   const [multiPendingSpot, setMultiPendingSpot] = useState<1 | 2 | 3 | 4 | null>(null) // Multi-Spin: selected spot awaiting assignment
   const [spotAssigned, setSpotAssigned] = useState(false) // Seller assigned the spot: swap item card title to the team name before the reveal
+  const [revealPendingSeller, setRevealPendingSeller] = useState(false) // After the spot reveal: show the "Pending seller" state in the spinner before assigning
   const [showWinnerCrown, setShowWinnerCrown] = useState(false) // Crown "WINNER" celebration that plays right after a bid win, before the randomizer
   const [multiLastWinner, setMultiLastWinner] = useState<{ username: string; team: string } | null>(null) // Multi-Spin: dynamic last winner
   const [spinnerLastWinner, setSpinnerLastWinner] = useState<{ username: string; team: string } | null>(null) // TeamSpinner: dynamic last winner
@@ -140,6 +141,7 @@ export default function AnimationShowcase() {
   const [reactionMessages, setReactionMessages] = useState<{ user: string; message: string; color: string }[]>([])
   const messageIndexRef = useRef(3)
   const chatPausedRef = useRef(false)
+  const pendingSpotRef = useRef<1 | 2 | 3 | 4 | null>(null) // Remembers which spot the spin landed on, assigned after the reveal + pending-seller beat
   
   // Random reaction usernames and message templates
   const reactionUsers = [
@@ -254,24 +256,34 @@ export default function AnimationShowcase() {
     // The full-screen spot reveal animation just finished.
     if (selectedAnimation === "in-stream") return
 
-    // Multi-Spin already showed its "pending assignment" beat before the
-    // full-screen reveal, so go straight to the in-chat winner moment.
-    // Single Spin (chip) and Multi-Spin 4 Chips keep their colored chip(s) and
-    // the selected highlight on screen after the reveal. We intentionally leave
-    // isMultiSpinning and multiPendingSpot set so the chips persist until the
-    // user taps the "sold out" reset CTA (SwipeToBid onReset).
-    if (selectedAnimation === "card-flip" || selectedAnimation === "single-spin-populate" || selectedAnimation === "multi-spin-4-chips" || selectedAnimation === "multi-spin-4-chips-no-label") {
+    // Spin concepts: the full-screen spot reveal has just finished. Now show the
+    // "Pending seller" state in the spinner, and only after that beat assign the
+    // spot (green chip + item card title) and surface the in-chat winner. The
+    // colored chip(s) persist until the user taps the "sold out" reset CTA.
+    if (
+      selectedAnimation === "card-flip" ||
+      selectedAnimation === "single-spin-populate" ||
+      selectedAnimation === "multi-spin-4-chips" ||
+      selectedAnimation === "multi-spin-4-chips-no-label" ||
+      selectedAnimation === "multi-spin-4-auto"
+    ) {
       setIsRevealing(false)
-      setShowWinner(true)
+      setRevealPendingSeller(true) // Spinner shows "Pending seller" after the reveal
       setKey(prev => prev + 1)
+
+      setTimeout(() => {
+        setRevealPendingSeller(false)
+        setMultiPendingSpot(pendingSpotRef.current) // Chip turns green / spot highlighted
+        setSpotAssigned(true) // Swap the item card title to the assigned team
+        setShowWinner(true) // Surface the in-chat winner treatment
+      }, 6000)
       return
     }
 
     if (
       selectedAnimation === "multi-spin" ||
       selectedAnimation === "multi-spin-2" ||
-      selectedAnimation === "multi-spin-4" ||
-      selectedAnimation === "multi-spin-4-auto"
+      selectedAnimation === "multi-spin-4"
     ) {
       setIsRevealing(false)
       setIsMultiSpinning(false)
@@ -321,14 +333,13 @@ export default function AnimationShowcase() {
     setWinnerTeam(team)
   }, [])
 
-  // Multi-Spin: buyer committed to one of the two spun spots.
+  // Spin landed on a spot: play the full-screen spot reveal right away. The
+  // "Pending seller" state and the green-chip assignment come AFTER the reveal
+  // (see handleComplete). We remember the landed spot to assign it later.
   const handleMultiSelect = useCallback((team: Team, _spot: 1 | 2 | 3 | 4) => {
     setSelectedTeam(team)
     setWinnerTeam(team)
-    setMultiPendingSpot(_spot) // Chip turns green to show the seller assigned the spot
-    setSpotAssigned(true) // Swap the item card title to the team name in the same instant
-
-    // Once the spot is assigned, play the full-screen reveal moment right away.
+    pendingSpotRef.current = _spot
     setMultiLastWinner({ username: "Adam007", team: team.name })
     setIsRevealing(true)
     setKey(prev => prev + 1)
@@ -670,6 +681,7 @@ case "thumbnails-4":
             availableSpots={hasWon ? 15 : 16}
             isSpinning={isMultiSpinning}
             pendingSpot={multiPendingSpot === 1 ? 1 : null}
+            pendingSeller={revealPendingSeller}
             onAnnounce={handleMultiSelect}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
@@ -682,6 +694,7 @@ case "thumbnails-4":
             availableSpots={hasWon ? 15 : 16}
             isSpinning={isMultiSpinning}
             pendingSpot={multiPendingSpot === 1 ? 1 : null}
+            pendingSeller={revealPendingSeller}
             onAnnounce={handleMultiSelect}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
@@ -732,6 +745,7 @@ case "thumbnails-4":
             availableSpots={hasWon ? 15 : 16}
             isSpinning={isMultiSpinning}
             pendingSpot={multiPendingSpot === 4 ? null : multiPendingSpot}
+            pendingSeller={revealPendingSeller}
             onAnnounce={handleMultiSelect}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
@@ -744,6 +758,7 @@ case "thumbnails-4":
             availableSpots={hasWon ? 15 : 16}
             isSpinning={isMultiSpinning}
             pendingSpot={multiPendingSpot === 4 ? null : multiPendingSpot}
+            pendingSeller={revealPendingSeller}
             onAnnounce={handleMultiSelect}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
@@ -756,6 +771,7 @@ case "thumbnails-4":
             availableSpots={hasWon ? 15 : 16}
             isSpinning={isMultiSpinning}
             pendingSpot={multiPendingSpot === 4 ? null : multiPendingSpot}
+            pendingSeller={revealPendingSeller}
             onAnnounce={handleMultiSelect}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
@@ -846,6 +862,8 @@ case "thumbnails-4":
                   setIsMultiSpinning(false)
                   setMultiPendingSpot(null)
                   setSpotAssigned(false)
+                  setRevealPendingSeller(false)
+                  pendingSpotRef.current = null
                   setSelectedTeam(null)
                   setShowWinner(false)
                   setWinnerTeam(null)
