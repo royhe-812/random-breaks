@@ -424,18 +424,15 @@ export default function AnimationShowcase() {
   const handleMultiSelect = useCallback((team: Team, _spot: 1 | 2 | 3 | 4) => {
     setSelectedTeam(team)
     setWinnerTeam(team)
-    setMultiPendingSpot(_spot) // Show "Pending assignment" in place of the Select button
+    setMultiPendingSpot(_spot) // Chip turns green to show the seller assigned the spot
+    setSpotAssigned(true) // Swap the item card title to the team name in the same instant
 
-    // After the seller "assigns" the spot, update the last winner and swap the
-    // item card title from "Random team" to the assigned team. Hold a brief beat
-    // so the title change is visible before the full-screen reveal moment.
+    // After the spot is assigned, surface the last winner and play the
+    // full-screen reveal moment.
     setTimeout(() => {
       setMultiLastWinner({ username: "Adam007", team: team.name })
-      setSpotAssigned(true)
-      setTimeout(() => {
-        setIsRevealing(true)
-        setKey(prev => prev + 1)
-      }, 700)
+      setIsRevealing(true)
+      setKey(prev => prev + 1)
     }, 4000)
   }, [])
 
