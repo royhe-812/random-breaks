@@ -304,7 +304,7 @@ export function SingleSpinChipPopulateSpinner({
                   initial={{ opacity: 0, scale: 0.8, y: 6 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
+                  className="inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
                   style={{
                     backgroundColor: isAnnounced ? "#4CE160" : "transparent",
                     color: isAnnounced ? "#101820" : "#ffffff",
