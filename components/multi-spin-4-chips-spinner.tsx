@@ -243,7 +243,7 @@ export function MultiSpin4ChipsSpinner({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
+        className="inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
         style={{
           backgroundColor: result.color,
           color: textColor,
@@ -355,8 +355,11 @@ export function MultiSpin4ChipsSpinner({
               {/* Divider separating the break header from the spin chips */}
               <div className="mx-4 border-t border-white/10" />
 
-              {/* Team chips, added as each spot is assigned */}
-              <div className="px-4 pt-3 pb-3 flex flex-wrap gap-2">
+              {/* Team chips in a single horizontally-swipeable row. */}
+              <div
+                className="px-4 pt-3 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                style={{ WebkitOverflowScrolling: "touch" }}
+              >
                 <AnimatePresence initial={false}>
                   {assignedSpots.map((spot) => renderChip(spot))}
                 </AnimatePresence>
