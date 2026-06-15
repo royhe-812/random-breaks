@@ -225,6 +225,7 @@ export default function AnimationShowcase() {
   const [isSpinnerPending, setIsSpinnerPending] = useState(false) // Post-reveal "pending assignment" in TeamSpinner
   const [isMultiSpinning, setIsMultiSpinning] = useState(false) // Multi-Spin: run the two spins
   const [multiPendingSpot, setMultiPendingSpot] = useState<1 | 2 | 3 | 4 | null>(null) // Multi-Spin: selected spot awaiting assignment
+  const [spotAssigned, setSpotAssigned] = useState(false) // Seller assigned the spot: swap item card title to the team name before the reveal
   const [multiLastWinner, setMultiLastWinner] = useState<{ username: string; team: string } | null>(null) // Multi-Spin: dynamic last winner
   const [spinnerLastWinner, setSpinnerLastWinner] = useState<{ username: string; team: string } | null>(null) // TeamSpinner: dynamic last winner
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
@@ -425,12 +426,16 @@ export default function AnimationShowcase() {
     setWinnerTeam(team)
     setMultiPendingSpot(_spot) // Show "Pending assignment" in place of the Select button
 
-    // After the seller "assigns" the spot, update the last winner and play
-    // the full-screen reveal.
+    // After the seller "assigns" the spot, update the last winner and swap the
+    // item card title from "Random team" to the assigned team. Hold a brief beat
+    // so the title change is visible before the full-screen reveal moment.
     setTimeout(() => {
       setMultiLastWinner({ username: "Adam007", team: team.name })
-      setIsRevealing(true)
-      setKey(prev => prev + 1)
+      setSpotAssigned(true)
+      setTimeout(() => {
+        setIsRevealing(true)
+        setKey(prev => prev + 1)
+      }, 700)
     }, 4000)
   }, [])
 
@@ -831,7 +836,7 @@ case "thumbnails-4":
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 pr-2">
               <p className="text-sm text-white mb-0.5 line-clamp-2">
-                <span className="font-semibold">{showWinner && winnerTeam ? `${winnerTeam.city} ${winnerTeam.name}` : 'Random team'}</span>
+                <span className="font-semibold">{(showWinner || spotAssigned) && winnerTeam ? `${winnerTeam.city} ${winnerTeam.name}` : 'Random team'}</span>
               </p>
               {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "multi-spin-repeat" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
                 <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
@@ -895,6 +900,7 @@ case "thumbnails-4":
                 disabled={showWinner}
                 onBidConfirmed={() => {
                   setHasWon(true)
+                  setSpotAssigned(false) // Reset item card title to "Random team" for the new round
                   chatPausedRef.current = true // Pause chat immediately when bid is placed
                   
                   // For concepts with built-in randomizer, set a random team and trigger reveal after a short delay
@@ -922,6 +928,7 @@ case "thumbnails-4":
                   setIsSpinnerPending(false)
                   setIsMultiSpinning(false)
                   setMultiPendingSpot(null)
+                  setSpotAssigned(false)
                   setSelectedTeam(null)
                   setShowWinner(false)
                   setWinnerTeam(null)
