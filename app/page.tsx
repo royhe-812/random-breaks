@@ -18,6 +18,7 @@ import { MultiSpin4ChipsNoLabelSpinner } from "@/components/multi-spin-4-chips-n
 import { SingleSpinChipSpinner } from "@/components/single-spin-chip-spinner"
 import { SingleSpinChipPopulateSpinner } from "@/components/single-spin-chip-populate-spinner"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
+import { WinnerCrownReveal } from "@/components/animations/winner-crown-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
 import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
 import { MysteryBoxReveal } from "@/components/animations/mystery-box-reveal"
@@ -228,6 +229,7 @@ export default function AnimationShowcase() {
   const [isMultiSpinning, setIsMultiSpinning] = useState(false) // Multi-Spin: run the two spins
   const [multiPendingSpot, setMultiPendingSpot] = useState<1 | 2 | 3 | 4 | null>(null) // Multi-Spin: selected spot awaiting assignment
   const [spotAssigned, setSpotAssigned] = useState(false) // Seller assigned the spot: swap item card title to the team name before the reveal
+  const [showWinnerCrown, setShowWinnerCrown] = useState(false) // Crown "WINNER" celebration that plays right after a bid win, before the randomizer
   const [multiLastWinner, setMultiLastWinner] = useState<{ username: string; team: string } | null>(null) // Multi-Spin: dynamic last winner
   const [spinnerLastWinner, setSpinnerLastWinner] = useState<{ username: string; team: string } | null>(null) // TeamSpinner: dynamic last winner
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
@@ -434,6 +436,27 @@ export default function AnimationShowcase() {
     setIsRevealing(true)
     setKey(prev => prev + 1)
   }, [])
+
+  // Kick off the concept's randomizer/reveal. Runs after the crown celebration.
+  const startConceptReveal = useCallback(() => {
+    // For concepts with built-in randomizer, set a random team and trigger reveal after a short delay
+    if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" || selectedAnimation === "thumbnails-4") {
+      const randomTeam = teams[Math.floor(Math.random() * teams.length)]
+      setSelectedTeam(randomTeam)
+      setWinnerTeam(randomTeam)
+      setTimeout(() => {
+        setIsRevealing(true)
+        setKey(prev => prev + 1)
+      }, 1500)
+    } else if (selectedAnimation === "card-flip" || selectedAnimation === "single-spin-populate" || selectedAnimation === "multi-spin" || selectedAnimation === "multi-spin-2" || selectedAnimation === "multi-spin-4" || selectedAnimation === "multi-spin-4-auto" || selectedAnimation === "multi-spin-4-chips" || selectedAnimation === "multi-spin-4-chips-no-label") {
+      // Single Spin (chip) + Multi-Spin: kick off the spin(s).
+      setIsMultiSpinning(true)
+    } else {
+      // For concepts that use TeamSpinner (card-flip, pack-rip, mystery-box, back-card-flip)
+      // Trigger spinner revealing - TeamSpinner will cycle through teams first
+      setIsSpinnerRevealing(true)
+    }
+  }, [selectedAnimation])
 
   const renderAnimation = () => {
     const props = { isRevealing, onComplete: handleComplete, team: selectedTeam, onTeamSelected: handleTeamSelected }
@@ -912,28 +935,15 @@ case "thumbnails-4":
                   setHasWon(true)
                   setSpotAssigned(false) // Reset item card title to "Random team" for the new round
                   chatPausedRef.current = true // Pause chat immediately when bid is placed
-                  
-                  // For concepts with built-in randomizer, set a random team and trigger reveal after a short delay
-                  if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" || selectedAnimation === "thumbnails-4") {
-                    const randomTeam = teams[Math.floor(Math.random() * teams.length)]
-                    setSelectedTeam(randomTeam)
-                    setWinnerTeam(randomTeam)
-                    setTimeout(() => {
-                      setIsRevealing(true)
-                      setKey(prev => prev + 1)
-                    }, 1500)
-                  } else if (selectedAnimation === "card-flip" || selectedAnimation === "single-spin-populate" || selectedAnimation === "multi-spin" || selectedAnimation === "multi-spin-2" || selectedAnimation === "multi-spin-4" || selectedAnimation === "multi-spin-4-auto" || selectedAnimation === "multi-spin-4-chips" || selectedAnimation === "multi-spin-4-chips-no-label") {
-                    // Single Spin (chip) + Multi-Spin: kick off the spin(s).
-                    setIsMultiSpinning(true)
-                  } else {
-                    // For concepts that use TeamSpinner (card-flip, pack-rip, mystery-box, back-card-flip)
-                    // Trigger spinner revealing - TeamSpinner will cycle through teams first
-                    setIsSpinnerRevealing(true)
-                  }
+
+                  // Play the crown "WINNER" celebration first; the randomizer
+                  // kicks off once it finishes (see WinnerCrownReveal onComplete).
+                  setShowWinnerCrown(true)
                 }}
                 onReset={() => {
                   // Reset the entire concept
                   setHasWon(false)
+                  setShowWinnerCrown(false)
                   setIsSpinnerRevealing(false)
                   setIsSpinnerPending(false)
                   setIsMultiSpinning(false)
@@ -985,6 +995,15 @@ case "thumbnails-4":
           ))}
         </div>
       </motion.div>
+
+      {/* Crown "WINNER" celebration - plays right after a bid win, before the randomizer */}
+      <WinnerCrownReveal
+        isRevealing={showWinnerCrown}
+        onComplete={() => {
+          setShowWinnerCrown(false)
+          startConceptReveal()
+        }}
+      />
 
       {/* Reveal Animation Overlay */}
       <AnimatePresence>
