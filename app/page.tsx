@@ -429,13 +429,10 @@ export default function AnimationShowcase() {
     setMultiPendingSpot(_spot) // Chip turns green to show the seller assigned the spot
     setSpotAssigned(true) // Swap the item card title to the team name in the same instant
 
-    // After the spot is assigned, surface the last winner and play the
-    // full-screen reveal moment.
-    setTimeout(() => {
-      setMultiLastWinner({ username: "Adam007", team: team.name })
-      setIsRevealing(true)
-      setKey(prev => prev + 1)
-    }, 4000)
+    // Once the spot is assigned, play the full-screen reveal moment right away.
+    setMultiLastWinner({ username: "Adam007", team: team.name })
+    setIsRevealing(true)
+    setKey(prev => prev + 1)
   }, [])
 
   const renderAnimation = () => {
