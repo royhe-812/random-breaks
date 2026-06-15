@@ -395,18 +395,7 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
               </span>
             </motion.div>
           )}
-          
-          {/* Second row - Last winner */}
-          {lastWinner && (
-            <div className="flex items-center gap-1.5 mt-1.5">
-              <span className="text-white/50 text-xs">Last winner:</span>
-              <span className="text-white text-xs">
-                <span className="font-semibold">{lastWinner.username}</span>
-                <span className="text-white/50"> won </span>
-                <span className="font-semibold">{lastWinner.team}</span>
-              </span>
-            </div>
-          )}
+
         </div>
       </div>
     </div>
