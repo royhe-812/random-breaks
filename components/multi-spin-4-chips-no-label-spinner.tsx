@@ -15,7 +15,9 @@ interface MultiSpin4ChipsNoLabelSpinnerProps {
   isSpinning: boolean
   /** The spot currently being announced/assigned (drives the pending state). */
   pendingSpot?: Spot | null
-  /** Fired once a spot is auto-selected from the landed spins. */
+  /** When true, the spinner shows the "Pending seller" state (driven after the reveal). */
+  pendingSeller?: boolean
+  /** Fired once a spot is auto-selected, to trigger the full-screen reveal. */
   onAnnounce?: (team: Team, spot: Spot) => void
   onViewSpots?: () => void
 }
@@ -82,6 +84,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
   availableSpots,
   isSpinning,
   pendingSpot = null,
+  pendingSeller = false,
   onAnnounce,
   onViewSpots,
 }: MultiSpin4ChipsNoLabelSpinnerProps) {
@@ -89,7 +92,6 @@ export function MultiSpin4ChipsNoLabelSpinner({
   const [spinningSpot, setSpinningSpot] = useState<0 | Spot>(0)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [results, setResults] = useState<Record<Spot, Team | null>>({ 1: null, 2: null, 3: null })
-  const [showPending, setShowPending] = useState(false)
   // True briefly when a spin has landed on a spot, before the next spin starts.
   // Drives the green "locked in" flash on the header text.
   const [justLanded, setJustLanded] = useState(false)
@@ -182,20 +184,17 @@ export function MultiSpin4ChipsNoLabelSpinner({
     }
   }, [isSpinning, stage, runSpin])
 
-  // Once all spots have landed: wait a beat, surface the "Pending seller"
-  // state, and only after that resolves auto-select a spot and announce it.
+  // Once all spots have landed: wait a short beat, then auto-select a spot and
+  // announce it to trigger the full-screen reveal. The "Pending seller" state is
+  // shown after the reveal, driven by the pendingSeller prop.
   useEffect(() => {
     const allLanded = results[1] && results[2] && results[3]
     if (stage === "ready" && !hasAnnouncedRef.current && allLanded) {
       hasAnnouncedRef.current = true
       announceTimeoutRef.current = setTimeout(() => {
-        setShowPending(true)
-        pendingTimeoutRef.current = setTimeout(() => {
-          setShowPending(false)
-          const pick = ((Math.floor(Math.random() * SPOTS.length) + 1) as Spot)
-          const team = results[pick]
-          if (team) onAnnounce?.(team, pick)
-        }, 6000)
+        const pick = ((Math.floor(Math.random() * SPOTS.length) + 1) as Spot)
+        const team = results[pick]
+        if (team) onAnnounce?.(team, pick)
       }, 1200)
     }
   }, [stage, results, onAnnounce])
@@ -211,7 +210,6 @@ export function MultiSpin4ChipsNoLabelSpinner({
       setStage("idle")
       setSpinningSpot(0)
       setResults({ 1: null, 2: null, 3: null })
-      setShowPending(false)
       setCurrentIndex(0)
       setJustLanded(false)
     }
@@ -285,7 +283,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
 
             <div className="flex flex-col flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
-                {showPending ? (
+                {pendingSeller ? (
                   <motion.div key="pending">
                     <PendingIndicator />
                   </motion.div>
