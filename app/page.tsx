@@ -37,8 +37,8 @@ import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 type AnimationType = "card-flip" | "single-spin-populate" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
-  { id: "card-flip", name: "Single Spin Chips / Populate" },
-  { id: "single-spin-populate", name: "Single Spin Populate (No Label)" },
+  { id: "card-flip", name: "Single Spin / Label" },
+  { id: "single-spin-populate", name: "Single Spin / No Label" },
   { id: "multi-spin-repeat", name: "Multi-Spin" },
   { id: "multi-spin", name: "Multi-Spin Select" },
   { id: "multi-spin-2", name: "Multi-Spin Auto" },
