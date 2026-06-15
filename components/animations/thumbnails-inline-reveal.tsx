@@ -354,6 +354,26 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
             </div>
           </div>
 
+          {/* Assigned team chip - white outline while pending, green-filled once assigned */}
+          {selectedTeam && (
+            <motion.div
+              className="mt-2 flex"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <span
+                className="inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
+                style={{
+                  backgroundColor: phase === "done" ? "#4CE160" : "transparent",
+                  color: phase === "done" ? "#101820" : "#ffffff",
+                  boxShadow: phase === "done" ? "none" : "inset 0 0 0 1px rgba(255,255,255,0.6)",
+                }}
+              >
+                {selectedTeam.city} {selectedTeam.name}
+              </span>
+            </motion.div>
+          )}
+
           {/* Pending assignment indicator */}
           {phase === "pending" && (
             <motion.div
