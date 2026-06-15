@@ -43,11 +43,6 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "multi-spin-4-chips", name: "Multi-Spin 4 Chips" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "thumbnails-2", name: "Extended" },
-  { id: "pack-rip", name: "Pack Rip" },
-  { id: "slot-machine", name: "Team Picker" },
-  { id: "battle", name: "Battle" },
-  { id: "carousel", name: "Carousel" },
-  // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "gift-reveal", name: "Gift Reveal" },
   // { id: "thumbnails", name: "Thumbnails" },
   { id: "thumbnails-3", name: "Thumbnails 3" },
