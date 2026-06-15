@@ -14,6 +14,7 @@ import { MultiSpin2Spinner } from "@/components/multi-spin-2-spinner"
 import { MultiSpin4Spinner } from "@/components/multi-spin-4-spinner"
 import { MultiSpin4AutoSpinner } from "@/components/multi-spin-4-auto-spinner"
 import { MultiSpin4ChipsSpinner } from "@/components/multi-spin-4-chips-spinner"
+import { MultiSpin4ChipsNoLabelSpinner } from "@/components/multi-spin-4-chips-no-label-spinner"
 import { SingleSpinChipSpinner } from "@/components/single-spin-chip-spinner"
 import { SingleSpinChipPopulateSpinner } from "@/components/single-spin-chip-populate-spinner"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
@@ -34,13 +35,14 @@ import { InStreamExperience } from "@/components/in-stream-experience"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 
-type AnimationType = "card-flip" | "single-spin-populate" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "single-spin-populate" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "card-flip", name: "Single Spin / Label" },
   { id: "single-spin-populate", name: "Single Spin / No Label" },
   { id: "multi-spin-4-chips", name: "Multi-Spin / Label" },
   { id: "multi-spin-4-auto", name: "Multi-Spin / No Label" },
+  { id: "multi-spin-4-chips-no-label", name: "Multi-Spin / No Label (Chips)" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "thumbnails-2", name: "Extended" },
   // { id: "gift-reveal", name: "Gift Reveal" },
@@ -359,7 +361,7 @@ export default function AnimationShowcase() {
     // the selected highlight on screen after the reveal. We intentionally leave
     // isMultiSpinning and multiPendingSpot set so the chips persist until the
     // user taps the "sold out" reset CTA (SwipeToBid onReset).
-    if (selectedAnimation === "card-flip" || selectedAnimation === "single-spin-populate" || selectedAnimation === "multi-spin-4-chips") {
+    if (selectedAnimation === "card-flip" || selectedAnimation === "single-spin-populate" || selectedAnimation === "multi-spin-4-chips" || selectedAnimation === "multi-spin-4-chips-no-label") {
       setIsRevealing(false)
       setShowWinner(true)
       setKey(prev => prev + 1)
@@ -456,6 +458,8 @@ export default function AnimationShowcase() {
         return <CardFlipReveal key={key} {...props} />
       case "multi-spin-4-chips":
         return <CardFlipReveal key={key} {...props} />
+      case "multi-spin-4-chips-no-label":
+        return <CardFlipReveal key={key} {...props} />
       case "pack-rip":
         return <PackRipReveal key={key} {...props} />
       case "slot-machine":
@@ -511,7 +515,7 @@ case "thumbnails-4":
                       ? "bg-green-500 text-black"
                       : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
                   } ${
-                          (animation.id === "card-flip" || animation.id === "single-spin-populate" || animation.id === "thumbnails-2" || animation.id === "multi-spin-repeat" || animation.id === "multi-spin" || animation.id === "multi-spin-2" || animation.id === "multi-spin-4" || animation.id === "multi-spin-4-auto" || animation.id === "multi-spin-4-chips")
+                          (animation.id === "card-flip" || animation.id === "single-spin-populate" || animation.id === "thumbnails-2" || animation.id === "multi-spin-repeat" || animation.id === "multi-spin" || animation.id === "multi-spin-2" || animation.id === "multi-spin-4" || animation.id === "multi-spin-4-auto" || animation.id === "multi-spin-4-chips" || animation.id === "multi-spin-4-chips-no-label")
                             ? "ring-1 ring-inset ring-yellow-400"
                       : ""
                   }`}
@@ -728,7 +732,7 @@ case "thumbnails-4":
         {/* Team Spinner with Spots Available - shown for most concepts. For slot-machine (Team Picker),
             battle, and carousel it stays in its idle/zero state (thumbnail) since those concepts
             handle their own cycling + reveal full screen (isSpinnerRevealing is never set for them). */}
-        {selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
+        {selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
@@ -828,6 +832,18 @@ case "thumbnails-4":
           />
         )}
 
+        {/* Multi-Spin 4 Chips (No Label): same auto chip flow, but chips populate without a leading label */}
+        {selectedAnimation === "multi-spin-4-chips-no-label" && (
+          <MultiSpin4ChipsNoLabelSpinner
+            totalSpots={32}
+            availableSpots={hasWon ? 15 : 16}
+            isSpinning={isMultiSpinning}
+            pendingSpot={multiPendingSpot === 4 ? null : multiPendingSpot}
+            onAnnounce={handleMultiSelect}
+            onViewSpots={() => setIsBreakSpotsOpen(true)}
+          />
+        )}
+
         {/* Auction Card */}
         <div className="bg-black/40 backdrop-blur rounded-2xl p-4">
           <div className="flex items-start justify-between mb-2">
@@ -835,7 +851,7 @@ case "thumbnails-4":
               <p className="text-sm text-white mb-0.5 line-clamp-2">
                 <span className="font-semibold">{(showWinner || spotAssigned) && winnerTeam ? `${winnerTeam.city} ${winnerTeam.name}` : 'Random team'}</span>
               </p>
-              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "multi-spin-repeat" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
+              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "multi-spin-repeat" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
                 <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
                   <svg width="12" height="15" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="2" y="2" width="28" height="36" rx="3" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5"/>
@@ -909,7 +925,7 @@ case "thumbnails-4":
                       setIsRevealing(true)
                       setKey(prev => prev + 1)
                     }, 1500)
-                  } else if (selectedAnimation === "card-flip" || selectedAnimation === "single-spin-populate" || selectedAnimation === "multi-spin" || selectedAnimation === "multi-spin-2" || selectedAnimation === "multi-spin-4" || selectedAnimation === "multi-spin-4-auto" || selectedAnimation === "multi-spin-4-chips") {
+                  } else if (selectedAnimation === "card-flip" || selectedAnimation === "single-spin-populate" || selectedAnimation === "multi-spin" || selectedAnimation === "multi-spin-2" || selectedAnimation === "multi-spin-4" || selectedAnimation === "multi-spin-4-auto" || selectedAnimation === "multi-spin-4-chips" || selectedAnimation === "multi-spin-4-chips-no-label") {
                     // Single Spin (chip) + Multi-Spin: kick off the spin(s).
                     setIsMultiSpinning(true)
                   } else {
@@ -958,7 +974,7 @@ case "thumbnails-4":
                     ? "bg-green-500 text-black"
                     : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
                 } ${
-                  (animation.id === "card-flip" || animation.id === "single-spin-populate" || animation.id === "thumbnails-2" || animation.id === "multi-spin-repeat" || animation.id === "multi-spin" || animation.id === "multi-spin-2" || animation.id === "multi-spin-4" || animation.id === "multi-spin-4-auto" || animation.id === "multi-spin-4-chips")
+                  (animation.id === "card-flip" || animation.id === "single-spin-populate" || animation.id === "thumbnails-2" || animation.id === "multi-spin-repeat" || animation.id === "multi-spin" || animation.id === "multi-spin-2" || animation.id === "multi-spin-4" || animation.id === "multi-spin-4-auto" || animation.id === "multi-spin-4-chips" || animation.id === "multi-spin-4-chips-no-label")
                             ? "ring-1 ring-inset ring-yellow-400"
                     : ""
                 }`}
