@@ -230,9 +230,10 @@ export function MultiSpin4ChipsSpinner({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white"
+        className="inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
         style={{
           backgroundColor: isAnnounced ? "#4CE160" : "transparent",
+          color: isAnnounced ? "#101820" : "#ffffff",
           boxShadow: isAnnounced ? "none" : "inset 0 0 0 1px rgba(255,255,255,0.6)",
         }}
       >
