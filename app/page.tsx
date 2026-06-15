@@ -31,10 +31,11 @@ import { InStreamExperience } from "@/components/in-stream-experience"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 
-type AnimationType = "card-flip" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "card-flip", name: "Single Spin" },
+  { id: "multi-spin-repeat", name: "Multi-Spin" },
   { id: "multi-spin", name: "Multi-Spin Select" },
   { id: "multi-spin-2", name: "Multi-Spin Auto" },
   { id: "multi-spin-4", name: "Multi-Spin Select 4" },
@@ -431,6 +432,8 @@ export default function AnimationShowcase() {
     switch (selectedAnimation) {
       case "card-flip":
         return <CardFlipReveal key={key} {...props} />
+      case "multi-spin-repeat":
+        return <CardFlipReveal key={key} {...props} />
       case "multi-spin":
         return <CardFlipReveal key={key} {...props} />
       case "multi-spin-2":
@@ -721,6 +724,7 @@ case "thumbnails-4":
             onSpinComplete={handleSpinComplete}
             username={hasWon ? "Adam007" : undefined}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
+            spinRounds={selectedAnimation === "multi-spin-repeat" ? 3 : 1}
           />
         )}
 
@@ -781,7 +785,7 @@ case "thumbnails-4":
               <p className="text-sm text-white mb-0.5 line-clamp-2">
                 <span className="font-semibold">{showWinner && winnerTeam ? `${winnerTeam.city} ${winnerTeam.name}` : 'Random team'}</span>
               </p>
-              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
+              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "multi-spin-repeat" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
                 <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
                   <svg width="12" height="15" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="2" y="2" width="28" height="36" rx="3" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5"/>

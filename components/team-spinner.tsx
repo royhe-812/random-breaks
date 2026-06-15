@@ -44,6 +44,8 @@ interface TeamSpinnerProps {
   lastWinner?: { username: string; team: string } | null
   username?: string
   onViewSpots?: () => void
+  /** How many times the seller "spins the randomizer" before settling. Defaults to 1. */
+  spinRounds?: number
 }
 
 // Spots icon component (trading card with person profile)
@@ -105,12 +107,14 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
   lastWinner = null,
   username,
   onViewSpots,
+  spinRounds = 1,
 }: TeamSpinnerProps) {
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0)
-  const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "stopped">("idle")
+  const [phase, setPhase] = useState<"idle" | "spinning" | "slowing" | "settled" | "stopped">("idle")
   const [spinSpeed, setSpinSpeed] = useState(50)
   const [demoSpots, setDemoSpots] = useState<number | null>(null) // For demo cycling through color states
   const targetTeamIndexRef = useRef<number | null>(null)
+  const roundsLeftRef = useRef(1)
   const audioContextRef = useRef<AudioContext | null>(null)
 
   // Play soft tick sound using Web Audio API - syncs with each team change
@@ -151,10 +155,11 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
     if (isRevealing && phase === "idle") {
       const randomIndex = Math.floor(Math.random() * teams.length)
       targetTeamIndexRef.current = randomIndex
+      roundsLeftRef.current = Math.max(1, spinRounds)
       setPhase("spinning")
       setSpinSpeed(50)
     }
-  }, [isRevealing, phase])
+  }, [isRevealing, phase, spinRounds])
 
   // Reset when isRevealing becomes false
   useEffect(() => {
@@ -167,7 +172,7 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
 
   // Spin through teams
   useEffect(() => {
-    if (phase === "idle" || phase === "stopped") return
+    if (phase === "idle" || phase === "stopped" || phase === "settled") return
 
     const interval = setInterval(() => {
       setCurrentTeamIndex(prev => (prev + 1) % teams.length)
@@ -197,13 +202,28 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
           if (newSpeed >= 400) {
             clearInterval(slowdownInterval)
             setCurrentTeamIndex(targetIndex)
-            setPhase("stopped")
+            // If the seller has more spins to go, briefly settle on this team
+            // and then spin again; otherwise do the final "???" reveal tease.
+            setPhase(roundsLeftRef.current > 1 ? "settled" : "stopped")
             return 400
           }
           return newSpeed
         })
       }, 200)
       return () => clearInterval(slowdownInterval)
+    }
+  }, [phase])
+
+  // Intermediate round: show the landed team for a beat, then spin again.
+  useEffect(() => {
+    if (phase === "settled") {
+      const timer = setTimeout(() => {
+        roundsLeftRef.current -= 1
+        targetTeamIndexRef.current = Math.floor(Math.random() * teams.length)
+        setSpinSpeed(50)
+        setPhase("spinning")
+      }, 1400)
+      return () => clearTimeout(timer)
     }
   }, [phase])
 
@@ -225,7 +245,7 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
       <motion.div 
         className="relative bg-black/40 backdrop-blur rounded-xl overflow-hidden"
         animate={{
-          boxShadow: isSpinning || phase === "stopped"
+          boxShadow: isSpinning || phase === "stopped" || phase === "settled"
             ? `0 0 20px ${currentTeam.color}40, 0 0 40px ${currentTeam.color}20`
             : "none"
         }}
