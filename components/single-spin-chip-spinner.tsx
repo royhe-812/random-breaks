@@ -292,44 +292,38 @@ export function SingleSpinChipSpinner({
           </div>
         </div>
 
-        {/* The landed team renders as a single colored chip. Starts as a
-            single-spin style header with no chip, then expands once it lands
-            and stays present until the concept is reset. */}
-        <AnimatePresence>
-          {result && (
-            <motion.div
-              key="chip"
-              layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              {/* Divider separating the break header from the landed chip */}
-              <div className="mx-4 border-t border-white/10" />
+        {/* Divider separating the break header from the spot row */}
+        <div className="mx-4 border-t border-white/10" />
 
-              <div className="px-4 pt-3 pb-3 flex">
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, scale: 0.8, y: 6 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
-                  style={{
-                    backgroundColor: result.color,
-                    color: getReadableTextColor(result.color),
-                    boxShadow: isAnnounced
-                      ? "0 0 0 2px #4CE160, 0 0 12px rgba(76,225,96,0.5)"
-                      : "inset 0 0 0 1px rgba(255,255,255,0.15)",
-                  }}
-                >
-                  {isAnnounced && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
-                  {result.city} {result.name}
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Persistent "Spot:" row. The landed team is added next to the label
+            as a single colored chip once the spin lands, and stays present
+            until the concept is reset. */}
+        <div className="px-4 pt-3 pb-3 flex items-center gap-2">
+          <span className="text-white font-bold text-sm whitespace-nowrap">Spot:</span>
+          <AnimatePresence>
+            {result && (
+              <motion.div
+                key="chip"
+                layout
+                initial={{ opacity: 0, scale: 0.8, y: 6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
+                style={{
+                  backgroundColor: result.color,
+                  color: getReadableTextColor(result.color),
+                  boxShadow: isAnnounced
+                    ? "0 0 0 2px #4CE160, 0 0 12px rgba(76,225,96,0.5)"
+                    : "inset 0 0 0 1px rgba(255,255,255,0.15)",
+                }}
+              >
+                {isAnnounced && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
+                {result.city} {result.name}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.div>
     </div>
   )
