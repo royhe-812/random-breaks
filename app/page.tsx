@@ -58,145 +58,42 @@ function WinnerAnnouncement({ username, team, show, hideTeamBlock = false }: { u
   
   return (
     <motion.div
-      className="relative px-4 py-4 rounded-xl overflow-hidden bg-black/60 backdrop-blur w-full"
+      className="relative px-3 py-2 rounded-lg overflow-hidden bg-black/60 backdrop-blur w-full"
       style={{
-        boxShadow: `0 0 40px ${team.color}80, 0 0 80px ${team.color}50, 0 0 120px ${team.color}30`,
+        border: `1px solid #4CE16080`,
+        boxShadow: `0 0 16px #4CE16040`,
       }}
-      initial={{ opacity: 0, scale: 0.8, y: 30 }}
-      animate={{ 
-        opacity: 1, 
-        scale: [1, 1.02, 1],
-        y: 0 
-      }}
-      transition={{ 
-        type: "spring", 
-        stiffness: 300, 
-        damping: 20,
-        scale: { duration: 0.8, repeat: Infinity, repeatDelay: 0.5 }
-      }}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 320, damping: 26 }}
     >
-      {/* Animated glow border with stronger effect - green */}
+      {/* Single subtle sweeping highlight */}
       <motion.div
-        className="absolute inset-0 rounded-xl pointer-events-none"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          border: `2px solid #4CE160`,
-        }}
-        animate={{
-          boxShadow: [
-            `inset 0 0 25px #4CE16040, 0 0 20px #4CE16060`,
-            `inset 0 0 50px #4CE16060, 0 0 40px #4CE16080`,
-            `inset 0 0 25px #4CE16040, 0 0 20px #4CE16060`,
-          ],
-        }}
-        transition={{ duration: 1, repeat: Infinity }}
-      />
-
-      {/* Primary sweeping wipe gradient - green */}
-      <motion.div
-        className="absolute inset-0 rounded-xl pointer-events-none"
-        style={{
-          background: "linear-gradient(90deg, transparent 0%, #4CE16030 40%, #4CE160 50%, #4CE16030 60%, transparent 100%)",
+          background: "linear-gradient(90deg, transparent 0%, #4CE16025 50%, transparent 100%)",
         }}
         animate={{ x: ["-100%", "100%"] }}
-        transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
       />
 
-      {/* Secondary wipe gradient - team color */}
-      <motion.div
-        className="absolute inset-0 rounded-xl pointer-events-none"
-        style={{
-          background: `linear-gradient(90deg, transparent 0%, ${team.color}20 40%, ${team.color}60 50%, ${team.color}20 60%, transparent 100%)`,
-        }}
-        animate={{ x: ["-100%", "100%"] }}
-        transition={{ duration: 1.8, repeat: Infinity, ease: "linear", delay: 0.4 }}
-      />
-
-      {/* Sparkle/confetti particles */}
-      {[...Array(12)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            width: Math.random() * 4 + 2,
-            height: Math.random() * 4 + 2,
-            left: `${10 + i * 7}%`,
-            top: `${20 + (i % 3) * 25}%`,
-            background: i % 3 === 0 ? "#4CE160" : i % 3 === 1 ? team.color : "#fff",
-          }}
-          animate={{
-            opacity: [0, 1, 0],
-            scale: [0, 1.5, 0],
-            y: [0, -10, 0],
-          }}
-          transition={{
-            duration: 1.2,
-            repeat: Infinity,
-            delay: i * 0.15,
-            ease: "easeOut",
-          }}
-        />
-      ))}
-
-      {/* Firework burst effect on edges */}
-      <motion.div
-        className="absolute -left-2 top-1/2 w-4 h-4 rounded-full pointer-events-none"
-        style={{ background: `radial-gradient(circle, ${team.color} 0%, transparent 70%)` }}
-        animate={{
-          scale: [0, 2, 0],
-          opacity: [0, 0.8, 0],
-        }}
-        transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-      />
-      <motion.div
-        className="absolute -right-2 top-1/2 w-4 h-4 rounded-full pointer-events-none"
-        style={{ background: `radial-gradient(circle, #4CE160 0%, transparent 70%)` }}
-        animate={{
-          scale: [0, 2, 0],
-          opacity: [0, 0.8, 0],
-        }}
-        transition={{ duration: 1.5, repeat: Infinity, delay: 0.8 }}
-      />
-
-      {/* Content with enhanced styling */}
+      {/* Content - single compact row */}
       <div className="relative z-10 flex items-center gap-2">
-        <motion.span 
-          className="text-2xl"
-          animate={{ 
-            rotate: [0, -10, 10, -10, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 1 }}
-        >
-          👑
-        </motion.span>
-        <p className="text-sm flex items-center gap-2">
-          <span className="font-bold text-white">{username}</span>
-          <span className="text-white/90">Won</span>
+        <p className="text-sm flex items-center gap-1.5 min-w-0">
+          <span className="font-semibold text-white shrink-0">{username}</span>
+          <span className="text-white/70 shrink-0">won</span>
           {/* Team initials square - hidden for text-only concepts */}
           {!hideTeamBlock && (
-            <span 
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-white"
+            <span
+              className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold text-white shrink-0"
               style={{ backgroundColor: team.color }}
             >
               {team.abbrev}
             </span>
           )}
-          <motion.span 
-            className="font-black text-base text-white"
-            style={{ 
-              textShadow: `0 0 10px ${team.color}80`,
-            }}
-            animate={{
-              textShadow: [
-                `0 0 10px ${team.color}80`,
-                `0 0 20px ${team.color}`,
-                `0 0 10px ${team.color}80`,
-              ],
-            }}
-            transition={{ duration: 1, repeat: Infinity }}
-          >
-            {team.city} {team.name}!
-          </motion.span>
+          <span className="font-semibold text-white truncate">
+            {team.city} {team.name}
+          </span>
         </p>
       </div>
     </motion.div>
