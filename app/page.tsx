@@ -14,6 +14,7 @@ import { MultiSpin2Spinner } from "@/components/multi-spin-2-spinner"
 import { MultiSpin4Spinner } from "@/components/multi-spin-4-spinner"
 import { MultiSpin4AutoSpinner } from "@/components/multi-spin-4-auto-spinner"
 import { MultiSpin4ChipsSpinner } from "@/components/multi-spin-4-chips-spinner"
+import { SingleSpinChipSpinner } from "@/components/single-spin-chip-spinner"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
 import { SlotMachineReveal } from "@/components/animations/slot-machine-reveal"
@@ -359,11 +360,11 @@ export default function AnimationShowcase() {
 
     // Multi-Spin already showed its "pending assignment" beat before the
     // full-screen reveal, so go straight to the in-chat winner moment.
-    // Multi-Spin 4 Chips keeps its colored chips (and the selected highlight)
-    // on screen after the reveal. We intentionally leave isMultiSpinning and
-    // multiPendingSpot set so the chips persist until the user taps the
-    // "sold out" reset CTA (SwipeToBid onReset).
-    if (selectedAnimation === "multi-spin-4-chips") {
+    // Single Spin (chip) and Multi-Spin 4 Chips keep their colored chip(s) and
+    // the selected highlight on screen after the reveal. We intentionally leave
+    // isMultiSpinning and multiPendingSpot set so the chips persist until the
+    // user taps the "sold out" reset CTA (SwipeToBid onReset).
+    if (selectedAnimation === "card-flip" || selectedAnimation === "multi-spin-4-chips") {
       setIsRevealing(false)
       setShowWinner(true)
       setKey(prev => prev + 1)
@@ -729,7 +730,7 @@ case "thumbnails-4":
         {/* Team Spinner with Spots Available - shown for most concepts. For slot-machine (Team Picker),
             battle, and carousel it stays in its idle/zero state (thumbnail) since those concepts
             handle their own cycling + reveal full screen (isSpinnerRevealing is never set for them). */}
-        {selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
+        {selectedAnimation !== "card-flip" && selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
@@ -740,6 +741,18 @@ case "thumbnails-4":
             username={hasWon ? "Adam007" : undefined}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
             spinRounds={selectedAnimation === "multi-spin-repeat" ? 3 : 1}
+          />
+        )}
+
+        {/* Single Spin: one spin that lands on a single colored team chip */}
+        {selectedAnimation === "card-flip" && (
+          <SingleSpinChipSpinner
+            totalSpots={32}
+            availableSpots={hasWon ? 15 : 16}
+            isSpinning={isMultiSpinning}
+            pendingSpot={multiPendingSpot === 1 ? 1 : null}
+            onAnnounce={handleMultiSelect}
+            onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
         )}
 
@@ -885,8 +898,8 @@ case "thumbnails-4":
                       setIsRevealing(true)
                       setKey(prev => prev + 1)
                     }, 1500)
-                  } else if (selectedAnimation === "multi-spin" || selectedAnimation === "multi-spin-2" || selectedAnimation === "multi-spin-4" || selectedAnimation === "multi-spin-4-auto" || selectedAnimation === "multi-spin-4-chips") {
-                    // Multi-Spin: kick off the sequential spins.
+                  } else if (selectedAnimation === "card-flip" || selectedAnimation === "multi-spin" || selectedAnimation === "multi-spin-2" || selectedAnimation === "multi-spin-4" || selectedAnimation === "multi-spin-4-auto" || selectedAnimation === "multi-spin-4-chips") {
+                    // Single Spin (chip) + Multi-Spin: kick off the spin(s).
                     setIsMultiSpinning(true)
                   } else {
                     // For concepts that use TeamSpinner (card-flip, pack-rip, mystery-box, back-card-flip)
