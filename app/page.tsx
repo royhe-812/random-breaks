@@ -39,8 +39,8 @@ type AnimationType = "card-flip" | "single-spin-populate" | "multi-spin-repeat" 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "card-flip", name: "Single Spin / Label" },
   { id: "single-spin-populate", name: "Single Spin / No Label" },
-  { id: "multi-spin-4-auto", name: "Multi-Spin 4 Auto" },
-  { id: "multi-spin-4-chips", name: "Multi-Spin 4 Chips" },
+  { id: "multi-spin-4-chips", name: "Multi-Spin / Label" },
+  { id: "multi-spin-4-auto", name: "Multi-Spin / No Label" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "thumbnails-2", name: "Extended" },
   // { id: "gift-reveal", name: "Gift Reveal" },
