@@ -323,34 +323,23 @@ export function MultiSpin4ChipsSpinner({
           </div>
         </div>
 
-        {/* Spots populate one-by-one as they get assigned, rendered as colored
-            team chips that wrap. Starts as a single-spin style header with no
-            chips, then expands as each spot lands. */}
-        <AnimatePresence>
-          {assignedSpots.length > 0 && (
-            <motion.div
-              key="chips"
-              layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              {/* Divider separating the break header from the spin chips */}
-              <div className="mx-4 border-t border-white/10" />
+        {/* Divider separating the break header from the spots row */}
+        <div className="mx-4 border-t border-white/10" />
 
-              {/* Team chips in a single horizontally-swipeable row. */}
-              <div
-                className="px-4 pt-3 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-                style={{ WebkitOverflowScrolling: "touch" }}
-              >
-                <AnimatePresence initial={false}>
-                  {assignedSpots.map((spot) => renderChip(spot))}
-                </AnimatePresence>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Persistent "Spots:" row. Team chips populate one-by-one next to the
+            label as each spot lands, in a single horizontally-swipeable row.
+            Starts as just the label and stays present until reset. */}
+        <div className="px-4 pt-3 pb-3 flex items-center gap-2 min-h-[3.25rem]">
+          <span className="text-white font-bold text-sm whitespace-nowrap">Spots:</span>
+          <div
+            className="flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            <AnimatePresence initial={false}>
+              {assignedSpots.map((spot) => renderChip(spot))}
+            </AnimatePresence>
+          </div>
+        </div>
       </motion.div>
     </div>
   )
