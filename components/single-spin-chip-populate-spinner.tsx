@@ -86,6 +86,9 @@ export function SingleSpinChipPopulateSpinner({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [result, setResult] = useState<Team | null>(null)
   const [showPending, setShowPending] = useState(false)
+  // True briefly when the spin lands on a spot, before it settles. Flashes the
+  // landed team green in the header (mirrors the multi-spin behavior).
+  const [justLanded, setJustLanded] = useState(false)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const announceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -136,8 +139,11 @@ export function SingleSpinChipPopulateSpinner({
         if (elapsed > 1200) speed += 30
         if (speed >= 400) {
           setCurrentIndex(target)
+          // Flash the landed team green while it settles.
+          setJustLanded(true)
           timeoutRef.current = setTimeout(() => {
             setIsCycling(false)
+            setJustLanded(false)
             onDone(teams[target])
           }, 800)
           return
@@ -189,6 +195,7 @@ export function SingleSpinChipPopulateSpinner({
       setResult(null)
       setShowPending(false)
       setCurrentIndex(0)
+      setJustLanded(false)
     }
   }, [isSpinning, stage])
 
@@ -239,12 +246,12 @@ export function SingleSpinChipPopulateSpinner({
                   </motion.div>
                 ) : isCycling ? (
                   <motion.span
-                    key={teams[currentIndex].name}
-                    className="text-white font-semibold text-sm truncate"
+                    key={justLanded ? "landed" : teams[currentIndex].name}
+                    className="font-semibold text-sm truncate"
                     initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    animate={{ opacity: 1, y: 0, color: justLanded ? "#4CE160" : "#ffffff" }}
                     exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.05 }}
+                    transition={{ duration: justLanded ? 0.2 : 0.05 }}
                   >
                     {teams[currentIndex].city} {teams[currentIndex].name}
                   </motion.span>
