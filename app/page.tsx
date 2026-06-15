@@ -359,12 +359,22 @@ export default function AnimationShowcase() {
 
     // Multi-Spin already showed its "pending assignment" beat before the
     // full-screen reveal, so go straight to the in-chat winner moment.
+    // Multi-Spin 4 Chips keeps its colored chips (and the selected highlight)
+    // on screen after the reveal. We intentionally leave isMultiSpinning and
+    // multiPendingSpot set so the chips persist until the user taps the
+    // "sold out" reset CTA (SwipeToBid onReset).
+    if (selectedAnimation === "multi-spin-4-chips") {
+      setIsRevealing(false)
+      setShowWinner(true)
+      setKey(prev => prev + 1)
+      return
+    }
+
     if (
       selectedAnimation === "multi-spin" ||
       selectedAnimation === "multi-spin-2" ||
       selectedAnimation === "multi-spin-4" ||
-      selectedAnimation === "multi-spin-4-auto" ||
-      selectedAnimation === "multi-spin-4-chips"
+      selectedAnimation === "multi-spin-4-auto"
     ) {
       setIsRevealing(false)
       setIsMultiSpinning(false)
