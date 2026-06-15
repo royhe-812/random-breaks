@@ -541,7 +541,7 @@ case "thumbnails-4":
         muted
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
-        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/case%20breaks%20video%20-rP335C8f1nx6wB8Lt4UClGvE7X7p7E.mov"
+        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/case%20breaks%20video%20-w5usFKatykHZfTOkKiurwdJmYPpFxf.mov"
       />
       
       {/* Gradient overlays for readability */}
