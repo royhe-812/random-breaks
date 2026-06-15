@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Check } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 
 type Spot = 1 | 2 | 3
@@ -233,13 +232,10 @@ export function MultiSpin4ChipsSpinner({
         transition={{ duration: 0.25, ease: "easeOut" }}
         className="inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white"
         style={{
-          backgroundColor: "transparent",
-          boxShadow: isAnnounced
-            ? "0 0 0 2px #4CE160, 0 0 12px rgba(76,225,96,0.5)"
-            : "inset 0 0 0 1px rgba(255,255,255,0.6)",
+          backgroundColor: isAnnounced ? "#4CE160" : "transparent",
+          boxShadow: isAnnounced ? "none" : "inset 0 0 0 1px rgba(255,255,255,0.6)",
         }}
       >
-        {isAnnounced && <Check className="w-3.5 h-3.5" strokeWidth={3} />}
         {label}
       </motion.div>
     )
