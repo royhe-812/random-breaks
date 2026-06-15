@@ -196,7 +196,7 @@ export function MultiSpin4AutoSpinner({
           const pick = ((Math.floor(Math.random() * SPOTS.length) + 1) as Spot)
           const team = results[pick]
           if (team) onAnnounce?.(team, pick)
-        }, 2500)
+        }, 6000)
       }, 1200)
     }
   }, [stage, results, onAnnounce])

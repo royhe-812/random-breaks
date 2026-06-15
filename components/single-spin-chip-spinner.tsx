@@ -177,7 +177,7 @@ export function SingleSpinChipSpinner({
         pendingTimeoutRef.current = setTimeout(() => {
           setShowPending(false)
           onAnnounce?.(result, 1)
-        }, 2500)
+        }, 6000)
       }, 1200)
     }
   }, [stage, result, onAnnounce])

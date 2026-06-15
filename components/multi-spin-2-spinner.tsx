@@ -177,7 +177,7 @@ export function MultiSpin2Spinner({
           const pick: 1 | 2 = Math.random() < 0.5 ? 1 : 2
           const team = pick === 1 ? spot1 : spot2
           onAnnounce?.(team, pick)
-        }, 2500)
+        }, 6000)
       }, 1200)
     }
   }, [stage, spot1, spot2, onAnnounce])
