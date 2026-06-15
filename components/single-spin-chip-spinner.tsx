@@ -287,7 +287,7 @@ export function SingleSpinChipSpinner({
         {/* Persistent "Spot:" row. The landed team is added next to the label
             as a single colored chip once the spin lands, and stays present
             until the concept is reset. */}
-        <div className="px-4 pt-3 pb-3 flex items-center gap-2">
+        <div className="px-4 pt-3 pb-3 flex items-center gap-2 min-h-[3.25rem]">
           <span className="text-white font-bold text-sm whitespace-nowrap">Spot:</span>
           <AnimatePresence>
             {result && (
