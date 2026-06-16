@@ -102,7 +102,6 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
   const [phase, setPhase] = useState<"idle" | "pending" | "cycling" | "selected" | "done">("idle")
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
-  const [hideSold, setHideSold] = useState(false)
   const [spotsLeft, setSpotsLeft] = useState(16)
   const [lastWinner, setLastWinner] = useState<{ username: string; team: string } | null>(null)
   const [soldTeams, setSoldTeams] = useState<number[]>(initialSoldTeams)
@@ -255,7 +254,7 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
     <div className="absolute top-28 left-4 right-20 z-30">
       {/* Container matching stream UI style - full width panel */}
       <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-        {/* Top stats: spots available (state indicator) + hide sold, with a divider below */}
+        {/* Top stats: spots available (state indicator) + view spots, with a divider below */}
         <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-white/10">
           {/* Spots available with progress bar - display only, color reflects how many remain */}
           <div className="flex items-center gap-1.5 min-w-0">
@@ -263,41 +262,22 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
             <span className="text-white text-xs font-medium whitespace-nowrap">{spotsLeft}/32 spots</span>
           </div>
 
-          {/* Right cluster: hide sold toggle + view spots (opens the sheet) */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="flex items-center gap-1.5">
-              <span className="text-white/50 text-xs">Hide sold</span>
-              <button
-                onClick={() => setHideSold(!hideSold)}
-                className={`relative w-9 h-5 rounded-full transition-colors ${
-                  hideSold ? 'bg-green-500' : 'bg-white/20'
-                }`}
-              >
-                <div
-                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                    hideSold ? 'translate-x-4' : 'translate-x-0.5'
-                  }`}
-                />
-              </button>
-            </div>
-
-            <button
-              onClick={onViewSpots}
-              className="flex items-center gap-0.5 text-white/60 hover:text-white text-xs whitespace-nowrap transition-colors"
-            >
-              View spots
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
-          </div>
+          {/* View spots (opens the sheet) */}
+          <button
+            onClick={onViewSpots}
+            className="flex items-center gap-0.5 text-white/60 hover:text-white text-xs whitespace-nowrap transition-colors shrink-0"
+          >
+            View spots
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
         </div>
 
         {/* Grid of team thumbnails - 8x2 horizontal grid to span width */}
         <div className="grid grid-cols-8 gap-2">
           {teams
             .map((team, index) => ({ team, originalIndex: index }))
-            .filter(({ originalIndex }) => !hideSold || !soldTeams.includes(originalIndex))
             .map(({ team, originalIndex }) => {
             const isHighlighted = highlightedIndex === originalIndex
             const isSelected = selectedIndex === originalIndex && (phase === "selected" || phase === "pending")
