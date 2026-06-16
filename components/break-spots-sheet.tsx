@@ -4,11 +4,14 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronLeft, ChevronDown, ChevronUp, Search } from "lucide-react"
 
-// Helper function for progress color
+// Helper function for progress color - 4-tier: green -> yellow -> orange -> red
+// (matches the randomizer arc in the spinner components)
 const getProgressColor = (percentage: number) => {
-  if (percentage > 50) return "#4CE160" // Green
-  if (percentage > 30) return "#F5A623" // Yellow/Orange
-  return "#FF4444" // Red
+  const ratio = percentage / 100
+  if (ratio <= 0.25) return "#ef4444" // red
+  if (ratio <= 0.5) return "#f97316" // orange
+  if (ratio <= 0.75) return "#eab308" // yellow
+  return "#22c55e" // green
 }
 
 // Circular progress component (same as in team-spinner)
