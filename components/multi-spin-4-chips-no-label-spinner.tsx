@@ -386,7 +386,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
                   <motion.div
                     className="flex gap-2 w-max"
                     animate={{ x: ["0%", "-50%"] }}
-                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                   >
                     {/* Two identical halves so the -50% translation loops seamlessly */}
                     {assignedSpots.map((spot) => renderMarqueeChip(spot, `a-${spot}`))}
