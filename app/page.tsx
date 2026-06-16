@@ -527,12 +527,8 @@ case "thumbnails-4":
                     animation.disabled
                       ? "bg-zinc-800/50 text-white/30 cursor-not-allowed"
                       : selectedAnimation === animation.id
-                      ? "bg-green-500 text-black"
+                      ? "bg-zinc-800 text-white ring-2 ring-inset ring-yellow-400"
                       : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
-                  } ${
-                          (animation.id === "card-flip" || animation.id === "single-spin-populate" || animation.id === "thumbnails-2" || animation.id === "multi-spin-repeat" || animation.id === "multi-spin" || animation.id === "multi-spin-2" || animation.id === "multi-spin-4" || animation.id === "multi-spin-4-auto" || animation.id === "multi-spin-4-chips" || animation.id === "multi-spin-4-chips-no-label")
-                            ? "ring-1 ring-inset ring-yellow-400"
-                      : ""
                   }`}
                 >
                   {animation.name}
@@ -978,12 +974,8 @@ case "thumbnails-4":
                   animation.disabled
                     ? "bg-zinc-800/50 text-white/30 cursor-not-allowed"
                     : selectedAnimation === animation.id
-                    ? "bg-green-500 text-black"
+                    ? "bg-zinc-800 text-white ring-2 ring-inset ring-yellow-400"
                     : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
-                } ${
-                  (animation.id === "card-flip" || animation.id === "single-spin-populate" || animation.id === "thumbnails-2" || animation.id === "multi-spin-repeat" || animation.id === "multi-spin" || animation.id === "multi-spin-2" || animation.id === "multi-spin-4" || animation.id === "multi-spin-4-auto" || animation.id === "multi-spin-4-chips" || animation.id === "multi-spin-4-chips-no-label")
-                            ? "ring-1 ring-inset ring-yellow-400"
-                    : ""
                 }`}
               >
                 {animation.name}
