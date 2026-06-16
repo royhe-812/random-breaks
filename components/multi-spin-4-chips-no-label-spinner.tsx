@@ -260,10 +260,32 @@ export function MultiSpin4ChipsNoLabelSpinner({
     )
   }
 
+  // Plain (non-animated) chip used inside the marquee track once populating is done.
+  const renderMarqueeChip = (spot: Spot, key: string) => {
+    const result = results[spot]
+    if (!result) return null
+    const isAnnounced = pendingSpot === spot
+    return (
+      <span
+        key={key}
+        className="inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
+        style={{
+          backgroundColor: isAnnounced ? "#4CE160" : "transparent",
+          color: isAnnounced ? "#101820" : "#ffffff",
+          boxShadow: isAnnounced ? "none" : "inset 0 0 0 1px rgba(255,255,255,0.6)",
+        }}
+      >
+        {result.city} {result.name}
+      </span>
+    )
+  }
+
   const isAnySpinning = spinningSpot !== 0
   const glowColor = isAnySpinning ? teams[currentIndex].color : undefined
   // Newest selection first (leftmost), older chips pushed to the right.
   const assignedSpots = [...landedOrder].reverse()
+  // Once every spot has landed, the chips row turns into a continuous marquee.
+  const donePopulating = stage === "ready" && landedOrder.length === SPOTS.length
 
   return (
     <div className="w-full">
@@ -358,14 +380,32 @@ export function MultiSpin4ChipsNoLabelSpinner({
               {/* Divider separating the break header from the chips row */}
               <div className="mx-4 border-t border-white/10" />
 
-              <div
-                className="px-4 pt-3 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-                style={{ WebkitOverflowScrolling: "touch" }}
-              >
-                <AnimatePresence initial={false}>
-                  {assignedSpots.map((spot) => renderChip(spot))}
-                </AnimatePresence>
-              </div>
+              {donePopulating ? (
+                // All spots landed: chips scroll in a seamless, continuous marquee.
+                <div className="pl-4 pt-3 pb-3 overflow-hidden">
+                  <motion.div
+                    className="flex gap-2 w-max"
+                    animate={{ x: ["0%", "-50%"] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  >
+                    {/* Two identical halves so the -50% translation loops seamlessly */}
+                    {assignedSpots.map((spot) => renderMarqueeChip(spot, `a-${spot}`))}
+                    <span className="shrink-0 w-2" aria-hidden />
+                    {assignedSpots.map((spot) => renderMarqueeChip(spot, `b-${spot}`))}
+                    <span className="shrink-0 w-2" aria-hidden />
+                  </motion.div>
+                </div>
+              ) : (
+                // Still populating: chips grow in a swipeable row as each lands.
+                <div
+                  className="px-4 pt-3 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                  style={{ WebkitOverflowScrolling: "touch" }}
+                >
+                  <AnimatePresence initial={false}>
+                    {assignedSpots.map((spot) => renderChip(spot))}
+                  </AnimatePresence>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
