@@ -261,12 +261,29 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
     <div className="absolute top-28 left-4 right-20 z-30">
       {/* Container matching stream UI style - full width panel */}
       <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-        {/* Case break title marquee */}
-        <BackAndForthMarquee duration={26} className="mb-2">
-          <span className="text-white font-semibold text-sm whitespace-nowrap">
-            2025 Panini Luminance Football Hobby PYT Box Break #903
-          </span>
-        </BackAndForthMarquee>
+        {/* Case break title marquee - replaced by the pending indicator while
+            the seller is being assigned, matching the other concepts */}
+        {phase === "pending" ? (
+          <div className="flex items-center gap-1.5 mb-2 h-5">
+            <span className="text-white text-sm font-semibold">Pending seller assignment</span>
+            <span className="flex items-center gap-0.5">
+              {[0, 1, 2].map((i) => (
+                <motion.span
+                  key={i}
+                  className="w-1 h-1 rounded-full bg-white/70"
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                />
+              ))}
+            </span>
+          </div>
+        ) : (
+          <BackAndForthMarquee duration={26} className="mb-2">
+            <span className="text-white font-semibold text-sm whitespace-nowrap">
+              2025 Panini Luminance Football Hobby PYT Box Break #903
+            </span>
+          </BackAndForthMarquee>
+        )}
 
         {/* Top stats: spots available (state indicator) + view spots, with a divider below */}
         <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-white/10">
@@ -379,27 +396,7 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
               </span>
             </motion.div>
 
-            {/* Pending assignment indicator */}
-            {phase === "pending" && (
-              <motion.div
-                className="flex items-center gap-1.5 mt-1.5"
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-              >
-                <span className="text-white text-xs font-medium">Pending seller assignment</span>
-                <span className="flex items-center gap-0.5">
-                  {[0, 1, 2].map((i) => (
-                    <motion.span
-                      key={i}
-                      className="w-1 h-1 rounded-full bg-white/70"
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                    />
-                  ))}
-                </span>
-              </motion.div>
-            )}
+
           </div>
         )}
       </div>
