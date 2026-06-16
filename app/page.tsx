@@ -938,6 +938,7 @@ case "thumbnails-4":
                 disabled={showWinner}
                 onBidConfirmed={() => {
                   setHasWon(true)
+                  setDemoSpots((prev) => Math.max(0, prev - 1)) // Winning a bid claims a spot
                   setSpotAssigned(false) // Reset item card title to "Random team" for the new round
                   chatPausedRef.current = true // Pause chat immediately when bid is placed
 
@@ -1065,7 +1066,7 @@ case "thumbnails-4":
       <BreakSpotsSheet 
         isOpen={isBreakSpotsOpen} 
         onClose={() => setIsBreakSpotsOpen(false)}
-        spotsAvailable={hasWon ? 15 : 16}
+        spotsAvailable={demoSpots}
         spotsTotal={32}
       />
       </div>
