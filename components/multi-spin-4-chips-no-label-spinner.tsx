@@ -47,7 +47,7 @@ function BackAndForthMarquee({
         animate={overflow > 0 ? { x: [0, -overflow, -overflow, 0, 0] } : { x: 0 }}
         transition={
           overflow > 0
-            ? { duration, times: [0, 0.4, 0.5, 0.9, 1], repeat: Infinity, ease: "easeInOut" }
+            ? { duration, times: [0, 0.4, 0.5, 0.9, 1], repeat: Infinity, ease: "linear" }
             : undefined
         }
       >
