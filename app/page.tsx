@@ -5,7 +5,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from "react"
 
 // External libraries
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, ChevronRight, Heart, Star } from "lucide-react"
+import { ChevronDown, ChevronRight, Heart, Star, Crown } from "lucide-react"
 
 // Internal components
 import { TeamSpinner, type Team, teams } from "@/components/team-spinner"
@@ -73,9 +73,53 @@ function WinnerAnnouncement({ username, team, show, hideTeamBlock = false }: { u
         transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
       />
 
+      {/* Minimal confetti burst from the crown */}
+      {[...Array(10)].map((_, i) => {
+        const angle = (i / 10) * Math.PI * 2
+        const distance = 26 + (i % 3) * 8
+        const palette = ["#4CE160", "#FFD400", team.color, "#ffffff"]
+        return (
+          <motion.span
+            key={i}
+            className="absolute left-4 top-1/2 pointer-events-none rounded-[1px]"
+            style={{
+              width: 4,
+              height: 4,
+              backgroundColor: palette[i % palette.length],
+            }}
+            initial={{ opacity: 0, x: 0, y: 0, scale: 0 }}
+            animate={{
+              opacity: [0, 1, 0],
+              x: Math.cos(angle) * distance,
+              y: Math.sin(angle) * distance,
+              scale: [0, 1, 0.4],
+              rotate: [0, 180],
+            }}
+            transition={{
+              duration: 1.1,
+              repeat: Infinity,
+              repeatDelay: 0.9,
+              delay: i * 0.03,
+              ease: "easeOut",
+            }}
+          />
+        )
+      })}
+
       {/* Content - single compact row */}
       <div className="relative z-10 flex items-center gap-2">
         <p className="text-sm flex items-center gap-1.5 min-w-0">
+          <motion.span
+            className="shrink-0"
+            initial={{ scale: 0, rotate: -30 }}
+            animate={{ scale: 1, rotate: [-8, 8, -8] }}
+            transition={{
+              scale: { type: "spring", stiffness: 400, damping: 12 },
+              rotate: { duration: 1.2, repeat: Infinity, ease: "easeInOut" },
+            }}
+          >
+            <Crown className="w-4 h-4 fill-yellow-400 text-yellow-400" aria-hidden />
+          </motion.span>
           <span className="font-semibold text-white shrink-0">{username}</span>
           <span className="text-white/70 shrink-0">won</span>
           {/* Team initials square - hidden for text-only concepts */}
