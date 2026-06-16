@@ -13,9 +13,7 @@ import { MultiSpinSpinner } from "@/components/multi-spin-spinner"
 import { MultiSpin2Spinner } from "@/components/multi-spin-2-spinner"
 import { MultiSpin4Spinner } from "@/components/multi-spin-4-spinner"
 import { MultiSpin4AutoSpinner } from "@/components/multi-spin-4-auto-spinner"
-import { MultiSpin4ChipsSpinner } from "@/components/multi-spin-4-chips-spinner"
 import { MultiSpin4ChipsNoLabelSpinner } from "@/components/multi-spin-4-chips-no-label-spinner"
-import { SingleSpinChipSpinner } from "@/components/single-spin-chip-spinner"
 import { SingleSpinChipPopulateSpinner } from "@/components/single-spin-chip-populate-spinner"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { WinnerCrownReveal } from "@/components/animations/winner-crown-reveal"
@@ -39,9 +37,7 @@ import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 type AnimationType = "card-flip" | "single-spin-populate" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
-  { id: "card-flip", name: "Single Spin / Label" },
   { id: "single-spin-populate", name: "Single Spin / No Label" },
-  { id: "multi-spin-4-chips", name: "Multi-Spin / Label" },
   { id: "multi-spin-4-auto", name: "Multi-Spin / No Label" },
   { id: "multi-spin-4-chips-no-label", name: "Multi-Spin / No Label (Chips)" },
   // Temporarily hidden from the concepts list (kept for potential future use):
@@ -119,7 +115,7 @@ const chatMessages = [
 ]
 
 export default function AnimationShowcase() {
-  const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("card-flip")
+  const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("single-spin-populate")
   const [isRevealing, setIsRevealing] = useState(false)
   const [isSpinnerRevealing, setIsSpinnerRevealing] = useState(false) // For TeamSpinner cycling
   const [isSpinnerPending, setIsSpinnerPending] = useState(false) // Post-reveal "pending assignment" in TeamSpinner
@@ -784,19 +780,6 @@ case "thumbnails-4":
           />
         )}
 
-        {/* Single Spin Chips / Populate: one spin landing on a chip next to a "Spot:" label */}
-        {selectedAnimation === "card-flip" && (
-          <SingleSpinChipSpinner
-            totalSpots={32}
-            availableSpots={hasWon ? 15 : 16}
-            isSpinning={isMultiSpinning}
-            pendingSpot={multiPendingSpot === 1 ? 1 : null}
-            pendingSeller={revealPendingSeller}
-            onAnnounce={handleMultiSelect}
-            onViewSpots={() => setIsBreakSpotsOpen(true)}
-          />
-        )}
-
         {/* Single Spin Populate (No Label): same flow, but the randomizer grows as the chip populates */}
         {selectedAnimation === "single-spin-populate" && (
           <SingleSpinChipPopulateSpinner
@@ -851,19 +834,6 @@ case "thumbnails-4":
         {/* Multi-Spin 4 Auto: four-spot spinner that auto-announces a spot, no select buttons */}
         {selectedAnimation === "multi-spin-4-auto" && (
           <MultiSpin4AutoSpinner
-            totalSpots={32}
-            availableSpots={hasWon ? 15 : 16}
-            isSpinning={isMultiSpinning}
-            pendingSpot={multiPendingSpot === 4 ? null : multiPendingSpot}
-            pendingSeller={revealPendingSeller}
-            onSpotsLanded={handleSpotsLanded}
-            onViewSpots={() => setIsBreakSpotsOpen(true)}
-          />
-        )}
-
-        {/* Multi-Spin 4 Chips: same auto flow, but spots render as colored team chips */}
-        {selectedAnimation === "multi-spin-4-chips" && (
-          <MultiSpin4ChipsSpinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
             isSpinning={isMultiSpinning}
