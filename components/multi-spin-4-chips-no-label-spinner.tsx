@@ -382,7 +382,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
                     {teams[currentIndex].city} {teams[currentIndex].name}
                   </motion.span>
                 ) : (
-                  <BackAndForthMarquee key="marquee" duration={26}>
+                  <BackAndForthMarquee key="marquee" duration={26} trackClassName="text-sm leading-5">
                     <span className="text-white font-semibold text-sm whitespace-nowrap">
                       2025 Panini Luminance Football Hobby PYT Box Break #903
                     </span>
