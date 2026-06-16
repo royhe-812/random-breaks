@@ -145,6 +145,7 @@ export default function AnimationShowcase() {
   // Multi-spin: the set of spots that just landed (available for the seller/buyer to pick during pending)
   const [spunSpots, setSpunSpots] = useState<{ spot: 1 | 2 | 3 | 4; team: Team }[]>([])
   const [commentRequested, setCommentRequested] = useState(false) // Buyer tapped "Add comment" to request a spot during pending
+  const [requestDraft, setRequestDraft] = useState<{ spot: 1 | 2 | 3 | 4; team: Team } | null>(null) // Pre-picked spot, autofilled into the comment input for the buyer to tap-send
   const assignFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null) // Auto-assigns if the buyer never requests via comment
   
   // Random reaction usernames and message templates
@@ -201,6 +202,7 @@ export default function AnimationShowcase() {
     setReactionMessages([])
     setSpunSpots([])
     setCommentRequested(false)
+    setRequestDraft(null)
     setRevealPendingSeller(false)
     if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
     chatPausedRef.current = false
@@ -411,30 +413,28 @@ export default function AnimationShowcase() {
     setSpunSpots(spots)
     setCommentRequested(false)
     setRevealPendingSeller(true)
+    // Pre-pick one spot and autofill it into the comment input as a tappable draft.
+    setRequestDraft(spots[Math.floor(Math.random() * spots.length)] ?? null)
     if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
-    assignFallbackRef.current = setTimeout(() => {
-      const choice = spots[Math.floor(Math.random() * spots.length)]
-      if (choice) assignMultiSpot(choice.spot, choice.team)
-    }, 9000)
-  }, [assignMultiSpot])
+  }, [])
 
-  // Buyer taps "Add comment" during pending: generate a request for one of the
-  // spun spots, post it to chat, then the seller honors it and assigns the spot.
+  // Buyer taps the autofilled comment: post it to chat verbatim. The "Pending
+  // seller" state stays up while the seller reacts, then assigns the spot (which
+  // triggers the full-screen reveal).
   const handleRequestComment = useCallback(() => {
-    if (!revealPendingSeller || commentRequested || spunSpots.length === 0) return
+    if (!revealPendingSeller || commentRequested || !requestDraft) return
     setCommentRequested(true)
-    if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
-    const choice = spunSpots[Math.floor(Math.random() * spunSpots.length)]
+    const choice = requestDraft
 
     chatPausedRef.current = true
     setVisibleMessages(prev => [
       ...prev.slice(1),
-      { user: "Adam007", message: `Can I get the ${choice.team.city} ${choice.team.name}?`, color: "text-[#4CE160]" },
+      { user: "Adam007", message: `Gimme the ${choice.team.name}!!!`, color: "text-[#4CE160]" },
     ])
 
-    // Seller sees the request and assigns that spot.
-    setTimeout(() => assignMultiSpot(choice.spot, choice.team), 1800)
-  }, [revealPendingSeller, commentRequested, spunSpots, assignMultiSpot])
+    // Pending seller stays visible while the seller reacts, then assigns the spot.
+    setTimeout(() => assignMultiSpot(choice.spot, choice.team), 2600)
+  }, [revealPendingSeller, commentRequested, requestDraft, assignMultiSpot])
 
   // Kick off the concept's randomizer/reveal. Runs after the crown celebration.
   const startConceptReveal = useCallback(() => {
@@ -742,22 +742,26 @@ case "thumbnails-4":
           </div>
         )}
 
-        {/* Comment Input - during multi-spin pending, tapping it posts a spot request to chat */}
+        {/* Comment Input - during multi-spin pending, the input is autofilled with a
+            draft request the buyer can tap to send into chat */}
         {(() => {
-          const canRequest = revealPendingSeller && spunSpots.length > 0 && !commentRequested
-          const placeholder = commentRequested
-            ? "Request sent to seller..."
-            : revealPendingSeller && spunSpots.length > 0
-              ? "Tap to request one of these spots..."
-              : "Add comment..."
+          const hasDraft = revealPendingSeller && !!requestDraft && !commentRequested
+          const draftText = requestDraft ? `Gimme the ${requestDraft.team.name}!!!` : ""
           return (
             <button
               type="button"
               onClick={handleRequestComment}
-              aria-disabled={!canRequest}
-              className={`flex w-full items-center bg-black/40 backdrop-blur rounded-full px-4 py-3 text-left transition-shadow ${canRequest ? "ring-1 ring-[#4CE160]/60 cursor-pointer" : "cursor-default"}`}
+              aria-disabled={!hasDraft}
+              className={`flex w-full items-center gap-2 bg-black/40 backdrop-blur rounded-full px-4 py-3 text-left transition-shadow ${hasDraft ? "ring-1 ring-[#4CE160]/60 cursor-pointer" : "cursor-default"}`}
             >
-              <span className={`text-sm flex-1 ${canRequest ? "text-white/80" : "text-white/50"}`}>{placeholder}</span>
+              {hasDraft ? (
+                <>
+                  <span className="text-sm flex-1 text-white font-medium">{draftText}</span>
+                  <span className="text-[#4CE160] text-xs font-semibold uppercase tracking-wide">Send</span>
+                </>
+              ) : (
+                <span className="text-sm flex-1 text-white/50">Add comment...</span>
+              )}
               <Heart className="w-5 h-5 text-red-500 fill-red-500" />
             </button>
           )
@@ -971,6 +975,7 @@ case "thumbnails-4":
                   setRevealPendingSeller(false)
                   setSpunSpots([])
                   setCommentRequested(false)
+                  setRequestDraft(null)
                   if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
                   pendingSpotRef.current = null
                   setSelectedTeam(null)
