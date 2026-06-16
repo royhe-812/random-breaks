@@ -1,12 +1,59 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { teams, type Team } from "@/components/team-spinner"
 
 type Spot = 1 | 2 | 3
 
 const SPOTS: Spot[] = [1, 2, 3]
+
+/**
+ * Marquee that only scrolls when its content overflows, easing right-to-left,
+ * pausing, then left-to-right, then pausing — instead of a continuous loop.
+ */
+function BackAndForthMarquee({
+  children,
+  className,
+  trackClassName,
+}: {
+  children: ReactNode
+  className?: string
+  trackClassName?: string
+}) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
+  const [overflow, setOverflow] = useState(0)
+
+  useEffect(() => {
+    const measure = () => {
+      const c = containerRef.current
+      const t = trackRef.current
+      if (!c || !t) return
+      setOverflow(Math.max(0, t.scrollWidth - c.clientWidth))
+    }
+    measure()
+    window.addEventListener("resize", measure)
+    return () => window.removeEventListener("resize", measure)
+  }, [children])
+
+  return (
+    <div ref={containerRef} className={`overflow-hidden ${className ?? ""}`}>
+      <motion.div
+        ref={trackRef}
+        className={`w-max ${trackClassName ?? ""}`}
+        animate={overflow > 0 ? { x: [0, -overflow, -overflow, 0, 0] } : { x: 0 }}
+        transition={
+          overflow > 0
+            ? { duration: 14, times: [0, 0.4, 0.5, 0.9, 1], repeat: Infinity, ease: "easeInOut" }
+            : undefined
+        }
+      >
+        {children}
+      </motion.div>
+    </div>
+  )
+}
 
 interface MultiSpin4ChipsNoLabelSpinnerProps {
   totalSpots: number
@@ -333,15 +380,11 @@ export function MultiSpin4ChipsNoLabelSpinner({
                     {teams[currentIndex].city} {teams[currentIndex].name}
                   </motion.span>
                 ) : (
-                  <div key="marquee" className="overflow-hidden">
-                    <motion.div
-                      className="text-white font-semibold text-sm whitespace-nowrap"
-                      animate={{ x: ["0%", "-50%"] }}
-                      transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                    >
-                      2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp; 2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp;
-                    </motion.div>
-                  </div>
+                  <BackAndForthMarquee key="marquee">
+                    <span className="text-white font-semibold text-sm whitespace-nowrap">
+                      2025 Panini Luminance Football Hobby PYT Box Break #903
+                    </span>
+                  </BackAndForthMarquee>
                 )}
               </AnimatePresence>
               <button onClick={onCycleSpots ?? onViewSpots} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
@@ -381,19 +424,11 @@ export function MultiSpin4ChipsNoLabelSpinner({
               <div className="mx-4 border-t border-white/10" />
 
               {donePopulating ? (
-                // All spots landed: chips scroll in a seamless, continuous marquee.
-                <div className="pl-4 pt-3 pb-3 overflow-hidden">
-                  <motion.div
-                    className="flex gap-2 w-max"
-                    animate={{ x: ["0%", "-50%"] }}
-                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                  >
-                    {/* Two identical halves so the -50% translation loops seamlessly */}
-                    {assignedSpots.map((spot) => renderMarqueeChip(spot, `a-${spot}`))}
-                    <span className="shrink-0 w-2" aria-hidden />
-                    {assignedSpots.map((spot) => renderMarqueeChip(spot, `b-${spot}`))}
-                    <span className="shrink-0 w-2" aria-hidden />
-                  </motion.div>
+                // All spots landed: chips scroll back and forth like the title marquee.
+                <div className="px-4 pt-3 pb-3">
+                  <BackAndForthMarquee trackClassName="flex gap-2">
+                    {assignedSpots.map((spot) => renderMarqueeChip(spot, `${spot}`))}
+                  </BackAndForthMarquee>
                 </div>
               ) : (
                 // Still populating: chips grow in a swipeable row as each lands.
