@@ -204,7 +204,7 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
       let currentAvailableIndex = 0
       let delay = 50
       const maxDelay = 300
-      const totalCycles = 25 + Math.floor(Math.random() * 10)
+      const totalCycles = 45 + Math.floor(Math.random() * 15)
       let cycleCount = 0
       
       const cycle = () => {
@@ -243,9 +243,9 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
         playTickSound()
         
         cycleCount++
-        // Gradually slow down
-        if (cycleCount > totalCycles - 10) {
-          delay = Math.min(delay * 1.15, maxDelay)
+        // Gradually slow down over a longer wind-down for a more drawn-out finish
+        if (cycleCount > totalCycles - 18) {
+          delay = Math.min(delay * 1.12, maxDelay)
         }
         
         setTimeout(cycle, delay)
