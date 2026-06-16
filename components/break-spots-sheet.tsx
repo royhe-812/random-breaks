@@ -84,15 +84,9 @@ const allTeams = [
   { city: "Cleveland", name: "Browns", abbrev: "CLE" },
 ]
 
-// Pre-sold teams (16 sold to match 16/32 available)
-const soldTeamIndices = [0, 3, 5, 7, 10, 12, 14, 17, 19, 21, 23, 25, 27, 29, 30, 31]
-const soldTeams = soldTeamIndices.map((index, i) => ({
-  ...allTeams[index],
-  buyer: ["KemMajed90", "BestCollector", "CardKing22", "SportsGuru", "PackRipper", "HobbyFan", "CardChaser", "BigHits", "TopPulls", "RookieHunter", "GradedGems", "WaxBreaker", "HitMaker", "CardShark", "BoxBreaker", "SerialHunter"][i],
-  price: [28, 35, 22, 45, 18, 32, 25, 40, 30, 28, 35, 22, 45, 18, 32, 25][i]
-}))
-
-const availableTeams = allTeams.filter((_, index) => !soldTeamIndices.includes(index))
+// Buyer names and prices used to decorate sold spots (cycled as needed).
+const soldBuyers = ["KemMajed90", "BestCollector", "CardKing22", "SportsGuru", "PackRipper", "HobbyFan", "CardChaser", "BigHits", "TopPulls", "RookieHunter", "GradedGems", "WaxBreaker", "HitMaker", "CardShark", "BoxBreaker", "SerialHunter", "ChaseElite", "MintCondition", "RipNShip", "SlabHunter", "TheBreaker", "CardVault", "HitChaser", "PrizmKing", "WaxAddict", "GemMint10", "BreakRoom", "CardCove", "HotBoxes", "PullMaster", "AceCards", "BigLeague"]
+const soldPrices = [28, 35, 22, 45, 18, 32, 25, 40, 30, 28, 35, 22, 45, 18, 32, 25, 27, 38, 21, 44, 19, 33, 24, 41, 31, 29, 36, 23, 46, 17, 34, 26]
 
 // Break Spots Sheet Component
 function BreakSpotsSheet({ 
@@ -113,6 +107,16 @@ function BreakSpotsSheet({
   const filters = ["Available", "Sold", "Auctions", "Buy It Now"]
   
   const percentage = (spotsAvailable / spotsTotal) * 100
+
+  // Derive the lists from the live spots count so the sheet always matches the
+  // randomizer: the first (total - available) teams are sold, the rest available.
+  const soldCount = Math.min(allTeams.length, Math.max(0, spotsTotal - spotsAvailable))
+  const soldTeams = allTeams.slice(0, soldCount).map((team, i) => ({
+    ...team,
+    buyer: soldBuyers[i % soldBuyers.length],
+    price: soldPrices[i % soldPrices.length],
+  }))
+  const availableTeams = allTeams.slice(soldCount, spotsTotal)
   
   return (
     <AnimatePresence>
