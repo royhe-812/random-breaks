@@ -293,7 +293,7 @@ function BreakSpotsSheet({
                     >
                       <div className="space-y-0">
                         {availableTeams.map((team) => (
-                          <div key={team.abbrev} className="py-2">
+                          <div key={team.abbrev} className="py-1">
                             <span className="text-white text-sm">{team.city} {team.name}</span>
                           </div>
                         ))}
