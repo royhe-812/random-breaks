@@ -756,7 +756,7 @@ case "thumbnails-4":
                 className="flex flex-col"
               >
                 <span className="text-white font-bold text-sm">{msg.user}</span>
-                <span className="text-white/80 text-sm font-semibold">{msg.message}</span>
+                <span className="text-white/80 text-sm font-normal">{msg.message}</span>
               </motion.div>
             ))}
           </AnimatePresence>
@@ -786,7 +786,7 @@ case "thumbnails-4":
                   className="flex flex-col"
                 >
                   <span className="text-white font-bold text-sm">{msg.user}</span>
-                  <span className="text-white/80 text-sm font-semibold">{msg.message}</span>
+                  <span className="text-white/80 text-sm font-normal">{msg.message}</span>
                 </motion.div>
               ))}
             </AnimatePresence>
