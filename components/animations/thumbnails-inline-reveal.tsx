@@ -309,8 +309,8 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
           </button>
         </div>
 
-        {/* Grid of team thumbnails - 8x2 horizontal grid to span width */}
-        <div className="grid grid-cols-8 gap-2">
+        {/* Grid of team thumbnails - 6 columns, tiles sized to match the randomizer thumbnail */}
+        <div className="grid grid-cols-6 gap-2 justify-items-center">
           {teams
             .map((team, index) => ({ team, originalIndex: index }))
             .map(({ team, originalIndex }) => {
@@ -349,7 +349,7 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
                 
                 {/* Team color tile with initials (matches randomizer in other concepts) */}
                 <div 
-                  className={`relative w-full aspect-square rounded-lg overflow-hidden flex items-center justify-center transition-all duration-150 ${
+                  className={`relative w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center transition-all duration-150 ${
                     isSelected 
                       ? 'ring-2 ring-white' 
                       : isHighlighted 
