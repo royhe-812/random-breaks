@@ -147,8 +147,8 @@ export function MultiSpin4ChipsNoLabelSpinner({
   const [spinningSpot, setSpinningSpot] = useState<0 | Spot>(0)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [results, setResults] = useState<Record<Spot, Team | null>>({ 1: null, 2: null, 3: null })
-  // Order in which spots land, oldest → newest. Chips render this reversed so the
-  // newest selection appears on the left and pushes older chips to the right.
+  // Order in which spots land, oldest → newest. Chips render in this order so they
+  // populate left → right, with the newest selection appearing on the right.
   const [landedOrder, setLandedOrder] = useState<Spot[]>([])
   // True briefly when a spin has landed on a spot, before the next spin starts.
   // Drives the green "locked in" flash on the header text.
@@ -332,7 +332,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
   const isAnySpinning = spinningSpot !== 0
   const glowColor = isAnySpinning ? teams[currentIndex].color : undefined
   // Newest selection first (leftmost), older chips pushed to the right.
-  const assignedSpots = [...landedOrder].reverse()
+  const assignedSpots = landedOrder
   // Once every spot has landed, the chips row turns into a continuous marquee.
   const donePopulating = stage === "ready" && landedOrder.length === SPOTS.length
 
