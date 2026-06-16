@@ -254,6 +254,32 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
     <div className="absolute top-28 left-4 right-20 z-30">
       {/* Container matching stream UI style - full width panel */}
       <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+        {/* Top stats: spots available + hide sold, with a divider below */}
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
+          {/* Spots available with progress bar */}
+          <div className="flex items-center gap-1.5 flex-1 mr-4">
+            <CircularProgress available={spotsLeft} total={32} size={16} />
+            <span className="text-white text-xs font-medium">{spotsLeft}/32 spots available</span>
+          </div>
+
+          {/* Hide sold toggle */}
+          <div className="flex items-center gap-2">
+            <span className="text-white/50 text-xs">Hide sold</span>
+            <button
+              onClick={() => setHideSold(!hideSold)}
+              className={`relative w-9 h-5 rounded-full transition-colors ${
+                hideSold ? 'bg-green-500' : 'bg-white/20'
+              }`}
+            >
+              <div
+                className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                  hideSold ? 'translate-x-4' : 'translate-x-0.5'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
         {/* Grid of team thumbnails - 8x2 horizontal grid to span width */}
         <div className="grid grid-cols-8 gap-2">
           {teams
@@ -326,38 +352,12 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
           })}
         </div>
         
-        {/* Footer stats section */}
-        <div className="mt-3 pt-2 border-t border-white/10">
-          {/* Top row - Spots left and Hide sold toggle */}
-          {/* Spots available with progress bar */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1.5 flex-1 mr-4">
-              <CircularProgress available={spotsLeft} total={32} size={16} />
-              <span className="text-white text-xs font-medium">{spotsLeft}/32 spots available</span>
-            </div>
-            
-            {/* Hide sold toggle */}
-            <div className="flex items-center gap-2">
-              <span className="text-white/50 text-xs">Hide sold</span>
-              <button
-                onClick={() => setHideSold(!hideSold)}
-                className={`relative w-9 h-5 rounded-full transition-colors ${
-                  hideSold ? 'bg-green-500' : 'bg-white/20'
-                }`}
-              >
-                <div 
-                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                    hideSold ? 'translate-x-4' : 'translate-x-0.5'
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-
-          {/* Assigned team chip - white outline while pending, green-filled once assigned */}
-          {selectedTeam && (
+        {/* Pending + assigned section - below the board, with a divider above */}
+        {selectedTeam && (
+          <div className="mt-3 pt-3 border-t border-white/10">
+            {/* Assigned team chip - white outline while pending, green-filled once assigned */}
             <motion.div
-              className="mt-2 flex"
+              className="flex"
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
             >
@@ -372,31 +372,30 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
                 {selectedTeam.city} {selectedTeam.name}
               </span>
             </motion.div>
-          )}
 
-          {/* Pending assignment indicator */}
-          {phase === "pending" && (
-            <motion.div
-              className="flex items-center gap-1.5 mt-1.5"
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-            >
-              <span className="text-white text-xs font-medium">Pending seller assignment</span>
-              <span className="flex items-center gap-0.5">
-                {[0, 1, 2].map((i) => (
-                  <motion.span
-                    key={i}
-                    className="w-1 h-1 rounded-full bg-white/70"
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                  />
-                ))}
-              </span>
-            </motion.div>
-          )}
-
-        </div>
+            {/* Pending assignment indicator */}
+            {phase === "pending" && (
+              <motion.div
+                className="flex items-center gap-1.5 mt-1.5"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+              >
+                <span className="text-white text-xs font-medium">Pending seller assignment</span>
+                <span className="flex items-center gap-0.5">
+                  {[0, 1, 2].map((i) => (
+                    <motion.span
+                      key={i}
+                      className="w-1 h-1 rounded-full bg-white/70"
+                      animate={{ opacity: [0.3, 1, 0.3] }}
+                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                    />
+                  ))}
+                </span>
+              </motion.div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
