@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { BackAndForthMarquee } from "@/components/back-and-forth-marquee"
 
 // Helper function for progress color - 4-tier: green -> yellow -> orange -> red
 const getProgressColor = (percentage: number) => {
@@ -260,6 +261,13 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
     <div className="absolute top-28 left-4 right-20 z-30">
       {/* Container matching stream UI style - full width panel */}
       <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+        {/* Case break title marquee */}
+        <BackAndForthMarquee duration={26} className="mb-2">
+          <span className="text-white font-semibold text-sm whitespace-nowrap">
+            2025 Panini Luminance Football Hobby PYT Box Break #903
+          </span>
+        </BackAndForthMarquee>
+
         {/* Top stats: spots available (state indicator) + view spots, with a divider below */}
         <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-white/10">
           {/* Spots available with progress bar - tap to cycle the color tiers */}
