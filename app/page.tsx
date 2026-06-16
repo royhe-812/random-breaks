@@ -44,7 +44,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "thumbnails-2", name: "Extended" },
   // { id: "gift-reveal", name: "Gift Reveal" },
   // { id: "thumbnails", name: "Thumbnails" },
-  { id: "thumbnails-3", name: "Thumbnails 3" },
+  { id: "thumbnails-3", name: "Board Multi-Spin" },
   // { id: "thumbnails-4", name: "Text" },
 ]
 
