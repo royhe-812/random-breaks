@@ -15,6 +15,8 @@ interface SingleSpinChipPopulateSpinnerProps {
   pendingSeller?: boolean
   /** Fired once the spin lands, to trigger the full-screen reveal. */
   onAnnounce?: (team: Team, spot: 1) => void
+  /** Tapping the spots arc cycles the available count through the color tiers. */
+  onCycleSpots?: () => void
   onViewSpots?: () => void
 }
 
@@ -48,10 +50,13 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (percentage / 100) * circumference
 
+  // 4-tier scale: green -> yellow -> orange -> red as the bar empties
   const getProgressColor = (pct: number) => {
-    if (pct > 50) return "#4CE160"
-    if (pct > 30) return "#F5A623"
-    return "#FF4444"
+    const ratio = pct / 100
+    if (ratio <= 0.25) return "#ef4444" // red
+    if (ratio <= 0.5) return "#f97316" // orange
+    if (ratio <= 0.75) return "#eab308" // yellow
+    return "#22c55e" // green
   }
 
   return (
@@ -82,6 +87,7 @@ export function SingleSpinChipPopulateSpinner({
   pendingSpot = null,
   pendingSeller = false,
   onAnnounce,
+  onCycleSpots,
   onViewSpots,
 }: SingleSpinChipPopulateSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
@@ -265,7 +271,7 @@ export function SingleSpinChipPopulateSpinner({
                   </div>
                 )}
               </AnimatePresence>
-              <button onClick={onViewSpots} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+              <button onClick={onCycleSpots ?? onViewSpots} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                 <CircularProgress available={availableSpots} total={totalSpots} size={16} />
                 <span className="text-sm text-white">
                   {availableSpots}/{totalSpots} spots available

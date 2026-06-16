@@ -127,6 +127,15 @@ export default function AnimationShowcase() {
   const [multiLastWinner, setMultiLastWinner] = useState<{ username: string; team: string } | null>(null) // Multi-Spin: dynamic last winner
   const [spinnerLastWinner, setSpinnerLastWinner] = useState<{ username: string; team: string } | null>(null) // TeamSpinner: dynamic last winner
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
+  // Demo: tapping the spots arc cycles the available count through the color tiers
+  // (green -> yellow -> orange -> red) then resets, so the progress arc is interactive.
+  const [demoSpots, setDemoSpots] = useState(32)
+  const cycleSpots = useCallback(() => {
+    setDemoSpots((prev) => {
+      const next = prev - 8
+      return next < 0 ? 32 : next
+    })
+  }, [])
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
   const [hasWon, setHasWon] = useState(false)
@@ -200,6 +209,7 @@ export default function AnimationShowcase() {
     setCommentRequested(false)
     setRequestDraft(null)
     setRevealPendingSeller(false)
+    setDemoSpots(32)
     if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
     chatPausedRef.current = false
   }, [selectedAnimation])
@@ -588,6 +598,8 @@ case "thumbnails-4":
   setWinnerTeam(team)
   setSelectedTeam(team)
   }}
+  availableSpots={demoSpots}
+  onCycleSpots={cycleSpots}
   onViewSpots={() => setIsBreakSpotsOpen(true)}
   />
   )}
@@ -781,11 +793,12 @@ case "thumbnails-4":
         {selectedAnimation === "single-spin-populate" && (
           <SingleSpinChipPopulateSpinner
             totalSpots={32}
-            availableSpots={hasWon ? 15 : 16}
+            availableSpots={demoSpots}
             isSpinning={isMultiSpinning}
             pendingSpot={multiPendingSpot === 1 ? 1 : null}
             pendingSeller={revealPendingSeller}
             onAnnounce={handleMultiSelect}
+            onCycleSpots={cycleSpots}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
         )}
@@ -832,11 +845,12 @@ case "thumbnails-4":
         {selectedAnimation === "multi-spin-4-auto" && (
           <MultiSpin4AutoSpinner
             totalSpots={32}
-            availableSpots={hasWon ? 15 : 16}
+            availableSpots={demoSpots}
             isSpinning={isMultiSpinning}
             pendingSpot={multiPendingSpot === 4 ? null : multiPendingSpot}
             pendingSeller={revealPendingSeller}
             onSpotsLanded={handleSpotsLanded}
+            onCycleSpots={cycleSpots}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
         )}
@@ -845,11 +859,12 @@ case "thumbnails-4":
         {selectedAnimation === "multi-spin-4-chips-no-label" && (
           <MultiSpin4ChipsNoLabelSpinner
             totalSpots={32}
-            availableSpots={hasWon ? 15 : 16}
+            availableSpots={demoSpots}
             isSpinning={isMultiSpinning}
             pendingSpot={multiPendingSpot === 4 ? null : multiPendingSpot}
             pendingSeller={revealPendingSeller}
             onSpotsLanded={handleSpotsLanded}
+            onCycleSpots={cycleSpots}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
         )}

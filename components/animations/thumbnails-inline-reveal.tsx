@@ -3,11 +3,13 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
-// Helper function for progress color
+// Helper function for progress color - 4-tier: green -> yellow -> orange -> red
 const getProgressColor = (percentage: number) => {
-  if (percentage > 50) return "#4CE160" // Green
-  if (percentage > 30) return "#F5A623" // Yellow/Orange
-  return "#FF4444" // Red
+  const ratio = percentage / 100
+  if (ratio <= 0.25) return "#ef4444" // red
+  if (ratio <= 0.5) return "#f97316" // orange
+  if (ratio <= 0.75) return "#eab308" // yellow
+  return "#22c55e" // green
 }
 
 // Circular progress component
@@ -95,10 +97,14 @@ interface ThumbnailsInlineRevealProps {
   onComplete: () => void
   team?: Team | null
   onTeamSelected?: (team: Team) => void
+  /** Optional controlled spots count for the top arc (overrides internal state). */
+  availableSpots?: number
+  /** Tapping the spots arc cycles the available count through the color tiers. */
+  onCycleSpots?: () => void
   onViewSpots?: () => void
 }
 
-export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam, onTeamSelected, onViewSpots }: ThumbnailsInlineRevealProps) {
+export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam, onTeamSelected, availableSpots, onCycleSpots, onViewSpots }: ThumbnailsInlineRevealProps) {
   const [phase, setPhase] = useState<"idle" | "pending" | "cycling" | "selected" | "done">("idle")
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
@@ -256,11 +262,15 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
       <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10">
         {/* Top stats: spots available (state indicator) + view spots, with a divider below */}
         <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-white/10">
-          {/* Spots available with progress bar - display only, color reflects how many remain */}
-          <div className="flex items-center gap-1.5 min-w-0">
-            <CircularProgress available={spotsLeft} total={32} size={16} />
-            <span className="text-white text-xs font-medium whitespace-nowrap">{spotsLeft}/32 spots</span>
-          </div>
+          {/* Spots available with progress bar - tap to cycle the color tiers */}
+          <button
+            type="button"
+            onClick={onCycleSpots}
+            className="flex items-center gap-1.5 min-w-0 hover:opacity-80 transition-opacity"
+          >
+            <CircularProgress available={availableSpots ?? spotsLeft} total={32} size={16} />
+            <span className="text-white text-xs font-medium whitespace-nowrap">{availableSpots ?? spotsLeft}/32 spots</span>
+          </button>
 
           {/* View spots (opens the sheet) */}
           <button
