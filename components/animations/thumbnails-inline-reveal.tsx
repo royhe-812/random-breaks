@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import Image from "next/image"
 
 // Helper function for progress color
 const getProgressColor = (percentage: number) => {
@@ -87,6 +86,7 @@ interface Team {
   name: string
   city?: string
   color: string
+  abbrev?: string
   logo?: string
 }
 
@@ -319,28 +319,23 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
                   />
                 )}
                 
-                {/* Team logo container */}
+                {/* Team color tile with initials (matches randomizer in other concepts) */}
                 <div 
                   className={`relative w-full aspect-square rounded-xl overflow-hidden flex items-center justify-center transition-all duration-150 ${
                     isSelected 
-                      ? 'bg-white/20 ring-2 ring-white' 
+                      ? 'ring-2 ring-white' 
                       : isHighlighted 
-                        ? 'bg-white/15' 
-                        : isSold
-                          ? 'bg-white/5 opacity-50'
-                          : 'bg-white/5'
+                        ? 'ring-1 ring-white/60' 
+                        : ''
                   }`}
+                  style={{ backgroundColor: team.color, opacity: isSold ? 0.4 : 1 }}
                 >
-                  <Image
-                    src={team.logo}
-                    alt={team.name}
-                    width={40}
-                    height={40}
-                    className={`object-contain w-3/4 h-3/4 ${isSold ? 'opacity-40' : ''}`}
-                  />
+                  <span className="font-bold text-white text-xs tracking-tight">
+                    {team.abbrev ?? team.name.slice(0, 3).toUpperCase()}
+                  </span>
                   {/* Sold X overlay */}
                   {isSold && (
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                       <svg className="w-6 h-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                         <path d="M18 6L6 18M6 6l12 12" />
                       </svg>
