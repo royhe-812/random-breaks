@@ -95,9 +95,10 @@ interface ThumbnailsInlineRevealProps {
   onComplete: () => void
   team?: Team | null
   onTeamSelected?: (team: Team) => void
+  onViewSpots?: () => void
 }
 
-export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam, onTeamSelected }: ThumbnailsInlineRevealProps) {
+export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam, onTeamSelected, onViewSpots }: ThumbnailsInlineRevealProps) {
   const [phase, setPhase] = useState<"idle" | "pending" | "cycling" | "selected" | "done">("idle")
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
@@ -254,28 +255,40 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
     <div className="absolute top-28 left-4 right-20 z-30">
       {/* Container matching stream UI style - full width panel */}
       <div className="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-        {/* Top stats: spots available + hide sold, with a divider below */}
-        <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
-          {/* Spots available with progress bar */}
-          <div className="flex items-center gap-1.5 flex-1 mr-4">
+        {/* Top stats: spots available (state indicator) + hide sold, with a divider below */}
+        <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-white/10">
+          {/* Spots available with progress bar - display only, color reflects how many remain */}
+          <div className="flex items-center gap-1.5 min-w-0">
             <CircularProgress available={spotsLeft} total={32} size={16} />
-            <span className="text-white text-xs font-medium">{spotsLeft}/32 spots available</span>
+            <span className="text-white text-xs font-medium whitespace-nowrap">{spotsLeft}/32 spots</span>
           </div>
 
-          {/* Hide sold toggle */}
-          <div className="flex items-center gap-2">
-            <span className="text-white/50 text-xs">Hide sold</span>
-            <button
-              onClick={() => setHideSold(!hideSold)}
-              className={`relative w-9 h-5 rounded-full transition-colors ${
-                hideSold ? 'bg-green-500' : 'bg-white/20'
-              }`}
-            >
-              <div
-                className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                  hideSold ? 'translate-x-4' : 'translate-x-0.5'
+          {/* Right cluster: hide sold toggle + view spots (opens the sheet) */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-white/50 text-xs">Hide sold</span>
+              <button
+                onClick={() => setHideSold(!hideSold)}
+                className={`relative w-9 h-5 rounded-full transition-colors ${
+                  hideSold ? 'bg-green-500' : 'bg-white/20'
                 }`}
-              />
+              >
+                <div
+                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                    hideSold ? 'translate-x-4' : 'translate-x-0.5'
+                  }`}
+                />
+              </button>
+            </div>
+
+            <button
+              onClick={onViewSpots}
+              className="flex items-center gap-0.5 text-white/60 hover:text-white text-xs whitespace-nowrap transition-colors"
+            >
+              View spots
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
             </button>
           </div>
         </div>
@@ -321,7 +334,7 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
                 
                 {/* Team color tile with initials (matches randomizer in other concepts) */}
                 <div 
-                  className={`relative w-full aspect-square rounded-xl overflow-hidden flex items-center justify-center transition-all duration-150 ${
+                  className={`relative w-full aspect-square rounded-lg overflow-hidden flex items-center justify-center transition-all duration-150 ${
                     isSelected 
                       ? 'ring-2 ring-white' 
                       : isHighlighted 

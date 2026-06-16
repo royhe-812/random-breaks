@@ -592,6 +592,7 @@ case "thumbnails-4":
   setWinnerTeam(team)
   setSelectedTeam(team)
   }}
+  onViewSpots={() => setIsBreakSpotsOpen(true)}
   />
   )}
   
@@ -609,7 +610,7 @@ case "thumbnails-4":
   }}
   />
   )}
-      
+  
       {/* eBay Live Header */}
       <div className="absolute top-12 left-0 right-0 z-20 p-4">
         {/* Top row - Back button, username, and viewer count aligned */}
