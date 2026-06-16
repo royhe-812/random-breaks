@@ -16,10 +16,12 @@ function BackAndForthMarquee({
   children,
   className,
   trackClassName,
+  duration = 14,
 }: {
   children: ReactNode
   className?: string
   trackClassName?: string
+  duration?: number
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
@@ -45,7 +47,7 @@ function BackAndForthMarquee({
         animate={overflow > 0 ? { x: [0, -overflow, -overflow, 0, 0] } : { x: 0 }}
         transition={
           overflow > 0
-            ? { duration: 14, times: [0, 0.4, 0.5, 0.9, 1], repeat: Infinity, ease: "easeInOut" }
+            ? { duration, times: [0, 0.4, 0.5, 0.9, 1], repeat: Infinity, ease: "easeInOut" }
             : undefined
         }
       >
@@ -380,7 +382,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
                     {teams[currentIndex].city} {teams[currentIndex].name}
                   </motion.span>
                 ) : (
-                  <BackAndForthMarquee key="marquee">
+                  <BackAndForthMarquee key="marquee" duration={26}>
                     <span className="text-white font-semibold text-sm whitespace-nowrap">
                       2025 Panini Luminance Football Hobby PYT Box Break #903
                     </span>
