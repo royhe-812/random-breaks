@@ -142,6 +142,10 @@ export default function AnimationShowcase() {
   const messageIndexRef = useRef(3)
   const chatPausedRef = useRef(false)
   const pendingSpotRef = useRef<1 | 2 | 3 | 4 | null>(null) // Remembers which spot the spin landed on, assigned after the reveal + pending-seller beat
+  // Multi-spin: the set of spots that just landed (available for the seller/buyer to pick during pending)
+  const [spunSpots, setSpunSpots] = useState<{ spot: 1 | 2 | 3 | 4; team: Team }[]>([])
+  const [commentRequested, setCommentRequested] = useState(false) // Buyer tapped "Add comment" to request a spot during pending
+  const assignFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null) // Auto-assigns if the buyer never requests via comment
   
   // Random reaction usernames and message templates
   const reactionUsers = [
@@ -195,6 +199,10 @@ export default function AnimationShowcase() {
     setWinnerTeam(null)
     setShowWinner(false)
     setReactionMessages([])
+    setSpunSpots([])
+    setCommentRequested(false)
+    setRevealPendingSeller(false)
+    if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
     chatPausedRef.current = false
   }, [selectedAnimation])
   
@@ -378,6 +386,55 @@ export default function AnimationShowcase() {
       setKey(prev => prev + 1)
     }
   }, [selectedAnimation])
+
+  // Multi-spin: assign a chosen spot — chip turns green, item card title swaps,
+  // then the full-screen reveal plays after a brief beat.
+  const assignMultiSpot = useCallback((spot: 1 | 2 | 3 | 4, team: Team) => {
+    if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
+    setRevealPendingSeller(false)
+    setSelectedTeam(team)
+    setWinnerTeam(team)
+    setMultiLastWinner({ username: "Adam007", team: team.name })
+    pendingSpotRef.current = spot
+    setMultiPendingSpot(spot)
+    setSpotAssigned(true)
+    setTimeout(() => {
+      setIsRevealing(true)
+      setKey(prev => prev + 1)
+    }, 900)
+  }, [])
+
+  // Multi-spin: all spots have landed. Show the "Pending seller" state and hold
+  // the set so the buyer can request one via "Add comment". If they never do,
+  // the seller auto-picks one after a beat so the demo keeps moving.
+  const handleSpotsLanded = useCallback((spots: { spot: 1 | 2 | 3 | 4; team: Team }[]) => {
+    setSpunSpots(spots)
+    setCommentRequested(false)
+    setRevealPendingSeller(true)
+    if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
+    assignFallbackRef.current = setTimeout(() => {
+      const choice = spots[Math.floor(Math.random() * spots.length)]
+      if (choice) assignMultiSpot(choice.spot, choice.team)
+    }, 9000)
+  }, [assignMultiSpot])
+
+  // Buyer taps "Add comment" during pending: generate a request for one of the
+  // spun spots, post it to chat, then the seller honors it and assigns the spot.
+  const handleRequestComment = useCallback(() => {
+    if (!revealPendingSeller || commentRequested || spunSpots.length === 0) return
+    setCommentRequested(true)
+    if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
+    const choice = spunSpots[Math.floor(Math.random() * spunSpots.length)]
+
+    chatPausedRef.current = true
+    setVisibleMessages(prev => [
+      ...prev.slice(1),
+      { user: "Adam007", message: `Can I get the ${choice.team.city} ${choice.team.name}?`, color: "text-[#4CE160]" },
+    ])
+
+    // Seller sees the request and assigns that spot.
+    setTimeout(() => assignMultiSpot(choice.spot, choice.team), 1800)
+  }, [revealPendingSeller, commentRequested, spunSpots, assignMultiSpot])
 
   // Kick off the concept's randomizer/reveal. Runs after the crown celebration.
   const startConceptReveal = useCallback(() => {
@@ -685,11 +742,26 @@ case "thumbnails-4":
           </div>
         )}
 
-        {/* Comment Input */}
-        <div className="flex items-center bg-black/40 backdrop-blur rounded-full px-4 py-3">
-          <span className="text-white/50 text-sm flex-1">Add comment...</span>
-          <Heart className="w-5 h-5 text-red-500 fill-red-500" />
-        </div>
+        {/* Comment Input - during multi-spin pending, tapping it posts a spot request to chat */}
+        {(() => {
+          const canRequest = revealPendingSeller && spunSpots.length > 0 && !commentRequested
+          const placeholder = commentRequested
+            ? "Request sent to seller..."
+            : revealPendingSeller && spunSpots.length > 0
+              ? "Tap to request one of these spots..."
+              : "Add comment..."
+          return (
+            <button
+              type="button"
+              onClick={handleRequestComment}
+              aria-disabled={!canRequest}
+              className={`flex w-full items-center bg-black/40 backdrop-blur rounded-full px-4 py-3 text-left transition-shadow ${canRequest ? "ring-1 ring-[#4CE160]/60 cursor-pointer" : "cursor-default"}`}
+            >
+              <span className={`text-sm flex-1 ${canRequest ? "text-white/80" : "text-white/50"}`}>{placeholder}</span>
+              <Heart className="w-5 h-5 text-red-500 fill-red-500" />
+            </button>
+          )
+        })()}
 
         {/* Team Spinner with Spots Available - shown for most concepts. For slot-machine (Team Picker),
             battle, and carousel it stays in its idle/zero state (thumbnail) since those concepts
@@ -780,7 +852,7 @@ case "thumbnails-4":
             isSpinning={isMultiSpinning}
             pendingSpot={multiPendingSpot === 4 ? null : multiPendingSpot}
             pendingSeller={revealPendingSeller}
-            onAnnounce={handleMultiSelect}
+            onSpotsLanded={handleSpotsLanded}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
         )}
@@ -793,7 +865,7 @@ case "thumbnails-4":
             isSpinning={isMultiSpinning}
             pendingSpot={multiPendingSpot === 4 ? null : multiPendingSpot}
             pendingSeller={revealPendingSeller}
-            onAnnounce={handleMultiSelect}
+            onSpotsLanded={handleSpotsLanded}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
         )}
@@ -806,7 +878,7 @@ case "thumbnails-4":
             isSpinning={isMultiSpinning}
             pendingSpot={multiPendingSpot === 4 ? null : multiPendingSpot}
             pendingSeller={revealPendingSeller}
-            onAnnounce={handleMultiSelect}
+            onSpotsLanded={handleSpotsLanded}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
         )}
@@ -897,6 +969,9 @@ case "thumbnails-4":
                   setMultiPendingSpot(null)
                   setSpotAssigned(false)
                   setRevealPendingSeller(false)
+                  setSpunSpots([])
+                  setCommentRequested(false)
+                  if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
                   pendingSpotRef.current = null
                   setSelectedTeam(null)
                   setShowWinner(false)

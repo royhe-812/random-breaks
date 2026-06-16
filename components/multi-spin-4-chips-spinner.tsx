@@ -17,8 +17,8 @@ interface MultiSpin4ChipsSpinnerProps {
   pendingSpot?: Spot | null
   /** When true, the spinner shows the "Pending seller" state (driven after the reveal). */
   pendingSeller?: boolean
-  /** Fired once a spot is auto-selected, to trigger the full-screen reveal. */
-  onAnnounce?: (team: Team, spot: Spot) => void
+  /** Fired once all spots have landed, with the full set so the buyer/seller can pick one. */
+  onSpotsLanded?: (spots: { spot: Spot; team: Team }[]) => void
   onViewSpots?: () => void
 }
 
@@ -85,7 +85,7 @@ export function MultiSpin4ChipsSpinner({
   isSpinning,
   pendingSpot = null,
   pendingSeller = false,
-  onAnnounce,
+  onSpotsLanded,
   onViewSpots,
 }: MultiSpin4ChipsSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
@@ -188,20 +188,20 @@ export function MultiSpin4ChipsSpinner({
     }
   }, [isSpinning, stage, runSpin])
 
-  // Once all spots have landed: wait a short beat, then auto-select a spot and
-  // announce it to trigger the full-screen reveal. The "Pending seller" state is
-  // shown after the reveal, driven by the pendingSeller prop.
+  // Once all spots have landed: wait a short beat, then hand the full set of
+  // landed spots up so the buyer can request one (and the seller assigns it).
   useEffect(() => {
     const allLanded = results[1] && results[2] && results[3]
     if (stage === "ready" && !hasAnnouncedRef.current && allLanded) {
       hasAnnouncedRef.current = true
       announceTimeoutRef.current = setTimeout(() => {
-        const pick = ((Math.floor(Math.random() * SPOTS.length) + 1) as Spot)
-        const team = results[pick]
-        if (team) onAnnounce?.(team, pick)
+        const landedSet = SPOTS
+          .filter((s) => results[s])
+          .map((s) => ({ spot: s, team: results[s] as Team }))
+        onSpotsLanded?.(landedSet)
       }, 1200)
     }
-  }, [stage, results, onAnnounce])
+  }, [stage, results, onSpotsLanded])
 
   // Reset internal state when the engine is turned off (concept switch / reset)
   useEffect(() => {
