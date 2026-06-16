@@ -753,9 +753,10 @@ case "thumbnails-4":
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
                 layout
+                className="flex flex-col"
               >
-                <span className={`${msg.color} font-semibold text-sm`}>{msg.user}</span>
-                <span className="text-white/80 text-sm ml-1">{msg.message}</span>
+                <span className="text-white font-bold text-sm">{msg.user}</span>
+                <span className="text-white/80 text-sm font-semibold">{msg.message}</span>
               </motion.div>
             ))}
           </AnimatePresence>
@@ -782,9 +783,10 @@ case "thumbnails-4":
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
                   layout
+                  className="flex flex-col"
                 >
-                  <span className={`${msg.color} font-semibold text-sm`}>{msg.user}</span>
-                  <span className="text-white/80 text-sm ml-1">{msg.message}</span>
+                  <span className="text-white font-bold text-sm">{msg.user}</span>
+                  <span className="text-white/80 text-sm font-semibold">{msg.message}</span>
                 </motion.div>
               ))}
             </AnimatePresence>
