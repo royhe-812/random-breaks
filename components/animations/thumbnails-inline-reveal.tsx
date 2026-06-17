@@ -302,7 +302,7 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
             onClick={onViewSpots}
             className="flex items-center gap-0.5 text-white/60 hover:text-white text-xs whitespace-nowrap transition-colors shrink-0"
           >
-            View spots
+            View all
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6" />
             </svg>
