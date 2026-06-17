@@ -921,7 +921,7 @@ case "thumbnails-4":
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 pr-2">
               <p className="text-sm text-white mb-0.5 line-clamp-2">
-                <span className="font-semibold">{(showWinner || spotAssigned) && winnerTeam ? `${winnerTeam.city} ${winnerTeam.name}` : 'Random team'}</span>
+                <span className="font-semibold">{(showWinner || spotAssigned) && winnerTeam ? `${winnerTeam.city} ${winnerTeam.name}` : 'Random Break'}</span>
               </p>
               {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "multi-spin-repeat" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
                 <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
@@ -986,7 +986,7 @@ case "thumbnails-4":
                 onBidConfirmed={() => {
                   setHasWon(true)
                   setDemoSpots((prev) => Math.max(0, prev - 1)) // Winning a bid claims a spot
-                  setSpotAssigned(false) // Reset item card title to "Random team" for the new round
+                  setSpotAssigned(false) // Reset item card title to "Random Break" for the new round
                   chatPausedRef.current = true // Pause chat immediately when bid is placed
 
                   // Play the crown "WINNER" celebration first; the randomizer
