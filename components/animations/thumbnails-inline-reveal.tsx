@@ -265,7 +265,7 @@ export function ThumbnailsInlineReveal({ isRevealing, onComplete, team: propTeam
             the seller is being assigned, matching the other concepts */}
         {phase === "pending" ? (
           <div className="flex items-center gap-1.5 mb-2 h-5">
-            <span className="text-white text-sm font-semibold">Pending seller assignment</span>
+            <span className="text-white text-sm font-semibold">Waiting for seller</span>
             <span className="flex items-center gap-0.5">
               {[0, 1, 2].map((i) => (
                 <motion.span
