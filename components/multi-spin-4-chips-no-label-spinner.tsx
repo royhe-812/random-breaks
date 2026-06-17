@@ -192,6 +192,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
   const runSpin = useCallback(
     (spot: Spot, onDone: (team: Team) => void) => {
       setSpinningSpot(spot)
+      setJustLanded(false) // Clear the previous landed-green as the next spin starts
       const target = Math.floor(Math.random() * teams.length)
       let speed = 50
       let elapsed = 0
@@ -205,10 +206,10 @@ export function MultiSpin4ChipsNoLabelSpinner({
         if (elapsed > 1200) speed += 30
         if (speed >= 400) {
           setCurrentIndex(target)
-          // Flash the landed team green, then pause before the next spin.
+          // Turn the landed team green and keep it green through the pause; it is
+          // cleared at the start of the next spin (see top of runSpin).
           setJustLanded(true)
           timeoutRef.current = setTimeout(() => {
-            setJustLanded(false)
             onDone(teams[target])
           }, 1600)
           return
