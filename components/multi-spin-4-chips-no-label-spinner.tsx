@@ -157,6 +157,8 @@ export function MultiSpin4ChipsNoLabelSpinner({
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const announceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Pause between one spin landing and the next spin starting.
+  const interSpinTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const hasStartedRef = useRef(false)
   const hasAnnouncedRef = useRef(false)
@@ -236,7 +238,13 @@ export function MultiSpin4ChipsNoLabelSpinner({
           landed[spot] = team
           setResults((prev) => ({ ...prev, [spot]: team }))
           setLandedOrder((prev) => [...prev, spot]) // newest appended last
-          runNext(i + 1)
+          // Pause a few seconds so the freshly populated spot is visible before
+          // kicking off the next spin (no pause needed after the final spin).
+          if (i + 1 >= order.length) {
+            runNext(i + 1)
+          } else {
+            interSpinTimeoutRef.current = setTimeout(() => runNext(i + 1), 2500)
+          }
         })
       }
       runNext(0)
@@ -264,6 +272,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
       if (announceTimeoutRef.current) clearTimeout(announceTimeoutRef.current)
       if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current)
+      if (interSpinTimeoutRef.current) clearTimeout(interSpinTimeoutRef.current)
       hasStartedRef.current = false
       hasAnnouncedRef.current = false
       setStage("idle")
@@ -280,6 +289,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
       if (announceTimeoutRef.current) clearTimeout(announceTimeoutRef.current)
       if (pendingTimeoutRef.current) clearTimeout(pendingTimeoutRef.current)
+      if (interSpinTimeoutRef.current) clearTimeout(interSpinTimeoutRef.current)
     }
   }, [])
 
