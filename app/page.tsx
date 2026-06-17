@@ -530,7 +530,7 @@ export default function AnimationShowcase() {
       case "multi-spin-4-chips":
         return <CardFlipReveal key={key} {...props} />
       case "multi-spin-4-chips-no-label":
-        return <CardFlipReveal key={key} {...props} />
+        return <PackRipReveal key={key} {...props} />
       case "pack-rip":
         return <PackRipReveal key={key} {...props} />
       case "slot-machine":
