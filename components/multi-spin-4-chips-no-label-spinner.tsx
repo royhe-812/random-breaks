@@ -153,6 +153,9 @@ export function MultiSpin4ChipsNoLabelSpinner({
   // True briefly when a spin has landed on a spot, before the next spin starts.
   // Drives the green "locked in" flash on the header text.
   const [justLanded, setJustLanded] = useState(false)
+  // True during the pause between spins: shows "Waiting for seller" before the
+  // next spin rotates in.
+  const [interSpinWaiting, setInterSpinWaiting] = useState(false)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const announceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -193,6 +196,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
     (spot: Spot, onDone: (team: Team) => void) => {
       setSpinningSpot(spot)
       setJustLanded(false) // Clear the previous landed-green as the next spin starts
+      setInterSpinWaiting(false) // Clear the "Waiting for seller" beat as we rotate in
       const target = Math.floor(Math.random() * teams.length)
       let speed = 50
       let elapsed = 0
@@ -239,11 +243,12 @@ export function MultiSpin4ChipsNoLabelSpinner({
           landed[spot] = team
           setResults((prev) => ({ ...prev, [spot]: team }))
           setLandedOrder((prev) => [...prev, spot]) // newest appended last
-          // Pause a few seconds so the freshly populated spot is visible before
-          // kicking off the next spin (no pause needed after the final spin).
+          // Between spins, show "Waiting for seller" for a beat, then rotate the
+          // next spin in (no waiting beat after the final spin).
           if (i + 1 >= order.length) {
             runNext(i + 1)
           } else {
+            setInterSpinWaiting(true)
             interSpinTimeoutRef.current = setTimeout(() => runNext(i + 1), 2500)
           }
         })
@@ -282,6 +287,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
       setLandedOrder([])
       setCurrentIndex(0)
       setJustLanded(false)
+      setInterSpinWaiting(false)
     }
   }, [isSpinning, stage])
 
@@ -376,7 +382,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
 
             <div className="flex flex-col flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
-                {pendingSeller ? (
+                {pendingSeller || interSpinWaiting ? (
                   <motion.div key="pending">
                     <PendingIndicator />
                   </motion.div>
