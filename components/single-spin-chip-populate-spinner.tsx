@@ -243,7 +243,7 @@ export function SingleSpinChipPopulateSpinner({
 
             <div className="flex flex-col flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
-                {pendingSeller ? (
+                {pendingSeller || (result && !isCycling) ? (
                   <motion.div key="pending">
                     <PendingIndicator />
                   </motion.div>
