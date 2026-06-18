@@ -50,6 +50,27 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "thumbnails-4", name: "Text" },
 ]
 
+// Buyer's "claim this spot" comment templates. Picked deterministically per team
+// name so the autofilled draft and the message posted to chat always match.
+const SPOT_REQUEST_TEMPLATES = [
+  (t: string) => `Lock me in for the ${t}! 🔒`,
+  (t: string) => `${t} are mine, sell it to me!`,
+  (t: string) => `I'll take the ${t} — sold to me please!`,
+  (t: string) => `Need those ${t}, hook me up!`,
+  (t: string) => `Put me down for the ${t}!`,
+  (t: string) => `${t} please, I've been waiting all night!`,
+  (t: string) => `Sell me the ${t}, let's go!`,
+  (t: string) => `Don't let anyone else grab the ${t} — they're mine!`,
+  (t: string) => `Claiming the ${t}, ship it my way!`,
+  (t: string) => `${t} all day! Sell it to me!`,
+]
+
+function buildSpotRequestMessage(teamName: string) {
+  let seed = 0
+  for (let i = 0; i < teamName.length; i++) seed += teamName.charCodeAt(i)
+  return SPOT_REQUEST_TEMPLATES[seed % SPOT_REQUEST_TEMPLATES.length](teamName)
+}
+
 // Winner Chat Announcement with glow and wipe gradient
 function WinnerAnnouncement({ username, team, show, hideTeamBlock = false }: { username: string; team: Team; show: boolean; hideTeamBlock?: boolean }) {
   if (!show) return null
@@ -481,7 +502,7 @@ export default function AnimationShowcase() {
     chatPausedRef.current = true
     setVisibleMessages(prev => [
       ...prev.slice(1),
-      { user: "Adam007", message: `Gimme the ${choice.team.name}!!!`, color: "text-[#4CE160]" },
+      { user: "Adam007", message: buildSpotRequestMessage(choice.team.name), color: "text-[#4CE160]" },
     ])
 
     // Pending seller stays visible while the seller reacts, then assigns the spot.
@@ -799,7 +820,7 @@ case "thumbnails-4":
             draft request the buyer can tap to send into chat */}
         {(() => {
           const hasDraft = revealPendingSeller && !!requestDraft && !commentRequested
-          const draftText = requestDraft ? `Gimme the ${requestDraft.team.name}!!!` : ""
+          const draftText = requestDraft ? buildSpotRequestMessage(requestDraft.team.name) : ""
           return (
             <button
               type="button"
