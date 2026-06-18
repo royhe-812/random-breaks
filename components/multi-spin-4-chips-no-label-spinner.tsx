@@ -243,12 +243,15 @@ export function MultiSpin4ChipsNoLabelSpinner({
           landed[spot] = team
           setResults((prev) => ({ ...prev, [spot]: team }))
           setLandedOrder((prev) => [...prev, spot]) // newest appended last
-          // Between spins, show "Waiting for seller" for a beat, then rotate the
-          // next spin in (no waiting beat after the final spin).
+          // Show "Waiting for seller" after a spot lands. Between spins we hold it
+          // briefly then rotate the next spin in; on the final spin we leave it on
+          // so the header goes from the landed green spot straight to "Waiting for
+          // seller" (instead of reverting to the case break title) until the
+          // parent takes over the pending-seller beat.
+          setInterSpinWaiting(true)
           if (i + 1 >= order.length) {
             runNext(i + 1)
           } else {
-            setInterSpinWaiting(true)
             interSpinTimeoutRef.current = setTimeout(() => runNext(i + 1), 2500)
           }
         })
