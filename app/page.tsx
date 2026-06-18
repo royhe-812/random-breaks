@@ -441,7 +441,12 @@ export default function AnimationShowcase() {
       selectedAnimation === "multi-spin-4-chips-no-label" ||
       selectedAnimation === "multi-spin-4-auto"
 
-    if (isMultiSpin) {
+    // Single spin now follows the same beat as multi-spin: the randomizer stops,
+    // we show "Pending seller", the seller assigns the spot (chip turns green +
+    // title swaps), and ONLY THEN do we play the full-screen reveal.
+    const usesPendingAssignment = isMultiSpin || selectedAnimation === "single-spin-populate"
+
+    if (usesPendingAssignment) {
       // Pending seller → seller assigns the spot (green chip + title) → reveal.
       setRevealPendingSeller(true)
       setTimeout(() => {
@@ -455,7 +460,7 @@ export default function AnimationShowcase() {
         }, 900)
       }, 6000)
     } else {
-      // Single spin: play the reveal right after the randomizer stops.
+      // Other single-stop concepts: play the reveal right after the randomizer stops.
       setIsRevealing(true)
       setKey(prev => prev + 1)
     }
