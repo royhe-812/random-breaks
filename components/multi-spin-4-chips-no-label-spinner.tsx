@@ -366,10 +366,10 @@ export function MultiSpin4ChipsNoLabelSpinner({
           <div className="flex items-center gap-3">
             <motion.div
               className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-white text-xs"
-              style={{ backgroundColor: isAnySpinning ? teams[currentIndex].color : "transparent" }}
+              style={{ backgroundColor: isAnySpinning && !interSpinWaiting ? teams[currentIndex].color : "transparent" }}
               transition={{ duration: 0.15, ease: "easeInOut" }}
             >
-              {isAnySpinning ? (
+              {isAnySpinning && !interSpinWaiting ? (
                 teams[currentIndex].abbrev
               ) : (
                 <img
