@@ -55,7 +55,6 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
 const SPOT_REQUEST_TEMPLATES = [
   (t: string) => `Lock me in for the ${t}! 🔒`,
   (t: string) => `${t} are mine, sell it to me!`,
-  (t: string) => `I'll take the ${t} — sold to me please!`,
   (t: string) => `Need those ${t}, hook me up!`,
   (t: string) => `Put me down for the ${t}!`,
   (t: string) => `${t} please, I've been waiting all night!`,

@@ -341,7 +341,6 @@ export function MultiSpin4ChipsNoLabelSpinner({
   }
 
   const isAnySpinning = spinningSpot !== 0
-  const glowColor = isAnySpinning ? teams[currentIndex].color : undefined
   // Newest selection first (leftmost), older chips pushed to the right.
   const assignedSpots = landedOrder
   // Once every spot has landed, the chips row turns into a continuous marquee.
@@ -352,7 +351,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
       <motion.div
         className="relative bg-black/40 backdrop-blur rounded-xl overflow-hidden"
         animate={{
-          boxShadow: glowColor ? `0 0 20px ${glowColor}40, 0 0 40px ${glowColor}20` : "none",
+          boxShadow: "none",
         }}
         transition={{ duration: 0.2 }}
       >

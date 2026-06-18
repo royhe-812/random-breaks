@@ -211,7 +211,6 @@ export function SingleSpinChipPopulateSpinner({
     }
   }, [])
 
-  const glowColor = isCycling ? teams[currentIndex].color : undefined
   const isAnnounced = pendingSpot === 1
 
   return (
@@ -219,7 +218,7 @@ export function SingleSpinChipPopulateSpinner({
       <motion.div
         className="relative bg-black/40 backdrop-blur rounded-xl overflow-hidden"
         animate={{
-          boxShadow: glowColor ? `0 0 20px ${glowColor}40, 0 0 40px ${glowColor}20` : "none",
+          boxShadow: "none",
         }}
         transition={{ duration: 0.2 }}
       >
