@@ -122,18 +122,18 @@ function BreakSpotsSheet({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop - absolute so it stays within the stream container */}
           <motion.div
-            className="fixed inset-0 bg-black/70 z-50"
+            className="absolute inset-0 bg-black/70 z-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
           />
           
-          {/* Sheet */}
+          {/* Sheet - absolute so it matches the stream container size, not the viewport */}
           <motion.div
-            className="fixed inset-x-0 bottom-0 top-[10%] bg-[#1a1a1a] rounded-t-3xl z-50 flex flex-col overflow-hidden"
+            className="absolute inset-x-0 bottom-0 top-[10%] bg-[#1a1a1a] rounded-t-3xl z-50 flex flex-col overflow-hidden"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
