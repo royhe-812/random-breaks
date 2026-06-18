@@ -133,7 +133,7 @@ function BreakSpotsSheet({
           
           {/* Sheet */}
           <motion.div
-            className="fixed inset-x-0 bottom-0 top-16 bg-[#1a1a1a] rounded-t-3xl z-50 flex flex-col overflow-hidden"
+            className="fixed inset-x-0 bottom-0 top-[10%] bg-[#1a1a1a] rounded-t-3xl z-50 flex flex-col overflow-hidden"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
@@ -240,10 +240,9 @@ function BreakSpotsSheet({
             
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto px-4 pb-8">
-              {/* Product Info Card */}
-              <div className="relative mb-6">
-                <div className="bg-[#2a2a2a] rounded-2xl p-3">
-                  <div className="flex gap-3">
+              {/* Product Info Card - also holds the Available / Sold lists */}
+              <div className="bg-[#2a2a2a] rounded-2xl p-3">
+                <div className="flex gap-3">
                     {/* Product Image */}
                     <div className="w-20 h-20 bg-[#3a3a3a] rounded-xl flex items-center justify-center overflow-hidden">
                       <img 
@@ -263,15 +262,16 @@ function BreakSpotsSheet({
                       </div>
                       <button 
                         onClick={() => setShowHowItWorks(true)}
-                        className="text-[#707070] text-xs mt-1 underline"
+                        className="mt-2 inline-flex items-center rounded-full border border-white/80 px-4 py-1.5 text-white text-sm font-medium hover:bg-white/10 transition-colors"
                       >
                         How it works
                       </button>
                     </div>
                   </div>
-                </div>
-              </div>
-              
+
+                {/* Divider before the team lists */}
+                <div className="border-t border-white/10 mt-3 pt-1" />
+
               {/* Available Section */}
               <div className="mb-4">
                 <button 
@@ -352,6 +352,7 @@ function BreakSpotsSheet({
                     </motion.div>
                   )}
                 </AnimatePresence>
+              </div>
               </div>
             </div>
               </>
