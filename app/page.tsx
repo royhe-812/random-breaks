@@ -338,13 +338,15 @@ export default function AnimationShowcase() {
     // The full-screen spot reveal animation just finished.
     if (selectedAnimation === "in-stream") return
 
-    // Multi-spin: the "Pending seller" beat and green-chip assignment already
-    // happened BEFORE this reveal, so once the reveal finishes just surface the
-    // in-chat winner. The colored chip(s) persist until the "sold out" reset CTA.
+    // Multi-spin AND single spin: the "Pending seller" beat and green-chip
+    // assignment already happened BEFORE this reveal, so once the reveal finishes
+    // just surface the in-chat winner. The selection is already made, so there is
+    // no pending state afterward. The colored chip persists until the reset CTA.
     if (
       selectedAnimation === "multi-spin-4-chips" ||
       selectedAnimation === "multi-spin-4-chips-no-label" ||
-      selectedAnimation === "multi-spin-4-auto"
+      selectedAnimation === "multi-spin-4-auto" ||
+      selectedAnimation === "single-spin-populate"
     ) {
       setIsRevealing(false)
       setShowWinner(true)
@@ -352,13 +354,9 @@ export default function AnimationShowcase() {
       return
     }
 
-    // Single spin: the reveal just finished. Now show the "Pending seller" state
-    // in the spinner, and only after that beat assign the spot (green chip + item
-    // card title) and surface the in-chat winner.
-    if (
-      selectedAnimation === "card-flip" ||
-      selectedAnimation === "single-spin-populate"
-    ) {
+    // Card flip: the reveal just finished. Now show the "Pending seller" state in
+    // the spinner, and only after that beat assign the spot and surface the winner.
+    if (selectedAnimation === "card-flip") {
       setIsRevealing(false)
       setRevealPendingSeller(true) // Spinner shows "Pending seller" after the reveal
       setKey(prev => prev + 1)
