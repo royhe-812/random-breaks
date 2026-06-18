@@ -175,7 +175,7 @@ export default function AnimationShowcase() {
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
   // Demo: tapping the spots arc cycles the available count through the color tiers
   // (green -> yellow -> orange -> red) then resets, so the progress arc is interactive.
-  const [demoSpots, setDemoSpots] = useState(32)
+  const [demoSpots, setDemoSpots] = useState(15)
   const cycleSpots = useCallback(() => {
     setDemoSpots((prev) => {
       const next = prev - 8
@@ -255,7 +255,7 @@ export default function AnimationShowcase() {
     setCommentRequested(false)
     setRequestDraft(null)
     setRevealPendingSeller(false)
-    setDemoSpots(32)
+    setDemoSpots(15)
     if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
     chatPausedRef.current = false
   }, [selectedAnimation])
