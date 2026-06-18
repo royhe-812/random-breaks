@@ -341,6 +341,13 @@ export function MultiSpin4ChipsNoLabelSpinner({
   }
 
   const isAnySpinning = spinningSpot !== 0
+  // Keep the header showing the most recently landed team (thumbnail + name)
+  // between spins and after all spins land, instead of reverting to the
+  // box-break image/marquee title.
+  const lastLandedSpot = landedOrder[landedOrder.length - 1]
+  const lastLandedTeam = lastLandedSpot ? results[lastLandedSpot] : null
+  const displayTeam = isAnySpinning ? teams[currentIndex] : lastLandedTeam
+  const showTeam = isAnySpinning || lastLandedTeam !== null
   // Newest selection first (leftmost), older chips pushed to the right.
   const assignedSpots = landedOrder
   // Once every spot has landed, the chips row turns into a continuous marquee.
@@ -360,11 +367,11 @@ export function MultiSpin4ChipsNoLabelSpinner({
           <div className="flex items-center gap-3">
             <motion.div
               className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-white text-xs"
-              style={{ backgroundColor: isAnySpinning ? teams[currentIndex].color : "transparent" }}
+              style={{ backgroundColor: showTeam && displayTeam ? displayTeam.color : "transparent" }}
               transition={{ duration: 0.15, ease: "easeInOut" }}
             >
-              {isAnySpinning ? (
-                teams[currentIndex].abbrev
+              {showTeam && displayTeam ? (
+                displayTeam.abbrev
               ) : (
                 <img
                   src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png"
@@ -380,16 +387,16 @@ export function MultiSpin4ChipsNoLabelSpinner({
                   <motion.div key="pending">
                     <PendingIndicator />
                   </motion.div>
-                ) : isAnySpinning ? (
+                ) : showTeam && displayTeam ? (
                   <motion.span
-                    key={justLanded ? "landed" : teams[currentIndex].name}
+                    key={justLanded ? "landed" : displayTeam.name}
                     className="font-semibold text-sm truncate"
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0, color: justLanded ? "#4CE160" : "#ffffff" }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: justLanded ? 0.2 : 0.05 }}
                   >
-                    {teams[currentIndex].city} {teams[currentIndex].name}
+                    {displayTeam.city} {displayTeam.name}
                   </motion.span>
                 ) : (
                   <BackAndForthMarquee key="marquee" duration={26} trackClassName="text-sm leading-5">

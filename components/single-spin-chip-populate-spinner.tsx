@@ -212,6 +212,10 @@ export function SingleSpinChipPopulateSpinner({
   }, [])
 
   const isAnnounced = pendingSpot === 1
+  // Once the spin lands we keep showing the landed team (thumbnail + name) in the
+  // header instead of reverting to the box-break image/marquee title.
+  const displayTeam = result ?? teams[currentIndex]
+  const showTeam = isCycling || result !== null
 
   return (
     <div className="w-full">
@@ -227,11 +231,11 @@ export function SingleSpinChipPopulateSpinner({
           <div className="flex items-center gap-3">
             <motion.div
               className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-white text-xs"
-              style={{ backgroundColor: isCycling ? teams[currentIndex].color : "transparent" }}
+              style={{ backgroundColor: showTeam ? displayTeam.color : "transparent" }}
               transition={{ duration: 0.15, ease: "easeInOut" }}
             >
-              {isCycling ? (
-                teams[currentIndex].abbrev
+              {showTeam ? (
+                displayTeam.abbrev
               ) : (
                 <img
                   src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png"
@@ -247,16 +251,16 @@ export function SingleSpinChipPopulateSpinner({
                   <motion.div key="pending">
                     <PendingIndicator />
                   </motion.div>
-                ) : isCycling ? (
+                ) : showTeam ? (
                   <motion.span
-                    key={justLanded ? "landed" : teams[currentIndex].name}
+                    key={justLanded ? "landed" : displayTeam.name}
                     className="font-semibold text-sm truncate"
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0, color: justLanded ? "#4CE160" : "#ffffff" }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: justLanded ? 0.2 : 0.05 }}
                   >
-                    {teams[currentIndex].city} {teams[currentIndex].name}
+                    {displayTeam.city} {displayTeam.name}
                   </motion.span>
                 ) : (
                   <div key="marquee" className="overflow-hidden">
