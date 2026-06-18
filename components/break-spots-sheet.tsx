@@ -154,7 +154,7 @@ function BreakSpotsSheet({
                   >
                     <ChevronLeft className="w-6 h-6 text-white" />
                   </button>
-                  <h2 className="text-white font-semibold text-lg">How it works</h2>
+                  <h2 className="text-white font-semibold text-lg">Break Rules</h2>
                 </div>
                 
                 {/* How It Works Content */}
@@ -264,7 +264,7 @@ function BreakSpotsSheet({
                         onClick={() => setShowHowItWorks(true)}
                         className="mt-2 inline-flex items-center rounded-full border border-white/80 px-4 py-1.5 text-white text-sm font-medium hover:bg-white/10 transition-colors"
                       >
-                        How it works
+                        Break Rules
                       </button>
                     </div>
                   </div>
