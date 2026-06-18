@@ -133,7 +133,7 @@ function BreakSpotsSheet({
           
           {/* Sheet - absolute so it matches the stream container size, not the viewport */}
           <motion.div
-            className="absolute inset-x-0 bottom-0 top-[20%] bg-[#1a1a1a] rounded-t-3xl z-50 flex flex-col overflow-hidden"
+            className="absolute inset-x-0 bottom-0 top-[15%] bg-[#1a1a1a] rounded-t-3xl z-50 flex flex-col overflow-hidden"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
