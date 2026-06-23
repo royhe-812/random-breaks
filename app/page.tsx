@@ -37,10 +37,10 @@ import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 type AnimationType = "card-flip" | "single-spin-populate" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
-  { id: "single-spin-populate", name: "Single Spin" },
+  { id: "single-spin-populate", name: "Option 1" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-4-auto", name: "Multi-Spin Text" },
-  { id: "multi-spin-4-chips-no-label", name: "Multi-Spin" },
+  { id: "multi-spin-4-chips-no-label", name: "Option 2" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "thumbnails-2", name: "Extended" },
   // { id: "gift-reveal", name: "Gift Reveal" },
