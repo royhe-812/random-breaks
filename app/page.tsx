@@ -15,6 +15,7 @@ import { MultiSpin4Spinner } from "@/components/multi-spin-4-spinner"
 import { MultiSpin4AutoSpinner } from "@/components/multi-spin-4-auto-spinner"
 import { MultiSpin4ChipsNoLabelSpinner } from "@/components/multi-spin-4-chips-no-label-spinner"
 import { SingleSpinChipPopulateSpinner } from "@/components/single-spin-chip-populate-spinner"
+import { MockKeyboard } from "@/components/mock-keyboard"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { WinnerCrownReveal } from "@/components/animations/winner-crown-reveal"
 import { PackRipReveal } from "@/components/animations/pack-rip-reveal"
@@ -217,6 +218,8 @@ export default function AnimationShowcase() {
   const [spunSpots, setSpunSpots] = useState<{ spot: 1 | 2 | 3 | 4; team: Team }[]>([])
   const [commentRequested, setCommentRequested] = useState(false) // Buyer tapped "Add comment" to request a spot during pending
   const [requestDraft, setRequestDraft] = useState<{ spot: 1 | 2 | 3 | 4; team: Team } | null>(null) // Pre-picked spot, autofilled into the comment input for the buyer to tap-send
+  const [keyboardOpen, setKeyboardOpen] = useState(false) // Buyer tapped the comment input -> mock keyboard slides up
+  const [commentTyped, setCommentTyped] = useState(false) // Buyer tapped a key -> the pre-written comment is populated into the input
   const assignFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null) // Auto-assigns if the buyer never requests via comment
   
   // Random reaction usernames and message templates
@@ -274,6 +277,8 @@ export default function AnimationShowcase() {
     setSpunSpots([])
     setCommentRequested(false)
     setRequestDraft(null)
+    setKeyboardOpen(false)
+    setCommentTyped(false)
     setRevealPendingSeller(false)
     setDemoSpots(15)
     if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
@@ -487,6 +492,8 @@ export default function AnimationShowcase() {
   const handleSpotsLanded = useCallback((spots: { spot: 1 | 2 | 3 | 4; team: Team }[]) => {
     setSpunSpots(spots)
     setCommentRequested(false)
+    setKeyboardOpen(false)
+    setCommentTyped(false)
     setRevealPendingSeller(true)
     // Pre-pick one spot and autofill it into the comment input as a tappable draft.
     setRequestDraft(spots[Math.floor(Math.random() * spots.length)] ?? null)
@@ -499,6 +506,8 @@ export default function AnimationShowcase() {
   const handleRequestComment = useCallback(() => {
     if (!revealPendingSeller || commentRequested || !requestDraft) return
     setCommentRequested(true)
+    setKeyboardOpen(false)
+    setCommentTyped(false)
     const choice = requestDraft
 
     chatPausedRef.current = true
@@ -510,6 +519,24 @@ export default function AnimationShowcase() {
     // Pending seller stays visible while the seller reacts, then assigns the spot.
     setTimeout(() => assignMultiSpot(choice.spot, choice.team), 2600)
   }, [revealPendingSeller, commentRequested, requestDraft, assignMultiSpot])
+
+  // Buyer taps the comment input: instead of auto-filling, slide up the mock
+  // keyboard. The comment is only populated once they tap a key.
+  const handleOpenKeyboard = useCallback(() => {
+    if (!revealPendingSeller || commentRequested || !requestDraft) return
+    setKeyboardOpen(true)
+  }, [revealPendingSeller, commentRequested, requestDraft])
+
+  // Any key tap populates the pre-written comment into the input.
+  const handleKeyboardKeyTap = useCallback(() => {
+    setCommentTyped(true)
+  }, [])
+
+  // Return key: if the comment is populated, send it; otherwise populate first.
+  const handleKeyboardReturn = useCallback(() => {
+    if (commentTyped) handleRequestComment()
+    else setCommentTyped(true)
+  }, [commentTyped, handleRequestComment])
 
   // Kick off the concept's randomizer/reveal. Runs after the crown celebration.
   const startConceptReveal = useCallback(() => {
@@ -818,23 +845,42 @@ case "thumbnails-4":
           </div>
         )}
 
-        {/* Comment Input - during multi-spin pending, the input is autofilled with a
-            draft request the buyer can tap to send into chat */}
+        {/* Comment Input - during multi-spin pending, tapping the input opens the
+            mock keyboard. The pre-written request only populates after the buyer
+            taps a key, and tapping again (Send) posts it into chat. */}
         {(() => {
           const hasDraft = revealPendingSeller && !!requestDraft && !commentRequested
           const draftText = requestDraft ? buildSpotRequestMessage(requestDraft.team.name) : ""
+          // Once a key is tapped, show the populated comment + Send affordance.
+          if (hasDraft && commentTyped) {
+            return (
+              <button
+                type="button"
+                onClick={handleRequestComment}
+                className="flex w-full items-center gap-2 bg-black/40 backdrop-blur rounded-full px-4 py-3 text-left transition-shadow ring-1 ring-[#4CE160]/60 cursor-pointer"
+              >
+                <span className="text-sm flex-1 text-white font-medium">{draftText}</span>
+                <span className="text-[#4CE160] text-xs font-semibold uppercase tracking-wide">Send</span>
+                <Heart className="w-5 h-5 text-red-500 fill-red-500" />
+              </button>
+            )
+          }
           return (
             <button
               type="button"
-              onClick={handleRequestComment}
+              onClick={handleOpenKeyboard}
               aria-disabled={!hasDraft}
-              className={`flex w-full items-center gap-2 bg-black/40 backdrop-blur rounded-full px-4 py-3 text-left transition-shadow ${hasDraft ? "ring-1 ring-[#4CE160]/60 cursor-pointer" : "cursor-default"}`}
+              className={`flex w-full items-center gap-2 bg-black/40 backdrop-blur rounded-full px-4 py-3 text-left transition-shadow ${hasDraft ? "cursor-pointer" : "cursor-default"} ${hasDraft && keyboardOpen ? "ring-1 ring-white/30" : ""}`}
             >
-              {hasDraft ? (
-                <>
-                  <span className="text-sm flex-1 text-white font-medium">{draftText}</span>
-                  <span className="text-[#4CE160] text-xs font-semibold uppercase tracking-wide">Send</span>
-                </>
+              {hasDraft && keyboardOpen ? (
+                // Empty, focused input with a blinking caret.
+                <span className="flex-1 flex items-center">
+                  <motion.span
+                    className="inline-block w-px h-4 bg-white"
+                    animate={{ opacity: [1, 1, 0, 0] }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                </span>
               ) : (
                 <span className="text-sm flex-1 text-white/50">Add comment...</span>
               )}
@@ -1026,11 +1072,13 @@ case "thumbnails-4":
                   setIsMultiSpinning(false)
                   setMultiPendingSpot(null)
                   setSpotAssigned(false)
-                  setRevealPendingSeller(false)
-                  setSpunSpots([])
-                  setCommentRequested(false)
-                  setRequestDraft(null)
-                  if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
+    setRevealPendingSeller(false)
+    setSpunSpots([])
+    setCommentRequested(false)
+    setRequestDraft(null)
+    setKeyboardOpen(false)
+    setCommentTyped(false)
+    if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
                   pendingSpotRef.current = null
                   setSelectedTeam(null)
                   setShowWinner(false)
@@ -1139,6 +1187,13 @@ case "thumbnails-4":
         onClose={() => setIsBreakSpotsOpen(false)}
         spotsAvailable={demoSpots}
         spotsTotal={32}
+      />
+
+      {/* Mock keyboard - slides up when the buyer taps the comment input */}
+      <MockKeyboard
+        open={keyboardOpen}
+        onKeyTap={handleKeyboardKeyTap}
+        onReturn={handleKeyboardReturn}
       />
       </div>
     </div>
