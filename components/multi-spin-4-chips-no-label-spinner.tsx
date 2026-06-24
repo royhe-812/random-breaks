@@ -446,7 +446,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
               <div className="mx-4 border-t border-white/10" />
 
               {/* Label row above the populated spots */}
-              <div className="flex items-center gap-2 px-4 pt-3">
+              <div className="flex items-center gap-2 px-4 pt-2">
                 <Info className="w-4 h-4 text-white/70 flex-shrink-0" />
                 <span className="text-sm text-white">Multi-spin, choose one</span>
               </div>
