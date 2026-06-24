@@ -428,48 +428,38 @@ export function MultiSpin4ChipsNoLabelSpinner({
           </div>
         </div>
 
-        {/* Chips populate one-by-one as each spot lands, in a single
-            horizontally-swipeable row with NO leading label. Starts as just the
-            header, then expands with each chip and stays present until reset. */}
-        <AnimatePresence>
-          {assignedSpots.length > 0 && (
-            <motion.div
-              key="chips"
-              layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+        {/* Divider + label are always present so "Multi-spin, choose one" shows
+            even before bidding. Chips then populate one-by-one below as each spot
+            lands, in a single horizontally-swipeable row. */}
+        <div>
+          {/* Divider separating the break header from the chips row */}
+          <div className="mx-4 border-t border-white/10" />
+
+          {/* Label row above the populated spots */}
+          <div className="flex items-center gap-2 px-4 pt-2">
+            <span className="text-sm text-white">Multi-spin, choose one</span>
+          </div>
+
+          {donePopulating ? (
+            // All spots landed: chips scroll back and forth like the title marquee.
+            <div className="px-4 pt-2 pb-3">
+              <BackAndForthMarquee trackClassName="flex gap-2">
+                {assignedSpots.map((spot) => renderMarqueeChip(spot, `${spot}`))}
+              </BackAndForthMarquee>
+            </div>
+          ) : (
+            // Still populating (or empty before bidding): chips grow in a
+            // swipeable row as each lands.
+            <div
+              className="px-4 pt-2 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              style={{ WebkitOverflowScrolling: "touch" }}
             >
-              {/* Divider separating the break header from the chips row */}
-              <div className="mx-4 border-t border-white/10" />
-
-              {/* Label row above the populated spots */}
-              <div className="flex items-center gap-2 px-4 pt-2">
-                <span className="text-sm text-white">Multi-spin, choose one</span>
-              </div>
-
-              {donePopulating ? (
-                // All spots landed: chips scroll back and forth like the title marquee.
-                <div className="px-4 pt-2 pb-3">
-                  <BackAndForthMarquee trackClassName="flex gap-2">
-                    {assignedSpots.map((spot) => renderMarqueeChip(spot, `${spot}`))}
-                  </BackAndForthMarquee>
-                </div>
-              ) : (
-                // Still populating: chips grow in a swipeable row as each lands.
-                <div
-                  className="px-4 pt-2 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-                  style={{ WebkitOverflowScrolling: "touch" }}
-                >
-                  <AnimatePresence initial={false}>
-                    {assignedSpots.map((spot) => renderChip(spot))}
-                  </AnimatePresence>
-                </div>
-              )}
-            </motion.div>
+              <AnimatePresence initial={false}>
+                {assignedSpots.map((spot) => renderChip(spot))}
+              </AnimatePresence>
+            </div>
           )}
-        </AnimatePresence>
+        </div>
       </motion.div>
     </div>
   )
