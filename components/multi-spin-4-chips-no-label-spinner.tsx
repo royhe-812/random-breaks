@@ -157,6 +157,13 @@ export function MultiSpin4ChipsNoLabelSpinner({
   // next spin rotates in.
   const [interSpinWaiting, setInterSpinWaiting] = useState(false)
 
+  // Once the seller assigns/confirms a spot (pendingSpot becomes set) and is no
+  // longer pending, drop the "Waiting for seller" beat so the header reverts to
+  // the case break title.
+  useEffect(() => {
+    if (pendingSpot != null && !pendingSeller) setInterSpinWaiting(false)
+  }, [pendingSpot, pendingSeller])
+
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const announceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
