@@ -442,7 +442,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
 
           {donePopulating ? (
             // All spots landed: chips scroll back and forth like the title marquee.
-            <div className="px-4 pt-2 pb-3">
+            <div className="px-4 pt-3 pb-3">
               <BackAndForthMarquee trackClassName="flex gap-2">
                 {assignedSpots.map((spot) => renderMarqueeChip(spot, `${spot}`))}
               </BackAndForthMarquee>
@@ -451,7 +451,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
             // Still populating (or empty before bidding): chips grow in a
             // swipeable row as each lands.
             <div
-              className="px-4 pt-2 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="px-4 pt-3 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               style={{ WebkitOverflowScrolling: "touch" }}
             >
               <AnimatePresence initial={false}>
