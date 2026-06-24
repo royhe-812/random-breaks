@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
+import { Info } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 
 type Spot = 1 | 2 | 3
@@ -444,9 +445,15 @@ export function MultiSpin4ChipsNoLabelSpinner({
               {/* Divider separating the break header from the chips row */}
               <div className="mx-4 border-t border-white/10" />
 
+              {/* Label row above the populated spots */}
+              <div className="flex items-center gap-2 px-4 pt-3">
+                <Info className="w-4 h-4 text-white/70 flex-shrink-0" />
+                <span className="text-sm text-white">Multi-spin, choose one</span>
+              </div>
+
               {donePopulating ? (
                 // All spots landed: chips scroll back and forth like the title marquee.
-                <div className="px-4 pt-3 pb-3">
+                <div className="px-4 pt-2 pb-3">
                   <BackAndForthMarquee trackClassName="flex gap-2">
                     {assignedSpots.map((spot) => renderMarqueeChip(spot, `${spot}`))}
                   </BackAndForthMarquee>
@@ -454,7 +461,7 @@ export function MultiSpin4ChipsNoLabelSpinner({
               ) : (
                 // Still populating: chips grow in a swipeable row as each lands.
                 <div
-                  className="px-4 pt-3 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                  className="px-4 pt-2 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                   style={{ WebkitOverflowScrolling: "touch" }}
                 >
                   <AnimatePresence initial={false}>
