@@ -72,8 +72,6 @@ interface MultiSpin3LabelSpinnerProps {
   /** Tapping the spots arc cycles the available count through the color tiers. */
   onCycleSpots?: () => void
   onViewSpots?: () => void
-  /** Opens the break rules screen (the "Break rules" link next to the label). */
-  onViewRules?: () => void
 }
 
 const PendingIndicator = () => (
@@ -145,7 +143,6 @@ export function MultiSpin3LabelSpinner({
   onSpotsLanded,
   onCycleSpots,
   onViewSpots,
-  onViewRules,
 }: MultiSpin3LabelSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
   const [spinningSpot, setSpinningSpot] = useState<0 | Spot>(0)
@@ -440,20 +437,9 @@ export function MultiSpin3LabelSpinner({
           <div className="mx-4 border-t border-white/10" />
 
           {/* Label row above the populated spots */}
-          <div className="flex items-center justify-between gap-2 px-4 pt-2">
-            <div className="flex items-center gap-2">
-              <Info className="w-4 h-4 text-white/70 flex-shrink-0" />
-              <span className="text-sm text-white">Multi-spin, choose one</span>
-            </div>
-            <button
-              onClick={onViewRules}
-              className="flex items-center gap-1 text-white/50 hover:text-white/70 transition-colors flex-shrink-0"
-            >
-              <span className="text-sm">Break rules</span>
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
+          <div className="flex items-center gap-2 px-4 pt-2">
+            <Info className="w-4 h-4 text-white/70 flex-shrink-0" />
+            <span className="text-sm text-white">Multi-spin, choose one</span>
           </div>
 
           {donePopulating ? (
