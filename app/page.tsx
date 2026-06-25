@@ -196,6 +196,7 @@ export default function AnimationShowcase() {
   const [multiLastWinner, setMultiLastWinner] = useState<{ username: string; team: string } | null>(null) // Multi-Spin: dynamic last winner
   const [spinnerLastWinner, setSpinnerLastWinner] = useState<{ username: string; team: string } | null>(null) // TeamSpinner: dynamic last winner
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
+  const [breakSpotsToRules, setBreakSpotsToRules] = useState(false) // When opening the sheet, jump straight to Break Rules
   // Demo: tapping the spots arc cycles the available count through the color tiers
   // (green -> yellow -> orange -> red) then resets, so the progress arc is interactive.
   const [demoSpots, setDemoSpots] = useState(15)
@@ -1002,7 +1003,8 @@ case "thumbnails-4":
             pendingSeller={revealPendingSeller}
             onSpotsLanded={handleSpotsLanded}
             onCycleSpots={cycleSpots}
-            onViewSpots={() => setIsBreakSpotsOpen(true)}
+            onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
+            onViewRules={() => { setBreakSpotsToRules(true); setIsBreakSpotsOpen(true) }}
           />
         )}
 
@@ -1207,6 +1209,7 @@ case "thumbnails-4":
         onClose={() => setIsBreakSpotsOpen(false)}
         spotsAvailable={demoSpots}
         spotsTotal={32}
+        openToRules={breakSpotsToRules}
       />
 
       {/* Mock keyboard - slides up when the buyer taps the comment input */}

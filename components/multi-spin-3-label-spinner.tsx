@@ -72,6 +72,8 @@ interface MultiSpin3LabelSpinnerProps {
   /** Tapping the spots arc cycles the available count through the color tiers. */
   onCycleSpots?: () => void
   onViewSpots?: () => void
+  /** Opens the break rules screen (the "Break rules" link next to the label). */
+  onViewRules?: () => void
 }
 
 const PendingIndicator = () => (
@@ -143,6 +145,7 @@ export function MultiSpin3LabelSpinner({
   onSpotsLanded,
   onCycleSpots,
   onViewSpots,
+  onViewRules,
 }: MultiSpin3LabelSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
   const [spinningSpot, setSpinningSpot] = useState<0 | Spot>(0)
@@ -443,7 +446,7 @@ export function MultiSpin3LabelSpinner({
               <span className="text-sm text-white">Multi-spin, choose one</span>
             </div>
             <button
-              onClick={onViewSpots}
+              onClick={onViewRules}
               className="flex items-center gap-1 text-white/50 hover:text-white/70 transition-colors flex-shrink-0"
             >
               <span className="text-sm">Break rules</span>

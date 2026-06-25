@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronLeft, ChevronDown, ChevronUp, Search } from "lucide-react"
 
@@ -94,16 +94,24 @@ function BreakSpotsSheet({
   onClose,
   spotsAvailable,
   spotsTotal,
+  openToRules = false,
 }: { 
   isOpen: boolean
   onClose: () => void
   spotsAvailable: number
   spotsTotal: number
+  /** When true, the sheet opens directly into the Break Rules screen. */
+  openToRules?: boolean
 }) {
   const [activeFilter, setActiveFilter] = useState("Available")
   const [availableExpanded, setAvailableExpanded] = useState(true)
   const [soldExpanded, setSoldExpanded] = useState(true)
   const [showHowItWorks, setShowHowItWorks] = useState(false)
+
+  // When opened via the "Break rules" link, jump straight to the rules view.
+  useEffect(() => {
+    if (isOpen) setShowHowItWorks(openToRules)
+  }, [isOpen, openToRules])
   const filters = ["Available", "Sold", "Auctions", "Buy It Now"]
   
   const percentage = (spotsAvailable / spotsTotal) * 100
