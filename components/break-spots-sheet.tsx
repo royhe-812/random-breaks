@@ -167,6 +167,27 @@ function BreakSpotsSheet({
                 
                 {/* How It Works Content */}
                 <div className="flex-1 overflow-y-auto px-4 pb-8">
+                  {/* Seller Rules */}
+                  <h3 className="text-white font-semibold text-lg mb-4">Seller Rules</h3>
+                  <ul className="space-y-3 mb-8">
+                    <li className="flex gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#4CE160] flex-shrink-0 mt-2" />
+                      <p className="text-white/60 text-sm">All sales are final. No refunds after the break has filled.</p>
+                    </li>
+                    <li className="flex gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#4CE160] flex-shrink-0 mt-2" />
+                      <p className="text-white/60 text-sm">Breaks will begin once all spots are sold and payment is received.</p>
+                    </li>
+                    <li className="flex gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#4CE160] flex-shrink-0 mt-2" />
+                      <p className="text-white/60 text-sm">All cards ship unless otherwise noted.</p>
+                    </li>
+                    <li className="flex gap-3">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#4CE160] flex-shrink-0 mt-2" />
+                      <p className="text-white/60 text-sm">Veteran base cards may be sorted together when applicable. All rookies, inserts, parallels, numbered cards, autographs, relics, and hits ship.</p>
+                    </li>
+                  </ul>
+
                   <h3 className="text-white font-semibold text-lg mb-4">How Case Breaks Work</h3>
                   
                   <div className="space-y-4">
