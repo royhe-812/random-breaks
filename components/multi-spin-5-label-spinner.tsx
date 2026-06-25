@@ -74,28 +74,6 @@ interface MultiSpin5LabelSpinnerProps {
   onViewSpots?: () => void
 }
 
-const PendingIndicator = () => (
-  <motion.div
-    className="flex items-center gap-2"
-    initial={{ opacity: 0, y: 6 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0 }}
-    transition={{ duration: 0.2 }}
-  >
-    <span className="text-white font-semibold text-sm whitespace-nowrap">Waiting for seller</span>
-    <span className="flex items-center gap-0.5">
-      {[0, 1, 2].map((i) => (
-        <motion.span
-          key={i}
-          className="w-1 h-1 rounded-full bg-white/70"
-          animate={{ opacity: [0.3, 1, 0.3] }}
-          transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-        />
-      ))}
-    </span>
-  </motion.div>
-)
-
 // Circular progress component (mirrors the one used in TeamSpinner)
 const CircularProgress = ({ available, total, size = 16 }: { available: number; total: number; size?: number }) => {
   const percentage = (available / total) * 100
@@ -139,7 +117,6 @@ export function MultiSpin5LabelSpinner({
   availableSpots,
   isSpinning,
   pendingSpot = null,
-  pendingSeller = false,
   onSpotsLanded,
   onCycleSpots,
   onViewSpots,
@@ -154,9 +131,6 @@ export function MultiSpin5LabelSpinner({
   // True briefly when a spin has landed on a spot, before the next spin starts.
   // Drives the green "locked in" flash on the header text.
   const [justLanded, setJustLanded] = useState(false)
-  // True during the pause between spins: shows "Waiting for seller" before the
-  // next spin rotates in.
-  const [interSpinWaiting, setInterSpinWaiting] = useState(false)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const announceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -197,7 +171,6 @@ export function MultiSpin5LabelSpinner({
     (spot: Spot, onDone: (team: Team) => void) => {
       setSpinningSpot(spot)
       setJustLanded(false) // Clear the previous landed-green as the next spin starts
-      setInterSpinWaiting(false) // Clear the "Waiting for seller" beat as we rotate in
       const target = Math.floor(Math.random() * teams.length)
       let speed = 50
       let elapsed = 0
@@ -244,12 +217,9 @@ export function MultiSpin5LabelSpinner({
           landed[spot] = team
           setResults((prev) => ({ ...prev, [spot]: team }))
           setLandedOrder((prev) => [...prev, spot]) // newest appended last
-          // Show "Waiting for seller" after a spot lands. Between spins we hold it
-          // briefly then rotate the next spin in; on the final spin we leave it on
-          // so the header goes from the landed green spot straight to "Waiting for
-          // seller" (instead of reverting to the case break title) until the
-          // parent takes over the pending-seller beat.
-          setInterSpinWaiting(true)
+          // No "Waiting for seller" beat: between spins we keep the just-landed
+          // green team on screen, and on the final spin the header reverts to the
+          // case break title once spinning stops.
           if (i + 1 >= order.length) {
             runNext(i + 1)
           } else {
@@ -291,7 +261,6 @@ export function MultiSpin5LabelSpinner({
       setLandedOrder([])
       setCurrentIndex(0)
       setJustLanded(false)
-      setInterSpinWaiting(false)
     }
   }, [isSpinning, stage])
 
@@ -370,10 +339,10 @@ export function MultiSpin5LabelSpinner({
           <div className="flex items-center gap-3">
             <motion.div
               className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-white text-xs"
-              style={{ backgroundColor: isAnySpinning && !interSpinWaiting ? teams[currentIndex].color : "transparent" }}
+              style={{ backgroundColor: isAnySpinning ? teams[currentIndex].color : "transparent" }}
               transition={{ duration: 0.15, ease: "easeInOut" }}
             >
-              {isAnySpinning && !interSpinWaiting ? (
+              {isAnySpinning ? (
                 teams[currentIndex].abbrev
               ) : (
                 <img
@@ -386,11 +355,7 @@ export function MultiSpin5LabelSpinner({
 
             <div className="flex flex-col flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
-                {pendingSeller || interSpinWaiting ? (
-                  <motion.div key="pending">
-                    <PendingIndicator />
-                  </motion.div>
-                ) : isAnySpinning ? (
+                {isAnySpinning ? (
                   <motion.span
                     key={justLanded ? "landed" : teams[currentIndex].name}
                     className="font-semibold text-sm truncate"
