@@ -268,19 +268,7 @@ export function SingleSpinChipPopulateSpinner({
 
             <div className="flex flex-col flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
-                {result && !isCycling ? (
-                  <motion.span
-                    key="result"
-                    className="font-semibold text-sm truncate"
-                    style={{ color: "#4CE160" }}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {result.city} {result.name}
-                  </motion.span>
-                ) : isCycling ? (
+                {isCycling ? (
                   <motion.span
                     key={justLanded ? "landed" : teams[currentIndex].name}
                     className="font-semibold text-sm truncate"
