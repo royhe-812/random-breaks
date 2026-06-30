@@ -202,6 +202,7 @@ export default function AnimationShowcase() {
   const [spinnerLastWinner, setSpinnerLastWinner] = useState<{ username: string; team: string } | null>(null) // TeamSpinner: dynamic last winner
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
   const [breakSpotsToRules, setBreakSpotsToRules] = useState(false) // When opening the sheet, jump straight to Break Rules
+  const [showMarquee, setShowMarquee] = useState(true) // Toggle (under the seller name) for the promo marquee on Option 3 - latest
   // Demo: tapping the spots arc cycles the available count through the color tiers
   // (green -> yellow -> orange -> red) then resets, so the progress arc is interactive.
   const [demoSpots, setDemoSpots] = useState(15)
@@ -739,14 +740,36 @@ case "thumbnails-4":
       <div className="absolute top-12 left-0 right-0 z-20 p-4">
         {/* Top row - Back button, username, and viewer count aligned */}
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
+          <div className="flex items-start gap-3">
             <button className="w-8 h-8 flex items-center justify-center">
               <ChevronDown className="w-6 h-6 text-white" />
             </button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500" />
-              <span className="text-white font-semibold text-sm">ryans_cardhouse</span>
-              <Heart className="w-4 h-4 text-white fill-white" />
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500" />
+                <span className="text-white font-semibold text-sm">ryans_cardhouse</span>
+                <Heart className="w-4 h-4 text-white fill-white" />
+              </div>
+              {/* Small toggle to show/hide the promo marquee (Option 3 - latest) */}
+              {selectedAnimation === "multi-spin-5-label" && (
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showMarquee}
+                  aria-label="Toggle promo marquee"
+                  onClick={() => setShowMarquee((v) => !v)}
+                  className="flex items-center gap-1.5 self-start rounded-full bg-black/40 backdrop-blur px-2 py-1"
+                >
+                  <span
+                    className={`relative h-3.5 w-6 rounded-full transition-colors ${showMarquee ? "bg-green-500" : "bg-white/30"}`}
+                  >
+                    <span
+                      className={`absolute top-0.5 h-2.5 w-2.5 rounded-full bg-white transition-all ${showMarquee ? "left-3" : "left-0.5"}`}
+                    />
+                  </span>
+                  <span className="text-white text-[11px] font-medium">Banner</span>
+                </button>
+              )}
             </div>
           </div>
           
@@ -912,7 +935,7 @@ case "thumbnails-4":
         {/* Promo marquee (Option 3 - latest): full-bleed, continuously scrolling
             strip on a transparent black background, sitting between the comment
             input and the randomizer. */}
-        {selectedAnimation === "multi-spin-5-label" && (
+        {selectedAnimation === "multi-spin-5-label" && showMarquee && (
           <div className="w-full overflow-hidden rounded-xl bg-black/40 backdrop-blur py-2">
             <motion.div
               className="flex w-max whitespace-nowrap"
