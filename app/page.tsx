@@ -922,7 +922,7 @@ case "thumbnails-4":
               {[0, 1].map((dup) => (
                 <div key={dup} className="flex shrink-0" aria-hidden={dup === 1}>
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <span key={i} className="px-6 text-sm font-semibold text-white">
+                    <span key={i} className="px-6 text-sm font-normal text-white">
                       ✨ Spin three times, choose one ✨
                     </span>
                   ))}
