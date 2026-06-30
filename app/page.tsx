@@ -917,7 +917,7 @@ case "thumbnails-4":
             <motion.div
               className="flex w-max whitespace-nowrap"
               animate={{ x: ["0%", "-50%"] }}
-              transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
             >
               {[0, 1].map((dup) => (
                 <div key={dup} className="flex shrink-0" aria-hidden={dup === 1}>
