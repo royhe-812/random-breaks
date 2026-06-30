@@ -135,7 +135,7 @@ function WinnerAnnouncement({
         <div className="flex flex-col">
           <span className="text-green-400 font-bold text-sm">{seller}</span>
           <span className="text-white/80 text-sm">
-            {manual ? "Manually assigned" : "assigned"}{" "}
+            assigned{" "}
             <span className="font-bold text-white">{`${team.city} ${team.name}`}</span> to{" "}
             <span className="font-bold text-white">{username}</span>
           </span>
