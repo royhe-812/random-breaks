@@ -1154,7 +1154,7 @@ case "thumbnails-4":
         {/* Auction Card */}
         <div className="bg-black/40 backdrop-blur rounded-2xl p-4">
           <div className="flex items-start justify-between mb-2">
-            <div className="flex-1 pr-2">
+            <div className="flex-1 min-w-0 pr-2">
               {selectedAnimation === "multi-spin-6-titlerow" ? (
                 // Option 4 - latest: the auction card title is the combined
                 // back-and-forth marquee (item card title + case break title).
