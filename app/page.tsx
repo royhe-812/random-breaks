@@ -104,6 +104,7 @@ function WinnerAnnouncement({
   show,
   seller = "ryans_cardhouse",
   manual = false,
+  singleSpin = false,
 }: {
   username: string
   team: Team
@@ -111,6 +112,7 @@ function WinnerAnnouncement({
   hideTeamBlock?: boolean
   seller?: string
   manual?: boolean
+  singleSpin?: boolean
 }) {
   if (!show) return null
 
@@ -121,12 +123,23 @@ function WinnerAnnouncement({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <span className="text-green-400 font-semibold text-sm">{seller}</span>
-      <span className="text-white/80 text-sm ml-1">
-        {manual ? "Manually assigned" : "assigned"}{" "}
-        <span className="font-bold text-white">{`${team.city} ${team.name}`}</span> to{" "}
-        <span className="font-bold text-white">{username}</span>
-      </span>
+      {singleSpin ? (
+        <>
+          <span className="text-green-400 font-semibold text-sm">{username}</span>
+          <span className="text-white/80 text-sm ml-1">
+            won <span className="font-bold text-white">{`${team.city} ${team.name}`}</span>
+          </span>
+        </>
+      ) : (
+        <>
+          <span className="text-green-400 font-semibold text-sm">{seller}</span>
+          <span className="text-white/80 text-sm ml-1">
+            {manual ? "Manually assigned" : "assigned"}{" "}
+            <span className="font-bold text-white">{`${team.city} ${team.name}`}</span> to{" "}
+            <span className="font-bold text-white">{username}</span>
+          </span>
+        </>
+      )}
     </motion.div>
   )
 }
@@ -874,6 +887,7 @@ case "thumbnails-4":
   show={showWinner}
   hideTeamBlock={selectedAnimation === "thumbnails-4"}
   manual={isManualConcept(selectedAnimation)}
+  singleSpin={selectedAnimation === "single-spin-populate"}
   />
   )}
         
