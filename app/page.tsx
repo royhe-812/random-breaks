@@ -155,7 +155,7 @@ export default function AnimationShowcase() {
   const [spinnerLastWinner, setSpinnerLastWinner] = useState<{ username: string; team: string } | null>(null) // TeamSpinner: dynamic last winner
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
   const [breakSpotsToRules, setBreakSpotsToRules] = useState(false) // When opening the sheet, jump straight to Break Rules
-  const [showMarquee, setShowMarquee] = useState(true) // Toggle (under the seller name) for the promo marquee on Option 3 - latest
+  const [showMarquee, setShowMarquee] = useState(false) // Toggle (under the seller name) for the promo marquee; off by default on both multi spin concepts
   const [showPinnedMessage, setShowPinnedMessage] = useState(false) // Toggle for the seller's pinned message above the comment input
   // Demo: tapping the spots arc cycles the available count through the color tiers
   // (green -> yellow -> orange -> red) then resets, so the progress arc is interactive.
