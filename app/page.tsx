@@ -909,6 +909,29 @@ case "thumbnails-4":
           )
         })()}
 
+        {/* Promo marquee (Option 3 - latest): full-bleed, continuously scrolling
+            strip on a transparent black background, sitting between the comment
+            input and the randomizer. */}
+        {selectedAnimation === "multi-spin-5-label" && (
+          <div className="-mx-4 overflow-hidden bg-black/40 backdrop-blur py-2">
+            <motion.div
+              className="flex w-max whitespace-nowrap"
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+            >
+              {[0, 1].map((dup) => (
+                <div key={dup} className="flex shrink-0" aria-hidden={dup === 1}>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <span key={i} className="px-6 text-sm font-semibold text-white">
+                      ✨ Spin three times, choose one ✨
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        )}
+
         {/* Team Spinner with Spots Available - shown for most concepts. For slot-machine (Team Picker),
             battle, and carousel it stays in its idle/zero state (thumbnail) since those concepts
             handle their own cycling + reveal full screen (isSpinnerRevealing is never set for them). */}
