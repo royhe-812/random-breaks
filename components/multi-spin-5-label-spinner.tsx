@@ -395,29 +395,41 @@ export function MultiSpin5LabelSpinner({
 
         {/* Chips only render once spots start landing, so before any chips are
             generated the card is just the header (matching Option 1's spacing).
-            Once present, chips populate one-by-one in a swipeable row. */}
-        {assignedSpots.length > 0 && (
-          <div>
-            {donePopulating ? (
-              // All spots landed: chips scroll back and forth like the title marquee.
-              <div className="px-4 pb-3">
-                <BackAndForthMarquee trackClassName="flex gap-2">
-                  {assignedSpots.map((spot) => renderMarqueeChip(spot, `${spot}`))}
-                </BackAndForthMarquee>
-              </div>
-            ) : (
-              // Still populating: chips grow in a swipeable row as each lands.
-              <div
-                className="px-4 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-                style={{ WebkitOverflowScrolling: "touch" }}
-              >
-                <AnimatePresence initial={false}>
-                  {assignedSpots.map((spot) => renderChip(spot))}
-                </AnimatePresence>
-              </div>
-            )}
-          </div>
-        )}
+            Once present, a divider + chips row appear (matching Option 2). */}
+        <AnimatePresence>
+          {assignedSpots.length > 0 && (
+            <motion.div
+              key="chips"
+              layout
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Divider separating the break header from the chips row */}
+              <div className="mx-4 border-t border-white/10" />
+
+              {donePopulating ? (
+                // All spots landed: chips scroll back and forth like the title marquee.
+                <div className="px-4 pt-3 pb-3">
+                  <BackAndForthMarquee trackClassName="flex gap-2">
+                    {assignedSpots.map((spot) => renderMarqueeChip(spot, `${spot}`))}
+                  </BackAndForthMarquee>
+                </div>
+              ) : (
+                // Still populating: chips grow in a swipeable row as each lands.
+                <div
+                  className="px-4 pt-3 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                  style={{ WebkitOverflowScrolling: "touch" }}
+                >
+                  <AnimatePresence initial={false}>
+                    {assignedSpots.map((spot) => renderChip(spot))}
+                  </AnimatePresence>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   )
