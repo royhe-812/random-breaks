@@ -1147,6 +1147,7 @@ case "thumbnails-4":
             manual={isManualConcept(selectedAnimation)}
             manualIcon={selectedAnimation === "multi-spin-5-manual-icon"}
             manualAssignment={null}
+            cardUpdated={showWinner || spotAssigned}
           />
         )}
 

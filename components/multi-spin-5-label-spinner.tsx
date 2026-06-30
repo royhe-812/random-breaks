@@ -80,6 +80,9 @@ interface MultiSpin5LabelSpinnerProps {
   manualIcon?: boolean
   /** A manually-assigned team (not in the spun list) to populate as an extra 4th chip. */
   manualAssignment?: { spot: Spot; team: Team } | null
+  /** True once the item card title has updated to the team name; collapses the
+   *  chips row so the spinner reverts to just the case break title. */
+  cardUpdated?: boolean
 }
 
 // Circular progress component (mirrors the one used in TeamSpinner)
@@ -131,6 +134,7 @@ export function MultiSpin5LabelSpinner({
   manual = false,
   manualIcon = false,
   manualAssignment = null,
+  cardUpdated = false,
 }: MultiSpin5LabelSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
   const [spinningSpot, setSpinningSpot] = useState<0 | Spot>(0)
@@ -435,7 +439,7 @@ export function MultiSpin5LabelSpinner({
             generated the card is just the header (matching Option 1's spacing).
             Once present, a divider + chips row appear (matching Option 2). */}
         <AnimatePresence>
-          {assignedSpots.length > 0 && (
+          {assignedSpots.length > 0 && !cardUpdated && (
             <motion.div
               key="chips"
               layout
