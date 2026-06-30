@@ -358,7 +358,9 @@ export function MultiSpin5LabelSpinner({
   // Newest selection first (leftmost), older chips pushed to the right.
   const assignedSpots = landedOrder
   // Once every spot has landed, the chips row turns into a continuous marquee.
-  const donePopulating = stage === "ready" && landedOrder.length === SPOTS.length
+  // Use >= so an extra manually-assigned 4th chip keeps the marquee moving
+  // instead of dropping back to the static row.
+  const donePopulating = stage === "ready" && landedOrder.length >= SPOTS.length
 
   return (
     <div className="w-full">
