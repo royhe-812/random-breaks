@@ -47,7 +47,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "multi-spin-4-chips-no-label", name: "Option 2" },
   { id: "multi-spin-3-label", name: "Option 3" },
   { id: "multi-spin-4-rules", name: "Option 4" },
-  { id: "multi-spin-5-label", name: "Option 5" },
+  { id: "multi-spin-5-label", name: "Option 5 - latest" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "thumbnails-2", name: "Extended" },
   // { id: "gift-reveal", name: "Gift Reveal" },
