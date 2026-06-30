@@ -19,6 +19,7 @@ import { MultiSpin4RulesSpinner } from "@/components/multi-spin-4-rules-spinner"
 import { MultiSpin5LabelSpinner } from "@/components/multi-spin-5-label-spinner"
 import { MultiSpin6TitleRowSpinner } from "@/components/multi-spin-6-titlerow-spinner"
 import { BackAndForthMarquee } from "@/components/back-and-forth-marquee"
+import { SpotsProgress } from "@/components/spots-progress"
 import { SingleSpinChipPopulateSpinner } from "@/components/single-spin-chip-populate-spinner"
 import { MockKeyboard } from "@/components/mock-keyboard"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
@@ -1171,6 +1172,15 @@ case "thumbnails-4":
                 <p className="text-sm text-white mb-0.5 line-clamp-2">
                   <span className="font-semibold">{(showWinner || spotAssigned) && winnerTeam ? `Random Break #${demoSpots} - ${winnerTeam.city} ${winnerTeam.name}` : `Random Break #${demoSpots}`}</span>
                 </p>
+              )}
+              {/* Option 4 - latest: radial progress arc + spots available beneath the title */}
+              {selectedAnimation === "multi-spin-6-titlerow" && (
+                <button
+                  onClick={cycleSpots}
+                  className="mb-1 hover:opacity-80 transition-opacity"
+                >
+                  <SpotsProgress available={demoSpots} total={32} size={16} />
+                </button>
               )}
               {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "multi-spin-repeat" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
                 <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
