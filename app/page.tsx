@@ -18,6 +18,7 @@ import { MultiSpin3LabelSpinner } from "@/components/multi-spin-3-label-spinner"
 import { MultiSpin4RulesSpinner } from "@/components/multi-spin-4-rules-spinner"
 import { MultiSpin5LabelSpinner } from "@/components/multi-spin-5-label-spinner"
 import { MultiSpin6TitleRowSpinner } from "@/components/multi-spin-6-titlerow-spinner"
+import { BackAndForthMarquee } from "@/components/back-and-forth-marquee"
 import { SingleSpinChipPopulateSpinner } from "@/components/single-spin-chip-populate-spinner"
 import { MockKeyboard } from "@/components/mock-keyboard"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
@@ -1154,9 +1155,23 @@ case "thumbnails-4":
         <div className="bg-black/40 backdrop-blur rounded-2xl p-4">
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 pr-2">
-              <p className="text-sm text-white mb-0.5 line-clamp-2">
-                <span className="font-semibold">{(showWinner || spotAssigned) && winnerTeam ? `Random Break #${demoSpots} - ${winnerTeam.city} ${winnerTeam.name}` : `Random Break #${demoSpots}`}</span>
-              </p>
+              {selectedAnimation === "multi-spin-6-titlerow" ? (
+                // Option 4 - latest: the auction card title is the combined
+                // back-and-forth marquee (item card title + case break title).
+                <div className="mb-0.5">
+                  <BackAndForthMarquee duration={26} trackClassName="text-sm leading-5">
+                    <span className="text-white font-semibold text-sm whitespace-nowrap">
+                      {(showWinner || spotAssigned) && winnerTeam
+                        ? `Random Break #${demoSpots} - ${winnerTeam.city} ${winnerTeam.name}`
+                        : `Random Break #${demoSpots}`} — 2025 Panini Luminance Football Hobby PYT Box Break #903
+                    </span>
+                  </BackAndForthMarquee>
+                </div>
+              ) : (
+                <p className="text-sm text-white mb-0.5 line-clamp-2">
+                  <span className="font-semibold">{(showWinner || spotAssigned) && winnerTeam ? `Random Break #${demoSpots} - ${winnerTeam.city} ${winnerTeam.name}` : `Random Break #${demoSpots}`}</span>
+                </p>
+              )}
               {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "multi-spin-repeat" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
                 <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
                   <svg width="12" height="15" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
