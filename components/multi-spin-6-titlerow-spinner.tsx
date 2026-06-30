@@ -95,52 +95,13 @@ const PendingIndicator = () => (
   </motion.div>
 )
 
-// Circular progress component (mirrors the one used in TeamSpinner)
-const CircularProgress = ({ available, total, size = 16 }: { available: number; total: number; size?: number }) => {
-  const percentage = (available / total) * 100
-  const strokeWidth = 3
-  const radius = (size - strokeWidth) / 2
-  const circumference = 2 * Math.PI * radius
-  const strokeDashoffset = circumference - (percentage / 100) * circumference
-
-  // 4-tier scale: green -> yellow -> orange -> red as the bar empties
-  const getProgressColor = (pct: number) => {
-    const ratio = pct / 100
-    if (ratio <= 0.25) return "#ef4444" // red
-    if (ratio <= 0.5) return "#f97316" // orange
-    if (ratio <= 0.75) return "#eab308" // yellow
-    return "#22c55e" // green
-  }
-
-  return (
-    <svg className="transform -rotate-90" width={size} height={size}>
-      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth={strokeWidth} />
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        fill="none"
-        stroke={getProgressColor(percentage)}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={strokeDashoffset}
-        style={{ transition: "stroke-dashoffset 0.3s ease, stroke 0.3s ease" }}
-      />
-    </svg>
-  )
-}
-
 type Stage = "idle" | "spinning" | "ready"
 
 export function MultiSpin6TitleRowSpinner({
-  totalSpots,
-  availableSpots,
   isSpinning,
   pendingSpot = null,
   pendingSeller = false,
   onSpotsLanded,
-  onCycleSpots,
   onViewSpots,
 }: MultiSpin6TitleRowSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
@@ -355,10 +316,6 @@ export function MultiSpin6TitleRowSpinner({
   // Once every spot has landed, the chips row turns into a continuous marquee.
   const donePopulating = stage === "ready" && landedOrder.length === SPOTS.length
 
-  // Item card title combined with the case break title onto one marquee line.
-  const itemCardTitle = `Random Break #${availableSpots}`
-  const caseBreakTitle = "2025 Panini Luminance Football Hobby PYT Box Break #903"
-
   return (
     <div className="w-full">
       <motion.div
@@ -368,39 +325,10 @@ export function MultiSpin6TitleRowSpinner({
         }}
         transition={{ duration: 0.2 }}
       >
-        {/* Header: combined title marquee on one line, with the visual + spots
-            available beneath it. */}
+        {/* Header: the visual (thumbnail) + a cycling title. The title reads
+            "Ready to randomize" before bidding, then cycles through the teams as
+            the spin runs after the bid is won. View all on the right. */}
         <div className="px-4 pt-3 pb-2">
-          {/* Line 1: item card title + case break title together, marqueeing
-              back and forth as one line. */}
-          <div className="mb-2">
-            <AnimatePresence mode="wait">
-              {pendingSeller || interSpinWaiting ? (
-                <motion.div key="pending">
-                  <PendingIndicator />
-                </motion.div>
-              ) : isAnySpinning ? (
-                <motion.span
-                  key={justLanded ? "landed" : teams[currentIndex].name}
-                  className="block font-semibold text-sm truncate"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0, color: justLanded ? "#4CE160" : "#ffffff" }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: justLanded ? 0.2 : 0.05 }}
-                >
-                  {teams[currentIndex].city} {teams[currentIndex].name}
-                </motion.span>
-              ) : (
-                <BackAndForthMarquee key="marquee" duration={26} trackClassName="text-sm leading-5">
-                  <span className="text-white font-semibold text-sm whitespace-nowrap">
-                    {itemCardTitle} — {caseBreakTitle}
-                  </span>
-                </BackAndForthMarquee>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Line 2: the visual (thumbnail) + spots available, then View all. */}
           <div className="flex items-center gap-3">
             <motion.div
               className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-white text-xs"
@@ -418,15 +346,38 @@ export function MultiSpin6TitleRowSpinner({
               )}
             </motion.div>
 
-            <button
-              onClick={onCycleSpots ?? onViewSpots}
-              className="flex items-center gap-1.5 flex-1 hover:opacity-80 transition-opacity"
-            >
-              <CircularProgress available={availableSpots} total={totalSpots} size={16} />
-              <span className="text-sm text-white">
-                {availableSpots}/{totalSpots} spots available
-              </span>
-            </button>
+            {/* Cycling title next to the thumbnail */}
+            <div className="flex-1 min-w-0">
+              <AnimatePresence mode="wait">
+                {pendingSeller || interSpinWaiting ? (
+                  <motion.div key="pending">
+                    <PendingIndicator />
+                  </motion.div>
+                ) : isAnySpinning ? (
+                  <motion.span
+                    key={justLanded ? "landed" : teams[currentIndex].name}
+                    className="block font-semibold text-sm truncate"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0, color: justLanded ? "#4CE160" : "#ffffff" }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: justLanded ? 0.2 : 0.05 }}
+                  >
+                    {teams[currentIndex].city} {teams[currentIndex].name}
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="ready"
+                    className="block font-semibold text-sm text-white truncate"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    Ready to randomize
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </div>
 
             <button
               onClick={onViewSpots}
