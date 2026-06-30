@@ -60,7 +60,8 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "multi-spin-4-rules", name: "Option 4" },
   { id: "multi-spin-5-label", name: "Multi Spin" },
   { id: "multi-spin-5-manual", name: "Multi Spin (Manual)" },
-  { id: "multi-spin-5-manual-icon", name: "Multi Spin (Manual Icon)" },
+  // Temporarily hidden from the concepts list (kept for potential future use):
+  // { id: "multi-spin-5-manual-icon", name: "Multi Spin (Manual Icon)" },
   // { id: "multi-spin-6-titlerow", name: "Option 4 - latest" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "thumbnails-2", name: "Extended" },
@@ -1144,11 +1145,9 @@ case "thumbnails-4":
             onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
             manual={isManualConcept(selectedAnimation)}
             manualIcon={selectedAnimation === "multi-spin-5-manual-icon"}
-            manualAssignment={
-              isManualConcept(selectedAnimation) && spotAssigned && multiPendingSpot === 4 && winnerTeam
-                ? { spot: 4, team: winnerTeam }
-                : null
-            }
+            {/* Manual concept no longer populates an extra chip in the randomizer
+                when a buyer asks for another spot in chat. */}
+            manualAssignment={null}
           />
         )}
 
