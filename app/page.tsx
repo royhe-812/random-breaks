@@ -913,7 +913,7 @@ case "thumbnails-4":
             strip on a transparent black background, sitting between the comment
             input and the randomizer. */}
         {selectedAnimation === "multi-spin-5-label" && (
-          <div className="-mx-4 overflow-hidden bg-black/40 backdrop-blur py-2">
+          <div className="w-full overflow-hidden rounded-xl bg-black/40 backdrop-blur py-2">
             <motion.div
               className="flex w-max whitespace-nowrap"
               animate={{ x: ["0%", "-50%"] }}
