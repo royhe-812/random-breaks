@@ -172,7 +172,9 @@ export function MultiSpin6TitleRowSpinner({
       const landed: Record<Spot, Team> = {} as Record<Spot, Team>
       const runNext = (i: number) => {
         if (i >= order.length) {
-          setSpinningSpot(0)
+          // Leave spinningSpot on the final spot so the title stays on the last
+          // landed team (green) instead of reverting to "Ready to randomize",
+          // matching how the first and second spins hold their landed team.
           setStage("ready")
           return
         }
