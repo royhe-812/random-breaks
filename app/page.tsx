@@ -1148,7 +1148,7 @@ case "thumbnails-4":
             pendingSeller={revealPendingSeller}
             onSpotsLanded={handleSpotsLanded}
             onCycleSpots={cycleSpots}
-            onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
+            onViewSpots={() => { setBreakSpotsToRules(true); setIsBreakSpotsOpen(true) }}
           />
         )}
 
