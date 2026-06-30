@@ -1181,7 +1181,7 @@ case "thumbnails-4":
                 </div>
               ) : (
                 <p className="text-sm text-white mb-0.5 line-clamp-2">
-                  <span className="font-semibold">{(showWinner || spotAssigned) && winnerTeam ? `Random Break #${breakNumber} - ${winnerTeam.city} ${winnerTeam.name}${isManualConcept(selectedAnimation) ? " (Manual)" : ""}` : `Random Break #${breakNumber}`}</span>
+                  <span className="font-semibold">{(showWinner || spotAssigned) && winnerTeam ? `Random Break #${breakNumber} - ${winnerTeam.city} ${winnerTeam.name}` : `Random Break #${breakNumber}`}</span>
                 </p>
               )}
               {/* Option 4 - latest: radial progress arc + spots available beneath the title */}
