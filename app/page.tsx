@@ -160,6 +160,9 @@ export default function AnimationShowcase() {
   // Demo: tapping the spots arc cycles the available count through the color tiers
   // (green -> yellow -> orange -> red) then resets, so the progress arc is interactive.
   const [demoSpots, setDemoSpots] = useState(15)
+  // Fixed break number for the item card title. This stays constant even after
+  // winning (which decrements the available spots count, demoSpots).
+  const breakNumber = 15
   const cycleSpots = useCallback(() => {
     setDemoSpots((prev) => {
       const next = prev - 8
@@ -1149,14 +1152,14 @@ case "thumbnails-4":
                   <BackAndForthMarquee duration={26} trackClassName="text-sm leading-5">
                     <span className="text-white font-semibold text-sm whitespace-nowrap">
                       {(showWinner || spotAssigned) && winnerTeam
-                        ? `Random Break #${demoSpots} - ${winnerTeam.city} ${winnerTeam.name}`
-                        : `Random Break #${demoSpots}`} — 2025 Panini Luminance Football Hobby PYT Box Break #903
+                        ? `Random Break #${breakNumber} - ${winnerTeam.city} ${winnerTeam.name}`
+                        : `Random Break #${breakNumber}`} — 2025 Panini Luminance Football Hobby PYT Box Break #903
                     </span>
                   </BackAndForthMarquee>
                 </div>
               ) : (
                 <p className="text-sm text-white mb-0.5 line-clamp-2">
-                  <span className="font-semibold">{(showWinner || spotAssigned) && winnerTeam ? `Random Break #${demoSpots} - ${winnerTeam.city} ${winnerTeam.name}${selectedAnimation === "multi-spin-5-manual" ? " (Manual assignment)" : ""}` : `Random Break #${demoSpots}`}</span>
+                  <span className="font-semibold">{(showWinner || spotAssigned) && winnerTeam ? `Random Break #${breakNumber} - ${winnerTeam.city} ${winnerTeam.name}${selectedAnimation === "multi-spin-5-manual" ? " (Manual assignment)" : ""}` : `Random Break #${breakNumber}`}</span>
                 </p>
               )}
               {/* Option 4 - latest: radial progress arc + spots available beneath the title */}
