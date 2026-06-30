@@ -126,7 +126,7 @@ function WinnerAnnouncement({
     >
       {singleSpin ? (
         <>
-          <span className="text-green-400 font-semibold text-sm">{username}</span>
+          <span className="text-green-400 font-bold text-sm">{username}</span>
           <span className="text-white/80 text-sm ml-1">
             won <span className="font-bold text-white">{`${team.city} ${team.name}`}</span>
           </span>
