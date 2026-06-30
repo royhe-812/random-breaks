@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Info } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 
 type Spot = 1 | 2 | 3
@@ -394,18 +393,11 @@ export function MultiSpin5LabelSpinner({
           </div>
         </div>
 
-        {/* Divider + label are always present so "Multi-spin, choose one" shows
-            even before bidding. Chips then populate one-by-one below as each spot
-            lands, in a single horizontally-swipeable row. */}
+        {/* Divider is always present; chips then populate one-by-one below as
+            each spot lands, in a single horizontally-swipeable row. */}
         <div>
           {/* Divider separating the break header from the chips row */}
           <div className="mx-4 border-t border-white/10" />
-
-          {/* Label row above the populated spots */}
-          <div className="flex items-center gap-2 px-4 pt-2">
-            <Info className="w-4 h-4 text-white/70 flex-shrink-0" />
-            <span className="text-sm text-white">Multi-spin, choose one</span>
-          </div>
 
           {donePopulating ? (
             // All spots landed: chips scroll back and forth like the title marquee.
