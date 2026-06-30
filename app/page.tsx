@@ -83,6 +83,12 @@ function buildSpotRequestMessage(teamName: string) {
   return SPOT_REQUEST_TEMPLATES[seed % SPOT_REQUEST_TEMPLATES.length](teamName)
 }
 
+// Manual-assignment concept: the buyer asks for a team that wasn't in the
+// generated list, so the seller can add it manually as an extra spot.
+function buildManualRequestMessage(teamName: string) {
+  return `Any chance I can grab the ${teamName}? They weren't in the list.`
+}
+
 // Winner announcement styled as a regular chat comment from the seller
 function WinnerAnnouncement({
   username,
@@ -462,10 +468,19 @@ export default function AnimationShowcase() {
     setKeyboardOpen(false)
     setCommentTyped(false)
     setRevealPendingSeller(true)
-    // Pre-pick one spot and autofill it into the comment input as a tappable draft.
-    setRequestDraft(spots[Math.floor(Math.random() * spots.length)] ?? null)
+    if (selectedAnimation === "multi-spin-5-manual") {
+      // Manual concept: draft a team NOT in the generated list so the buyer can
+      // ask for it and the seller manually assigns it as an extra 4th spot.
+      const spunNames = new Set(spots.map((s) => s.team.name))
+      const pool = teams.filter((t) => !spunNames.has(t.name))
+      const team = pool[Math.floor(Math.random() * pool.length)] ?? spots[0]?.team
+      setRequestDraft(team ? { spot: 4, team } : null)
+    } else {
+      // Pre-pick one spot and autofill it into the comment input as a tappable draft.
+      setRequestDraft(spots[Math.floor(Math.random() * spots.length)] ?? null)
+    }
     if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
-  }, [])
+  }, [selectedAnimation])
 
   // Buyer taps the autofilled comment: post it to chat verbatim. The "Pending
   // seller" state stays up while the seller reacts, then assigns the spot (which
@@ -477,15 +492,20 @@ export default function AnimationShowcase() {
     setCommentTyped(false)
     const choice = requestDraft
 
+    const message =
+      selectedAnimation === "multi-spin-5-manual"
+        ? buildManualRequestMessage(choice.team.name)
+        : buildSpotRequestMessage(choice.team.name)
+
     chatPausedRef.current = true
     setVisibleMessages(prev => [
       ...prev.slice(1),
-      { user: "Adam007", message: buildSpotRequestMessage(choice.team.name), color: "text-[#4CE160]" },
+      { user: "Adam007", message, color: "text-[#4CE160]" },
     ])
 
     // Pending seller stays visible while the seller reacts, then assigns the spot.
     setTimeout(() => assignMultiSpot(choice.spot, choice.team), 2600)
-  }, [revealPendingSeller, commentRequested, requestDraft, assignMultiSpot])
+  }, [revealPendingSeller, commentRequested, requestDraft, assignMultiSpot, selectedAnimation])
 
   // Buyer taps the comment input: instead of auto-filling, slide up the mock
   // keyboard. The comment is only populated once they tap a key.
@@ -884,7 +904,11 @@ case "thumbnails-4":
             taps a key, and tapping again (Send) posts it into chat. */}
         {(() => {
           const hasDraft = revealPendingSeller && !!requestDraft && !commentRequested
-          const draftText = requestDraft ? buildSpotRequestMessage(requestDraft.team.name) : ""
+          const draftText = requestDraft
+            ? selectedAnimation === "multi-spin-5-manual"
+              ? buildManualRequestMessage(requestDraft.team.name)
+              : buildSpotRequestMessage(requestDraft.team.name)
+            : ""
           // Once a key is tapped, show the populated comment + Send affordance.
           if (hasDraft && commentTyped) {
             return (
@@ -1072,19 +1096,31 @@ case "thumbnails-4":
           />
         )}
 
-        {/* Multi Spin + Multi Spin (Manual): same spinner; manual adds a
-            "(Manual assignment)" suffix to the selected chip. */}
+        {/* Multi Spin + Multi Spin (Manual): same spinner. In manual mode the
+            buyer requests a team not in the generated list and the seller
+            assigns it as an extra 4th chip with a "(Manual assignment)" label. */}
         {(selectedAnimation === "multi-spin-5-label" || selectedAnimation === "multi-spin-5-manual") && (
           <MultiSpin5LabelSpinner
             totalSpots={32}
             availableSpots={demoSpots}
             isSpinning={isMultiSpinning}
-            pendingSpot={multiPendingSpot === 4 ? null : multiPendingSpot}
+            pendingSpot={
+              selectedAnimation === "multi-spin-5-manual"
+                ? multiPendingSpot
+                : multiPendingSpot === 4
+                  ? null
+                  : multiPendingSpot
+            }
             pendingSeller={revealPendingSeller}
             onSpotsLanded={handleSpotsLanded}
             onCycleSpots={cycleSpots}
             onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
             manual={selectedAnimation === "multi-spin-5-manual"}
+            manualAssignment={
+              selectedAnimation === "multi-spin-5-manual" && spotAssigned && multiPendingSpot === 4 && winnerTeam
+                ? { spot: 4, team: winnerTeam }
+                : null
+            }
           />
         )}
 

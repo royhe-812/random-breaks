@@ -4,8 +4,10 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { teams, type Team } from "@/components/team-spinner"
 
-type Spot = 1 | 2 | 3
+type Spot = 1 | 2 | 3 | 4
 
+// Spots that are spun for. The 4th spot is reserved for a manual assignment
+// (a team requested in chat that wasn't in the generated list).
 const SPOTS: Spot[] = [1, 2, 3]
 
 /**
@@ -73,6 +75,8 @@ interface MultiSpin5LabelSpinnerProps {
   onViewSpots?: () => void
   /** When true, the selected (announced) chip shows a "(Manual assignment)" suffix. */
   manual?: boolean
+  /** A manually-assigned team (not in the spun list) to populate as an extra 4th chip. */
+  manualAssignment?: { spot: Spot; team: Team } | null
 }
 
 // Circular progress component (mirrors the one used in TeamSpinner)
@@ -122,11 +126,12 @@ export function MultiSpin5LabelSpinner({
   onCycleSpots,
   onViewSpots,
   manual = false,
+  manualAssignment = null,
 }: MultiSpin5LabelSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
   const [spinningSpot, setSpinningSpot] = useState<0 | Spot>(0)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [results, setResults] = useState<Record<Spot, Team | null>>({ 1: null, 2: null, 3: null })
+  const [results, setResults] = useState<Record<Spot, Team | null>>({ 1: null, 2: null, 3: null, 4: null })
   // Order in which spots land, oldest → newest. Chips render in this order so they
   // populate left → right, with the newest selection appearing on the right.
   const [landedOrder, setLandedOrder] = useState<Spot[]>([])
@@ -258,6 +263,15 @@ export function MultiSpin5LabelSpinner({
     }
   }, [stage, results, onSpotsLanded])
 
+  // Merge a manually-assigned team (requested in chat, not in the spun list)
+  // into the chips as an additional 4th chip that populates in.
+  useEffect(() => {
+    if (!manualAssignment) return
+    const { spot, team } = manualAssignment
+    setResults((prev) => (prev[spot] ? prev : { ...prev, [spot]: team }))
+    setLandedOrder((prev) => (prev.includes(spot) ? prev : [...prev, spot]))
+  }, [manualAssignment])
+
   // Reset internal state when the engine is turned off (concept switch / reset)
   useEffect(() => {
     if (!isSpinning && stage !== "idle") {
@@ -269,7 +283,7 @@ export function MultiSpin5LabelSpinner({
       hasAnnouncedRef.current = false
       setStage("idle")
       setSpinningSpot(0)
-      setResults({ 1: null, 2: null, 3: null })
+      setResults({ 1: null, 2: null, 3: null, 4: null })
       setLandedOrder([])
       setCurrentIndex(0)
       setJustLanded(false)
