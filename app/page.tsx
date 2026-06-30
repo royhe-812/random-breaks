@@ -47,12 +47,12 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "single-spin-populate", name: "Option 1" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-4-auto", name: "Multi-Spin Text" },
-  { id: "multi-spin-4-chips-no-label", name: "Option 2" },
   // Temporarily hidden from the concepts list (kept for potential future use):
+  // { id: "multi-spin-4-chips-no-label", name: "Option 2" },
   // { id: "multi-spin-3-label", name: "Option 3" },
   // { id: "multi-spin-4-rules", name: "Option 4" },
   { id: "multi-spin-5-label", name: "Option 3 - latest" },
-  { id: "multi-spin-6-titlerow", name: "Option 4 - latest" },
+  // { id: "multi-spin-6-titlerow", name: "Option 4 - latest" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "thumbnails-2", name: "Extended" },
   // { id: "gift-reveal", name: "Gift Reveal" },
