@@ -1203,7 +1203,7 @@ case "thumbnails-4":
                 </div>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-white/40 mt-1 flex-shrink-0" />
+            <ChevronRight className={`w-5 h-5 text-white/40 flex-shrink-0 ${selectedAnimation === "multi-spin-6-titlerow" ? "mt-0" : "mt-1"}`} />
           </div>
           
           <div className="flex items-center justify-between mb-3">

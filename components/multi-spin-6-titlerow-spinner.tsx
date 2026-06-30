@@ -73,34 +73,11 @@ interface MultiSpin6TitleRowSpinnerProps {
   onViewSpots?: () => void
 }
 
-const PendingIndicator = () => (
-  <motion.div
-    className="flex items-center gap-2"
-    initial={{ opacity: 0, y: 6 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0 }}
-    transition={{ duration: 0.2 }}
-  >
-    <span className="text-white font-semibold text-sm whitespace-nowrap">Waiting for seller</span>
-    <span className="flex items-center gap-0.5">
-      {[0, 1, 2].map((i) => (
-        <motion.span
-          key={i}
-          className="w-1 h-1 rounded-full bg-white/70"
-          animate={{ opacity: [0.3, 1, 0.3] }}
-          transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-        />
-      ))}
-    </span>
-  </motion.div>
-)
-
 type Stage = "idle" | "spinning" | "ready"
 
 export function MultiSpin6TitleRowSpinner({
   isSpinning,
   pendingSpot = null,
-  pendingSeller = false,
   onSpotsLanded,
   onViewSpots,
 }: MultiSpin6TitleRowSpinnerProps) {
@@ -332,10 +309,10 @@ export function MultiSpin6TitleRowSpinner({
           <div className="flex items-center gap-3">
             <motion.div
               className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-white text-xs"
-              style={{ backgroundColor: isAnySpinning && !interSpinWaiting ? teams[currentIndex].color : "transparent" }}
+              style={{ backgroundColor: isAnySpinning ? teams[currentIndex].color : "transparent" }}
               transition={{ duration: 0.15, ease: "easeInOut" }}
             >
-              {isAnySpinning && !interSpinWaiting ? (
+              {isAnySpinning ? (
                 teams[currentIndex].abbrev
               ) : (
                 <img
@@ -346,14 +323,11 @@ export function MultiSpin6TitleRowSpinner({
               )}
             </motion.div>
 
-            {/* Cycling title next to the thumbnail */}
+            {/* Cycling title next to the thumbnail: "Ready to randomize" before
+                bidding, then cycling team names once the spin runs. */}
             <div className="flex-1 min-w-0">
               <AnimatePresence mode="wait">
-                {pendingSeller || interSpinWaiting ? (
-                  <motion.div key="pending">
-                    <PendingIndicator />
-                  </motion.div>
-                ) : isAnySpinning ? (
+                {isAnySpinning ? (
                   <motion.span
                     key={justLanded ? "landed" : teams[currentIndex].name}
                     className="block font-semibold text-sm truncate"
@@ -383,7 +357,7 @@ export function MultiSpin6TitleRowSpinner({
               onClick={onViewSpots}
               className="flex items-center gap-1 text-white/50 hover:text-white/70 transition-colors flex-shrink-0"
             >
-              <span className="text-sm">View all</span>
+              <span className="text-sm">Break rules</span>
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 18l6-6-6-6" />
               </svg>
