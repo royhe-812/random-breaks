@@ -393,29 +393,31 @@ export function MultiSpin5LabelSpinner({
           </div>
         </div>
 
-        {/* Chips populate one-by-one as each spot lands, in a single
-            horizontally-swipeable row, with no divider above. */}
-        <div>
-          {donePopulating ? (
-            // All spots landed: chips scroll back and forth like the title marquee.
-            <div className="px-4 pb-3">
-              <BackAndForthMarquee trackClassName="flex gap-2">
-                {assignedSpots.map((spot) => renderMarqueeChip(spot, `${spot}`))}
-              </BackAndForthMarquee>
-            </div>
-          ) : (
-            // Still populating (or empty before bidding): chips grow in a
-            // swipeable row as each lands.
-            <div
-              className="px-4 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-              style={{ WebkitOverflowScrolling: "touch" }}
-            >
-              <AnimatePresence initial={false}>
-                {assignedSpots.map((spot) => renderChip(spot))}
-              </AnimatePresence>
-            </div>
-          )}
-        </div>
+        {/* Chips only render once spots start landing, so before any chips are
+            generated the card is just the header (matching Option 1's spacing).
+            Once present, chips populate one-by-one in a swipeable row. */}
+        {assignedSpots.length > 0 && (
+          <div>
+            {donePopulating ? (
+              // All spots landed: chips scroll back and forth like the title marquee.
+              <div className="px-4 pb-3">
+                <BackAndForthMarquee trackClassName="flex gap-2">
+                  {assignedSpots.map((spot) => renderMarqueeChip(spot, `${spot}`))}
+                </BackAndForthMarquee>
+              </div>
+            ) : (
+              // Still populating: chips grow in a swipeable row as each lands.
+              <div
+                className="px-4 pb-3 flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                style={{ WebkitOverflowScrolling: "touch" }}
+              >
+                <AnimatePresence initial={false}>
+                  {assignedSpots.map((spot) => renderChip(spot))}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
+        )}
       </motion.div>
     </div>
   )
