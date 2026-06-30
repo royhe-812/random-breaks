@@ -179,151 +179,30 @@ function InStreamSpinner({
   )
 }
 
-// Winner Chat Announcement with glow and wipe gradient
-function WinnerAnnouncement({ username, team, show }: { username: string; team: Team; show: boolean }) {
+// Winner announcement styled as a regular chat comment from the seller
+function WinnerAnnouncement({
+  seller,
+  winner,
+  team,
+  show,
+}: {
+  seller: string
+  winner: string
+  team: Team
+  show: boolean
+}) {
   if (!show) return null
-  
+
   return (
     <motion.div
-      className="relative px-4 py-4 rounded-xl overflow-hidden bg-black/60 backdrop-blur w-full"
-      style={{
-        boxShadow: `0 0 40px ${team.color}80, 0 0 80px ${team.color}50, 0 0 120px ${team.color}30`,
-      }}
-      initial={{ opacity: 0, scale: 0.8, y: 30 }}
-      animate={{ 
-        opacity: 1, 
-        scale: [1, 1.02, 1],
-        y: 0 
-      }}
-      transition={{ 
-        type: "spring", 
-        stiffness: 300, 
-        damping: 20,
-        scale: { duration: 0.8, repeat: Infinity, repeatDelay: 0.5 }
-      }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
     >
-      {/* Animated glow border with stronger effect - green */}
-      <motion.div
-        className="absolute inset-0 rounded-xl pointer-events-none"
-        style={{
-          border: `2px solid #4CE160`,
-        }}
-        animate={{
-          boxShadow: [
-            `inset 0 0 25px #4CE16040, 0 0 20px #4CE16060`,
-            `inset 0 0 50px #4CE16060, 0 0 40px #4CE16080`,
-            `inset 0 0 25px #4CE16040, 0 0 20px #4CE16060`,
-          ],
-        }}
-        transition={{ duration: 1, repeat: Infinity }}
-      />
-
-      {/* Primary sweeping wipe gradient - green */}
-      <motion.div
-        className="absolute inset-0 rounded-xl pointer-events-none"
-        style={{
-          background: "linear-gradient(90deg, transparent 0%, #4CE16030 40%, #4CE160 50%, #4CE16030 60%, transparent 100%)",
-        }}
-        animate={{ x: ["-100%", "100%"] }}
-        transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-      />
-
-      {/* Secondary wipe gradient - team color */}
-      <motion.div
-        className="absolute inset-0 rounded-xl pointer-events-none"
-        style={{
-          background: `linear-gradient(90deg, transparent 0%, ${team.color}20 40%, ${team.color}60 50%, ${team.color}20 60%, transparent 100%)`,
-        }}
-        animate={{ x: ["-100%", "100%"] }}
-        transition={{ duration: 1.8, repeat: Infinity, ease: "linear", delay: 0.4 }}
-      />
-
-      {/* Sparkle/confetti particles */}
-      {[...Array(12)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            width: Math.random() * 4 + 2,
-            height: Math.random() * 4 + 2,
-            left: `${10 + i * 7}%`,
-            top: `${20 + (i % 3) * 25}%`,
-            background: i % 3 === 0 ? "#4CE160" : i % 3 === 1 ? team.color : "#fff",
-          }}
-          animate={{
-            opacity: [0, 1, 0],
-            scale: [0, 1.5, 0],
-            y: [0, -10, 0],
-          }}
-          transition={{
-            duration: 1.2,
-            repeat: Infinity,
-            delay: i * 0.15,
-            ease: "easeOut",
-          }}
-        />
-      ))}
-
-      {/* Firework burst effect on edges */}
-      <motion.div
-        className="absolute -left-2 top-1/2 w-4 h-4 rounded-full pointer-events-none"
-        style={{ background: `radial-gradient(circle, ${team.color} 0%, transparent 70%)` }}
-        animate={{
-          scale: [0, 2, 0],
-          opacity: [0, 0.8, 0],
-        }}
-        transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-      />
-      <motion.div
-        className="absolute -right-2 top-1/2 w-4 h-4 rounded-full pointer-events-none"
-        style={{ background: `radial-gradient(circle, #4CE160 0%, transparent 70%)` }}
-        animate={{
-          scale: [0, 2, 0],
-          opacity: [0, 0.8, 0],
-        }}
-        transition={{ duration: 1.5, repeat: Infinity, delay: 0.8 }}
-      />
-
-      {/* Content with enhanced styling */}
-      <div className="relative z-10 flex items-center gap-2">
-        <motion.span 
-          className="text-2xl"
-          animate={{ 
-            rotate: [0, -10, 10, -10, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 1 }}
-        >
-          👑
-        </motion.span>
-        <p className="text-sm flex items-center gap-2">
-          <span className="font-bold text-white">{username}</span>
-          <span className="text-white/90">Won</span>
-          {/* Team initials square */}
-          <span 
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-white"
-            style={{ backgroundColor: team.color }}
-          >
-            {team.abbrev}
-          </span>
-          <motion.span 
-            className="font-black text-base text-white"
-            style={{ 
-              textShadow: `0 0 10px ${team.color}80`,
-            }}
-            animate={{
-              textShadow: [
-                `0 0 10px ${team.color}80`,
-                `0 0 20px ${team.color}`,
-                `0 0 10px ${team.color}80`,
-              ],
-            }}
-            transition={{ duration: 1, repeat: Infinity }}
-          >
-            {team.city} {team.name}!
-          </motion.span>
-        </p>
-      </div>
+      <span className="text-green-400 font-semibold text-sm">{seller}</span>
+      <span className="text-white/80 text-sm ml-1">
+        {`Seller assigned ${team.city} ${team.name} to ${winner}`}
+      </span>
     </motion.div>
   )
 }
@@ -465,16 +344,17 @@ export function InStreamExperience() {
               </motion.div>
             ))}
           </AnimatePresence>
-        </div>
 
-        {/* Winner Announcement - shows in chat area */}
-        {winnerTeam && (
-          <WinnerAnnouncement 
-            username="Adam007"
-            team={winnerTeam}
-            show={showWinner}
-          />
-        )}
+          {/* Winner announcement - blends in as a seller comment in the chat */}
+          {winnerTeam && (
+            <WinnerAnnouncement
+              seller="ryans_cardhouse"
+              winner="Adam007"
+              team={winnerTeam}
+              show={showWinner}
+            />
+          )}
+        </div>
 
         {/* Comment Input */}
         <div className="flex items-center bg-black/40 backdrop-blur rounded-full px-4 py-3">
