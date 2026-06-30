@@ -94,7 +94,7 @@ function buildSpotRequestMessage(teamName: string) {
 // Manual-assignment concept: the buyer asks for a team that wasn't in the
 // generated list, so the seller can add it manually as an extra spot.
 function buildManualRequestMessage(teamName: string) {
-  return `Any chance I can grab the ${teamName}? They weren't in the list.`
+  return `Any chance I can grab the ${teamName}?`
 }
 
 // Winner announcement styled as a regular chat comment from the seller
