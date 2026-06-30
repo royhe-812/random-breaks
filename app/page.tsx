@@ -99,7 +99,7 @@ function WinnerAnnouncement({
 
   return (
     <motion.div
-      className="max-w-[280px]"
+      className="pr-20"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -805,8 +805,8 @@ case "thumbnails-4":
 
       {/* Bottom UI Stack - Chat, Comment, Spinner, Auction Card */}
       <div className="absolute left-4 right-4 bottom-4 z-20 flex flex-col gap-2">
-        {/* Chat Messages */}
-        <div className="space-y-1.5 max-w-[280px]">
+        {/* Chat Messages - extend full width, leaving room for the right nav (~56px) plus a 24px gap */}
+        <div className="space-y-1.5 pr-20">
           <AnimatePresence mode="popLayout">
             {visibleMessages.map((msg, index) => (
               <motion.div
@@ -837,7 +837,7 @@ case "thumbnails-4":
         
         {/* Reaction messages after winner announcement */}
         {showWinner && reactionMessages.length > 0 && (
-          <div className="space-y-1.5 max-w-[280px]">
+          <div className="space-y-1.5 pr-20">
             <AnimatePresence mode="popLayout">
               {reactionMessages.map((msg, index) => (
                 <motion.div
@@ -859,7 +859,7 @@ case "thumbnails-4":
         {/* Pinned seller message (Option 3 - latest): static, always sits
             directly above the comment input, distinct from the scrolling chat. */}
         {selectedAnimation === "multi-spin-5-label" && showPinnedMessage && (
-          <div className="flex flex-col gap-0.5 max-w-[300px]">
+          <div className="flex flex-col gap-0.5 pr-20">
             <div className="flex items-center gap-1.5">
               <span className="text-white font-bold text-sm">ryans_cardhouse</span>
               <Pin className="w-3.5 h-3.5 text-white fill-white -rotate-45" />
