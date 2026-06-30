@@ -62,6 +62,9 @@ interface SingleSpinChipPopulateSpinnerProps {
   pendingSpot?: 1 | null
   /** When true, the spinner shows the "Pending seller" state (driven after the reveal). */
   pendingSeller?: boolean
+  /** True once the item card title has updated to the team name; keeps the landed
+   *  spot name in green in the header until then, after which it reverts to the break title. */
+  cardUpdated?: boolean
   /** Fired once the spin lands, to trigger the full-screen reveal. */
   onAnnounce?: (team: Team, spot: 1) => void
   /** Tapping the spots arc cycles the available count through the color tiers. */
@@ -113,6 +116,7 @@ export function SingleSpinChipPopulateSpinner({
   isSpinning,
   pendingSpot = null,
   pendingSeller = false,
+  cardUpdated = false,
   onAnnounce,
   onCycleSpots,
   onViewSpots,
@@ -278,6 +282,18 @@ export function SingleSpinChipPopulateSpinner({
                     transition={{ duration: justLanded ? 0.2 : 0.05 }}
                   >
                     {teams[currentIndex].city} {teams[currentIndex].name}
+                  </motion.span>
+                ) : result && !cardUpdated ? (
+                  <motion.span
+                    key="landed"
+                    className="font-semibold text-sm truncate"
+                    style={{ color: "#4CE160" }}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {result.city} {result.name}
                   </motion.span>
                 ) : (
                   <BackAndForthMarquee key="marquee" duration={26} trackClassName="text-sm leading-5">

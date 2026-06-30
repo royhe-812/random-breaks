@@ -1021,9 +1021,10 @@ case "thumbnails-4":
             totalSpots={32}
             availableSpots={demoSpots}
             isSpinning={isMultiSpinning}
-            pendingSpot={multiPendingSpot === 1 ? 1 : null}
-            pendingSeller={revealPendingSeller}
-            onAnnounce={handleMultiSelect}
+  pendingSpot={multiPendingSpot === 1 ? 1 : null}
+  pendingSeller={revealPendingSeller}
+  cardUpdated={showWinner || spotAssigned}
+  onAnnounce={handleMultiSelect}
             onCycleSpots={cycleSpots}
             onViewSpots={() => setIsBreakSpotsOpen(true)}
           />
