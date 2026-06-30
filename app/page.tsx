@@ -125,12 +125,12 @@ function WinnerAnnouncement({
       transition={{ duration: 0.3 }}
     >
       {singleSpin ? (
-        <>
+        <div className="flex flex-col">
           <span className="text-green-400 font-bold text-sm">{username}</span>
-          <span className="text-white/80 text-sm ml-1">
+          <span className="text-white/80 text-sm">
             won <span className="font-bold text-white">{`${team.city} ${team.name}`}</span>
           </span>
-        </>
+        </div>
       ) : (
         <>
           <span className="text-green-400 font-semibold text-sm">{seller}</span>
