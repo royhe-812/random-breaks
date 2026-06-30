@@ -212,10 +212,20 @@ export function MultiSpin5LabelSpinner({
           return
         }
         const spot = order[i]
+        // Defer the first landed chip: when the second spin begins ("after it
+        // spins again"), generate the chip for the first spot. The first spin
+        // landing itself does not create a chip.
+        if (i === 1) {
+          setLandedOrder((prev) => (prev.includes(order[0]) ? prev : [order[0], ...prev]))
+        }
         runSpin(spot, (team) => {
           landed[spot] = team
           setResults((prev) => ({ ...prev, [spot]: team }))
-          setLandedOrder((prev) => [...prev, spot]) // newest appended last
+          // First spin (i === 0) does not append a chip on landing; every later
+          // spin appends its chip as it lands.
+          if (i >= 1) {
+            setLandedOrder((prev) => (prev.includes(spot) ? prev : [...prev, spot]))
+          }
           // No "Waiting for seller" beat: between spins we keep the just-landed
           // green team on screen, and on the final spin the header reverts to the
           // case break title once spinning stops.
