@@ -71,6 +71,8 @@ interface MultiSpin5LabelSpinnerProps {
   /** Tapping the spots arc cycles the available count through the color tiers. */
   onCycleSpots?: () => void
   onViewSpots?: () => void
+  /** When true, the selected (announced) chip shows a "(Manual assignment)" suffix. */
+  manual?: boolean
 }
 
 // Circular progress component (mirrors the one used in TeamSpinner)
@@ -119,6 +121,7 @@ export function MultiSpin5LabelSpinner({
   onSpotsLanded,
   onCycleSpots,
   onViewSpots,
+  manual = false,
 }: MultiSpin5LabelSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
   const [spinningSpot, setSpinningSpot] = useState<0 | Spot>(0)
@@ -285,8 +288,8 @@ export function MultiSpin5LabelSpinner({
   const renderChip = (spot: Spot) => {
     const result = results[spot]
     if (!result) return null
-    const label = `${result.city} ${result.name}`
     const isAnnounced = pendingSpot === spot
+    const label = `${result.city} ${result.name}${isAnnounced && manual ? " (Manual assignment)" : ""}`
 
     return (
       <motion.div
@@ -324,6 +327,7 @@ export function MultiSpin5LabelSpinner({
         }}
       >
         {result.city} {result.name}
+        {isAnnounced && manual ? " (Manual assignment)" : ""}
       </span>
     )
   }
