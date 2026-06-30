@@ -69,28 +69,6 @@ interface SingleSpinChipPopulateSpinnerProps {
   onViewSpots?: () => void
 }
 
-const PendingIndicator = () => (
-  <motion.div
-    className="flex items-center gap-2"
-    initial={{ opacity: 0, y: 6 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0 }}
-    transition={{ duration: 0.2 }}
-  >
-    <span className="text-white font-semibold text-sm whitespace-nowrap">Waiting for seller</span>
-    <span className="flex items-center gap-0.5">
-      {[0, 1, 2].map((i) => (
-        <motion.span
-          key={i}
-          className="w-1 h-1 rounded-full bg-white/70"
-          animate={{ opacity: [0.3, 1, 0.3] }}
-          transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-        />
-      ))}
-    </span>
-  </motion.div>
-)
-
 // Circular progress component (mirrors the one used in TeamSpinner)
 const CircularProgress = ({ available, total, size = 16 }: { available: number; total: number; size?: number }) => {
   const percentage = (available / total) * 100
@@ -260,8 +238,6 @@ export function SingleSpinChipPopulateSpinner({
     }
   }, [])
 
-  const isAnnounced = pendingSpot === 1
-
   return (
     <div className="w-full">
       <motion.div
@@ -292,10 +268,18 @@ export function SingleSpinChipPopulateSpinner({
 
             <div className="flex flex-col flex-1 overflow-hidden">
               <AnimatePresence mode="wait">
-                {pendingSeller || (result && !isCycling) ? (
-                  <motion.div key="pending">
-                    <PendingIndicator />
-                  </motion.div>
+                {result && !isCycling ? (
+                  <motion.span
+                    key="result"
+                    className="font-semibold text-sm truncate"
+                    style={{ color: "#4CE160" }}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {result.city} {result.name}
+                  </motion.span>
                 ) : isCycling ? (
                   <motion.span
                     key={justLanded ? "landed" : teams[currentIndex].name}
@@ -335,43 +319,8 @@ export function SingleSpinChipPopulateSpinner({
           </div>
         </div>
 
-        {/* No "Spot:" label here. The divider + chip only render once the spin
-            lands, so the randomizer grows in height as the chip populates and
-            stays present until the concept is reset. */}
-        <AnimatePresence>
-          {result && (
-            <motion.div
-              key="chip-section"
-              layout
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="overflow-hidden"
-            >
-              {/* Divider separating the break header from the landed chip */}
-              <div className="mx-4 border-t border-white/10" />
-
-              <div className="px-4 pt-3 pb-3 flex">
-                <motion.div
-                  key="chip"
-                  layout
-                  initial={{ opacity: 0, scale: 0.8, y: 6 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
-                  style={{
-                    backgroundColor: isAnnounced ? "#4CE160" : "transparent",
-                    color: isAnnounced ? "#101820" : "#ffffff",
-                    boxShadow: isAnnounced ? "none" : "inset 0 0 0 1px rgba(255,255,255,0.6)",
-                  }}
-                >
-                  {result.city} {result.name}
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* No chip or divider — the landed spot name simply persists in green
+            in the header once the spin settles. */}
       </motion.div>
     </div>
   )
