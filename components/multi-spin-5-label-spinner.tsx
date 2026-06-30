@@ -239,13 +239,10 @@ export function MultiSpin5LabelSpinner({
             setLandedOrder((prev) => (prev.includes(spot) ? prev : [...prev, spot]))
           }
           // No "Waiting for seller" beat: between spins we keep the just-landed
-          // green team on screen, and on the final spin the header reverts to the
-          // case break title once spinning stops.
-          if (i + 1 >= order.length) {
-            runNext(i + 1)
-          } else {
-            interSpinTimeoutRef.current = setTimeout(() => runNext(i + 1), 2500)
-          }
+          // green team on screen. On the final spin, hold the landed-green for the
+          // same pause used between spins before reverting the header to the case
+          // break title.
+          interSpinTimeoutRef.current = setTimeout(() => runNext(i + 1), 2500)
         })
       }
       runNext(0)
