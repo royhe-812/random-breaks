@@ -5,7 +5,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from "react"
 
 // External libraries
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, ChevronRight, Heart, Star, Crown } from "lucide-react"
+import { ChevronDown, ChevronRight, Heart, Star, Crown, Pin } from "lucide-react"
 
 // Internal components
 import { TeamSpinner, type Team, teams } from "@/components/team-spinner"
@@ -203,6 +203,7 @@ export default function AnimationShowcase() {
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
   const [breakSpotsToRules, setBreakSpotsToRules] = useState(false) // When opening the sheet, jump straight to Break Rules
   const [showMarquee, setShowMarquee] = useState(true) // Toggle (under the seller name) for the promo marquee on Option 3 - latest
+  const [showPinnedMessage, setShowPinnedMessage] = useState(false) // Toggle for the seller's pinned message above the comment input
   // Demo: tapping the spots arc cycles the available count through the color tiers
   // (green -> yellow -> orange -> red) then resets, so the progress arc is interactive.
   const [demoSpots, setDemoSpots] = useState(15)
@@ -750,25 +751,45 @@ case "thumbnails-4":
                 <span className="text-white font-semibold text-sm">ryans_cardhouse</span>
                 <Heart className="w-4 h-4 text-white fill-white" />
               </div>
-              {/* Small toggle to show/hide the promo marquee (Option 3 - latest) */}
+              {/* Small toggles to show/hide the promo marquee + pinned seller
+                  message (Option 3 - latest) */}
               {selectedAnimation === "multi-spin-5-label" && (
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={showMarquee}
-                  aria-label="Toggle promo marquee"
-                  onClick={() => setShowMarquee((v) => !v)}
-                  className="flex items-center gap-1.5 self-start rounded-full bg-black/40 backdrop-blur px-2 py-1"
-                >
-                  <span
-                    className={`relative h-3.5 w-6 rounded-full transition-colors ${showMarquee ? "bg-green-500" : "bg-white/30"}`}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={showMarquee}
+                    aria-label="Toggle seller banner"
+                    onClick={() => setShowMarquee((v) => !v)}
+                    className="flex items-center gap-1.5 self-start rounded-full bg-black/40 backdrop-blur px-2 py-1"
                   >
                     <span
-                      className={`absolute top-0.5 h-2.5 w-2.5 rounded-full bg-white transition-all ${showMarquee ? "left-3" : "left-0.5"}`}
-                    />
-                  </span>
-                  <span className="text-white text-[11px] font-medium">Banner</span>
-                </button>
+                      className={`relative h-3.5 w-6 rounded-full transition-colors ${showMarquee ? "bg-green-500" : "bg-white/30"}`}
+                    >
+                      <span
+                        className={`absolute top-0.5 h-2.5 w-2.5 rounded-full bg-white transition-all ${showMarquee ? "left-3" : "left-0.5"}`}
+                      />
+                    </span>
+                    <span className="text-white text-[11px] font-medium">Seller banner</span>
+                  </button>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={showPinnedMessage}
+                    aria-label="Toggle pinned message"
+                    onClick={() => setShowPinnedMessage((v) => !v)}
+                    className="flex items-center gap-1.5 self-start rounded-full bg-black/40 backdrop-blur px-2 py-1"
+                  >
+                    <span
+                      className={`relative h-3.5 w-6 rounded-full transition-colors ${showPinnedMessage ? "bg-green-500" : "bg-white/30"}`}
+                    >
+                      <span
+                        className={`absolute top-0.5 h-2.5 w-2.5 rounded-full bg-white transition-all ${showPinnedMessage ? "left-3" : "left-0.5"}`}
+                      />
+                    </span>
+                    <span className="text-white text-[11px] font-medium">Pinned message</span>
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -885,6 +906,20 @@ case "thumbnails-4":
                 </motion.div>
               ))}
             </AnimatePresence>
+          </div>
+        )}
+
+        {/* Pinned seller message (Option 3 - latest): static, always sits
+            directly above the comment input, distinct from the scrolling chat. */}
+        {selectedAnimation === "multi-spin-5-label" && showPinnedMessage && (
+          <div className="flex flex-col gap-0.5 max-w-[300px]">
+            <div className="flex items-center gap-1.5">
+              <span className="text-white font-bold text-sm">ryans_cardhouse</span>
+              <Pin className="w-3.5 h-3.5 text-white fill-white -rotate-45" />
+            </div>
+            <span className="text-white/80 text-sm font-normal text-pretty">
+              Welcome in! Multi-spin breaks all day — spin three times, choose one. No cancellations, all spots ship!
+            </span>
           </div>
         )}
 
