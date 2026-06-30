@@ -1145,8 +1145,6 @@ case "thumbnails-4":
             onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
             manual={isManualConcept(selectedAnimation)}
             manualIcon={selectedAnimation === "multi-spin-5-manual-icon"}
-            {/* Manual concept no longer populates an extra chip in the randomizer
-                when a buyer asks for another spot in chat. */}
             manualAssignment={null}
           />
         )}
