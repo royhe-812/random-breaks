@@ -5,7 +5,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from "react"
 
 // External libraries
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, ChevronRight, Heart, Star, Crown, Pin } from "lucide-react"
+import { ChevronDown, ChevronRight, Heart, Star, Pin } from "lucide-react"
 
 // Internal components
 import { TeamSpinner, type Team, teams } from "@/components/team-spinner"
@@ -82,94 +82,32 @@ function buildSpotRequestMessage(teamName: string) {
   return SPOT_REQUEST_TEMPLATES[seed % SPOT_REQUEST_TEMPLATES.length](teamName)
 }
 
-// Winner Chat Announcement with glow and wipe gradient
-function WinnerAnnouncement({ username, team, show, hideTeamBlock = false }: { username: string; team: Team; show: boolean; hideTeamBlock?: boolean }) {
+// Winner announcement styled as a regular chat comment from the seller
+function WinnerAnnouncement({
+  username,
+  team,
+  show,
+  seller = "ryans_cardhouse",
+}: {
+  username: string
+  team: Team
+  show: boolean
+  hideTeamBlock?: boolean
+  seller?: string
+}) {
   if (!show) return null
-  
+
   return (
     <motion.div
-      className="relative px-3 py-2 rounded-lg overflow-hidden bg-black/60 backdrop-blur w-full"
-      style={{
-        border: `1px solid #4CE16080`,
-        boxShadow: `0 0 16px #4CE16040`,
-      }}
-      initial={{ opacity: 0, y: 12 }}
+      className="max-w-[280px]"
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 320, damping: 26 }}
+      transition={{ duration: 0.3 }}
     >
-      {/* Single subtle sweeping highlight */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: "linear-gradient(90deg, transparent 0%, #4CE16025 50%, transparent 100%)",
-        }}
-        animate={{ x: ["-100%", "100%"] }}
-        transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
-      />
-
-      {/* Minimal confetti burst from the crown */}
-      {[...Array(10)].map((_, i) => {
-        const angle = (i / 10) * Math.PI * 2
-        const distance = 26 + (i % 3) * 8
-        const palette = ["#4CE160", "#FFD400", team.color, "#ffffff"]
-        return (
-          <motion.span
-            key={i}
-            className="absolute left-4 top-1/2 pointer-events-none rounded-[1px]"
-            style={{
-              width: 4,
-              height: 4,
-              backgroundColor: palette[i % palette.length],
-            }}
-            initial={{ opacity: 0, x: 0, y: 0, scale: 0 }}
-            animate={{
-              opacity: [0, 1, 0],
-              x: Math.cos(angle) * distance,
-              y: Math.sin(angle) * distance,
-              scale: [0, 1, 0.4],
-              rotate: [0, 180],
-            }}
-            transition={{
-              duration: 1.1,
-              repeat: Infinity,
-              repeatDelay: 0.9,
-              delay: i * 0.03,
-              ease: "easeOut",
-            }}
-          />
-        )
-      })}
-
-      {/* Content - single compact row */}
-      <div className="relative z-10 flex items-center gap-2">
-        <p className="text-sm flex items-center gap-1.5 min-w-0">
-          <motion.span
-            className="shrink-0"
-            initial={{ scale: 0, rotate: -30 }}
-            animate={{ scale: 1, rotate: [-8, 8, -8] }}
-            transition={{
-              scale: { type: "spring", stiffness: 400, damping: 12 },
-              rotate: { duration: 1.2, repeat: Infinity, ease: "easeInOut" },
-            }}
-          >
-            <Crown className="w-4 h-4 fill-yellow-400 text-yellow-400" aria-hidden />
-          </motion.span>
-          <span className="font-semibold text-white shrink-0">{username}</span>
-          <span className="text-white/70 shrink-0">won</span>
-          {/* Team initials square - hidden for text-only concepts */}
-          {!hideTeamBlock && (
-            <span
-              className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold text-white shrink-0"
-              style={{ backgroundColor: team.color }}
-            >
-              {team.abbrev}
-            </span>
-          )}
-          <span className="font-semibold text-white truncate">
-            {team.city} {team.name}
-          </span>
-        </p>
-      </div>
+      <span className="text-green-400 font-semibold text-sm">{seller}</span>
+      <span className="text-white/80 text-sm ml-1">
+        {`Seller assigned ${team.city} ${team.name} to ${username}`}
+      </span>
     </motion.div>
   )
 }
