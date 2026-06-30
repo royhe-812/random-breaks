@@ -755,7 +755,7 @@ case "thumbnails-4":
               </div>
               {/* Small toggles to show/hide the promo marquee + pinned seller
                   message (Option 3 - latest) */}
-              {(selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation)) && (
+              {(selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation) || selectedAnimation === "single-spin-populate") && (
                 <div className="flex flex-wrap items-center gap-1.5">
                   <button
                     type="button"
@@ -915,7 +915,7 @@ case "thumbnails-4":
 
         {/* Pinned seller message (Option 3 - latest): static, always sits
             directly above the comment input, distinct from the scrolling chat. */}
-        {(selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation)) && showPinnedMessage && (
+        {(selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation) || selectedAnimation === "single-spin-populate") && showPinnedMessage && (
           <div className="flex flex-col gap-0.5 pr-20">
             <div className="flex items-center gap-1.5">
               <span className="text-white font-bold text-sm">ryans_cardhouse</span>
@@ -978,7 +978,7 @@ case "thumbnails-4":
         {/* Promo marquee (Option 3 - latest): full-bleed, continuously scrolling
             strip on a transparent black background, sitting between the comment
             input and the randomizer. */}
-        {(selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation)) && showMarquee && (
+        {(selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation) || selectedAnimation === "single-spin-populate") && showMarquee && (
           <div className="w-full overflow-hidden rounded-xl bg-black/40 backdrop-blur py-2">
             <motion.div
               className="flex w-max whitespace-nowrap"
