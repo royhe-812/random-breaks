@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
+import { Pointer } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 
 type Spot = 1 | 2 | 3 | 4
@@ -75,6 +76,8 @@ interface MultiSpin5LabelSpinnerProps {
   onViewSpots?: () => void
   /** When true, the selected (announced) chip shows a "(Manual assignment)" suffix. */
   manual?: boolean
+  /** When true, the selected (announced) chip shows a hand/pointer icon instead of the "(Manual)" text. */
+  manualIcon?: boolean
   /** A manually-assigned team (not in the spun list) to populate as an extra 4th chip. */
   manualAssignment?: { spot: Spot; team: Team } | null
 }
@@ -126,6 +129,7 @@ export function MultiSpin5LabelSpinner({
   onCycleSpots,
   onViewSpots,
   manual = false,
+  manualIcon = false,
   manualAssignment = null,
 }: MultiSpin5LabelSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
@@ -303,7 +307,8 @@ export function MultiSpin5LabelSpinner({
     const result = results[spot]
     if (!result) return null
     const isAnnounced = pendingSpot === spot
-    const label = `${result.city} ${result.name}${isAnnounced && manual ? " (Manual)" : ""}`
+    const showManualIcon = isAnnounced && manualIcon
+    const label = `${result.city} ${result.name}${isAnnounced && manual && !manualIcon ? " (Manual)" : ""}`
 
     return (
       <motion.div
@@ -313,13 +318,14 @@ export function MultiSpin5LabelSpinner({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
+        className="inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
         style={{
           backgroundColor: isAnnounced ? "#4CE160" : "transparent",
           color: isAnnounced ? "#101820" : "#ffffff",
           boxShadow: isAnnounced ? "none" : "inset 0 0 0 1px rgba(255,255,255,0.6)",
         }}
       >
+        {showManualIcon && <Pointer className="w-3 h-3 shrink-0" aria-label="Manual assignment" />}
         {label}
       </motion.div>
     )
@@ -330,18 +336,20 @@ export function MultiSpin5LabelSpinner({
     const result = results[spot]
     if (!result) return null
     const isAnnounced = pendingSpot === spot
+    const showManualIcon = isAnnounced && manualIcon
     return (
       <span
         key={key}
-        className="inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1.5 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
+        className="inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
         style={{
           backgroundColor: isAnnounced ? "#4CE160" : "transparent",
           color: isAnnounced ? "#101820" : "#ffffff",
           boxShadow: isAnnounced ? "none" : "inset 0 0 0 1px rgba(255,255,255,0.6)",
         }}
       >
+        {showManualIcon && <Pointer className="w-3 h-3 shrink-0" aria-label="Manual assignment" />}
         {result.city} {result.name}
-        {isAnnounced && manual ? " (Manual)" : ""}
+        {isAnnounced && manual && !manualIcon ? " (Manual)" : ""}
       </span>
     )
   }
