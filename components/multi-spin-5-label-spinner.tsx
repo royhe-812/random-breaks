@@ -334,7 +334,7 @@ export function MultiSpin5LabelSpinner({
         transition={{ duration: 0.2 }}
       >
         {/* Header row: thumbnail + title + spots + view spots */}
-        <div className="px-4 pt-3 pb-2">
+        <div className="px-4 pt-3 pb-3">
           <div className="flex items-center gap-3">
             <motion.div
               className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-white text-xs"
