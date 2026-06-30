@@ -106,7 +106,8 @@ function WinnerAnnouncement({
     >
       <span className="text-green-400 font-semibold text-sm">{seller}</span>
       <span className="text-white/80 text-sm ml-1">
-        {`Seller assigned ${team.city} ${team.name} to ${username}`}
+        assigned <span className="font-bold text-white">{`${team.city} ${team.name}`}</span> to{" "}
+        <span className="font-bold text-white">{username}</span>
       </span>
     </motion.div>
   )
