@@ -41,7 +41,7 @@ import { InStreamExperience } from "@/components/in-stream-experience"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 
-type AnimationType = "card-flip" | "single-spin-populate" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 // Both manual concepts share the same behavior (extra 4th manual chip, chat
 // wording, item-card label); they only differ in how the chip is marked:
@@ -50,8 +50,15 @@ type AnimationType = "card-flip" | "single-spin-populate" | "multi-spin-repeat" 
 const isManualConcept = (a: AnimationType) =>
   a === "multi-spin-5-manual" || a === "multi-spin-5-manual-icon"
 
+// "Spin Later" is a duplicate of "Single Spin"; the only differences are that all
+// spots are sold (0/32 available), the item card reads "Random Break #32", and the
+// card is marked sold out. Everything else behaves identically to Single Spin.
+const isSingleSpin = (a: AnimationType) =>
+  a === "single-spin-populate" || a === "single-spin-later"
+
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "single-spin-populate", name: "Single Spin" },
+  { id: "single-spin-later", name: "Spin Later" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-4-auto", name: "Multi-Spin Text" },
   // Temporarily hidden from the concepts list (kept for potential future use):
@@ -184,6 +191,9 @@ export default function AnimationShowcase() {
   // Fixed break number for the item card title. This stays constant even after
   // winning (which decrements the available spots count, demoSpots).
   const breakNumber = 15
+  // "Spin Later" is a fully sold-out break, shown as "Random Break #32".
+  const displayBreakNumber = selectedAnimation === "single-spin-later" ? 32 : breakNumber
+  const isSoldOut = selectedAnimation === "single-spin-later"
   const cycleSpots = useCallback(() => {
     setDemoSpots((prev) => {
       const next = prev - 8
@@ -379,7 +389,7 @@ export default function AnimationShowcase() {
       selectedAnimation === "multi-spin-5-label" ||
       selectedAnimation === "multi-spin-6-titlerow" ||
       selectedAnimation === "multi-spin-4-auto" ||
-      selectedAnimation === "single-spin-populate"
+      isSingleSpin(selectedAnimation)
     ) {
       setIsRevealing(false)
       setShowWinner(true)
@@ -480,7 +490,7 @@ export default function AnimationShowcase() {
     // Single spin now follows the same beat as multi-spin: the randomizer stops,
     // we show "Pending seller", the seller assigns the spot (chip turns green +
     // title swaps), and ONLY THEN do we play the full-screen reveal.
-    const usesPendingAssignment = isMultiSpin || selectedAnimation === "single-spin-populate"
+    const usesPendingAssignment = isMultiSpin || isSingleSpin(selectedAnimation)
 
     if (usesPendingAssignment) {
       // Pending seller → seller assigns the spot (green chip + title) → reveal.
@@ -607,7 +617,7 @@ export default function AnimationShowcase() {
         setIsRevealing(true)
         setKey(prev => prev + 1)
       }, 1500)
-    } else if (selectedAnimation === "card-flip" || selectedAnimation === "single-spin-populate" || selectedAnimation === "multi-spin" || selectedAnimation === "multi-spin-2" || selectedAnimation === "multi-spin-4" || selectedAnimation === "multi-spin-4-auto" || selectedAnimation === "multi-spin-4-chips" || selectedAnimation === "multi-spin-4-chips-no-label" || selectedAnimation === "multi-spin-3-label" || selectedAnimation === "multi-spin-4-rules" || selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation) || selectedAnimation === "multi-spin-6-titlerow") {
+    } else if (selectedAnimation === "card-flip" || isSingleSpin(selectedAnimation) || selectedAnimation === "multi-spin" || selectedAnimation === "multi-spin-2" || selectedAnimation === "multi-spin-4" || selectedAnimation === "multi-spin-4-auto" || selectedAnimation === "multi-spin-4-chips" || selectedAnimation === "multi-spin-4-chips-no-label" || selectedAnimation === "multi-spin-3-label" || selectedAnimation === "multi-spin-4-rules" || selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation) || selectedAnimation === "multi-spin-6-titlerow") {
       // Single Spin (chip) + Multi-Spin: kick off the spin(s).
       setIsMultiSpinning(true)
     } else {
@@ -624,6 +634,8 @@ export default function AnimationShowcase() {
       case "card-flip":
         return <CardFlipReveal key={key} {...props} />
       case "single-spin-populate":
+        return <CardFlipReveal key={key} {...props} />
+      case "single-spin-later":
         return <CardFlipReveal key={key} {...props} />
       case "multi-spin-repeat":
         return <CardFlipReveal key={key} {...props} />
@@ -801,7 +813,7 @@ case "thumbnails-4":
               </div>
               {/* Small toggles to show/hide the promo marquee + pinned seller
                   message (Option 3 - latest) */}
-              {(selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation) || selectedAnimation === "single-spin-populate") && (
+              {(selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation) || isSingleSpin(selectedAnimation)) && (
                 <div className="flex flex-wrap items-center gap-1.5">
                   <button
                     type="button"
@@ -946,7 +958,7 @@ case "thumbnails-4":
           team={winnerTeam}
           show={showWinner}
           hideTeamBlock={selectedAnimation === "thumbnails-4"}
-          singleSpin={selectedAnimation === "single-spin-populate"}
+          singleSpin={isSingleSpin(selectedAnimation)}
         />
       )
     )
@@ -975,7 +987,7 @@ case "thumbnails-4":
 
         {/* Pinned seller message (Option 3 - latest): static, always sits
             directly above the comment input, distinct from the scrolling chat. */}
-        {(selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation) || selectedAnimation === "single-spin-populate") && showPinnedMessage && (
+        {(selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation) || isSingleSpin(selectedAnimation)) && showPinnedMessage && (
           <div className="flex flex-col gap-0.5 pr-20">
             <div className="flex items-center gap-1.5">
               <span className="text-white font-bold text-sm">ryans_cardhouse</span>
@@ -1038,7 +1050,7 @@ case "thumbnails-4":
         {/* Promo marquee (Option 3 - latest): full-bleed, continuously scrolling
             strip on a transparent black background, sitting between the comment
             input and the randomizer. */}
-        {(selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation) || selectedAnimation === "single-spin-populate") && showMarquee && (
+        {(selectedAnimation === "multi-spin-5-label" || isManualConcept(selectedAnimation) || isSingleSpin(selectedAnimation)) && showMarquee && (
           <div className="w-full overflow-hidden rounded-xl bg-black/40 backdrop-blur py-2">
             <motion.div
               className="flex w-max whitespace-nowrap"
@@ -1061,7 +1073,7 @@ case "thumbnails-4":
         {/* Team Spinner with Spots Available - shown for most concepts. For slot-machine (Team Picker),
             battle, and carousel it stays in its idle/zero state (thumbnail) since those concepts
             handle their own cycling + reveal full screen (isSpinnerRevealing is never set for them). */}
-        {selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
+        {selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "single-spin-later" && selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
@@ -1076,10 +1088,10 @@ case "thumbnails-4":
         )}
 
         {/* Single Spin Populate (No Label): same flow, but the randomizer grows as the chip populates */}
-        {selectedAnimation === "single-spin-populate" && (
+        {isSingleSpin(selectedAnimation) && (
           <SingleSpinChipPopulateSpinner
             totalSpots={32}
-            availableSpots={demoSpots}
+            availableSpots={selectedAnimation === "single-spin-later" ? 0 : demoSpots}
             isSpinning={isMultiSpinning}
   pendingSpot={multiPendingSpot === 1 ? 1 : null}
   pendingSeller={revealPendingSeller}
@@ -1241,20 +1253,27 @@ case "thumbnails-4":
                   </BackAndForthMarquee>
                 </div>
               ) : (
-                <p className="text-sm text-white mb-0.5 truncate">
-                  <span className="font-semibold">
-                    {(showWinner || spotAssigned) && winnerTeam
-                      ? isManualConcept(selectedAnimation)
-                        ? `Random Break #${breakNumber} - ${
-                            [manualFirstTeam, manualSecondTeam]
-                              .filter((t): t is Team => Boolean(t))
-                              .map((t) => `${t.city} ${t.name}`)
-                              .join(", ") || `${winnerTeam.city} ${winnerTeam.name}`
-                          }`
-                        : `Random Break #${breakNumber} - ${winnerTeam.city} ${winnerTeam.name}`
-                      : `Random Break #${breakNumber}`}
-                  </span>
-                </p>
+                <div className="flex items-center gap-2 mb-0.5 min-w-0">
+                  <p className="text-sm text-white truncate min-w-0">
+                    <span className="font-semibold">
+                      {(showWinner || spotAssigned) && winnerTeam
+                        ? isManualConcept(selectedAnimation)
+                          ? `Random Break #${displayBreakNumber} - ${
+                              [manualFirstTeam, manualSecondTeam]
+                                .filter((t): t is Team => Boolean(t))
+                                .map((t) => `${t.city} ${t.name}`)
+                                .join(", ") || `${winnerTeam.city} ${winnerTeam.name}`
+                            }`
+                          : `Random Break #${displayBreakNumber} - ${winnerTeam.city} ${winnerTeam.name}`
+                        : `Random Break #${displayBreakNumber}`}
+                    </span>
+                  </p>
+                  {isSoldOut && (
+                    <span className="flex-shrink-0 rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-semibold text-red-400">
+                      Sold Out
+                    </span>
+                  )}
+                </div>
               )}
               {/* Option 4 - latest: radial progress arc + spots available beneath the title */}
               {selectedAnimation === "multi-spin-6-titlerow" && (
@@ -1265,7 +1284,7 @@ case "thumbnails-4":
                   <SpotsProgress available={demoSpots} total={32} size={16} />
                 </button>
               )}
-              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "multi-spin-repeat" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
+              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "single-spin-later" && selectedAnimation !== "multi-spin-repeat" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
                 <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
                   <svg width="12" height="15" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="2" y="2" width="28" height="36" rx="3" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5"/>
