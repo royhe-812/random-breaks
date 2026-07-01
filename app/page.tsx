@@ -1360,14 +1360,18 @@ case "thumbnails-4":
               Max bid
             </button>
             {soldOut ? (
-              <button
+              <div
                 onClick={handleSpinLaterTap}
-                disabled={isMultiSpinning || isRevealing || revealPendingSeller}
-                className="flex-1 px-5 py-2.5 rounded-full font-semibold text-sm text-black transition-opacity disabled:opacity-60"
-                style={{ backgroundColor: '#8F8F8F' }}
+                className="relative flex-1 h-14 rounded-full p-1.5 cursor-pointer"
+                style={{ border: "1px solid #8F8F8F" }}
               >
-                Sold Out
-              </button>
+                <div
+                  className="h-full w-full rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: '#8F8F8F' }}
+                >
+                  <span className="text-black font-semibold text-sm">Sold out</span>
+                </div>
+              </div>
             ) : (
             <div className="flex-1">
               <SwipeToBid 
