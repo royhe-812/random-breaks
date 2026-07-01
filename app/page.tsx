@@ -191,9 +191,7 @@ export default function AnimationShowcase() {
   // Fixed break number for the item card title. This stays constant even after
   // winning (which decrements the available spots count, demoSpots).
   const breakNumber = 15
-  // "Spin Later" is a fully sold-out break, shown as "Random Break #32".
-  const displayBreakNumber = selectedAnimation === "single-spin-later" ? 32 : breakNumber
-  const isSoldOut = selectedAnimation === "single-spin-later"
+
   const cycleSpots = useCallback(() => {
     setDemoSpots((prev) => {
       const next = prev - 8
@@ -203,6 +201,11 @@ export default function AnimationShowcase() {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
   const [hasWon, setHasWon] = useState(false)
+  const [spinLaterBreakNumber, setSpinLaterBreakNumber] = useState(32) // "Spin Later": each tap of "Sold Out" moves DOWN to the next lower-numbered sold-out break
+  // "Spin Later" is a fully sold-out break; the number counts DOWN as the seller
+  // works through sold-out breaks (32 → 31 → 30 …).
+  const soldOut = selectedAnimation === "single-spin-later"
+  const displayBreakNumber = soldOut ? spinLaterBreakNumber : breakNumber
   const [visibleMessages, setVisibleMessages] = useState(chatMessages.slice(0, 3))
   const [viewerCount, setViewerCount] = useState(240)
   const [winnerTeam, setWinnerTeam] = useState<Team | null>(null)
@@ -286,6 +289,7 @@ export default function AnimationShowcase() {
     setCommentTyped(false)
     setRevealPendingSeller(false)
     setDemoSpots(15)
+    setSpinLaterBreakNumber(32)
     if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
     chatPausedRef.current = false
   }, [selectedAnimation])
@@ -392,6 +396,7 @@ export default function AnimationShowcase() {
       isSingleSpin(selectedAnimation)
     ) {
       setIsRevealing(false)
+      setIsMultiSpinning(false)
       setShowWinner(true)
       setKey(prev => prev + 1)
       return
@@ -626,6 +631,29 @@ export default function AnimationShowcase() {
       setIsSpinnerRevealing(true)
     }
   }, [selectedAnimation])
+
+  // "Spin Later": tapping the "Sold Out" button cycles the randomizer, lands,
+  // reveals, and posts the in-chat confirmation. Tapping again after a completed
+  // cycle moves DOWN to the next lower-numbered sold-out break and spins again.
+  const handleSpinLaterTap = useCallback(() => {
+    // Ignore taps while a spin / pending-seller beat / reveal is in progress.
+    if (isMultiSpinning || isRevealing || revealPendingSeller) return
+
+    if (showWinner || spotAssigned) {
+      // A previous cycle finished — advance to the next (lower) break and reset.
+      setSpinLaterBreakNumber((prev) => Math.max(1, prev - 1))
+      setShowWinner(false)
+      setSpotAssigned(false)
+      setSelectedTeam(null)
+      setWinnerTeam(null)
+      setMultiPendingSpot(null)
+      pendingSpotRef.current = null
+      setIsRevealing(false)
+    }
+
+    chatPausedRef.current = true
+    setIsMultiSpinning(true) // Kick off the single-spin randomizer
+  }, [isMultiSpinning, isRevealing, revealPendingSeller, showWinner, spotAssigned])
 
   const renderAnimation = () => {
     const props = { isRevealing, onComplete: handleComplete, team: selectedTeam, onTeamSelected: handleTeamSelected }
@@ -1253,27 +1281,20 @@ case "thumbnails-4":
                   </BackAndForthMarquee>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 mb-0.5 min-w-0">
-                  <p className="text-sm text-white truncate min-w-0">
-                    <span className="font-semibold">
-                      {(showWinner || spotAssigned) && winnerTeam
-                        ? isManualConcept(selectedAnimation)
-                          ? `Random Break #${displayBreakNumber} - ${
-                              [manualFirstTeam, manualSecondTeam]
-                                .filter((t): t is Team => Boolean(t))
-                                .map((t) => `${t.city} ${t.name}`)
-                                .join(", ") || `${winnerTeam.city} ${winnerTeam.name}`
-                            }`
-                          : `Random Break #${displayBreakNumber} - ${winnerTeam.city} ${winnerTeam.name}`
-                        : `Random Break #${displayBreakNumber}`}
-                    </span>
-                  </p>
-                  {isSoldOut && (
-                    <span className="flex-shrink-0 rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-semibold text-red-400">
-                      Sold Out
-                    </span>
-                  )}
-                </div>
+                <p className="text-sm text-white mb-0.5 truncate">
+                  <span className="font-semibold">
+                    {(showWinner || spotAssigned) && winnerTeam
+                      ? isManualConcept(selectedAnimation)
+                        ? `Random Break #${displayBreakNumber} - ${
+                            [manualFirstTeam, manualSecondTeam]
+                              .filter((t): t is Team => Boolean(t))
+                              .map((t) => `${t.city} ${t.name}`)
+                              .join(", ") || `${winnerTeam.city} ${winnerTeam.name}`
+                          }`
+                        : `Random Break #${displayBreakNumber} - ${winnerTeam.city} ${winnerTeam.name}`
+                      : `Random Break #${displayBreakNumber}`}
+                  </span>
+                </p>
               )}
               {/* Option 4 - latest: radial progress arc + spots available beneath the title */}
               {selectedAnimation === "multi-spin-6-titlerow" && (
@@ -1312,32 +1333,42 @@ case "thumbnails-4":
             <div className="flex items-center gap-1.5">
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
               <span className="text-green-400 font-medium text-sm">
-                {hasWon ? 'Adam007' : 'Jessica991'}
+                {(hasWon || soldOut) ? 'Adam007' : 'Jessica991'}
               </span>
               <span className="text-white/60 text-sm">
-                {hasWon ? 'won' : 'is winning'}
+                {(hasWon || soldOut) ? 'won' : 'is winning'}
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-red-500">
               <div className="w-4 h-4 rounded-full border-2 border-red-500 flex items-center justify-center">
                 <div className="w-1 h-1 rounded-full bg-red-500" />
               </div>
-              <span className="font-medium text-sm">{hasWon ? '00:00' : '00:10'}</span>
+              <span className="font-medium text-sm">{(hasWon || soldOut) ? '00:00' : '00:10'}</span>
             </div>
           </div>
           
           <div className="flex gap-3">
             <button 
-              disabled={hasWon}
+              disabled={hasWon || soldOut}
               className={`px-5 py-2.5 rounded-full font-medium text-sm transition-colors ${
-                hasWon 
+                (hasWon || soldOut)
                   ? 'border text-black cursor-not-allowed' 
                   : 'border border-white/30 text-white hover:bg-white/10'
               }`}
-              style={hasWon ? { backgroundColor: '#8F8F8F', borderColor: '#8F8F8F' } : undefined}
+              style={(hasWon || soldOut) ? { backgroundColor: '#8F8F8F', borderColor: '#8F8F8F' } : undefined}
             >
               Max bid
             </button>
+            {soldOut ? (
+              <button
+                onClick={handleSpinLaterTap}
+                disabled={isMultiSpinning || isRevealing || revealPendingSeller}
+                className="flex-1 px-5 py-2.5 rounded-full font-semibold text-sm text-black transition-opacity disabled:opacity-60"
+                style={{ backgroundColor: '#8F8F8F' }}
+              >
+                Sold Out
+              </button>
+            ) : (
             <div className="flex-1">
               <SwipeToBid 
                 key={selectedAnimation}
@@ -1383,6 +1414,7 @@ case "thumbnails-4":
                 }}
               />
             </div>
+            )}
           </div>
         </div>
       </div>
