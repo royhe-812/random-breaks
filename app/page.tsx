@@ -1241,8 +1241,19 @@ case "thumbnails-4":
                   </BackAndForthMarquee>
                 </div>
               ) : (
-                <p className="text-sm text-white mb-0.5 line-clamp-2">
-                  <span className="font-semibold">{(showWinner || spotAssigned) && winnerTeam ? `Random Break #${breakNumber} - ${winnerTeam.city} ${winnerTeam.name}` : `Random Break #${breakNumber}`}</span>
+                <p className="text-sm text-white mb-0.5 truncate">
+                  <span className="font-semibold">
+                    {(showWinner || spotAssigned) && winnerTeam
+                      ? isManualConcept(selectedAnimation)
+                        ? `Random Break #${breakNumber} - ${
+                            [manualFirstTeam, manualSecondTeam]
+                              .filter((t): t is Team => Boolean(t))
+                              .map((t) => `${t.city} ${t.name}`)
+                              .join(", ") || `${winnerTeam.city} ${winnerTeam.name}`
+                          }`
+                        : `Random Break #${breakNumber} - ${winnerTeam.city} ${winnerTeam.name}`
+                      : `Random Break #${breakNumber}`}
+                  </span>
                 </p>
               )}
               {/* Option 4 - latest: radial progress arc + spots available beneath the title */}

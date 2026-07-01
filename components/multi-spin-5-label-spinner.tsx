@@ -305,7 +305,7 @@ export function MultiSpin5LabelSpinner({
     if (!result) return null
     const isAnnounced = pendingSpot === spot
     const showManualIcon = isAnnounced && manualIcon
-    const label = `${result.city} ${result.name}${isAnnounced && manual && !manualIcon ? " (Manual)" : ""}`
+    const label = `${result.city} ${result.name}`
 
     return (
       <motion.div
@@ -346,7 +346,6 @@ export function MultiSpin5LabelSpinner({
       >
         {showManualIcon && <Pointer className="w-3 h-3 shrink-0" aria-label="Manual assignment" />}
         {result.city} {result.name}
-        {isAnnounced && manual && !manualIcon ? " (Manual)" : ""}
       </span>
     )
   }
