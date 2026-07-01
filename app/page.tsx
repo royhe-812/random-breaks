@@ -353,7 +353,8 @@ export default function AnimationShowcase() {
           setTimeout(() => {
             manualPhaseRef.current = "second"
             setShowWinner(false)
-            setWinnerTeam(manualExtraTeam) // Drives the second reveal + item card
+            setSelectedTeam(manualExtraTeam) // The reveal component renders `selectedTeam`
+            setWinnerTeam(manualExtraTeam) // Drives the item card + announcement
             pendingSpotRef.current = null
             setIsRevealing(true)
             setKey(prev => prev + 1)
