@@ -58,7 +58,6 @@ const isSingleSpin = (a: AnimationType) =>
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "single-spin-populate", name: "Single Spin" },
-  { id: "single-spin-later", name: "Spin Later" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-4-auto", name: "Multi-Spin Text" },
   // Temporarily hidden from the concepts list (kept for potential future use):
@@ -67,6 +66,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "multi-spin-4-rules", name: "Option 4" },
   { id: "multi-spin-5-label", name: "Multi Spin" },
   { id: "multi-spin-5-manual", name: "Manual Spin (Manual Assignment)" },
+  { id: "single-spin-later", name: "Spin Later" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-5-manual-icon", name: "Multi Spin (Manual Icon)" },
   // { id: "multi-spin-6-titlerow", name: "Option 4 - latest" },
