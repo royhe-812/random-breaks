@@ -106,7 +106,6 @@ function WinnerAnnouncement({
   show,
   seller = "ryans_cardhouse",
   singleSpin = false,
-  secondTeam = null,
 }: {
   username: string
   team: Team
@@ -114,7 +113,6 @@ function WinnerAnnouncement({
   hideTeamBlock?: boolean
   seller?: string
   singleSpin?: boolean
-  secondTeam?: Team | null
 }) {
   if (!show) return null
 
@@ -137,13 +135,8 @@ function WinnerAnnouncement({
           <span className="text-green-400 font-bold text-sm">{seller}</span>
           <span className="text-white/80 text-sm">
             assigned{" "}
-            <span className="font-bold text-white">{`${team.city} ${team.name}`}</span>
-            {secondTeam && (
-              <>
-                {" "}and <span className="font-bold text-white">{`${secondTeam.city} ${secondTeam.name}`}</span>
-              </>
-            )}{" "}
-            to <span className="font-bold text-white">{username}</span>
+            <span className="font-bold text-white">{`${team.city} ${team.name}`}</span> to{" "}
+            <span className="font-bold text-white">{username}</span>
           </span>
         </div>
       )}
@@ -213,10 +206,12 @@ export default function AnimationShowcase() {
   const [commentRequested, setCommentRequested] = useState(false) // Buyer tapped "Add comment" to request a spot during pending
   const [requestDraft, setRequestDraft] = useState<{ spot: 1 | 2 | 3 | 4; team: Team } | null>(null) // Pre-picked spot, autofilled into the comment input for the buyer to tap-send
   const [manualExtraTeam, setManualExtraTeam] = useState<Team | null>(null) // Manual concept: an extra team NOT in the spun list, requested alongside a spun spot
-  const [manualSecondTeam, setManualSecondTeam] = useState<Team | null>(null) // Manual concept: the extra team once the seller has "assigned" it (shown in the chat announcement)
+  const [manualFirstTeam, setManualFirstTeam] = useState<Team | null>(null) // Manual concept: the spun (from-list) team once assigned — first chat announcement
+  const [manualSecondTeam, setManualSecondTeam] = useState<Team | null>(null) // Manual concept: the extra (non-list) team once assigned — second chat announcement
   const [keyboardOpen, setKeyboardOpen] = useState(false) // Buyer tapped the comment input -> mock keyboard slides up
   const [commentTyped, setCommentTyped] = useState(false) // Buyer tapped a key -> the pre-written comment is populated into the input
   const assignFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null) // Auto-assigns if the buyer never requests via comment
+  const manualPhaseRef = useRef<"first" | "second">("first") // Manual concept: which of the two sequential assignment moments is currently revealing
   
   // Random reaction usernames and message templates
   const reactionUsers = [
@@ -274,7 +269,9 @@ export default function AnimationShowcase() {
     setCommentRequested(false)
     setRequestDraft(null)
     setManualExtraTeam(null)
+    setManualFirstTeam(null)
     setManualSecondTeam(null)
+    manualPhaseRef.current = "first"
     setKeyboardOpen(false)
     setCommentTyped(false)
     setRevealPendingSeller(false)
@@ -341,6 +338,34 @@ export default function AnimationShowcase() {
     // The full-screen spot reveal animation just finished.
     if (selectedAnimation === "in-stream") return
 
+    // Manual concept: two sequential assignment moments.
+    //  • Moment 1: the just-finished reveal was the spun (from-list) spot — announce
+    //    it in chat, then after a beat assign the extra (non-list) team and play its
+    //    own reveal.
+    //  • Moment 2: the just-finished reveal was the extra team — announce it in chat.
+    if (isManualConcept(selectedAnimation)) {
+      setIsRevealing(false)
+      setKey(prev => prev + 1)
+      if (manualPhaseRef.current === "first") {
+        setShowWinner(true)
+        setManualFirstTeam(winnerTeam)
+        if (manualExtraTeam) {
+          setTimeout(() => {
+            manualPhaseRef.current = "second"
+            setShowWinner(false)
+            setWinnerTeam(manualExtraTeam) // Drives the second reveal + item card
+            pendingSpotRef.current = null
+            setIsRevealing(true)
+            setKey(prev => prev + 1)
+          }, 2600)
+        }
+      } else {
+        setShowWinner(true)
+        setManualSecondTeam(winnerTeam)
+      }
+      return
+    }
+
     // Multi-spin AND single spin: the "Pending seller" beat and green-chip
     // assignment already happened BEFORE this reveal, so once the reveal finishes
     // just surface the in-chat winner. The selection is already made, so there is
@@ -351,7 +376,6 @@ export default function AnimationShowcase() {
       selectedAnimation === "multi-spin-3-label" ||
       selectedAnimation === "multi-spin-4-rules" ||
       selectedAnimation === "multi-spin-5-label" ||
-      isManualConcept(selectedAnimation) ||
       selectedAnimation === "multi-spin-6-titlerow" ||
       selectedAnimation === "multi-spin-4-auto" ||
       selectedAnimation === "single-spin-populate"
@@ -425,7 +449,7 @@ export default function AnimationShowcase() {
       setIsSpinnerRevealing(false)
       setKey(prev => prev + 1)
     }, 3000)
-  }, [selectedAnimation, winnerTeam])
+  }, [selectedAnimation, winnerTeam, manualExtraTeam])
 
   const handleTeamSelected = useCallback((team: Team) => {
     setWinnerTeam(team)
@@ -511,7 +535,9 @@ export default function AnimationShowcase() {
       const spunNames = new Set(spots.map((s) => s.team.name))
       const pool = teams.filter((t) => !spunNames.has(t.name))
       setManualExtraTeam(pool[Math.floor(Math.random() * pool.length)] ?? null)
+      setManualFirstTeam(null)
       setManualSecondTeam(null)
+      manualPhaseRef.current = "first"
     } else {
       // Pre-pick one spot and autofill it into the comment input as a tappable draft.
       setRequestDraft(spots[Math.floor(Math.random() * spots.length)] ?? null)
@@ -541,12 +567,13 @@ export default function AnimationShowcase() {
       { user: "Adam007", message, color: "text-[#4CE160]" },
     ])
 
-    // Manual concept: the seller "assigns" the extra (non-list) team too, so the
-    // chat announcement after the reveal calls out both teams.
-    if (isManual) setManualSecondTeam(manualExtraTeam)
+    // Manual concept: this kicks off the FIRST of two sequential moments — the
+    // seller assigns the spun (from-list) spot (green chip + reveal). Once that
+    // reveal + chat announcement finishes, handleComplete assigns the extra
+    // (non-list) team as the second moment (its own reveal + chat announcement).
+    if (isManual) manualPhaseRef.current = "first"
 
-    // Pending seller stays visible while the seller reacts, then assigns the spun
-    // spot (green chip + reveal). The extra team is reflected only in the chat.
+    // Pending seller stays visible while the seller reacts, then assigns the spun spot.
     setTimeout(() => assignMultiSpot(choice.spot, choice.team), 2600)
   }, [revealPendingSeller, commentRequested, requestDraft, assignMultiSpot, selectedAnimation, manualExtraTeam])
 
@@ -899,15 +926,29 @@ case "thumbnails-4":
         </div>
         
 {/* Winner Announcement - shows in chat after reveal completes */}
-  {showWinner && winnerTeam && selectedAnimation !== "in-stream" && (
-  <WinnerAnnouncement
-  username="Adam007"
-  team={winnerTeam}
-  show={showWinner}
-  hideTeamBlock={selectedAnimation === "thumbnails-4"}
-  singleSpin={selectedAnimation === "single-spin-populate"}
-  secondTeam={isManualConcept(selectedAnimation) ? manualSecondTeam : null}
-  />
+  {(
+    isManualConcept(selectedAnimation) ? (
+      // Manual concept: two sequential announcements — the spun (from-list) team,
+      // then the extra (non-list) team — each surfaced after its own reveal.
+      <div className="flex flex-col gap-3">
+        {manualFirstTeam && (
+          <WinnerAnnouncement username="Adam007" team={manualFirstTeam} show />
+        )}
+        {manualSecondTeam && (
+          <WinnerAnnouncement username="Adam007" team={manualSecondTeam} show />
+        )}
+      </div>
+    ) : (
+      showWinner && winnerTeam && (
+        <WinnerAnnouncement
+          username="Adam007"
+          team={winnerTeam}
+          show={showWinner}
+          hideTeamBlock={selectedAnimation === "thumbnails-4"}
+          singleSpin={selectedAnimation === "single-spin-populate"}
+        />
+      )
+    )
   )}
         
         {/* Reaction messages after winner announcement */}
@@ -1296,7 +1337,9 @@ case "thumbnails-4":
     setCommentRequested(false)
     setRequestDraft(null)
     setManualExtraTeam(null)
+    setManualFirstTeam(null)
     setManualSecondTeam(null)
+    manualPhaseRef.current = "first"
     setKeyboardOpen(false)
     setCommentTyped(false)
     if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
