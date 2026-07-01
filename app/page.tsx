@@ -92,10 +92,11 @@ function buildSpotRequestMessage(teamName: string) {
   return SPOT_REQUEST_TEMPLATES[seed % SPOT_REQUEST_TEMPLATES.length](teamName)
 }
 
-// Manual-assignment concept: the buyer asks for a team that wasn't in the
-// generated list, so the seller can add it manually as an extra spot.
-function buildManualRequestMessage(teamName: string) {
-  return `Any chance I can grab the ${teamName}?`
+// Manual-assignment concept: the buyer asks for one of the teams that WAS spun
+// (a chip in the randomizer) plus another team that WASN'T in the list, so the
+// seller assigns the spun spot first and then manually adds the extra team.
+function buildManualRequestMessage(spunTeamName: string, extraTeamName: string) {
+  return `Can I grab the ${spunTeamName}? And the ${extraTeamName} too if they're open!`
 }
 
 // Winner announcement styled as a regular chat comment from the seller
@@ -104,16 +105,16 @@ function WinnerAnnouncement({
   team,
   show,
   seller = "ryans_cardhouse",
-  manual = false,
   singleSpin = false,
+  secondTeam = null,
 }: {
   username: string
   team: Team
   show: boolean
   hideTeamBlock?: boolean
   seller?: string
-  manual?: boolean
   singleSpin?: boolean
+  secondTeam?: Team | null
 }) {
   if (!show) return null
 
@@ -136,8 +137,13 @@ function WinnerAnnouncement({
           <span className="text-green-400 font-bold text-sm">{seller}</span>
           <span className="text-white/80 text-sm">
             assigned{" "}
-            <span className="font-bold text-white">{`${team.city} ${team.name}`}</span> to{" "}
-            <span className="font-bold text-white">{username}</span>
+            <span className="font-bold text-white">{`${team.city} ${team.name}`}</span>
+            {secondTeam && (
+              <>
+                {" "}and <span className="font-bold text-white">{`${secondTeam.city} ${secondTeam.name}`}</span>
+              </>
+            )}{" "}
+            to <span className="font-bold text-white">{username}</span>
           </span>
         </div>
       )}
@@ -206,6 +212,8 @@ export default function AnimationShowcase() {
   const [spunSpots, setSpunSpots] = useState<{ spot: 1 | 2 | 3 | 4; team: Team }[]>([])
   const [commentRequested, setCommentRequested] = useState(false) // Buyer tapped "Add comment" to request a spot during pending
   const [requestDraft, setRequestDraft] = useState<{ spot: 1 | 2 | 3 | 4; team: Team } | null>(null) // Pre-picked spot, autofilled into the comment input for the buyer to tap-send
+  const [manualExtraTeam, setManualExtraTeam] = useState<Team | null>(null) // Manual concept: an extra team NOT in the spun list, requested alongside a spun spot
+  const [manualSecondTeam, setManualSecondTeam] = useState<Team | null>(null) // Manual concept: the extra team once the seller has "assigned" it (shown in the chat announcement)
   const [keyboardOpen, setKeyboardOpen] = useState(false) // Buyer tapped the comment input -> mock keyboard slides up
   const [commentTyped, setCommentTyped] = useState(false) // Buyer tapped a key -> the pre-written comment is populated into the input
   const assignFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null) // Auto-assigns if the buyer never requests via comment
@@ -265,6 +273,8 @@ export default function AnimationShowcase() {
     setSpunSpots([])
     setCommentRequested(false)
     setRequestDraft(null)
+    setManualExtraTeam(null)
+    setManualSecondTeam(null)
     setKeyboardOpen(false)
     setCommentTyped(false)
     setRevealPendingSeller(false)
@@ -494,12 +504,14 @@ export default function AnimationShowcase() {
     setCommentTyped(false)
     setRevealPendingSeller(true)
     if (isManualConcept(selectedAnimation)) {
-      // Manual concept: draft a team NOT in the generated list so the buyer can
-      // ask for it and the seller manually assigns it as an extra 4th spot.
+      // Manual concept: the buyer asks for ONE of the spun spots (a chip in the
+      // randomizer) AND another team that WASN'T in the list. The seller assigns
+      // the spun spot first (green + reveal), then manually adds the extra team.
+      setRequestDraft(spots[Math.floor(Math.random() * spots.length)] ?? null)
       const spunNames = new Set(spots.map((s) => s.team.name))
       const pool = teams.filter((t) => !spunNames.has(t.name))
-      const team = pool[Math.floor(Math.random() * pool.length)] ?? spots[0]?.team
-      setRequestDraft(team ? { spot: 4, team } : null)
+      setManualExtraTeam(pool[Math.floor(Math.random() * pool.length)] ?? null)
+      setManualSecondTeam(null)
     } else {
       // Pre-pick one spot and autofill it into the comment input as a tappable draft.
       setRequestDraft(spots[Math.floor(Math.random() * spots.length)] ?? null)
@@ -517,9 +529,10 @@ export default function AnimationShowcase() {
     setCommentTyped(false)
     const choice = requestDraft
 
+    const isManual = isManualConcept(selectedAnimation)
     const message =
-      isManualConcept(selectedAnimation)
-        ? buildManualRequestMessage(choice.team.name)
+      isManual && manualExtraTeam
+        ? buildManualRequestMessage(choice.team.name, manualExtraTeam.name)
         : buildSpotRequestMessage(choice.team.name)
 
     chatPausedRef.current = true
@@ -528,9 +541,14 @@ export default function AnimationShowcase() {
       { user: "Adam007", message, color: "text-[#4CE160]" },
     ])
 
-    // Pending seller stays visible while the seller reacts, then assigns the spot.
+    // Manual concept: the seller "assigns" the extra (non-list) team too, so the
+    // chat announcement after the reveal calls out both teams.
+    if (isManual) setManualSecondTeam(manualExtraTeam)
+
+    // Pending seller stays visible while the seller reacts, then assigns the spun
+    // spot (green chip + reveal). The extra team is reflected only in the chat.
     setTimeout(() => assignMultiSpot(choice.spot, choice.team), 2600)
-  }, [revealPendingSeller, commentRequested, requestDraft, assignMultiSpot, selectedAnimation])
+  }, [revealPendingSeller, commentRequested, requestDraft, assignMultiSpot, selectedAnimation, manualExtraTeam])
 
   // Buyer taps the comment input: instead of auto-filling, slide up the mock
   // keyboard. The comment is only populated once they tap a key.
@@ -887,8 +905,8 @@ case "thumbnails-4":
   team={winnerTeam}
   show={showWinner}
   hideTeamBlock={selectedAnimation === "thumbnails-4"}
-  manual={isManualConcept(selectedAnimation)}
   singleSpin={selectedAnimation === "single-spin-populate"}
+  secondTeam={isManualConcept(selectedAnimation) ? manualSecondTeam : null}
   />
   )}
         
@@ -933,8 +951,8 @@ case "thumbnails-4":
         {(() => {
           const hasDraft = revealPendingSeller && !!requestDraft && !commentRequested
           const draftText = requestDraft
-            ? isManualConcept(selectedAnimation)
-              ? buildManualRequestMessage(requestDraft.team.name)
+            ? isManualConcept(selectedAnimation) && manualExtraTeam
+              ? buildManualRequestMessage(requestDraft.team.name, manualExtraTeam.name)
               : buildSpotRequestMessage(requestDraft.team.name)
             : ""
           // Once a key is tapped, show the populated comment + Send affordance.
@@ -1277,6 +1295,8 @@ case "thumbnails-4":
     setSpunSpots([])
     setCommentRequested(false)
     setRequestDraft(null)
+    setManualExtraTeam(null)
+    setManualSecondTeam(null)
     setKeyboardOpen(false)
     setCommentTyped(false)
     if (assignFallbackRef.current) clearTimeout(assignFallbackRef.current)
