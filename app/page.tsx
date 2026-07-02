@@ -65,7 +65,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "multi-spin-3-label", name: "Option 3" },
   // { id: "multi-spin-4-rules", name: "Option 4" },
   { id: "multi-spin-5-label", name: "Multi Spin" },
-  { id: "multi-spin-5-manual", name: "Manual Spin (Manual Assignment)" },
+  { id: "multi-spin-5-manual", name: "Multi-Spin (manual)" },
   { id: "single-spin-later", name: "Spin Later" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-5-manual-icon", name: "Multi Spin (Manual Icon)" },
