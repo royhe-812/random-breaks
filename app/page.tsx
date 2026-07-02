@@ -396,7 +396,12 @@ export default function AnimationShowcase() {
       isSingleSpin(selectedAnimation)
     ) {
       setIsRevealing(false)
-      setIsMultiSpinning(false)
+      // Single spin turns the engine off (so its "Sold Out" re-tap can restart it),
+      // but multi-spin leaves it running like the manual concept so the landed
+      // chips (including the green assigned chip) stay visible after the reveal.
+      if (isSingleSpin(selectedAnimation)) {
+        setIsMultiSpinning(false)
+      }
       setShowWinner(true)
       setKey(prev => prev + 1)
       return
