@@ -181,7 +181,7 @@ export function CardFlipReveal({ isRevealing, onComplete, team: propTeam, onTeam
       
       const completeTimer = setTimeout(() => {
         onComplete()
-      }, 2500)
+      }, 3800)
       
       return () => {
         clearTimeout(glowTimer)
