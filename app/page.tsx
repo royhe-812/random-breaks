@@ -499,6 +499,8 @@ export default function AnimationShowcase() {
 
     if (usesPendingAssignment) {
       // Pending seller → seller assigns the spot (green chip + title) → reveal.
+      // Spin Later uses a much shorter pending beat so it snaps into the reveal.
+      const pendingDelay = selectedAnimation === "single-spin-later" ? 1200 : 6000
       setRevealPendingSeller(true)
       setTimeout(() => {
         setRevealPendingSeller(false)
@@ -509,7 +511,7 @@ export default function AnimationShowcase() {
           setIsRevealing(true)
           setKey(prev => prev + 1)
         }, 900)
-      }, 6000)
+      }, pendingDelay)
     } else {
       // Other single-stop concepts: play the reveal right after the randomizer stops.
       setIsRevealing(true)
