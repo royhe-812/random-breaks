@@ -782,7 +782,7 @@ case "thumbnails-4":
       {/* Chat readability backdrop - sits above the stream but below all UI.
           Solid-ish black at the bottom, fading to fully transparent partway up
           the chat so the messages stay legible on any concept. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[65%] z-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[80%] z-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
       
 {/* Thumbnails 2 - "Extended" - Inline with stream UI using team colors and initials */}
   {selectedAnimation === "thumbnails-2" && (
