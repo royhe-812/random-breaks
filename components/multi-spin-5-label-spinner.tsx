@@ -179,10 +179,15 @@ export function MultiSpin5LabelSpinner({
 
   // Drives a single spin: cycles teams, slows down, lands on a random team.
   const runSpin = useCallback(
-    (spot: Spot, onDone: (team: Team) => void) => {
+    (spot: Spot, onDone: (team: Team) => void, excludeNames: Set<string> = new Set()) => {
       setSpinningSpot(spot)
       setJustLanded(false) // Clear the previous landed-green as the next spin starts
-      const target = Math.floor(Math.random() * teams.length)
+      // Only land on teams that haven't already been landed this multi-spin, so no
+      // two spots ever end up on the same team.
+      const available = teams.filter((t) => !excludeNames.has(t.name))
+      const pool = available.length > 0 ? available : teams
+      const chosen = pool[Math.floor(Math.random() * pool.length)]
+      const target = teams.findIndex((t) => t.name === chosen.name)
       let speed = 50
       let elapsed = 0
       let idx = Math.floor(Math.random() * teams.length)
@@ -230,6 +235,7 @@ export function MultiSpin5LabelSpinner({
         if (i === 1) {
           setLandedOrder((prev) => (prev.includes(order[0]) ? prev : [order[0], ...prev]))
         }
+        const usedNames = new Set(Object.values(landed).map((t) => t.name))
         runSpin(spot, (team) => {
           landed[spot] = team
           setResults((prev) => ({ ...prev, [spot]: team }))
@@ -243,7 +249,7 @@ export function MultiSpin5LabelSpinner({
           // same pause used between spins before reverting the header to the case
           // break title.
           interSpinTimeoutRef.current = setTimeout(() => runNext(i + 1), 2500)
-        })
+        }, usedNames)
       }
       runNext(0)
     }
