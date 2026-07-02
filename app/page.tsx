@@ -764,8 +764,10 @@ case "thumbnails-4":
   }
 
   return (
-    <div className="w-full min-h-screen bg-zinc-950 flex items-center justify-center">
-      <div className="relative w-full max-w-[420px] h-screen max-h-[900px] overflow-hidden bg-black shadow-2xl sm:rounded-[2rem]">
+    <div className="w-full min-h-screen bg-zinc-950 flex items-center justify-center p-0 sm:p-4">
+      {/* Device frame sized to an iPhone 17 Pro Max (440 x 956 CSS px). It scales
+          down to fit smaller viewports while preserving the phone's aspect ratio. */}
+      <div className="relative w-full max-w-[440px] h-screen sm:h-auto sm:aspect-[440/956] sm:max-h-[956px] overflow-hidden bg-black shadow-2xl sm:rounded-[3rem]">
       {/* Background Video */}
       <video
         autoPlay
