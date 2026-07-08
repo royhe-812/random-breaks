@@ -504,8 +504,14 @@ export default function AnimationShowcase() {
 
     if (usesPendingAssignment) {
       // Pending seller → seller assigns the spot (green chip + title) → reveal.
-      // Spin Later uses a much shorter pending beat so it snaps into the reveal.
-      const pendingDelay = selectedAnimation === "single-spin-later" ? 1200 : 6000
+      // Spin Later snaps into the reveal fastest; Single Spin uses a short 2s beat;
+      // multi-spin keeps the longer pending beat.
+      const pendingDelay =
+        selectedAnimation === "single-spin-later"
+          ? 1200
+          : selectedAnimation === "single-spin-populate"
+            ? 2000
+            : 6000
       setRevealPendingSeller(true)
       setTimeout(() => {
         setRevealPendingSeller(false)
