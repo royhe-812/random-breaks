@@ -256,11 +256,22 @@ export function SingleSpinChipPopulateSpinner({
           <div className="flex items-center gap-3">
             <motion.div
               className="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-white text-xs"
-              style={{ backgroundColor: isCycling ? teams[currentIndex].color : "transparent" }}
+              style={{
+                backgroundColor: isCycling
+                  ? teams[currentIndex].color
+                  : result && !cardUpdated
+                    ? result.color
+                    : "transparent",
+              }}
               transition={{ duration: 0.15, ease: "easeInOut" }}
             >
               {isCycling ? (
+                // Cycling: show the team currently spinning past.
                 teams[currentIndex].abbrev
+              ) : result && !cardUpdated ? (
+                // Landed but the case break title hasn't returned yet: keep the
+                // team logo/color so it doesn't flip to the box thumbnail early.
+                result.abbrev
               ) : (
                 <img
                   src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png"
