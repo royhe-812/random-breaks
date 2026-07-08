@@ -510,7 +510,7 @@ export default function AnimationShowcase() {
         selectedAnimation === "single-spin-later"
           ? 1200
           : selectedAnimation === "single-spin-populate"
-            ? 2000
+            ? 1000
             : 6000
       setRevealPendingSeller(true)
       setTimeout(() => {
