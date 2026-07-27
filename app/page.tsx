@@ -40,6 +40,7 @@ import { ThumbnailsTextReveal } from "@/components/animations/thumbnails-text-re
 import { InStreamExperience } from "@/components/in-stream-experience"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
+import { TestingZone } from "@/components/testing-zone"
 
 type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
@@ -171,6 +172,7 @@ const chatMessages = [
 
 export default function AnimationShowcase() {
   const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("single-spin-populate")
+  const [showTestingZone, setShowTestingZone] = useState(false)
   const [isRevealing, setIsRevealing] = useState(false)
   const [isSpinnerRevealing, setIsSpinnerRevealing] = useState(false) // For TeamSpinner cycling
   const [isSpinnerPending, setIsSpinnerPending] = useState(false) // Post-reveal "pending assignment" in TeamSpinner
@@ -735,6 +737,43 @@ case "thumbnails-4":
     }
   }
 
+  // If Testing Zone is active, render it with the tab bar on top
+  if (showTestingZone) {
+    return (
+      <>
+        <motion.div
+          className="fixed top-0 left-0 right-0 z-[100] bg-zinc-900/95 backdrop-blur border-b border-white/10 px-4 py-2 safe-top"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {animations.map((animation) => (
+              <Fragment key={animation.id}>
+                <button
+                  onClick={() => { setShowTestingZone(false); setSelectedAnimation(animation.id) }}
+                  disabled={animation.disabled}
+                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white/70 hover:bg-zinc-700"
+                >
+                  {animation.name}
+                </button>
+              </Fragment>
+            ))}
+            <div className="flex-shrink-0 self-center w-px h-5 bg-white/20 mx-1" aria-hidden="true" />
+            <button
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white ring-2 ring-inset ring-yellow-400"
+            >
+              Testing Zone
+            </button>
+          </div>
+        </motion.div>
+        <div className="pt-10">
+          <TestingZone />
+        </div>
+      </>
+    )
+  }
+
   // If In-Stream is selected, render the fully isolated experience
   if (selectedAnimation === "in-stream") {
     return (
@@ -767,6 +806,13 @@ case "thumbnails-4":
                 )}
               </Fragment>
             ))}
+            <div className="flex-shrink-0 self-center w-px h-5 bg-white/20 mx-1" aria-hidden="true" />
+            <button
+              onClick={() => setShowTestingZone(true)}
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white/70 hover:bg-zinc-700"
+            >
+              Testing Zone
+            </button>
           </div>
         </motion.div>
         <InStreamExperience />
@@ -1471,6 +1517,13 @@ case "thumbnails-4":
               )}
             </Fragment>
           ))}
+          <div className="flex-shrink-0 self-center w-px h-5 bg-white/20 mx-1" aria-hidden="true" />
+          <button
+            onClick={() => setShowTestingZone(true)}
+            className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white/70 hover:bg-zinc-700"
+          >
+            Testing Zone
+          </button>
         </div>
       </motion.div>
 
