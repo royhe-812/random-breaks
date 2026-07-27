@@ -195,16 +195,30 @@ export function MultiSpinSpinner({
         <div className="flex items-center gap-1.5 min-w-0">
           <span className="text-white font-bold text-sm whitespace-nowrap">Spot #{spot}:</span>
           <AnimatePresence mode="wait">
-            {label && (
+            {label && team && (
               <motion.span
                 key={`${spot}-final`}
-                className="text-white font-bold text-sm truncate"
+                className="relative font-bold text-sm truncate overflow-hidden"
+                style={{ color: team.color }}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.2 }}
               >
                 {label}
+                {/* Horizontal shimmer sweep */}
+                <motion.span
+                  key={`shimmer-${spot}-${label}`}
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)`,
+                    mixBlendMode: "overlay",
+                  }}
+                  initial={{ x: "-120%" }}
+                  animate={{ x: "220%" }}
+                  transition={{ duration: 0.7, ease: "easeOut", delay: 0.15 }}
+                />
               </motion.span>
             )}
           </AnimatePresence>

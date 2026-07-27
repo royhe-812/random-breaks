@@ -239,7 +239,7 @@ export function SingleSpinChipPopulateSpinner({
                     key={justLanded ? "landed" : teams[currentIndex].name}
                     className="font-semibold text-sm truncate"
                     initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0, color: justLanded ? "#4CE160" : "#ffffff" }}
+                    animate={{ opacity: 1, y: 0, color: justLanded ? teams[currentIndex].color : "#ffffff" }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: justLanded ? 0.2 : 0.05 }}
                   >
@@ -248,14 +248,27 @@ export function SingleSpinChipPopulateSpinner({
                 ) : result && !cardUpdated ? (
                   <motion.span
                     key="landed"
-                    className="font-semibold text-sm truncate"
-                    style={{ color: "#4CE160" }}
+                    className="relative font-semibold text-sm truncate overflow-hidden"
+                    style={{ color: result.color }}
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.2 }}
                   >
                     {result.city} {result.name}
+                    {/* Horizontal shimmer sweep */}
+                    <motion.span
+                      key={result.name}
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0"
+                      style={{
+                        background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)`,
+                        mixBlendMode: "overlay",
+                      }}
+                      initial={{ x: "-120%" }}
+                      animate={{ x: "220%" }}
+                      transition={{ duration: 0.7, ease: "easeOut", delay: 0.15 }}
+                    />
                   </motion.span>
                 ) : (
                   <motion.span
