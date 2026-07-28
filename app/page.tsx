@@ -170,6 +170,16 @@ const chatMessages = [
   { user: "cardfiend", message: "What's the case hit?", color: "text-white" },
 ]
 
+// Fixed teams for the Multi-Spin (Manual) scenario: Patriots (spot 1),
+// Bengals (spot 2), Lions (spot 3). The buyer then requests Lions + Cowboys
+// (the extra manual team not in the list).
+const MANUAL_FORCED_TEAMS: [Team, Team, Team] = [
+  { name: "Patriots", city: "New England", abbrev: "NE", color: "#002244", secondary: "#C60C30" },
+  { name: "Bengals", city: "Cincinnati", abbrev: "CIN", color: "#FB4F14", secondary: "#000000" },
+  { name: "Lions", city: "Detroit", abbrev: "DET", color: "#0076B6", secondary: "#B0B7BC" },
+]
+const MANUAL_EXTRA_TEAM: Team = { name: "Cowboys", city: "Dallas", abbrev: "DAL", color: "#003594", secondary: "#869397" }
+
 export default function AnimationShowcase() {
   const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("single-spin-populate")
   const [showTestingZone, setShowTestingZone] = useState(false)
@@ -559,13 +569,11 @@ export default function AnimationShowcase() {
     setCommentTyped(false)
     setRevealPendingSeller(true)
     if (isManualConcept(selectedAnimation)) {
-      // Manual concept: the buyer asks for ONE of the spun spots (a chip in the
-      // randomizer) AND another team that WASN'T in the list. The seller assigns
-      // the spun spot first (green + reveal), then manually adds the extra team.
-      setRequestDraft(spots[Math.floor(Math.random() * spots.length)] ?? null)
-      const spunNames = new Set(spots.map((s) => s.team.name))
-      const pool = teams.filter((t) => !spunNames.has(t.name))
-      setManualExtraTeam(pool[Math.floor(Math.random() * pool.length)] ?? null)
+      // Manual concept: the buyer always requests Lions (spot 3) and Cowboys (the
+      // extra manual team not in the spun list). Fixed for demo consistency.
+      const lionsSpot = spots.find((s) => s.team.name === "Lions") ?? spots[spots.length - 1]
+      setRequestDraft(lionsSpot ?? null)
+      setManualExtraTeam(MANUAL_EXTRA_TEAM)
       setManualFirstTeam(null)
       setManualSecondTeam(null)
       manualPhaseRef.current = "first"
@@ -1313,6 +1321,7 @@ case "thumbnails-4":
             manual={isManualConcept(selectedAnimation)}
             manualIcon={selectedAnimation === "multi-spin-5-manual-icon"}
             manualAssignment={null}
+            forcedResults={isManualConcept(selectedAnimation) ? MANUAL_FORCED_TEAMS : undefined}
           />
         )}
 

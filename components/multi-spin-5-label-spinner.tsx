@@ -80,6 +80,8 @@ interface MultiSpin5LabelSpinnerProps {
   manualIcon?: boolean
   /** A manually-assigned team (not in the spun list) to populate as an extra 4th chip. */
   manualAssignment?: { spot: Spot; team: Team } | null
+  /** When provided, the 3 spins will always land on these exact teams (spot 1, 2, 3). */
+  forcedResults?: [Team, Team, Team]
 }
 
 // Circular progress component (mirrors the one used in TeamSpinner)
@@ -131,6 +133,7 @@ export function MultiSpin5LabelSpinner({
   manual = false,
   manualIcon = false,
   manualAssignment = null,
+  forcedResults,
 }: MultiSpin5LabelSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
   const [spinningSpot, setSpinningSpot] = useState<0 | Spot>(0)
@@ -177,17 +180,25 @@ export function MultiSpin5LabelSpinner({
     }
   }, [])
 
-  // Drives a single spin: cycles teams, slows down, lands on a random team.
+  // Drives a single spin: cycles teams, slows down, lands on a random team (or a forced one).
   const runSpin = useCallback(
-    (spot: Spot, onDone: (team: Team) => void, excludeNames: Set<string> = new Set()) => {
+    (spot: Spot, onDone: (team: Team) => void, excludeNames: Set<string> = new Set(), forcedTeam?: Team) => {
       setSpinningSpot(spot)
       setJustLanded(false) // Clear the previous landed-green as the next spin starts
-      // Only land on teams that haven't already been landed this multi-spin, so no
-      // two spots ever end up on the same team.
-      const available = teams.filter((t) => !excludeNames.has(t.name))
-      const pool = available.length > 0 ? available : teams
-      const chosen = pool[Math.floor(Math.random() * pool.length)]
-      const target = teams.findIndex((t) => t.name === chosen.name)
+      // Use the forced team if provided; otherwise pick randomly from teams that
+      // haven't already been landed this multi-spin.
+      let chosen: Team
+      if (forcedTeam) {
+        chosen = forcedTeam
+      } else {
+        const available = teams.filter((t) => !excludeNames.has(t.name))
+        const pool = available.length > 0 ? available : teams
+        chosen = pool[Math.floor(Math.random() * pool.length)]
+      }
+      // Make sure the forced team exists in the teams list; if not, add it temporarily
+      // by finding its index or falling back to index 0.
+      let target = teams.findIndex((t) => t.name === chosen.name)
+      if (target === -1) target = 0
       let speed = 50
       let elapsed = 0
       let idx = Math.floor(Math.random() * teams.length)
@@ -204,7 +215,7 @@ export function MultiSpin5LabelSpinner({
           // cleared at the start of the next spin (see top of runSpin).
           setJustLanded(true)
           timeoutRef.current = setTimeout(() => {
-            onDone(teams[target])
+            onDone(chosen)
           }, 1600)
           return
         }
@@ -236,6 +247,7 @@ export function MultiSpin5LabelSpinner({
           setLandedOrder((prev) => (prev.includes(order[0]) ? prev : [order[0], ...prev]))
         }
         const usedNames = new Set(Object.values(landed).map((t) => t.name))
+        const forcedTeam = forcedResults ? forcedResults[i] : undefined
         runSpin(spot, (team) => {
           landed[spot] = team
           setResults((prev) => ({ ...prev, [spot]: team }))
@@ -249,11 +261,11 @@ export function MultiSpin5LabelSpinner({
           // same pause used between spins before reverting the header to the case
           // break title.
           interSpinTimeoutRef.current = setTimeout(() => runNext(i + 1), 2500)
-        }, usedNames)
+        }, usedNames, forcedTeam)
       }
       runNext(0)
     }
-  }, [isSpinning, stage, runSpin])
+  }, [isSpinning, stage, runSpin, forcedResults])
 
   // Once all spots have landed: wait a short beat, then hand the full set of
   // landed spots up so the buyer can request one (and the seller assigns it).
