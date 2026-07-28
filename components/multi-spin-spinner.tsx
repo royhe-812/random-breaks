@@ -199,7 +199,7 @@ export function MultiSpinSpinner({
               <motion.span
                 key={`${spot}-final`}
                 className="relative font-bold text-sm truncate overflow-hidden"
-                style={{ color: team.color }}
+                style={{ color: "lab(78.503 -64.9265 39.7492)" }}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}

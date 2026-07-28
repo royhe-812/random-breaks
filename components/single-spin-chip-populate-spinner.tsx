@@ -239,7 +239,7 @@ export function SingleSpinChipPopulateSpinner({
                     key={justLanded ? "landed" : teams[currentIndex].name}
                     className="font-semibold text-sm truncate"
                     initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0, color: justLanded ? teams[currentIndex].color : "#ffffff" }}
+                    animate={{ opacity: 1, y: 0, color: justLanded ? "lab(78.503 -64.9265 39.7492)" : "#ffffff" }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: justLanded ? 0.2 : 0.05 }}
                   >
@@ -249,7 +249,7 @@ export function SingleSpinChipPopulateSpinner({
                   <motion.span
                     key="landed"
                     className="relative font-semibold text-sm truncate overflow-hidden"
-                    style={{ color: result.color }}
+                    style={{ color: "lab(78.503 -64.9265 39.7492)" }}
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}

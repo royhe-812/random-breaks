@@ -335,8 +335,8 @@ export function MultiSpin5LabelSpinner({
         transition={{ duration: 0.25, ease: "easeOut" }}
         className="relative inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide overflow-hidden"
         style={{
-          backgroundColor: isAnnounced ? result.color : "transparent",
-          color: "#ffffff",
+          backgroundColor: isAnnounced ? "lab(78.503 -64.9265 39.7492)" : "transparent",
+          color: isAnnounced ? "#000000" : "#ffffff",
           boxShadow: isAnnounced ? "none" : "inset 0 0 0 1px #ffffff",
         }}
       >
@@ -370,8 +370,8 @@ export function MultiSpin5LabelSpinner({
         key={key}
         className="inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
         style={{
-          backgroundColor: isAnnounced ? result.color : "transparent",
-          color: "#ffffff",
+          backgroundColor: isAnnounced ? "lab(78.503 -64.9265 39.7492)" : "transparent",
+          color: isAnnounced ? "#000000" : "#ffffff",
           boxShadow: isAnnounced ? "none" : "inset 0 0 0 1px #ffffff",
         }}
       >
@@ -424,7 +424,7 @@ export function MultiSpin5LabelSpinner({
                     key={justLanded ? "landed" : teams[currentIndex].name}
                     className="font-semibold text-sm truncate"
                     initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0, color: justLanded ? teams[currentIndex].color : "#ffffff" }}
+                    animate={{ opacity: 1, y: 0, color: justLanded ? "lab(78.503 -64.9265 39.7492)" : "#ffffff" }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: justLanded ? 0.2 : 0.05 }}
                   >
