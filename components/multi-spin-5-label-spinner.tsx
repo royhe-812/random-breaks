@@ -336,8 +336,8 @@ export function MultiSpin5LabelSpinner({
         className="relative inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide overflow-hidden"
         style={{
           backgroundColor: isAnnounced ? result.color : "transparent",
-          color: isAnnounced ? "#ffffff" : result.color,
-          boxShadow: isAnnounced ? "none" : `inset 0 0 0 1px ${result.color}`,
+          color: "#ffffff",
+          boxShadow: isAnnounced ? "none" : "inset 0 0 0 1px #ffffff",
         }}
       >
         {showManualIcon && <Pointer className="w-3 h-3 shrink-0" aria-label="Manual assignment" />}
@@ -371,8 +371,8 @@ export function MultiSpin5LabelSpinner({
         className="inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
         style={{
           backgroundColor: isAnnounced ? result.color : "transparent",
-          color: isAnnounced ? "#ffffff" : result.color,
-          boxShadow: isAnnounced ? "none" : `inset 0 0 0 1px ${result.color}`,
+          color: "#ffffff",
+          boxShadow: isAnnounced ? "none" : "inset 0 0 0 1px #ffffff",
         }}
       >
         {showManualIcon && <Pointer className="w-3 h-3 shrink-0" aria-label="Manual assignment" />}
