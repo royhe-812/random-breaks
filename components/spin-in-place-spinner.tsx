@@ -174,9 +174,9 @@ export function SpinInPlaceSpinner({
         {/* Right: text stack */}
         <div className="flex flex-col justify-center flex-1 min-w-0 gap-0.5">
 
-          {/* "Random Break #15 · Picking team for Adam007" subtitle */}
+          {/* "Random Break #15 · Adam007" subtitle */}
           <p className="text-sm leading-tight" style={{ color: "#8f8f8f" }}>
-            Random Break #{breakNumber} &middot; Picking team for{" "}
+            Random Break #{breakNumber} &middot;{" "}
             <span className="font-semibold text-white">{winnerName}</span>
           </p>
 
