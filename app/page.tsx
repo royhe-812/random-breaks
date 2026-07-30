@@ -1372,7 +1372,8 @@ case "thumbnails-4":
           {selectedAnimation === "spin-in-place" && spinInPlaceActive ? (
             <motion.div
               key="spin-in-place"
-              className="bg-black/40 backdrop-blur rounded-2xl p-4"
+              className="rounded-2xl p-4"
+              style={{ backgroundColor: "#191919" }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -1381,7 +1382,7 @@ case "thumbnails-4":
               <SpinInPlaceSpinner
                 isSpinning={spinInPlaceActive}
                 onLanded={handleSpinInPlaceLanded}
-                settled={spinInPlaceSettled}
+                winnerName="Nicola"
               />
             </motion.div>
           ) : null}
