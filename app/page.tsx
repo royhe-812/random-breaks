@@ -1572,6 +1572,7 @@ case "thumbnails-4":
                 isSpinning={spinInPlaceActive}
                 onLanded={handleSpinInPlaceLanded}
                 winnerName="Nicola"
+                breakNumber={displayBreakNumber}
                 availableSpots={demoSpots}
                 totalSpots={32}
               />

@@ -11,6 +11,8 @@ interface SpinInPlaceSpinnerProps {
   onLanded: (team: Team) => void
   /** Winner name to display in "Picking team for X" */
   winnerName?: string
+  /** Break number shown in the subtitle, kept in sync with the bid box card. */
+  breakNumber?: number
   /** Spots still available — kept in sync with the bid box card. */
   availableSpots?: number
   /** Total spots in the break. */
@@ -44,6 +46,7 @@ export function SpinInPlaceSpinner({
   isSpinning,
   onLanded,
   winnerName = "Nicola",
+  breakNumber = 15,
   availableSpots = 15,
   totalSpots = 32,
 }: SpinInPlaceSpinnerProps) {
@@ -171,9 +174,9 @@ export function SpinInPlaceSpinner({
         {/* Right: text stack */}
         <div className="flex flex-col justify-center flex-1 min-w-0 gap-0.5">
 
-          {/* "Picking team for Nicola" subtitle */}
+          {/* "Random Break #15 · Picking team for Nicola" subtitle */}
           <p className="text-sm leading-tight" style={{ color: "#8f8f8f" }}>
-            Picking team for{" "}
+            Random Break #{breakNumber} &middot; Picking team for{" "}
             <span className="font-semibold text-white">{winnerName}</span>
           </p>
 
