@@ -1439,15 +1439,9 @@ case "thumbnails-4":
                 </button>
               )}
               {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "single-spin-later" && selectedAnimation !== "multi-spin-repeat" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && (
-                <p className="text-white/50 text-sm mb-1 flex items-center gap-1">
-                  <svg width="12" height="15" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="2" y="2" width="28" height="36" rx="3" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5"/>
-                    <rect x="6" y="6" width="20" height="4" rx="1" fill="rgba(255,255,255,0.5)"/>
-                    <circle cx="16" cy="20" r="5" fill="rgba(255,255,255,0.5)"/>
-                    <path d="M8 34c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round"/>
-                  </svg>
-                  {hasWon ? '15/32' : '16/32'} spots available
-                </p>
+                <button onClick={cycleSpots} className="mb-1 hover:opacity-80 transition-opacity text-left">
+                  <SpotsProgress available={demoSpots} total={32} size={16} />
+                </button>
               )}
               <div className="flex flex-col">
                 <span className="text-white font-bold text-lg">{hasWon ? '$30.00' : '$28.00'}</span>
