@@ -367,10 +367,10 @@ export default function AnimationShowcase() {
     setSpotAssigned(true)
     setSpinInPlaceSettled(true)
     setTimeout(() => {
-      // Fade the in-place spinner out, then play the full-screen card reveal.
-      // `handleComplete` fades the bid box back in once the reveal finishes.
-      setSpinInPlaceActive(false)
-      setSpinInPlaceSettled(false)
+      // Play the full-screen card reveal. The randomization card deliberately
+      // stays mounted (showing the settled winner in green) underneath it —
+      // `handleComplete` slides it back to the bid box only once the winning
+      // team animation has finished.
       setIsRevealing(true)
       setKey((prev) => prev + 1)
     }, 2200)
@@ -438,6 +438,12 @@ export default function AnimationShowcase() {
       isSingleSpin(selectedAnimation)
     ) {
       setIsRevealing(false)
+      // Spin In Place: the winning team animation is done, so now slide the
+      // randomization card back to the bid box.
+      if (selectedAnimation === "spin-in-place") {
+        setSpinInPlaceActive(false)
+        setSpinInPlaceSettled(false)
+      }
       // Single spin turns the engine off (so its "Sold Out" re-tap can restart it),
       // but multi-spin leaves it running like the manual concept so the landed
       // chips (including the green assigned chip) stay visible after the reveal.
