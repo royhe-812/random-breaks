@@ -253,8 +253,7 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
         transition={{ duration: 0.2 }}
       >
         {/* Team Display Row */}
-        <div className="px-4 py-3">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
             {/* Team/Spot Indicator */}
             <motion.div
               className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white text-xs relative overflow-hidden"
@@ -347,7 +346,6 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
                   {demoSpots ?? availableSpots}/{totalSpots} spots available
                 </span>
               </button>
-            </div>
             
             {/* View all link */}
             <button 
