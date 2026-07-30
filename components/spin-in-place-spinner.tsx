@@ -11,6 +11,10 @@ interface SpinInPlaceSpinnerProps {
   onLanded: (team: Team) => void
   /** Winner name to display in "Picking team for X" */
   winnerName?: string
+  /** Spots still available — kept in sync with the bid box card. */
+  availableSpots?: number
+  /** Total spots in the break. */
+  totalSpots?: number
 }
 
 type Stage = "idle" | "spinning" | "landed"
@@ -40,6 +44,8 @@ export function SpinInPlaceSpinner({
   isSpinning,
   onLanded,
   winnerName = "Nicola",
+  availableSpots = 15,
+  totalSpots = 32,
 }: SpinInPlaceSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -206,9 +212,9 @@ export function SpinInPlaceSpinner({
           {/* Spots available row */}
           <div className="flex items-center justify-between mt-0.5">
             <div className="flex items-center gap-1.5">
-              <CircularProgress available={27} total={32} size={14} />
+              <CircularProgress available={availableSpots} total={totalSpots} size={14} />
               <span className="text-sm" style={{ color: "#f7f7f7" }}>
-                27/32 spots available
+                {availableSpots}/{totalSpots} spots available
               </span>
             </div>
             {/* Chevron right */}

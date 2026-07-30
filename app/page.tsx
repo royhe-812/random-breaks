@@ -1566,6 +1566,8 @@ case "thumbnails-4":
                 isSpinning={spinInPlaceActive}
                 onLanded={handleSpinInPlaceLanded}
                 winnerName="Nicola"
+                availableSpots={demoSpots}
+                totalSpots={32}
               />
             </motion.div>
           )}
