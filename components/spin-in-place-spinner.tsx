@@ -143,24 +143,20 @@ export function SpinInPlaceSpinner({
       {/* ── Main content row ── */}
       <div className="flex items-stretch gap-3">
 
-        {/* Left: large square coloured badge with team abbrev */}
+        {/* Left: large square coloured badge with team abbrev.
+            Renders the abbrev directly (no AnimatePresence) so it flips crisply
+            on every ~50ms spin tick — mirrors the single-spin thumbnail cycling.
+            A short backgroundColor transition keeps the color changes smooth. */}
         <motion.div
           className="flex-shrink-0 rounded-xl flex items-center justify-center font-bold text-white"
           style={{ width: 72, height: 72, fontSize: 20, letterSpacing: "0.05em" }}
-          animate={{ backgroundColor: displayTeam ? displayTeam.color : "rgba(255,255,255,0.12)" }}
-          transition={{ duration: 0.12 }}
+          animate={{
+            backgroundColor: displayTeam ? displayTeam.color : "rgba(255,255,255,0.12)",
+            scale: justLanded ? [1, 1.08, 1] : 1,
+          }}
+          transition={{ backgroundColor: { duration: 0.08 }, scale: { duration: 0.3 } }}
         >
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={displayTeam?.abbrev ?? "?"}
-              initial={{ opacity: 0, scale: 0.75 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.75 }}
-              transition={{ duration: 0.07 }}
-            >
-              {displayTeam?.abbrev ?? "—"}
-            </motion.span>
-          </AnimatePresence>
+          {displayTeam?.abbrev ?? "—"}
         </motion.div>
 
         {/* Right: text stack */}
