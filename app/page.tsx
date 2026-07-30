@@ -232,6 +232,11 @@ export default function AnimationShowcase() {
   const [viewerCount, setViewerCount] = useState(240)
   const [winnerTeam, setWinnerTeam] = useState<Team | null>(null)
   const [showWinner, setShowWinner] = useState(false)
+  // Spin In Place: once the spot for this break is assigned, the bid box returns
+  // to its live/active state for the next round — title drops the team name and
+  // the Max bid / slide-to-bid controls become interactive again. This is kept
+  // separate from `showWinner` so the chat keeps its winner treatment.
+  const [bidBoxReactivated, setBidBoxReactivated] = useState(false)
   const [reactionMessages, setReactionMessages] = useState<{ user: string; message: string; color: string }[]>([])
   const messageIndexRef = useRef(3)
   const chatPausedRef = useRef(false)
@@ -448,7 +453,16 @@ export default function AnimationShowcase() {
         setSpinInPlaceActive(false)
         setSpinInPlaceSettled(false)
         setKey((prev) => prev + 1)
-        setTimeout(() => setShowWinner(true), 380)
+        setTimeout(() => {
+          setShowWinner(true)
+          // The spot for this break is now assigned, so hand the bid box back to
+          // its active state: `hasWon` false restores the Max bid button, the
+          // live countdown and the "is winning" row, while `bidBoxReactivated`
+          // resets the title to "Random Break #15" and re-arms slide-to-bid.
+          setHasWon(false)
+          setSpotAssigned(false)
+          setBidBoxReactivated(true)
+        }, 380)
         return
       }
       // Single spin turns the engine off (so its "Sold Out" re-tap can restart it),
@@ -1433,7 +1447,7 @@ case "thumbnails-4":
               ) : (
                 <p className="text-sm text-white mb-0.5 truncate">
                   <span className="font-semibold">
-                    {(showWinner || spotAssigned) && winnerTeam
+                    {(showWinner || spotAssigned) && winnerTeam && !bidBoxReactivated
                       ? isManualConcept(selectedAnimation)
                         ? `Random Break #${displayBreakNumber} - ${
                             [manualFirstTeam, manualSecondTeam]
@@ -1529,14 +1543,18 @@ case "thumbnails-4":
             ) : (
             <div className="flex-1">
               <SwipeToBid 
-                key={selectedAnimation}
+                // Remount on reactivation so the slider drops its latched
+                // internal "sold out" state and returns to the idle swipe state.
+                key={`${selectedAnimation}${bidBoxReactivated ? "-reactivated" : ""}`}
                 amount={30}
                 isWinning={hasWon && !showWinner}
-                disabled={showWinner}
+                disabled={showWinner && !bidBoxReactivated}
                 onBidConfirmed={() => {
                   setHasWon(true)
                   setDemoSpots((prev) => Math.max(0, prev - 1)) // Winning a bid claims a spot
                   setSpotAssigned(false) // Reset item card title to "Random Break" for the new round
+                  setBidBoxReactivated(false) // Starting a fresh round, so drop the reactivated state
+                  setShowWinner(false)
                   chatPausedRef.current = true // Pause chat immediately when bid is placed
 
                   // Play the crown "WINNER" celebration first; the randomizer
@@ -1546,6 +1564,7 @@ case "thumbnails-4":
                 onReset={() => {
                   // Reset the entire concept
                   setHasWon(false)
+                  setBidBoxReactivated(false)
                   setSpinInPlaceActive(false)
                   setSpinInPlaceSettled(false)
                   setShowWinnerCrown(false)
