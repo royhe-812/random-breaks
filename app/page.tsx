@@ -1571,7 +1571,7 @@ case "thumbnails-4":
               <SpinInPlaceSpinner
                 isSpinning={spinInPlaceActive}
                 onLanded={handleSpinInPlaceLanded}
-                winnerName="Nicola"
+                winnerName="Adam007"
                 breakNumber={displayBreakNumber}
                 availableSpots={demoSpots}
                 totalSpots={32}

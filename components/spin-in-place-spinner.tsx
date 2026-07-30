@@ -45,7 +45,7 @@ function CircularProgress({ available, total, size = 14 }: { available: number; 
 export function SpinInPlaceSpinner({
   isSpinning,
   onLanded,
-  winnerName = "Nicola",
+  winnerName = "Adam007",
   breakNumber = 15,
   availableSpots = 15,
   totalSpots = 32,
@@ -174,7 +174,7 @@ export function SpinInPlaceSpinner({
         {/* Right: text stack */}
         <div className="flex flex-col justify-center flex-1 min-w-0 gap-0.5">
 
-          {/* "Random Break #15 · Picking team for Nicola" subtitle */}
+          {/* "Random Break #15 · Picking team for Adam007" subtitle */}
           <p className="text-sm leading-tight" style={{ color: "#8f8f8f" }}>
             Random Break #{breakNumber} &middot; Picking team for{" "}
             <span className="font-semibold text-white">{winnerName}</span>
