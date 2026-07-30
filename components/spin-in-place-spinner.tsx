@@ -161,7 +161,7 @@ export function SpinInPlaceSpinner({
             A short backgroundColor transition keeps the color changes smooth. */}
         <motion.div
           className="flex-shrink-0 rounded-xl flex items-center justify-center font-bold text-white"
-          style={{ width: 72, height: 72, fontSize: 20, letterSpacing: "0.05em" }}
+          style={{ width: 72, height: 100, fontSize: 20, letterSpacing: "0.05em" }}
           animate={{
             backgroundColor: displayTeam ? displayTeam.color : "rgba(255,255,255,0.12)",
             scale: justLanded ? [1, 1.08, 1] : 1,
