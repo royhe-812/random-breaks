@@ -198,7 +198,7 @@ export function MultiSpinSpinner({
             {label && team && (
               <motion.span
                 key={`${spot}-final`}
-                className="relative font-bold text-sm truncate overflow-hidden"
+                className="font-bold text-sm truncate"
                 style={{ color: "lab(78.503 -64.9265 39.7492)" }}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -206,19 +206,6 @@ export function MultiSpinSpinner({
                 transition={{ duration: 0.2 }}
               >
                 {label}
-                {/* Horizontal shimmer sweep */}
-                <motion.span
-                  key={`shimmer-${spot}-${label}`}
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0"
-                  style={{
-                    background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)`,
-                    mixBlendMode: "overlay",
-                  }}
-                  initial={{ x: "-120%" }}
-                  animate={{ x: "220%" }}
-                  transition={{ duration: 0.7, ease: "easeOut", delay: 0.15 }}
-                />
               </motion.span>
             )}
           </AnimatePresence>

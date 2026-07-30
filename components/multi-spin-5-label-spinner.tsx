@@ -333,7 +333,7 @@ export function MultiSpin5LabelSpinner({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="relative inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide overflow-hidden"
+        className="inline-flex h-4 shrink-0 whitespace-nowrap items-center gap-1 rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
         style={{
           backgroundColor: isAnnounced ? "lab(78.503 -64.9265 39.7492)" : "transparent",
           color: isAnnounced ? "#000000" : "#ffffff",
@@ -342,19 +342,6 @@ export function MultiSpin5LabelSpinner({
       >
         {showManualIcon && <Pointer className="w-3 h-3 shrink-0" aria-label="Manual assignment" />}
         {label}
-        {/* Horizontal shimmer sweep on chip appear */}
-        <motion.span
-          key={`shimmer-${spot}`}
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 rounded-full"
-          style={{
-            background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%)`,
-            mixBlendMode: "overlay",
-          }}
-          initial={{ x: "-120%" }}
-          animate={{ x: "220%" }}
-          transition={{ duration: 0.7, ease: "easeOut", delay: 0.15 }}
-        />
       </motion.div>
     )
   }
