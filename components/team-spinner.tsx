@@ -253,8 +253,7 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
         transition={{ duration: 0.2 }}
       >
         {/* Team Display Row */}
-        <div className="flex items-center gap-3">
-            {/* Team/Spot Indicator */}
+        {/* Team/Spot Indicator */}
             <motion.div
               className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white text-xs relative overflow-hidden"
               style={{ 
@@ -347,7 +346,7 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
                 </span>
               </button>
             
-            {/* View all link */}
+        {/* View all link */}
             <button 
               onClick={onViewSpots}
               className="flex items-center gap-1 text-white/50 hover:text-white/70 transition-colors"
@@ -365,8 +364,6 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
                 <path d="M9 18l6-6-6-6" />
               </svg>
             </button>
-          </div>
-        </div>
       </motion.div>
     </div>
   )
