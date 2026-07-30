@@ -438,11 +438,18 @@ export default function AnimationShowcase() {
       isSingleSpin(selectedAnimation)
     ) {
       setIsRevealing(false)
-      // Spin In Place: the winning team animation is done, so now slide the
-      // randomization card back to the bid box.
+      // Spin In Place: the winning team animation is done, so slide the
+      // randomization card back down to the bid box. The winner chat treatment
+      // is deliberately held back until that slide finishes — the chat column is
+      // bottom-anchored, so appending messages in the same frame grows it and
+      // shoves everything upward mid-slide, which reads as the transition
+      // "shifting" rather than a clean slide.
       if (selectedAnimation === "spin-in-place") {
         setSpinInPlaceActive(false)
         setSpinInPlaceSettled(false)
+        setKey((prev) => prev + 1)
+        setTimeout(() => setShowWinner(true), 380)
+        return
       }
       // Single spin turns the engine off (so its "Sold Out" re-tap can restart it),
       // but multi-spin leaves it running like the manual concept so the landed
@@ -1399,9 +1406,14 @@ case "thumbnails-4":
           initial={false}
           animate={{
             opacity: spinInPlaceShowing ? 0 : 1,
-            y: spinInPlaceShowing ? -10 : 0,
+            y: spinInPlaceShowing ? -16 : 0,
           }}
-          transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+          transition={{
+            y: { duration: 0.32, ease: [0.32, 0.72, 0, 1] },
+            // Opacity resolves faster than the travel so the two opaque cards
+            // never sit at ~50/50 and blend into a muddy overlap mid-slide.
+            opacity: { duration: 0.2, ease: "easeOut" },
+          }}
           style={{ pointerEvents: spinInPlaceShowing ? "none" : "auto" }}
         >
           <div className="flex items-start justify-between mb-2">
@@ -1564,10 +1576,13 @@ case "thumbnails-4":
               key="spin-in-place"
               className="absolute inset-0 rounded-2xl p-4"
               style={{ backgroundColor: "#191919" }}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+              exit={{ opacity: 0, y: 16 }}
+              transition={{
+                y: { duration: 0.32, ease: [0.32, 0.72, 0, 1] },
+                opacity: { duration: 0.2, ease: "easeOut" },
+              }}
             >
               <SpinInPlaceSpinner
                 isSpinning={spinInPlaceActive}
