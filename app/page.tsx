@@ -220,6 +220,10 @@ export default function AnimationShowcase() {
   // bid box fades back in with the updated team title.
   const [spinInPlaceActive, setSpinInPlaceActive] = useState(false)
   const [spinInPlaceSettled, setSpinInPlaceSettled] = useState(false)
+  // Measured height of the live bid box so the randomization card can match it
+  // exactly during the crossfade (they must be the same height).
+  const auctionCardRef = useRef<HTMLDivElement>(null)
+  const [bidBoxHeight, setBidBoxHeight] = useState<number | null>(null)
   const [spinLaterBreakNumber, setSpinLaterBreakNumber] = useState(32) // "Spin Later": each tap of "Sold Out" moves DOWN to the next lower-numbered sold-out break
   // "Spin Later" is a fully sold-out break; the number counts DOWN as the seller
   // works through sold-out breaks (32 → 31 → 30 …).
@@ -1373,7 +1377,7 @@ case "thumbnails-4":
             <motion.div
               key="spin-in-place"
               className="rounded-2xl p-4"
-              style={{ backgroundColor: "#191919" }}
+              style={{ backgroundColor: "#191919", height: bidBoxHeight ?? undefined }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -1392,6 +1396,7 @@ case "thumbnails-4":
         <AnimatePresence mode="wait">
         {!(selectedAnimation === "spin-in-place" && spinInPlaceActive) && (
         <motion.div
+          ref={auctionCardRef}
           key="auction-card"
           className="bg-black/40 backdrop-blur rounded-2xl p-4"
           initial={selectedAnimation === "spin-in-place" ? { opacity: 0 } : false}
@@ -1507,6 +1512,11 @@ case "thumbnails-4":
                 isWinning={hasWon && !showWinner}
                 disabled={showWinner}
                 onBidConfirmed={() => {
+                  // Capture the live bid box height so the randomization card can
+                  // render at the exact same height during the crossfade.
+                  if (selectedAnimation === "spin-in-place" && auctionCardRef.current) {
+                    setBidBoxHeight(auctionCardRef.current.offsetHeight)
+                  }
                   setHasWon(true)
                   setDemoSpots((prev) => Math.max(0, prev - 1)) // Winning a bid claims a spot
                   setSpotAssigned(false) // Reset item card title to "Random Break" for the new round

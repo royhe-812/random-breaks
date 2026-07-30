@@ -135,8 +135,10 @@ export function SpinInPlaceSpinner({
   const displayTeam = isLanded ? winner : teams[currentIndex]
 
   return (
-    // Outer card — matches the dark rounded bid box card shape exactly
-    <div className="w-full flex flex-col gap-0" style={{ minHeight: 120 }}>
+    // Outer card — matches the dark rounded bid box card shape exactly.
+    // h-full + justify-between so it fills the measured bid box height and the
+    // footer row anchors to the bottom (main row stays at the top).
+    <div className="w-full h-full flex flex-col justify-between gap-0" style={{ minHeight: 120 }}>
 
       {/* ── Main content row ── */}
       <div className="flex items-stretch gap-3">
@@ -220,20 +222,23 @@ export function SpinInPlaceSpinner({
         </div>
       </div>
 
-      {/* ── Divider ── */}
-      <div className="mt-3 mb-3" style={{ height: 1, backgroundColor: "rgba(255,255,255,0.08)" }} />
+      {/* ── Bottom block: divider + footer, anchored to the card bottom ── */}
+      <div>
+        {/* Divider */}
+        <div className="mb-3" style={{ height: 1, backgroundColor: "rgba(255,255,255,0.08)" }} />
 
-      {/* ── Footer row: "Spots are generated randomly · Break rules" ── */}
-      <div className="flex items-center justify-between">
-        <span className="text-sm" style={{ color: "#707070" }}>
-          Spots are generated randomly
-        </span>
-        <button
-          className="text-sm underline underline-offset-2 transition-opacity hover:opacity-80"
-          style={{ color: "#707070" }}
-        >
-          Break rules
-        </button>
+        {/* Footer row: "Spots are generated randomly · Break rules" */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm" style={{ color: "#707070" }}>
+            Spots are generated randomly
+          </span>
+          <button
+            className="text-sm underline underline-offset-2 transition-opacity hover:opacity-80"
+            style={{ color: "#707070" }}
+          >
+            Break rules
+          </button>
+        </div>
       </div>
     </div>
   )
