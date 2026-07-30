@@ -21,6 +21,7 @@ import { MultiSpin6TitleRowSpinner } from "@/components/multi-spin-6-titlerow-sp
 import { BackAndForthMarquee } from "@/components/back-and-forth-marquee"
 import { SpotsProgress } from "@/components/spots-progress"
 import { SingleSpinChipPopulateSpinner } from "@/components/single-spin-chip-populate-spinner"
+import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
 import { MockKeyboard } from "@/components/mock-keyboard"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { WinnerCrownReveal } from "@/components/animations/winner-crown-reveal"
@@ -42,7 +43,7 @@ import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { TestingZone } from "@/components/testing-zone"
 
-type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 // Both manual concepts share the same behavior (extra 4th manual chip, chat
 // wording, item-card label); they only differ in how the chip is marked:
@@ -59,6 +60,7 @@ const isSingleSpin = (a: AnimationType) =>
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "single-spin-populate", name: "Single Spin" },
+  { id: "spin-in-place", name: "Spin In Place" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-4-auto", name: "Multi-Spin Text" },
   // Temporarily hidden from the concepts list (kept for potential future use):
@@ -213,6 +215,11 @@ export default function AnimationShowcase() {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [key, setKey] = useState(0)
   const [hasWon, setHasWon] = useState(false)
+  // "Spin In Place" concept: the bid box fades out and the spinner renders in its
+  // place at the same height. Once the spin lands, the spinner fades out and the
+  // bid box fades back in with the updated team title.
+  const [spinInPlaceActive, setSpinInPlaceActive] = useState(false)
+  const [spinInPlaceSettled, setSpinInPlaceSettled] = useState(false)
   const [spinLaterBreakNumber, setSpinLaterBreakNumber] = useState(32) // "Spin Later": each tap of "Sold Out" moves DOWN to the next lower-numbered sold-out break
   // "Spin Later" is a fully sold-out break; the number counts DOWN as the seller
   // works through sold-out breaks (32 → 31 → 30 …).
@@ -279,6 +286,8 @@ export default function AnimationShowcase() {
   // Reset auction state when switching animation concepts
   useEffect(() => {
     setHasWon(false)
+    setSpinInPlaceActive(false)
+    setSpinInPlaceSettled(false)
     setIsRevealing(false)
     setIsSpinnerRevealing(false)
     setIsSpinnerPending(false)
@@ -346,6 +355,19 @@ export default function AnimationShowcase() {
       }
     }
   }, [showWinner, winnerTeam])
+
+  // "Spin In Place": spinner landed. Show settled state briefly, then fade out
+  // the spinner and fade the bid box back in with the updated team title.
+  const handleSpinInPlaceLanded = useCallback((team: Team) => {
+    setWinnerTeam(team)
+    setSpotAssigned(true)
+    setSpinInPlaceSettled(true)
+    setTimeout(() => {
+      setSpinInPlaceActive(false)
+      setSpinInPlaceSettled(false)
+      setShowWinner(true)
+    }, 2200)
+  }, [])
 
   const handleSpinComplete = useCallback((team: Team) => {
     setSelectedTeam(team)
@@ -636,6 +658,12 @@ export default function AnimationShowcase() {
 
   // Kick off the concept's randomizer/reveal. Runs after the crown celebration.
   const startConceptReveal = useCallback(() => {
+    // Spin In Place: fade out the bid box, start the in-place spinner.
+    if (selectedAnimation === "spin-in-place") {
+      setSpinInPlaceActive(true)
+      setSpinInPlaceSettled(false)
+      return
+    }
     // For concepts with built-in randomizer, set a random team and trigger reveal after a short delay
     if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" || selectedAnimation === "thumbnails-4") {
       const randomTeam = teams[Math.floor(Math.random() * teams.length)]
@@ -1339,8 +1367,37 @@ case "thumbnails-4":
           />
         )}
 
+        {/* Spin In Place: spinner fades in over the bid box at the same height */}
+        <AnimatePresence mode="wait">
+          {selectedAnimation === "spin-in-place" && spinInPlaceActive ? (
+            <motion.div
+              key="spin-in-place"
+              className="bg-black/40 backdrop-blur rounded-2xl p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: "easeInOut" }}
+            >
+              <SpinInPlaceSpinner
+                isSpinning={spinInPlaceActive}
+                onLanded={handleSpinInPlaceLanded}
+                settled={spinInPlaceSettled}
+              />
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
         {/* Auction Card */}
-        <div className="bg-black/40 backdrop-blur rounded-2xl p-4">
+        <AnimatePresence mode="wait">
+        {!(selectedAnimation === "spin-in-place" && spinInPlaceActive) && (
+        <motion.div
+          key="auction-card"
+          className="bg-black/40 backdrop-blur rounded-2xl p-4"
+          initial={selectedAnimation === "spin-in-place" ? { opacity: 0 } : false}
+          animate={{ opacity: 1 }}
+          exit={selectedAnimation === "spin-in-place" ? { opacity: 0 } : undefined}
+          transition={{ duration: 0.35, ease: "easeInOut" }}
+        >
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 min-w-0 pr-2">
               {selectedAnimation === "multi-spin-6-titlerow" ? (
@@ -1467,6 +1524,8 @@ case "thumbnails-4":
                 onReset={() => {
                   // Reset the entire concept
                   setHasWon(false)
+                  setSpinInPlaceActive(false)
+                  setSpinInPlaceSettled(false)
                   setShowWinnerCrown(false)
                   setIsSpinnerRevealing(false)
                   setIsSpinnerPending(false)
@@ -1495,7 +1554,9 @@ case "thumbnails-4":
             </div>
             )}
           </div>
-        </div>
+        </motion.div>
+        )}
+        </AnimatePresence>
       </div>
 
       {/* Animation Style Picker - Above Live UI */}
