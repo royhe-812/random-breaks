@@ -1471,7 +1471,16 @@ case "thumbnails-4":
                 </div>
               </div>
             </div>
-            <ChevronRight className={`w-5 h-5 text-white/40 flex-shrink-0 ${selectedAnimation === "multi-spin-6-titlerow" ? "mt-0" : "mt-1"}`} />
+            {/* Chevron opens the break spots sheet, matching the other concepts
+                that expose it via their own "View spots" affordance. */}
+            <button
+              type="button"
+              onClick={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
+              aria-label="View break spots"
+              className={`flex-shrink-0 hover:opacity-80 transition-opacity ${selectedAnimation === "multi-spin-6-titlerow" ? "mt-0" : "mt-1"}`}
+            >
+              <ChevronRight className="w-5 h-5 text-white/40" />
+            </button>
           </div>
           
           <div className="flex items-center justify-between mb-3">
