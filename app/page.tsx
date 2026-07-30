@@ -220,10 +220,9 @@ export default function AnimationShowcase() {
   // bid box fades back in with the updated team title.
   const [spinInPlaceActive, setSpinInPlaceActive] = useState(false)
   const [spinInPlaceSettled, setSpinInPlaceSettled] = useState(false)
-  // Measured height of the live bid box so the randomization card can match it
-  // exactly during the crossfade (they must be the same height).
   const auctionCardRef = useRef<HTMLDivElement>(null)
-  const [bidBoxHeight, setBidBoxHeight] = useState<number | null>(null)
+  // True while the randomization card is overlaying the bid box.
+  const spinInPlaceShowing = selectedAnimation === "spin-in-place" && spinInPlaceActive
   const [spinLaterBreakNumber, setSpinLaterBreakNumber] = useState(32) // "Spin Later": each tap of "Sold Out" moves DOWN to the next lower-numbered sold-out break
   // "Spin Later" is a fully sold-out break; the number counts DOWN as the seller
   // works through sold-out breaks (32 → 31 → 30 …).
@@ -1378,38 +1377,26 @@ case "thumbnails-4":
           />
         )}
 
-        {/* Spin In Place: spinner fades in over the bid box at the same height */}
-        <AnimatePresence mode="wait">
-          {selectedAnimation === "spin-in-place" && spinInPlaceActive ? (
-            <motion.div
-              key="spin-in-place"
-              className="rounded-2xl p-4"
-              style={{ backgroundColor: "#191919", height: bidBoxHeight ?? undefined }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.35, ease: "easeInOut" }}
-            >
-              <SpinInPlaceSpinner
-                isSpinning={spinInPlaceActive}
-                onLanded={handleSpinInPlaceLanded}
-                winnerName="Nicola"
-              />
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
+        {/* Spin In Place — bid box <-> randomization card cross-slide.
+            Both cards live in one relative wrapper. The bid box stays mounted in
+            normal document flow the whole time so it never stops reserving its
+            height (that's what was making the chat above jump), and the
+            randomization card overlays it with `absolute inset-0` so it matches
+            the bid box size exactly. Both animate simultaneously: the outgoing
+            card lifts up and fades, the incoming card rises into place. */}
+        <div className="relative">
 
         {/* Auction Card */}
-        <AnimatePresence mode="wait">
-        {!(selectedAnimation === "spin-in-place" && spinInPlaceActive) && (
         <motion.div
           ref={auctionCardRef}
-          key="auction-card"
           className="bg-black/40 backdrop-blur rounded-2xl p-4"
-          initial={selectedAnimation === "spin-in-place" ? { opacity: 0 } : false}
-          animate={{ opacity: 1 }}
-          exit={selectedAnimation === "spin-in-place" ? { opacity: 0 } : undefined}
-          transition={{ duration: 0.35, ease: "easeInOut" }}
+          initial={false}
+          animate={{
+            opacity: spinInPlaceShowing ? 0 : 1,
+            y: spinInPlaceShowing ? -10 : 0,
+          }}
+          transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+          style={{ pointerEvents: spinInPlaceShowing ? "none" : "auto" }}
         >
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 min-w-0 pr-2">
@@ -1519,11 +1506,6 @@ case "thumbnails-4":
                 isWinning={hasWon && !showWinner}
                 disabled={showWinner}
                 onBidConfirmed={() => {
-                  // Capture the live bid box height so the randomization card can
-                  // render at the exact same height during the crossfade.
-                  if (selectedAnimation === "spin-in-place" && auctionCardRef.current) {
-                    setBidBoxHeight(auctionCardRef.current.offsetHeight)
-                  }
                   setHasWon(true)
                   setDemoSpots((prev) => Math.max(0, prev - 1)) // Winning a bid claims a spot
                   setSpotAssigned(false) // Reset item card title to "Random Break" for the new round
@@ -1567,8 +1549,28 @@ case "thumbnails-4":
             )}
           </div>
         </motion.div>
-        )}
+
+        {/* Randomization card — overlays the bid box at identical size */}
+        <AnimatePresence>
+          {spinInPlaceShowing && (
+            <motion.div
+              key="spin-in-place"
+              className="absolute inset-0 rounded-2xl p-4"
+              style={{ backgroundColor: "#191919" }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+            >
+              <SpinInPlaceSpinner
+                isSpinning={spinInPlaceActive}
+                onLanded={handleSpinInPlaceLanded}
+                winnerName="Nicola"
+              />
+            </motion.div>
+          )}
         </AnimatePresence>
+        </div>
       </div>
 
       {/* Animation Style Picker - Above Live UI */}
