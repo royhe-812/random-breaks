@@ -17,6 +17,8 @@ interface SpinInPlaceSpinnerProps {
   availableSpots?: number
   /** Total spots in the break. */
   totalSpots?: number
+  /** Tapping the spots row opens the break spots sheet. */
+  onViewSpots?: () => void
 }
 
 type Stage = "idle" | "spinning" | "landed"
@@ -49,6 +51,7 @@ export function SpinInPlaceSpinner({
   breakNumber = 15,
   availableSpots = 15,
   totalSpots = 32,
+  onViewSpots,
 }: SpinInPlaceSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -212,8 +215,14 @@ export function SpinInPlaceSpinner({
             )}
           </AnimatePresence>
 
-          {/* Spots available row */}
-          <div className="flex items-center justify-between mt-0.5">
+          {/* Spots available row — tapping it (progress ring, label, or chevron)
+              opens the break spots sheet, matching the bid box card affordance. */}
+          <button
+            type="button"
+            onClick={onViewSpots}
+            aria-label="View break spots"
+            className="flex items-center justify-between mt-0.5 w-full text-left hover:opacity-80 transition-opacity"
+          >
             <div className="flex items-center gap-1.5">
               <CircularProgress available={availableSpots} total={totalSpots} size={14} />
               <span className="text-sm" style={{ color: "#f7f7f7" }}>
@@ -224,7 +233,7 @@ export function SpinInPlaceSpinner({
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8f8f8f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6" />
             </svg>
-          </div>
+          </button>
         </div>
       </div>
 

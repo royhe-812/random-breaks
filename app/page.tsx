@@ -1600,6 +1600,7 @@ case "thumbnails-4":
                 breakNumber={displayBreakNumber}
                 availableSpots={demoSpots}
                 totalSpots={32}
+                onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
               />
             </motion.div>
           )}
