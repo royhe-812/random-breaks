@@ -1431,6 +1431,7 @@ case "thumbnails-4":
                           }`
                         : `Random Break #${displayBreakNumber} - ${winnerTeam.city} ${winnerTeam.name}`
                       : `Random Break #${displayBreakNumber}`}
+                    {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
                   </span>
                 </p>
               )}
