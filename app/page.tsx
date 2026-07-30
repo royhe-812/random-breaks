@@ -363,13 +363,17 @@ export default function AnimationShowcase() {
   // "Spin In Place": spinner landed. Show settled state briefly, then fade out
   // the spinner and fade the bid box back in with the updated team title.
   const handleSpinInPlaceLanded = useCallback((team: Team) => {
+    setSelectedTeam(team) // CardFlipReveal renders `selectedTeam`
     setWinnerTeam(team)
     setSpotAssigned(true)
     setSpinInPlaceSettled(true)
     setTimeout(() => {
+      // Fade the in-place spinner out, then play the full-screen card reveal.
+      // `handleComplete` fades the bid box back in once the reveal finishes.
       setSpinInPlaceActive(false)
       setSpinInPlaceSettled(false)
-      setShowWinner(true)
+      setIsRevealing(true)
+      setKey((prev) => prev + 1)
     }, 2200)
   }, [])
 
@@ -431,6 +435,7 @@ export default function AnimationShowcase() {
       selectedAnimation === "multi-spin-5-label" ||
       selectedAnimation === "multi-spin-6-titlerow" ||
       selectedAnimation === "multi-spin-4-auto" ||
+      selectedAnimation === "spin-in-place" ||
       isSingleSpin(selectedAnimation)
     ) {
       setIsRevealing(false)
@@ -719,6 +724,8 @@ export default function AnimationShowcase() {
       case "single-spin-populate":
         return <CardFlipReveal key={key} {...props} />
       case "single-spin-later":
+        return <CardFlipReveal key={key} {...props} />
+      case "spin-in-place":
         return <CardFlipReveal key={key} {...props} />
       case "multi-spin-repeat":
         return <CardFlipReveal key={key} {...props} />
