@@ -22,6 +22,7 @@ import { BackAndForthMarquee } from "@/components/back-and-forth-marquee"
 import { SpotsProgress } from "@/components/spots-progress"
 import { SingleSpinChipPopulateSpinner } from "@/components/single-spin-chip-populate-spinner"
 import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
+import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
 import { MockKeyboard } from "@/components/mock-keyboard"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { WinnerCrownReveal } from "@/components/animations/winner-crown-reveal"
@@ -43,7 +44,7 @@ import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { TestingZone } from "@/components/testing-zone"
 
-type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 // Both manual concepts share the same behavior (extra 4th manual chip, chat
 // wording, item-card label); they only differ in how the chip is marked:
@@ -58,9 +59,16 @@ const isManualConcept = (a: AnimationType) =>
 const isSingleSpin = (a: AnimationType) =>
   a === "single-spin-populate" || a === "single-spin-later"
 
+// "Spin In Place (Roller)" shares the whole Spin In Place flow — the bid box
+// cross-slide, the card reveal ordering, the bid box reactivation — and only
+// swaps the randomization card's visual treatment for a picker-wheel drum.
+const isSpinInPlace = (a: AnimationType) =>
+  a === "spin-in-place" || a === "spin-in-place-roller"
+
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "single-spin-populate", name: "Single Spin" },
   { id: "spin-in-place", name: "Spin In Place" },
+  { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-4-auto", name: "Multi-Spin Text" },
   // Temporarily hidden from the concepts list (kept for potential future use):
@@ -222,7 +230,7 @@ export default function AnimationShowcase() {
   const [spinInPlaceSettled, setSpinInPlaceSettled] = useState(false)
   const auctionCardRef = useRef<HTMLDivElement>(null)
   // True while the randomization card is overlaying the bid box.
-  const spinInPlaceShowing = selectedAnimation === "spin-in-place" && spinInPlaceActive
+  const spinInPlaceShowing = isSpinInPlace(selectedAnimation) && spinInPlaceActive
   const [spinLaterBreakNumber, setSpinLaterBreakNumber] = useState(32) // "Spin Later": each tap of "Sold Out" moves DOWN to the next lower-numbered sold-out break
   // "Spin Later" is a fully sold-out break; the number counts DOWN as the seller
   // works through sold-out breaks (32 → 31 → 30 …).
@@ -439,7 +447,7 @@ export default function AnimationShowcase() {
       selectedAnimation === "multi-spin-5-label" ||
       selectedAnimation === "multi-spin-6-titlerow" ||
       selectedAnimation === "multi-spin-4-auto" ||
-      selectedAnimation === "spin-in-place" ||
+      isSpinInPlace(selectedAnimation) ||
       isSingleSpin(selectedAnimation)
     ) {
       setIsRevealing(false)
@@ -449,7 +457,7 @@ export default function AnimationShowcase() {
       // bottom-anchored, so appending messages in the same frame grows it and
       // shoves everything upward mid-slide, which reads as the transition
       // "shifting" rather than a clean slide.
-      if (selectedAnimation === "spin-in-place") {
+      if (isSpinInPlace(selectedAnimation)) {
         setSpinInPlaceActive(false)
         setSpinInPlaceSettled(false)
         setKey((prev) => prev + 1)
@@ -694,7 +702,7 @@ export default function AnimationShowcase() {
   // Kick off the concept's randomizer/reveal. Runs after the crown celebration.
   const startConceptReveal = useCallback(() => {
     // Spin In Place: fade out the bid box, start the in-place spinner.
-    if (selectedAnimation === "spin-in-place") {
+    if (isSpinInPlace(selectedAnimation)) {
       setSpinInPlaceActive(true)
       setSpinInPlaceSettled(false)
       return
@@ -752,6 +760,8 @@ export default function AnimationShowcase() {
       case "single-spin-later":
         return <CardFlipReveal key={key} {...props} />
       case "spin-in-place":
+        return <CardFlipReveal key={key} {...props} />
+      case "spin-in-place-roller":
         return <CardFlipReveal key={key} {...props} />
       case "multi-spin-repeat":
         return <CardFlipReveal key={key} {...props} />
@@ -1240,7 +1250,7 @@ case "thumbnails-4":
         {/* Team Spinner with Spots Available - shown for most concepts. For slot-machine (Team Picker),
             battle, and carousel it stays in its idle/zero state (thumbnail) since those concepts
             handle their own cycling + reveal full screen (isSpinnerRevealing is never set for them). */}
-        {selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "single-spin-later" && selectedAnimation !== "spin-in-place" && selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
+        {selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "single-spin-later" && !isSpinInPlace(selectedAnimation) && selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
@@ -1612,15 +1622,27 @@ case "thumbnails-4":
                 opacity: { duration: 0.2, ease: "easeOut" },
               }}
             >
-              <SpinInPlaceSpinner
-                isSpinning={spinInPlaceActive}
-                onLanded={handleSpinInPlaceLanded}
-                winnerName="Adam007"
-                breakNumber={displayBreakNumber}
-                availableSpots={demoSpots}
-                totalSpots={32}
-                onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
-              />
+              {selectedAnimation === "spin-in-place-roller" ? (
+                <SpinRollerSpinner
+                  isSpinning={spinInPlaceActive}
+                  onLanded={handleSpinInPlaceLanded}
+                  winnerName="Adam007"
+                  breakNumber={displayBreakNumber}
+                  availableSpots={demoSpots}
+                  totalSpots={32}
+                  onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
+                />
+              ) : (
+                <SpinInPlaceSpinner
+                  isSpinning={spinInPlaceActive}
+                  onLanded={handleSpinInPlaceLanded}
+                  winnerName="Adam007"
+                  breakNumber={displayBreakNumber}
+                  availableSpots={demoSpots}
+                  totalSpots={32}
+                  onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
+                />
+              )}
             </motion.div>
           )}
         </AnimatePresence>
