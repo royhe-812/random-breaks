@@ -37,6 +37,11 @@ interface SpinRollerSpinnerProps {
   startSpeed?: number
   /** Fraction of the spin spent accelerating up to peak speed. */
   rampUp?: number
+  /**
+   * Shape of the deceleration. Low values keep speed then stop sharply; high
+   * values ease off early and creep to a halt like a game-show wheel.
+   */
+  stopEase?: number
 }
 
 /* ── Cylinder geometry ──
@@ -63,21 +68,31 @@ const SETTLE_MS = 800
  * the drum accelerates from `startSpeed` up to full speed across the first
  * `rampFraction` of the run, then decays to rest on the original quart curve.
  *
+ * `stopEase` shapes the deceleration tail. It is the exponent of the decaying
+ * velocity curve, so low values hold speed and then cut off abruptly, while high
+ * values shed speed early and crawl to a halt — the drawn-out game-show stop.
+ *
  * The profile is integrated into a normalised lookup table so the curve is
  * guaranteed to travel exactly 0 -> 1. That matters: the drum must still come to
  * rest precisely on the winning row no matter how the dials are set.
  */
-function buildSpinEase(startSpeed: number, rampFraction: number) {
+function buildSpinEase(startSpeed: number, rampFraction: number, stopEase: number) {
   const SAMPLES = 480
   const r = Math.min(0.95, Math.max(0, rampFraction))
   // Never allow 0 — a dead stop at t=0 wastes the front of the animation.
   const v0 = Math.min(1, Math.max(0.02, startSpeed))
+  const k = Math.min(8, Math.max(0.3, stopEase))
+
+  // Floor on the decaying velocity. Without it, a high `stopEase` drives speed
+  // to ~0 well before the end, so the drum visibly freezes for the last stretch
+  // instead of creeping. The floor keeps it inching forward to the very end.
+  const V_MIN = 0.06
 
   const smoothstep = (x: number) => x * x * (3 - 2 * x)
   const velocity = (t: number) => {
     if (r > 0 && t < r) return v0 + (1 - v0) * smoothstep(t / r)
     const u = r >= 1 ? 0 : (t - r) / (1 - r)
-    return Math.pow(1 - u, 3) // derivative shape of easeOutQuart
+    return Math.max(V_MIN, Math.pow(1 - u, k))
   }
 
   const cumulative = new Float64Array(SAMPLES + 1)
@@ -144,6 +159,7 @@ export function SpinRollerSpinner({
   spinDuration = 4200,
   startSpeed = 0.15,
   rampUp = 0.3,
+  stopEase = 3,
 }: SpinRollerSpinnerProps) {
   /** Fractional drum position, in rows. Integer values sit dead centre. */
   const [pos, setPos] = useState(0)
@@ -205,7 +221,7 @@ export function SpinRollerSpinner({
     // whatever is left after the fixed post-landing settle flash.
     const duration = Math.max(300, spinDuration - SETTLE_MS)
     // Built once per spin, not per frame — the table is 480 samples.
-    const ease = buildSpinEase(startSpeed, rampUp)
+    const ease = buildSpinEase(startSpeed, rampUp, stopEase)
 
     setLandedIndex(null)
     setJustLanded(false)
@@ -249,7 +265,7 @@ export function SpinRollerSpinner({
       cancelAnimationFrame(raf)
       if (settleTimer) clearTimeout(settleTimer)
     }
-  }, [isSpinning, playTick, forceTeamIndex, spinDuration, startSpeed, rampUp])
+  }, [isSpinning, playTick, forceTeamIndex, spinDuration, startSpeed, rampUp, stopEase])
 
   const isLanded = landedIndex !== null
   const centre = Math.round(pos)

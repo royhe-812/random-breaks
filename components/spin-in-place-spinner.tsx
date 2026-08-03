@@ -36,6 +36,11 @@ interface SpinInPlaceSpinnerProps {
   startSpeed?: number
   /** Fraction of the spin spent accelerating up to peak speed. */
   rampUp?: number
+  /**
+   * Shape of the deceleration. Low values keep speed then stop sharply; high
+   * values ease off early and creep to a halt like a game-show wheel.
+   */
+  stopEase?: number
 }
 
 type Stage = "idle" | "spinning" | "landed"
@@ -73,6 +78,7 @@ export function SpinInPlaceSpinner({
   spinDuration = 4200,
   startSpeed = 0.15,
   rampUp = 0.3,
+  stopEase = 3,
 }: SpinInPlaceSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -138,38 +144,50 @@ export function SpinInPlaceSpinner({
     // simulate the loop and bisect for the scale that lands on `spinDuration`.
     const rampMs = Math.max(0, Math.min(0.9, rampUp)) * spinDuration
     const speedFrac = Math.max(0.02, Math.min(1, startSpeed))
+    const k = Math.min(8, Math.max(0.3, stopEase))
 
-    const simulateTotal = (s: number) => {
+    // The decay used to grow the tick interval by a fixed additive step, which
+    // gave one unchangeable stop feel. It's now driven by the same exponential
+    // velocity curve the roller uses, so `stopEase` shapes the tail identically:
+    // progress `u` walks 0 -> 1 while speed falls as (1 - u)^k.
+    const V_MIN = 0.04 // floor speed, so the final crawl can't stall forever
+    const DECAY_BUDGET = 2600 // nominal ms of decay, before scaling
+
+    const runLoop = (s: number) => {
       const peak = 50 * s
       const startInt = peak / speedFrac
-      let decay = peak
+      const budget = DECAY_BUDGET * s
       let acc = 0
+      let u = 0
       let wall = rampMs > 0 ? startInt : peak
-      for (let guard = 0; guard < 20000; guard++) {
+      for (let guard = 0; guard < 40000; guard++) {
         let interval: number
         if (rampMs > 0 && acc < rampMs) {
           const x = acc / rampMs
           interval = startInt + (peak - startInt) * (x * x * (3 - 2 * x))
         } else {
-          if (acc > rampMs + 1200 * s) decay += 30 * s
-          interval = decay
+          interval = peak / Math.max(V_MIN, Math.pow(1 - u, k))
+          u += interval / budget
         }
         acc += interval
-        if (decay >= 400 * s) break
         wall += interval
+        if (u >= 1) break
       }
       return wall + 800 * s
     }
 
-    let lo = 0.01
-    let hi = 4
+    // No closed form for this loop's runtime, so bisect for the scale that makes
+    // the simulated total land exactly on `spinDuration`.
+    let lo = 0.005
+    let hi = 6
     for (let i = 0; i < 40; i++) {
       const mid = (lo + hi) / 2
-      if (simulateTotal(mid) < spinDuration) lo = mid
+      if (runLoop(mid) < spinDuration) lo = mid
       else hi = mid
     }
     const scale = (lo + hi) / 2
     const settleMs = 800 * scale
+    const decayBudget = DECAY_BUDGET * scale
 
     // `speed` here is a tick *interval* in ms, so larger means slower. The drum
     // therefore starts on a long interval and shortens it as it accelerates.
@@ -177,17 +195,17 @@ export function SpinInPlaceSpinner({
     const startInterval = peakInterval / Math.max(0.02, Math.min(1, startSpeed))
     const smoothstep = (x: number) => x * x * (3 - 2 * x)
 
-    let decayInterval = peakInterval
     let elapsed = 0
+    let decayU = 0
     let idx = Math.floor(Math.random() * teams.length)
 
     const intervalFor = () => {
       if (rampMs > 0 && elapsed < rampMs) {
         return startInterval + (peakInterval - startInterval) * smoothstep(elapsed / rampMs)
       }
-      // Hold at peak briefly, then let the original decay take over.
-      if (elapsed > rampMs + 1200 * scale) decayInterval += 30 * scale
-      return decayInterval
+      const interval = peakInterval / Math.max(V_MIN, Math.pow(1 - decayU, k))
+      decayU += interval / decayBudget
+      return interval
     }
 
     setStage("spinning")
@@ -203,17 +221,23 @@ export function SpinInPlaceSpinner({
       const interval = intervalFor()
       elapsed += interval
 
-      // Slowed past the threshold — snap to the winner and settle.
-      if (decayInterval >= 400 * scale) {
-        setCurrentIndex(target)
-        setJustLanded(true)
+      // Decay curve exhausted — snap to the winner and settle. The final
+      // interval is still honoured before landing (the simulator counts it, so
+      // skipping it here would cut the measured total short and, worse, would
+      // swallow the long last crawl step that high `stopEase` values create).
+      if (decayU >= 1) {
         landTimer = setTimeout(() => {
           if (cancelled) return
-          setJustLanded(false)
-          setWinner(teams[target])
-          setStage("landed")
-          onLandedRef.current(teams[target])
-        }, settleMs)
+          setCurrentIndex(target)
+          setJustLanded(true)
+          landTimer = setTimeout(() => {
+            if (cancelled) return
+            setJustLanded(false)
+            setWinner(teams[target])
+            setStage("landed")
+            onLandedRef.current(teams[target])
+          }, settleMs)
+        }, interval)
         return
       }
       tickTimer = setTimeout(step, interval)
@@ -225,7 +249,7 @@ export function SpinInPlaceSpinner({
       if (tickTimer) clearTimeout(tickTimer)
       if (landTimer) clearTimeout(landTimer)
     }
-  }, [isSpinning, playTick, forceTeamIndex, spinDuration, startSpeed, rampUp])
+  }, [isSpinning, playTick, forceTeamIndex, spinDuration, startSpeed, rampUp, stopEase])
 
   const isLanded = stage === "landed"
   const displayTeam = isLanded ? winner : teams[currentIndex]
