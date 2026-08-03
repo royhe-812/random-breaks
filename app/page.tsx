@@ -846,7 +846,7 @@ case "thumbnails-4":
             <button
               className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white ring-2 ring-inset ring-yellow-400"
             >
-              Testing Zone
+              Spinner Testing Zone
             </button>
           </div>
         </motion.div>
@@ -894,7 +894,7 @@ case "thumbnails-4":
               onClick={() => setShowTestingZone(true)}
               className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white/70 hover:bg-zinc-700"
             >
-              Testing Zone
+              Spinner Testing Zone
             </button>
           </div>
         </motion.div>
@@ -1682,7 +1682,7 @@ case "thumbnails-4":
             onClick={() => setShowTestingZone(true)}
             className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white/70 hover:bg-zinc-700"
           >
-            Testing Zone
+            Spinner Testing Zone
           </button>
         </div>
       </motion.div>

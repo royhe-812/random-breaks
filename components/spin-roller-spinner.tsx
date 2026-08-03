@@ -19,6 +19,12 @@ interface SpinRollerSpinnerProps {
   totalSpots?: number
   /** Tapping the spots row opens the break spots sheet. */
   onViewSpots?: () => void
+  /**
+   * Forces the spin to land on a specific team index instead of picking one at
+   * random. Used by the testing zone to make outcomes reproducible; leave
+   * undefined/null in production for genuinely random results.
+   */
+  forceTeamIndex?: number | null
 }
 
 /* ── Cylinder geometry ──
@@ -80,6 +86,7 @@ export function SpinRollerSpinner({
   availableSpots = 15,
   totalSpots = 32,
   onViewSpots,
+  forceTeamIndex = null,
 }: SpinRollerSpinnerProps) {
   /** Fractional drum position, in rows. Integer values sit dead centre. */
   const [pos, setPos] = useState(0)
@@ -129,7 +136,10 @@ export function SpinRollerSpinner({
     let settleTimer: ReturnType<typeof setTimeout> | null = null
 
     const n = teams.length
-    const target = Math.floor(Math.random() * n)
+    const target =
+      forceTeamIndex !== null && forceTeamIndex >= 0 && forceTeamIndex < n
+        ? forceTeamIndex
+        : Math.floor(Math.random() * n)
     const start = Math.floor(Math.random() * n)
     // Spin through 3 full drum revolutions, then however many extra rows are
     // needed to come to rest exactly on `target`.
@@ -178,7 +188,7 @@ export function SpinRollerSpinner({
       cancelAnimationFrame(raf)
       if (settleTimer) clearTimeout(settleTimer)
     }
-  }, [isSpinning, playTick])
+  }, [isSpinning, playTick, forceTeamIndex])
 
   const isLanded = landedIndex !== null
   const centre = Math.round(pos)

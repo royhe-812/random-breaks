@@ -19,6 +19,12 @@ interface SpinInPlaceSpinnerProps {
   totalSpots?: number
   /** Tapping the spots row opens the break spots sheet. */
   onViewSpots?: () => void
+  /**
+   * Forces the spin to land on a specific team index instead of picking one at
+   * random. Used by the testing zone to make outcomes reproducible; leave
+   * undefined/null in production for genuinely random results.
+   */
+  forceTeamIndex?: number | null
 }
 
 type Stage = "idle" | "spinning" | "landed"
@@ -52,6 +58,7 @@ export function SpinInPlaceSpinner({
   availableSpots = 15,
   totalSpots = 32,
   onViewSpots,
+  forceTeamIndex = null,
 }: SpinInPlaceSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -104,7 +111,10 @@ export function SpinInPlaceSpinner({
     let tickTimer: ReturnType<typeof setTimeout> | null = null
     let landTimer: ReturnType<typeof setTimeout> | null = null
 
-    const target = Math.floor(Math.random() * teams.length)
+    const target =
+      forceTeamIndex !== null && forceTeamIndex >= 0 && forceTeamIndex < teams.length
+        ? forceTeamIndex
+        : Math.floor(Math.random() * teams.length)
     let speed = 50
     let elapsed = 0
     let idx = Math.floor(Math.random() * teams.length)
@@ -144,7 +154,7 @@ export function SpinInPlaceSpinner({
       if (tickTimer) clearTimeout(tickTimer)
       if (landTimer) clearTimeout(landTimer)
     }
-  }, [isSpinning, playTick])
+  }, [isSpinning, playTick, forceTeamIndex])
 
   const isLanded = stage === "landed"
   const displayTeam = isLanded ? winner : teams[currentIndex]

@@ -4,6 +4,19 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { RotateCcw } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
+import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
+import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
+
+/** Black or white label per WCAG relative luminance — team primaries range from
+ *  near-black (Packers) to bright yellow (Steelers), so this can't be constant. */
+function readableOn(hex: string) {
+  const h = hex.replace("#", "")
+  const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4))
+  const r = toLinear(parseInt(h.slice(0, 2), 16) / 255)
+  const g = toLinear(parseInt(h.slice(2, 4), 16) / 255)
+  const b = toLinear(parseInt(h.slice(4, 6), 16) / 255)
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.42 ? "#101820" : "#ffffff"
+}
 
 // ─── Minimal circular progress (mirrors the spinner components) ────────────
 const CircularProgress = ({ available, total, size = 16 }: { available: number; total: number; size?: number }) => {
@@ -263,159 +276,226 @@ function MiniSpinner({ label, forcedTeam, spinKey, variant }: MiniSpinnerProps) 
 
 // ─── Main Testing Zone ─────────────────────────────────────────────────────
 
+/** Variants that can be driven inside the phone frame. The first two are the
+ *  real production components; the rest reuse the local MiniSpinner. */
+const VARIANTS = [
+  { id: "roller", label: "Roller" },
+  { id: "in-place", label: "Spin In Place" },
+  { id: "single", label: "Single Spin" },
+  { id: "multi3", label: "Multi (3)" },
+  { id: "multi2", label: "Multi (2)" },
+] as const
+
+type VariantId = (typeof VARIANTS)[number]["id"]
+
+/** Measured height of the real bid box card, so the hosted spinner sits in the
+ *  exact footprint it occupies in the live flow. */
+const CARD_HEIGHT = 223
+
 export function TestingZone() {
-  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
+  const [variant, setVariant] = useState<VariantId>("roller")
+  // null = let the spinner pick at random, otherwise force this outcome.
+  const [forcedTeam, setForcedTeam] = useState<Team | null>(null)
   const [spinKey, setSpinKey] = useState(0)
-  const [hasSpun, setHasSpun] = useState(false)
+  const [isSpinning, setIsSpinning] = useState(false)
+  const [result, setResult] = useState<Team | null>(null)
+
+  const forcedIndex = forcedTeam ? teams.findIndex(t => t.name === forcedTeam.name) : null
+  const isRealVariant = variant === "roller" || variant === "in-place"
 
   const handleSpin = () => {
-    if (!selectedTeam) return
+    setResult(null)
+    setIsSpinning(true)
+    // Remounting is what restarts a run — both real spinners key their whole
+    // rAF loop off mount, so a fresh key replays cleanly every time.
     setSpinKey(k => k + 1)
-    setHasSpun(true)
   }
 
   const handleReset = () => {
+    setIsSpinning(false)
+    setResult(null)
     setSpinKey(k => k + 1)
-    setHasSpun(false)
-    setSelectedTeam(null)
   }
+
+  const phase = result ? "landed" : isSpinning ? "spinning" : "idle"
 
   return (
     <div className="w-full min-h-screen bg-zinc-950 flex flex-col">
       {/* ─── Header ──────────────────────────────────────────────────────── */}
-      <div className="px-6 pt-8 pb-4 border-b border-white/10">
-        <div className="flex items-center justify-between">
+      <header className="px-6 pt-8 pb-4 border-b border-white/10">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-white font-bold text-xl tracking-tight">Testing Zone</h1>
-            <p className="text-white/40 text-sm mt-0.5">Force any team — see all spinner variants live</p>
+            <h1 className="text-white font-bold text-xl tracking-tight">Spinner Testing Zone</h1>
+            <p className="text-white/40 text-sm mt-0.5">Force any outcome and replay the randomization in a mobile frame</p>
           </div>
           <button
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 transition-colors text-white/70 hover:text-white text-sm font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 transition-colors text-white/70 hover:text-white text-sm font-medium flex-shrink-0"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             Reset
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className="flex flex-col lg:flex-row gap-0 flex-1 min-h-0">
-        {/* ─── Team Picker (left panel) ──────────────────────────────────── */}
-        <div className="lg:w-72 lg:flex-shrink-0 border-b lg:border-b-0 lg:border-r border-white/10 p-6">
-          <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-4">Select team</p>
-          <div className="grid grid-cols-4 lg:grid-cols-2 gap-2">
+      <div className="flex flex-col lg:flex-row flex-1 min-h-0">
+        {/* ─── Controls ─────────────────────────────────────────────────── */}
+        <div className="lg:w-80 lg:flex-shrink-0 border-b lg:border-b-0 lg:border-r border-white/10 p-6 overflow-y-auto">
+          {/* Variant */}
+          <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-3">Variant</p>
+          <div className="flex flex-wrap gap-2 mb-6">
+            {VARIANTS.map(v => (
+              <button
+                key={v.id}
+                onClick={() => { setVariant(v.id); handleReset() }}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  variant === v.id
+                    ? "bg-white text-zinc-900"
+                    : "bg-white/10 text-white/60 hover:bg-white/15 hover:text-white"
+                }`}
+              >
+                {v.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Spin / status */}
+          <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-3">Playback</p>
+          <button
+            onClick={handleSpin}
+            className="w-full py-3 rounded-xl font-semibold text-sm transition-all"
+            style={
+              forcedTeam
+                ? { backgroundColor: forcedTeam.color, color: readableOn(forcedTeam.color), boxShadow: `0 4px 20px ${forcedTeam.color}50` }
+                : { backgroundColor: "#4ce160", color: "#04210a", boxShadow: "0 4px 20px rgba(76,225,96,0.3)" }
+            }
+          >
+            {phase === "idle" ? "Start spin" : "Spin again"}
+          </button>
+
+          <div className="mt-3 flex items-center gap-2 text-xs">
+            <span
+              className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                phase === "spinning" ? "bg-yellow-400 animate-pulse" : phase === "landed" ? "bg-[#4ce160]" : "bg-white/25"
+              }`}
+            />
+            <span className="text-white/50 capitalize">{phase}</span>
+            {result && (
+              <span className="text-white font-semibold ml-auto truncate">
+                {result.city} {result.name}
+              </span>
+            )}
+          </div>
+
+          {/* Outcome picker */}
+          <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mt-6 mb-3">Winner outcome</p>
+          <button
+            onClick={() => setForcedTeam(null)}
+            className={`w-full mb-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all text-left ${
+              forcedTeam === null
+                ? "bg-white/15 text-white ring-1 ring-inset ring-white/40"
+                : "bg-white/5 text-white/50 hover:bg-white/10"
+            }`}
+          >
+            Random
+            <span className="block font-normal text-[10px] mt-0.5 opacity-60">Let the spinner decide</span>
+          </button>
+          <div className="grid grid-cols-2 gap-2">
             {teams.map(team => {
-              const isSelected = selectedTeam?.name === team.name
+              const isSelected = forcedTeam?.name === team.name
               return (
                 <button
                   key={team.name}
-                  onClick={() => setSelectedTeam(team)}
-                  className="relative flex items-center gap-2 rounded-xl px-3 py-2.5 transition-all text-left"
+                  onClick={() => setForcedTeam(team)}
+                  className="flex items-center gap-2 rounded-xl px-2.5 py-2 transition-all text-left"
                   style={{
-                    backgroundColor: isSelected ? `${team.color}22` : "transparent",
-                    border: isSelected ? `1.5px solid ${team.color}` : "1.5px solid rgba(255,255,255,0.08)",
+                    backgroundColor: isSelected ? `${team.color}26` : "rgba(255,255,255,0.04)",
+                    border: isSelected ? `1.5px solid ${team.color}` : "1.5px solid transparent",
                   }}
                 >
-                  {/* Color swatch */}
-                  <div className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center font-bold text-white text-[10px]"
-                    style={{ backgroundColor: team.color }}>
+                  <div
+                    className="w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center font-bold text-[9px]"
+                    style={{ backgroundColor: team.color, color: readableOn(team.color) }}
+                  >
                     {team.abbrev}
                   </div>
-                  <div className="min-w-0 hidden lg:block">
-                    <p className="text-white text-xs font-semibold leading-tight truncate">{team.name}</p>
-                    <p className="text-white/40 text-[10px] leading-tight truncate">{team.city}</p>
+                  <div className="min-w-0">
+                    <p className="text-white text-[11px] font-semibold leading-tight truncate">{team.name}</p>
+                    {/* Neutral, not the team colour — the darkest primaries
+                        (Texans #03202F, Patriots #002244) vanish on this panel. */}
+                    <p className="font-mono text-[9px] leading-tight truncate text-white/40">{team.color}</p>
                   </div>
-                  {isSelected && (
-                    <motion.div
-                      layoutId="team-selected-ring"
-                      className="absolute inset-0 rounded-xl pointer-events-none"
-                      style={{ boxShadow: `0 0 12px ${team.color}60` }}
-                    />
-                  )}
                 </button>
               )
             })}
           </div>
-
-          {/* Spin button */}
-          <button
-            onClick={handleSpin}
-            disabled={!selectedTeam}
-            className="mt-5 w-full py-3 rounded-xl font-semibold text-sm transition-all"
-            style={selectedTeam
-              ? { backgroundColor: selectedTeam.color, color: "#fff", boxShadow: `0 4px 20px ${selectedTeam.color}50` }
-              : { backgroundColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.3)", cursor: "not-allowed" }}
-          >
-            {!selectedTeam ? "Pick a team to spin" : hasSpun ? `Spin again — ${selectedTeam.name}` : `Spin — ${selectedTeam.city} ${selectedTeam.name}`}
-          </button>
-
-          {/* Legend */}
-          {selectedTeam && (
-            <motion.div
-              key={selectedTeam.name}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 rounded-xl p-3 flex items-center gap-3"
-              style={{ backgroundColor: `${selectedTeam.color}15`, border: `1px solid ${selectedTeam.color}30` }}
-            >
-              <div className="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center font-bold text-white text-xs"
-                style={{ backgroundColor: selectedTeam.color }}>
-                {selectedTeam.abbrev}
-              </div>
-              <div>
-                <p className="text-white font-semibold text-sm">{selectedTeam.city} {selectedTeam.name}</p>
-                <p className="text-xs font-mono mt-0.5" style={{ color: selectedTeam.color }}>{selectedTeam.color}</p>
-              </div>
-            </motion.div>
-          )}
         </div>
 
-        {/* ─── Spinner previews (right panel) ──────────────────────────── */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-5">Spinner variants</p>
-          <div className="flex flex-col gap-6 max-w-lg">
-            <MiniSpinner
-              label="Single Spin"
-              forcedTeam={selectedTeam}
-              spinKey={spinKey}
-              variant="single"
-            />
-            <MiniSpinner
-              label="Multi Spin (3 spots)"
-              forcedTeam={selectedTeam}
-              spinKey={spinKey}
-              variant="multi3"
-            />
-            <MiniSpinner
-              label="Multi Spin (2 spots)"
-              forcedTeam={selectedTeam}
-              spinKey={spinKey}
-              variant="multi2"
-            />
-          </div>
+        {/* ─── Mobile frame ─────────────────────────────────────────────── */}
+        <div className="flex-1 flex items-start justify-center p-6 lg:p-10 overflow-y-auto">
+          <div
+            className="relative flex-shrink-0 rounded-[44px] border-4 border-zinc-800 bg-black overflow-hidden"
+            style={{ width: 390, height: 760, boxShadow: "0 30px 80px rgba(0,0,0,0.6)" }}
+          >
+            {/* Notch */}
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-6 rounded-full bg-zinc-900 z-20" />
 
-          {/* Colour grid reference */}
-          <div className="mt-10">
-            <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-4">All team colours</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {teams.map(t => (
-                <button
-                  key={t.name}
-                  onClick={() => setSelectedTeam(t)}
-                  className="flex items-center gap-2 rounded-xl p-2.5 transition-all hover:opacity-90"
-                  style={{ backgroundColor: `${t.color}18`, border: `1px solid ${t.color}30` }}
-                >
-                  <div className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center font-bold text-white text-[10px]"
-                    style={{ backgroundColor: t.color }}>
-                    {t.abbrev}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-white text-xs font-semibold truncate leading-tight">{t.name}</p>
-                    <p className="font-mono text-[10px] truncate" style={{ color: t.color }}>{t.color}</p>
-                  </div>
-                </button>
-              ))}
+            {/* Status bar */}
+            <div className="relative z-10 flex items-center justify-between px-7 pt-4 pb-1 text-white text-xs font-semibold">
+              <span>9:41</span>
+              <span className="flex items-center gap-1 text-white/70">
+                <span className="tracking-tighter">▮▮▮</span>
+              </span>
             </div>
+
+            {/* Screen body — a stand-in for the live stream backdrop so the card
+                is judged against the same dark context it ships in. */}
+            <div className="absolute inset-0 flex flex-col justify-end p-4 pb-8 bg-gradient-to-b from-zinc-900 via-black to-zinc-900">
+              <p className="text-white/30 text-[10px] uppercase tracking-widest font-semibold mb-2">
+                {VARIANTS.find(v => v.id === variant)?.label}
+              </p>
+
+              {isRealVariant ? (
+                <div
+                  className="bg-black/40 backdrop-blur rounded-2xl p-4"
+                  style={{ height: CARD_HEIGHT }}
+                >
+                  {variant === "roller" ? (
+                    <SpinRollerSpinner
+                      key={`roller-${spinKey}`}
+                      isSpinning={isSpinning}
+                      onLanded={setResult}
+                      winnerName="Adam007"
+                      breakNumber={15}
+                      availableSpots={15}
+                      totalSpots={32}
+                      forceTeamIndex={forcedIndex}
+                    />
+                  ) : (
+                    <SpinInPlaceSpinner
+                      key={`in-place-${spinKey}`}
+                      isSpinning={isSpinning}
+                      onLanded={setResult}
+                      winnerName="Adam007"
+                      breakNumber={15}
+                      availableSpots={15}
+                      totalSpots={32}
+                      forceTeamIndex={forcedIndex}
+                    />
+                  )}
+                </div>
+              ) : (
+                <MiniSpinner
+                  label={VARIANTS.find(v => v.id === variant)?.label ?? ""}
+                  forcedTeam={forcedTeam}
+                  spinKey={spinKey}
+                  variant={variant as "single" | "multi3" | "multi2"}
+                />
+              )}
+            </div>
+
+            {/* Home indicator */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 rounded-full bg-white/30 z-20" />
           </div>
         </div>
       </div>
