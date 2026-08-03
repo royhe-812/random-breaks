@@ -30,6 +30,13 @@ interface SpinRollerSpinnerProps {
    * the winner. Exposed so the testing zone can tune it live via dialkit.
    */
   spinDuration?: number
+  /**
+   * Speed the drum begins at, as a fraction of its peak speed. 1 reproduces the
+   * old behaviour (instantly at full tilt); lower values ease it in.
+   */
+  startSpeed?: number
+  /** Fraction of the spin spent accelerating up to peak speed. */
+  rampUp?: number
 }
 
 /* ── Cylinder geometry ──
@@ -46,10 +53,49 @@ const RADIUS = ITEM_H / (STEP_DEG * (Math.PI / 180))
 /** Rows rendered either side of centre — beyond this they're edge-on/hidden. */
 const HALF_WINDOW = 3
 
-const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4)
-
 /** Hold time on the winning row after the drum stops, before reporting up. */
 const SETTLE_MS = 800
+
+/**
+ * Builds the drum's position curve from a *velocity* profile rather than a
+ * position ease. `easeOutQuart` alone starts at peak speed (its slope at t=0 is
+ * maximal), which is why the drum used to snap straight into full motion. Here
+ * the drum accelerates from `startSpeed` up to full speed across the first
+ * `rampFraction` of the run, then decays to rest on the original quart curve.
+ *
+ * The profile is integrated into a normalised lookup table so the curve is
+ * guaranteed to travel exactly 0 -> 1. That matters: the drum must still come to
+ * rest precisely on the winning row no matter how the dials are set.
+ */
+function buildSpinEase(startSpeed: number, rampFraction: number) {
+  const SAMPLES = 480
+  const r = Math.min(0.95, Math.max(0, rampFraction))
+  // Never allow 0 — a dead stop at t=0 wastes the front of the animation.
+  const v0 = Math.min(1, Math.max(0.02, startSpeed))
+
+  const smoothstep = (x: number) => x * x * (3 - 2 * x)
+  const velocity = (t: number) => {
+    if (r > 0 && t < r) return v0 + (1 - v0) * smoothstep(t / r)
+    const u = r >= 1 ? 0 : (t - r) / (1 - r)
+    return Math.pow(1 - u, 3) // derivative shape of easeOutQuart
+  }
+
+  const cumulative = new Float64Array(SAMPLES + 1)
+  const dt = 1 / SAMPLES
+  for (let i = 1; i <= SAMPLES; i++) {
+    cumulative[i] = cumulative[i - 1] + ((velocity((i - 1) * dt) + velocity(i * dt)) / 2) * dt
+  }
+  const total = cumulative[SAMPLES] || 1
+  for (let i = 0; i <= SAMPLES; i++) cumulative[i] /= total
+
+  return (t: number) => {
+    if (t <= 0) return 0
+    if (t >= 1) return 1
+    const x = t * SAMPLES
+    const i = Math.floor(x)
+    return cumulative[i] + (cumulative[i + 1] - cumulative[i]) * (x - i)
+  }
+}
 
 /* ── Team colour contrast ──
    Team primaries span a huge brightness range (Packers #203731 is nearly black,
@@ -96,6 +142,8 @@ export function SpinRollerSpinner({
   onViewSpots,
   forceTeamIndex = null,
   spinDuration = 4200,
+  startSpeed = 0.15,
+  rampUp = 0.3,
 }: SpinRollerSpinnerProps) {
   /** Fractional drum position, in rows. Integer values sit dead centre. */
   const [pos, setPos] = useState(0)
@@ -156,6 +204,8 @@ export function SpinRollerSpinner({
     // `spinDuration` is the TOTAL time the spin takes, so the drum motion gets
     // whatever is left after the fixed post-landing settle flash.
     const duration = Math.max(300, spinDuration - SETTLE_MS)
+    // Built once per spin, not per frame — the table is 480 samples.
+    const ease = buildSpinEase(startSpeed, rampUp)
 
     setLandedIndex(null)
     setJustLanded(false)
@@ -167,7 +217,7 @@ export function SpinRollerSpinner({
     const frame = (now: number) => {
       if (cancelled) return
       const t = Math.min(1, (now - t0) / duration)
-      const p = start + distance * easeOutQuart(t)
+      const p = start + distance * ease(t)
       setPos(p)
 
       // Tick once per row that clicks past the centre line.
@@ -199,7 +249,7 @@ export function SpinRollerSpinner({
       cancelAnimationFrame(raf)
       if (settleTimer) clearTimeout(settleTimer)
     }
-  }, [isSpinning, playTick, forceTeamIndex, spinDuration])
+  }, [isSpinning, playTick, forceTeamIndex, spinDuration, startSpeed, rampUp])
 
   const isLanded = landedIndex !== null
   const centre = Math.round(pos)

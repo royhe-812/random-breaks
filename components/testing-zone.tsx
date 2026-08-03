@@ -325,8 +325,13 @@ export function TestingZone() {
      Live-tunable spin parameters. The tuple form is [value, min, max, step].
      `spinTime` is expressed in seconds here because that's the unit worth
      reasoning about, then converted to ms for the spinner props. */
-  const { spinTime } = useDialKit("Spin", {
+  const { spinTime, startSpeed, rampUp } = useDialKit("Spin", {
     spinTime: [4.2, 0.5, 12, 0.1] as [number, number, number, number],
+    // Fraction of peak speed the drum starts at. Drop toward 0 for a slow
+    // creeping start; 1 restores the old "instantly at full tilt" behaviour.
+    startSpeed: [0.15, 0.02, 1, 0.01] as [number, number, number, number],
+    // Portion of the spin spent accelerating before the decay to the winner.
+    rampUp: [0.3, 0, 0.9, 0.05] as [number, number, number, number],
   })
 
   const spinDurationMs = Math.round(spinTime * 1000)
@@ -559,6 +564,8 @@ export function TestingZone() {
                       totalSpots={32}
                       forceTeamIndex={forcedIndex}
                       spinDuration={spinDurationMs}
+                      startSpeed={startSpeed}
+                      rampUp={rampUp}
                     />
                   ) : (
                     <SpinInPlaceSpinner
@@ -571,6 +578,8 @@ export function TestingZone() {
                       totalSpots={32}
                       forceTeamIndex={forcedIndex}
                       spinDuration={spinDurationMs}
+                      startSpeed={startSpeed}
+                      rampUp={rampUp}
                     />
                   )}
                 </div>

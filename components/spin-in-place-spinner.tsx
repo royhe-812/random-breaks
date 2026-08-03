@@ -32,6 +32,10 @@ interface SpinInPlaceSpinnerProps {
    * ~4200ms run to keep the original feel while stretching/compressing it.
    */
   spinDuration?: number
+  /** Speed the drum begins at, as a fraction of its peak speed. */
+  startSpeed?: number
+  /** Fraction of the spin spent accelerating up to peak speed. */
+  rampUp?: number
 }
 
 type Stage = "idle" | "spinning" | "landed"
@@ -67,6 +71,8 @@ export function SpinInPlaceSpinner({
   onViewSpots,
   forceTeamIndex = null,
   spinDuration = 4200,
+  startSpeed = 0.15,
+  rampUp = 0.3,
 }: SpinInPlaceSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -126,13 +132,63 @@ export function SpinInPlaceSpinner({
     // Natural run of the untouched decay curve, measured from the constants
     // below: ~1200ms at full speed + ~2640ms of decay + 800ms settle. Scaling
     // every interval by this factor makes the total track `spinDuration`.
-    const NATURAL_MS = 4200
-    const scale = spinDuration / NATURAL_MS
+    // This variant's runtime is emergent (it ticks, then decays until crossing a
+    // speed threshold), so there's no closed form for "make it last N ms". A
+    // fixed scale factor drifted up to 27% once ramp-up was added, so instead we
+    // simulate the loop and bisect for the scale that lands on `spinDuration`.
+    const rampMs = Math.max(0, Math.min(0.9, rampUp)) * spinDuration
+    const speedFrac = Math.max(0.02, Math.min(1, startSpeed))
+
+    const simulateTotal = (s: number) => {
+      const peak = 50 * s
+      const startInt = peak / speedFrac
+      let decay = peak
+      let acc = 0
+      let wall = rampMs > 0 ? startInt : peak
+      for (let guard = 0; guard < 20000; guard++) {
+        let interval: number
+        if (rampMs > 0 && acc < rampMs) {
+          const x = acc / rampMs
+          interval = startInt + (peak - startInt) * (x * x * (3 - 2 * x))
+        } else {
+          if (acc > rampMs + 1200 * s) decay += 30 * s
+          interval = decay
+        }
+        acc += interval
+        if (decay >= 400 * s) break
+        wall += interval
+      }
+      return wall + 800 * s
+    }
+
+    let lo = 0.01
+    let hi = 4
+    for (let i = 0; i < 40; i++) {
+      const mid = (lo + hi) / 2
+      if (simulateTotal(mid) < spinDuration) lo = mid
+      else hi = mid
+    }
+    const scale = (lo + hi) / 2
     const settleMs = 800 * scale
 
-    let speed = 50 * scale
+    // `speed` here is a tick *interval* in ms, so larger means slower. The drum
+    // therefore starts on a long interval and shortens it as it accelerates.
+    const peakInterval = 50 * scale
+    const startInterval = peakInterval / Math.max(0.02, Math.min(1, startSpeed))
+    const smoothstep = (x: number) => x * x * (3 - 2 * x)
+
+    let decayInterval = peakInterval
     let elapsed = 0
     let idx = Math.floor(Math.random() * teams.length)
+
+    const intervalFor = () => {
+      if (rampMs > 0 && elapsed < rampMs) {
+        return startInterval + (peakInterval - startInterval) * smoothstep(elapsed / rampMs)
+      }
+      // Hold at peak briefly, then let the original decay take over.
+      if (elapsed > rampMs + 1200 * scale) decayInterval += 30 * scale
+      return decayInterval
+    }
 
     setStage("spinning")
     setWinner(null)
@@ -144,11 +200,11 @@ export function SpinInPlaceSpinner({
       idx = (idx + 1) % teams.length
       setCurrentIndex(idx)
       playTick()
-      elapsed += speed
-      if (elapsed > 1200 * scale) speed += 30 * scale
+      const interval = intervalFor()
+      elapsed += interval
 
       // Slowed past the threshold — snap to the winner and settle.
-      if (speed >= 400 * scale) {
+      if (decayInterval >= 400 * scale) {
         setCurrentIndex(target)
         setJustLanded(true)
         landTimer = setTimeout(() => {
@@ -160,16 +216,16 @@ export function SpinInPlaceSpinner({
         }, settleMs)
         return
       }
-      tickTimer = setTimeout(step, speed)
+      tickTimer = setTimeout(step, interval)
     }
-    tickTimer = setTimeout(step, speed)
+    tickTimer = setTimeout(step, rampMs > 0 ? startInterval : peakInterval)
 
     return () => {
       cancelled = true
       if (tickTimer) clearTimeout(tickTimer)
       if (landTimer) clearTimeout(landTimer)
     }
-  }, [isSpinning, playTick, forceTeamIndex, spinDuration])
+  }, [isSpinning, playTick, forceTeamIndex, spinDuration, startSpeed, rampUp])
 
   const isLanded = stage === "landed"
   const displayTeam = isLanded ? winner : teams[currentIndex]
