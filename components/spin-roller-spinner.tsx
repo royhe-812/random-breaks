@@ -25,6 +25,11 @@ interface SpinRollerSpinnerProps {
    * undefined/null in production for genuinely random results.
    */
   forceTeamIndex?: number | null
+  /**
+   * Total time the drum spends spinning, in ms, from first motion to resting on
+   * the winner. Exposed so the testing zone can tune it live via dialkit.
+   */
+  spinDuration?: number
 }
 
 /* ── Cylinder geometry ──
@@ -42,6 +47,9 @@ const RADIUS = ITEM_H / (STEP_DEG * (Math.PI / 180))
 const HALF_WINDOW = 3
 
 const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4)
+
+/** Hold time on the winning row after the drum stops, before reporting up. */
+const SETTLE_MS = 800
 
 /* ── Team colour contrast ──
    Team primaries span a huge brightness range (Packers #203731 is nearly black,
@@ -87,6 +95,7 @@ export function SpinRollerSpinner({
   totalSpots = 32,
   onViewSpots,
   forceTeamIndex = null,
+  spinDuration = 4200,
 }: SpinRollerSpinnerProps) {
   /** Fractional drum position, in rows. Integer values sit dead centre. */
   const [pos, setPos] = useState(0)
@@ -144,7 +153,9 @@ export function SpinRollerSpinner({
     // Spin through 3 full drum revolutions, then however many extra rows are
     // needed to come to rest exactly on `target`.
     const distance = n * 3 + (((target - start) % n) + n) % n
-    const duration = 4200
+    // `spinDuration` is the TOTAL time the spin takes, so the drum motion gets
+    // whatever is left after the fixed post-landing settle flash.
+    const duration = Math.max(300, spinDuration - SETTLE_MS)
 
     setLandedIndex(null)
     setJustLanded(false)
@@ -179,7 +190,7 @@ export function SpinRollerSpinner({
         setJustLanded(false)
         setLandedIndex(target)
         onLandedRef.current(teams[target])
-      }, 800)
+      }, SETTLE_MS)
     }
     raf = requestAnimationFrame(frame)
 
@@ -188,7 +199,7 @@ export function SpinRollerSpinner({
       cancelAnimationFrame(raf)
       if (settleTimer) clearTimeout(settleTimer)
     }
-  }, [isSpinning, playTick, forceTeamIndex])
+  }, [isSpinning, playTick, forceTeamIndex, spinDuration])
 
   const isLanded = landedIndex !== null
   const centre = Math.round(pos)

@@ -25,6 +25,13 @@ interface SpinInPlaceSpinnerProps {
    * undefined/null in production for genuinely random results.
    */
   forceTeamIndex?: number | null
+  /**
+   * Total time the spin takes, in ms. This variant's timing is emergent (it
+   * ticks fast then decays until it crosses a speed threshold) rather than a
+   * fixed duration, so the value is applied as a scale factor over the natural
+   * ~4200ms run to keep the original feel while stretching/compressing it.
+   */
+  spinDuration?: number
 }
 
 type Stage = "idle" | "spinning" | "landed"
@@ -59,6 +66,7 @@ export function SpinInPlaceSpinner({
   totalSpots = 32,
   onViewSpots,
   forceTeamIndex = null,
+  spinDuration = 4200,
 }: SpinInPlaceSpinnerProps) {
   const [stage, setStage] = useState<Stage>("idle")
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -115,7 +123,14 @@ export function SpinInPlaceSpinner({
       forceTeamIndex !== null && forceTeamIndex >= 0 && forceTeamIndex < teams.length
         ? forceTeamIndex
         : Math.floor(Math.random() * teams.length)
-    let speed = 50
+    // Natural run of the untouched decay curve, measured from the constants
+    // below: ~1200ms at full speed + ~2640ms of decay + 800ms settle. Scaling
+    // every interval by this factor makes the total track `spinDuration`.
+    const NATURAL_MS = 4200
+    const scale = spinDuration / NATURAL_MS
+    const settleMs = 800 * scale
+
+    let speed = 50 * scale
     let elapsed = 0
     let idx = Math.floor(Math.random() * teams.length)
 
@@ -130,10 +145,10 @@ export function SpinInPlaceSpinner({
       setCurrentIndex(idx)
       playTick()
       elapsed += speed
-      if (elapsed > 1200) speed += 30
+      if (elapsed > 1200 * scale) speed += 30 * scale
 
       // Slowed past the threshold — snap to the winner and settle.
-      if (speed >= 400) {
+      if (speed >= 400 * scale) {
         setCurrentIndex(target)
         setJustLanded(true)
         landTimer = setTimeout(() => {
@@ -142,7 +157,7 @@ export function SpinInPlaceSpinner({
           setWinner(teams[target])
           setStage("landed")
           onLandedRef.current(teams[target])
-        }, 800)
+        }, settleMs)
         return
       }
       tickTimer = setTimeout(step, speed)
@@ -154,7 +169,7 @@ export function SpinInPlaceSpinner({
       if (tickTimer) clearTimeout(tickTimer)
       if (landTimer) clearTimeout(landTimer)
     }
-  }, [isSpinning, playTick, forceTeamIndex])
+  }, [isSpinning, playTick, forceTeamIndex, spinDuration])
 
   const isLanded = stage === "landed"
   const displayTeam = isLanded ? winner : teams[currentIndex]

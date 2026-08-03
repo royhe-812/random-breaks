@@ -6,6 +6,8 @@ import { RotateCcw, ChevronDown, Heart } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
+import { useDialKit, DialRoot } from "dialkit"
+import "dialkit/styles.css"
 
 /** Black or white label per WCAG relative luminance — team primaries range from
  *  near-black (Packers) to bright yellow (Steelers), so this can't be constant. */
@@ -319,6 +321,16 @@ export function TestingZone() {
   const [isSpinning, setIsSpinning] = useState(false)
   const [result, setResult] = useState<Team | null>(null)
 
+  /* ── dialkit ──
+     Live-tunable spin parameters. The tuple form is [value, min, max, step].
+     `spinTime` is expressed in seconds here because that's the unit worth
+     reasoning about, then converted to ms for the spinner props. */
+  const { spinTime } = useDialKit("Spin", {
+    spinTime: [4.2, 0.5, 12, 0.1] as [number, number, number, number],
+  })
+
+  const spinDurationMs = Math.round(spinTime * 1000)
+
   const forcedIndex = forcedTeam ? teams.findIndex(t => t.name === forcedTeam.name) : null
   const isRealVariant = variant === "roller" || variant === "in-place"
 
@@ -546,6 +558,7 @@ export function TestingZone() {
                       availableSpots={15}
                       totalSpots={32}
                       forceTeamIndex={forcedIndex}
+                      spinDuration={spinDurationMs}
                     />
                   ) : (
                     <SpinInPlaceSpinner
@@ -557,6 +570,7 @@ export function TestingZone() {
                       availableSpots={15}
                       totalSpots={32}
                       forceTeamIndex={forcedIndex}
+                      spinDuration={spinDurationMs}
                     />
                   )}
                 </div>
@@ -575,6 +589,10 @@ export function TestingZone() {
           </div>
         </div>
       </div>
+
+      {/* dialkit panel. `productionEnabled` keeps it available on the deployed
+          preview, since this whole route is an internal testing surface. */}
+      <DialRoot position="bottom-right" theme="dark" defaultOpen productionEnabled />
     </div>
   )
 }
