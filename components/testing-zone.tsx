@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { RotateCcw } from "lucide-react"
+import { RotateCcw, ChevronDown, Heart } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
@@ -292,6 +292,25 @@ type VariantId = (typeof VARIANTS)[number]["id"]
  *  exact footprint it occupies in the live flow. */
 const CARD_HEIGHT = 223
 
+/* ── Live stream chrome ──
+   Same blob assets the production stream in app/page.tsx uses, so the testing
+   zone is judged against the identical backdrop rather than a flat panel. */
+const STREAM_VIDEO =
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/case%20breaks%20video%20-w5usFKatykHZfTOkKiurwdJmYPpFxf.mov"
+const RAIL_ICONS = [
+  { src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/items-lRJIiXEXUI5vZJg8YwpehK7c6cPcIp.png", label: "Items" },
+  { src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/wallet-DJozjl9ngzsbQkbB6XZaj8GAvfXwO3.png", label: "Wallet" },
+  { src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/polls-TLiAJGRZLHuSvOrQ9KyfrufvDyhfjC.png", label: "Polls" },
+  { src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/more-7JAmofygtcnGhXf8oMlQuYxSkAZxTC.png", label: "More" },
+]
+const LIVE_AVATAR =
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Stream%20navigation%20avatar-kd9nUvhPaYGQGCKYioJLK4vLokIQ87.png"
+const STREAM_CHAT = [
+  { user: "boxbreaker", message: "Love these random breaks" },
+  { user: "firstroundpick", message: "Mosaic hits different" },
+  { user: "Chloepulls11", message: "These are so hot, get your bids in!" },
+]
+
 export function TestingZone() {
   const [variant, setVariant] = useState<VariantId>("roller")
   // null = let the spinner pick at random, otherwise force this outcome.
@@ -435,25 +454,82 @@ export function TestingZone() {
         <div className="flex-1 flex items-start justify-center p-6 lg:p-10 overflow-y-auto">
           <div
             className="relative flex-shrink-0 rounded-[44px] border-4 border-zinc-800 bg-black overflow-hidden"
-            style={{ width: 390, height: 760, boxShadow: "0 30px 80px rgba(0,0,0,0.6)" }}
+            /* 390 x 848 keeps the iPhone 17 Pro Max 440:956 ratio the production
+               device frame uses, so vertical spacing reads true. */
+            style={{ width: 390, height: 848, boxShadow: "0 30px 80px rgba(0,0,0,0.6)" }}
           >
+            {/* Live stream video — the real backdrop from the production stream */}
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
+              src={STREAM_VIDEO}
+            />
+
+            {/* Readability gradients, matching the production stack */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[80%] z-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
             {/* Notch */}
-            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-6 rounded-full bg-zinc-900 z-20" />
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-6 rounded-full bg-black z-30" />
 
             {/* Status bar */}
-            <div className="relative z-10 flex items-center justify-between px-7 pt-4 pb-1 text-white text-xs font-semibold">
+            <div className="relative z-20 flex items-center justify-between px-7 pt-4 pb-1 text-white text-xs font-semibold">
               <span>9:41</span>
-              <span className="flex items-center gap-1 text-white/70">
-                <span className="tracking-tighter">▮▮▮</span>
-              </span>
+              <span className="tracking-tighter text-white/70">▮▮▮</span>
             </div>
 
-            {/* Screen body — a stand-in for the live stream backdrop so the card
-                is judged against the same dark context it ships in. */}
-            <div className="absolute inset-0 flex flex-col justify-end p-4 pb-8 bg-gradient-to-b from-zinc-900 via-black to-zinc-900">
-              <p className="text-white/30 text-[10px] uppercase tracking-widest font-semibold mb-2">
-                {VARIANTS.find(v => v.id === variant)?.label}
-              </p>
+            {/* Stream header — collapse chevron, seller, follow heart */}
+            <div className="absolute top-12 left-0 right-0 z-20 p-4">
+              <div className="flex items-start gap-3">
+                <button className="w-8 h-8 flex items-center justify-center" aria-label="Collapse stream">
+                  <ChevronDown className="w-6 h-6 text-white" />
+                </button>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500" />
+                  <span className="text-white font-semibold text-sm">ryans_cardhouse</span>
+                  <Heart className="w-4 h-4 text-white fill-white" />
+                </div>
+              </div>
+
+              {/* Right action rail */}
+              <div className="absolute top-4 right-4">
+                <div className="bg-black/40 backdrop-blur rounded-3xl px-2 py-3 flex flex-col items-center gap-2">
+                  <div className="flex flex-col items-center">
+                    <img src={LIVE_AVATAR} alt="Live" className="w-10 h-10" />
+                    <span className="text-white text-xs font-medium mt-1">299</span>
+                  </div>
+                  {RAIL_ICONS.map(icon => (
+                    <div key={icon.label} className="flex flex-col items-center">
+                      <div className="w-10 h-10 flex items-center justify-center">
+                        <img src={icon.src} alt={icon.label} className="w-6 h-6" />
+                      </div>
+                      <span className="text-white text-xs font-medium mt-1">{icon.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom stack — chat, comment bar, then the spinner under test */}
+            <div className="absolute left-4 right-4 bottom-6 z-20 flex flex-col gap-2">
+              {/* Chat, kept clear of the right rail */}
+              <div className="flex flex-col gap-1.5 pr-20">
+                {STREAM_CHAT.map(msg => (
+                  <div key={msg.user} className="flex flex-col">
+                    <span className="text-white font-bold text-sm">{msg.user}</span>
+                    <span className="text-white/80 text-sm">{msg.message}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Comment bar */}
+              <div className="flex w-full items-center gap-2 bg-black/40 backdrop-blur rounded-full px-4 py-3">
+                <span className="text-sm flex-1 text-white/50">Add comment...</span>
+                <Heart className="w-5 h-5 text-red-500 fill-red-500" />
+              </div>
 
               {isRealVariant ? (
                 <div
