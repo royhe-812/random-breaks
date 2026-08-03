@@ -37,6 +37,20 @@ const HALF_WINDOW = 3
 
 const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4)
 
+/* ── Team colour contrast ──
+   Team primaries span a huge brightness range (Packers #203731 is nearly black,
+   Steelers #FFB612 is bright yellow), so the landed row can't just hardcode
+   white text. Pick black or white per WCAG relative luminance instead. */
+function readableOn(hex: string) {
+  const h = hex.replace("#", "")
+  const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4))
+  const r = toLinear(parseInt(h.slice(0, 2), 16) / 255)
+  const g = toLinear(parseInt(h.slice(2, 4), 16) / 255)
+  const b = toLinear(parseInt(h.slice(4, 6), 16) / 255)
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  return luminance > 0.42 ? "#101820" : "#ffffff"
+}
+
 // Circular progress indicator matching the rest of the app
 function CircularProgress({ available, total, size = 14 }: { available: number; total: number; size?: number }) {
   const pct = (available / total) * 100
@@ -169,6 +183,12 @@ export function SpinRollerSpinner({
   const isLanded = landedIndex !== null
   const centre = Math.round(pos)
 
+  // Landed team drives the pill treatment, reusing the same `color` the
+  // celebration moments use so the two stay visually consistent.
+  const landedTeam = landedIndex !== null ? teams[landedIndex] : null
+  const pillColor = landedTeam ? landedTeam.color : "#191919"
+  const landedTextColor = landedTeam ? readableOn(landedTeam.color) : "#ffffff"
+
   /* Build the visible window of rows. Indices wrap with a modulo so the drum
      is endless, while `delta` stays fractional to keep motion perfectly smooth
      between rows. */
@@ -212,9 +232,17 @@ export function SpinRollerSpinner({
             }}
             animate={{
               scale: justLanded ? [1, 1.04, 1] : 1,
-              backgroundColor: isLanded ? "#0c310d" : "#191919",
+              backgroundColor: pillColor,
+              // Same glow signature as the celebration moments.
+              boxShadow: landedTeam
+                ? `0 0 20px ${landedTeam.color}40, 0 0 40px ${landedTeam.color}20`
+                : "0 0 0 rgba(0,0,0,0)",
             }}
-            transition={{ scale: { duration: 0.3 }, backgroundColor: { duration: 0.25 } }}
+            transition={{
+              scale: { duration: 0.3 },
+              backgroundColor: { duration: 0.25 },
+              boxShadow: { duration: 0.25 },
+            }}
           />
 
           {/* Rows, positioned on the surface of the drum */}
@@ -249,7 +277,7 @@ export function SpinRollerSpinner({
                       fontSize: isCentre ? 17 : 16,
                       color: isCentre
                         ? isLanded
-                          ? "#4ce160"
+                          ? landedTextColor
                           : "#ffffff"
                         : "#8f8f8f",
                     }}
