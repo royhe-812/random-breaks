@@ -27,10 +27,10 @@ interface SpinRollerMultiSpinnerProps {
   /** Fired once every spot has landed, with the full set. */
   onAllLanded?: (landed: { spot: Spot; team: Team }[]) => void
   /**
-   * Winning bidder per spot, shown on the trophy line as that spot is drawn.
-   * One name per spot, in spot order.
+   * The single buyer who wins all 3 spots. Shown on the trophy line throughout
+   * the run — the same person placed the winning bid for every spot.
    */
-  winnerNames?: string[]
+  winnerName?: string
   /** Break number shown in the title row, kept in sync with the bid box card. */
   breakNumber?: number
   /**
@@ -184,7 +184,7 @@ export function SpinRollerMultiSpinner({
   isSpinning,
   onLanded,
   onAllLanded,
-  winnerNames = ["Adam007", "boxbreaker", "Chloepulls11"],
+  winnerName = "Adam007",
   breakNumber = 15,
   forceTeamIndex = null,
   spinDuration = 4000,
@@ -375,10 +375,8 @@ export function SpinRollerMultiSpinner({
   const pillColor = landedTeam ? landedTeam.color : "#191919"
   const landedTextColor = landedTeam ? readableOn(landedTeam.color) : "#ffffff"
 
-  /* The winner being drawn right now: the spot mid-spin, or — once everything
-     has landed — the last spot drawn, so the line never goes blank. */
-  const activeWinnerIdx = Math.min(spinNo, winnerNames.length - 1)
-  const activeWinner = winnerNames[activeWinnerIdx] ?? winnerNames[0]
+  /* One buyer wins all spots, so the trophy line always shows the same name. */
+  const activeWinner = winnerName
 
   /* Build the visible window of rows. Indices wrap with a modulo so the drum is
      endless, while `delta` stays fractional to keep motion smooth between rows.

@@ -1757,7 +1757,7 @@ case "thumbnails-4":
                     const final = landed[landed.length - 1]
                     if (final) handleSpinInPlaceLanded(final.team)
                   }}
-                  winnerNames={["Adam007", "boxbreaker", "Chloepulls11"]}
+                  winnerName="Adam007"
                   breakNumber={displayBreakNumber}
                 />
               ) : selectedAnimation === "spin-in-place-roller" ? (
