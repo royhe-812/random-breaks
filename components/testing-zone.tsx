@@ -190,7 +190,7 @@ function MiniSpinner({ label, forcedTeam, spinKey, variant }: MiniSpinnerProps) 
     </motion.div>
   )
 
-  // ─── Title line ─────────────────────────────────��──────────────────────
+  // ─── Title line ─────────────────────────────────���──────────────────────
   const titleLine = (
     <AnimatePresence mode="wait">
       {isSpinning ? (
@@ -325,12 +325,12 @@ export function TestingZone() {
      `spinTime` is expressed in seconds here because that's the unit worth
      reasoning about, then converted to ms for the spinner props. */
   const { spinTime, startSpeed, rampUp, stopEase } = useDialKit("Spin", {
-    spinTime: [4.2, 0.5, 12, 0.1] as [number, number, number, number],
+    spinTime: [4, 0.5, 12, 0.1] as [number, number, number, number],
     // Fraction of peak speed the drum starts at. Drop toward 0 for a slow
     // creeping start; 1 restores the old "instantly at full tilt" behaviour.
-    startSpeed: [0.15, 0.02, 1, 0.01] as [number, number, number, number],
+    startSpeed: [0.09, 0.02, 1, 0.01] as [number, number, number, number],
     // Portion of the spin spent accelerating before the decay to the winner.
-    rampUp: [0.3, 0, 0.9, 0.05] as [number, number, number, number],
+    rampUp: [0.35, 0, 0.9, 0.05] as [number, number, number, number],
     // How the spin comes to rest. Low values hold speed then cut off sharply;
     // high values shed speed early and crawl in — the game-show wheel tail.
     stopEase: [3, 0.3, 8, 0.1] as [number, number, number, number],
