@@ -352,7 +352,7 @@ export function SpinRollerSpinner({
           className="relative w-full overflow-hidden rounded-md"
           style={{
             height: ITEM_H * 3,
-            backgroundColor: "rgba(255,255,255,0.05)",
+            backgroundColor: "#212121",
             perspective: 420,
           }}
         >
