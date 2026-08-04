@@ -70,7 +70,6 @@ const isSpinInPlace = (a: AnimationType) =>
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "single-spin-populate", name: "Single Spin" },
-  { id: "spin-in-place", name: "Spin In Place" },
   { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-4-auto", name: "Multi-Spin Text" },
@@ -78,9 +77,14 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "multi-spin-4-chips-no-label", name: "Option 2" },
   // { id: "multi-spin-3-label", name: "Option 3" },
   // { id: "multi-spin-4-rules", name: "Option 4" },
-  { id: "multi-spin-5-label", name: "Multi Spin" },
-  { id: "multi-spin-5-manual", name: "Multi-Spin (manual)" },
-  { id: "single-spin-later", name: "Spin Later" },
+  // Removed from the prototype. The AnimationType members and their branches are
+  // intentionally left in place: "spin-in-place" shares isSpinInPlace() with the
+  // Roller variant and "single-spin-later" shares isSingleSpin() with Single
+  // Spin, so the helpers still serve the concepts above.
+  // { id: "spin-in-place", name: "Spin In Place" },
+  // { id: "multi-spin-5-label", name: "Multi Spin" },
+  // { id: "multi-spin-5-manual", name: "Multi-Spin (manual)" },
+  // { id: "single-spin-later", name: "Spin Later" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-5-manual-icon", name: "Multi Spin (Manual Icon)" },
   // { id: "multi-spin-6-titlerow", name: "Option 4 - latest" },
