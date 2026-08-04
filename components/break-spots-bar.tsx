@@ -68,13 +68,13 @@ export function BreakSpotsBar({ availableSpots = 15, totalSpots = 32, onViewSpot
       {/* Counter — 4px between ring and label */}
       <span className="flex min-w-0 items-center gap-1">
         <SpotsRing available={availableSpots} total={totalSpots} />
-        <span className="truncate text-xs leading-4 text-[#f7f7f7]">
+        <span className="truncate text-sm leading-4 text-[#f7f7f7]">
           {availableSpots}/{totalSpots} spots available
         </span>
       </span>
 
       {/* Text-only CTA — the frame drops the chevron and underlines the label */}
-      <span className="flex-shrink-0 text-xs leading-4 text-[#4d93fc] underline">View all</span>
+      <span className="flex-shrink-0 text-sm leading-4 text-[#4d93fc] underline">View all</span>
     </button>
   )
 }
