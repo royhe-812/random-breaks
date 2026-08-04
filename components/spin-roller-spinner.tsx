@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
+import { ChevronRight } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 
 interface SpinRollerSpinnerProps {
@@ -9,7 +10,8 @@ interface SpinRollerSpinnerProps {
   isSpinning: boolean
   /** Fired once the roller lands — pass the winning team up. */
   onLanded: (team: Team) => void
-  /** Winner name shown in the subtitle. */
+  /** @deprecated No longer rendered — the bidder subtitle was replaced by the
+   *  auction card title row. Kept so existing call sites still type-check. */
   winnerName?: string
   /** Break number shown in the subtitle, kept in sync with the bid box card. */
   breakNumber?: number
@@ -293,11 +295,25 @@ export function SpinRollerSpinner({
     <div className="w-full flex flex-col gap-0">
 
       <div className="flex flex-col gap-2">
-        {/* "Random Break #15 · Adam007" subtitle */}
-        <p className="text-sm leading-tight" style={{ color: "#8f8f8f" }}>
-          Random Break #{breakNumber} &middot;{" "}
-          <span className="font-semibold text-white">{winnerName}</span>
-        </p>
+        {/* Auction card title row — mirrors the bid box card in the live stream:
+            the break + box title truncated to one line, with the chevron at the
+            end opening the break spots sheet via onViewSpots. */}
+        <div className="flex items-start justify-between gap-2">
+          <p className="flex-1 min-w-0 truncate text-sm leading-tight text-white">
+            <span className="font-semibold">
+              {`Random Break #${breakNumber}`}
+              {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
+            </span>
+          </p>
+          <button
+            type="button"
+            onClick={onViewSpots}
+            aria-label="View break spots"
+            className="flex-shrink-0 hover:opacity-80 transition-opacity"
+          >
+            <ChevronRight className="w-5 h-5 text-white/40" />
+          </button>
+        </div>
 
         {/* ── Roller drum ── */}
         <div

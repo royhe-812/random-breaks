@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
+import { ChevronRight } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 
 interface SpinInPlaceSpinnerProps {
@@ -9,7 +10,8 @@ interface SpinInPlaceSpinnerProps {
   isSpinning: boolean
   /** Fired once the spin lands — pass the winning team up. */
   onLanded: (team: Team) => void
-  /** Winner name to display in "Picking team for X" */
+  /** @deprecated No longer rendered — the bidder subtitle was replaced by the
+   *  auction card title row. Kept so existing call sites still type-check. */
   winnerName?: string
   /** Break number shown in the subtitle, kept in sync with the bid box card. */
   breakNumber?: number
@@ -258,7 +260,27 @@ export function SpinInPlaceSpinner({
     // Outer card — matches the dark rounded bid box card shape exactly.
     // Height hugs the content: there's no footer left to anchor to the bottom,
     // so h-full/justify-between/minHeight would only add dead space.
-    <div className="w-full flex flex-col gap-0">
+    <div className="w-full flex flex-col gap-2">
+
+      {/* Auction card title row — mirrors the bid box card in the live stream.
+          Sits above the badge row (rather than in the narrow text stack beside
+          it) so the full card width is available before the title truncates. */}
+      <div className="flex items-start justify-between gap-2">
+        <p className="flex-1 min-w-0 truncate text-sm leading-tight text-white">
+          <span className="font-semibold">
+            {`Random Break #${breakNumber}`}
+            {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
+          </span>
+        </p>
+        <button
+          type="button"
+          onClick={onViewSpots}
+          aria-label="View break spots"
+          className="flex-shrink-0 hover:opacity-80 transition-opacity"
+        >
+          <ChevronRight className="w-5 h-5 text-white/40" />
+        </button>
+      </div>
 
       {/* ── Main content row ── */}
       <div className="flex items-stretch gap-3">
@@ -281,12 +303,6 @@ export function SpinInPlaceSpinner({
 
         {/* Right: text stack */}
         <div className="flex flex-col justify-center flex-1 min-w-0 gap-0.5">
-
-          {/* "Random Break #15 · Adam007" subtitle */}
-          <p className="text-sm leading-tight" style={{ color: "#8f8f8f" }}>
-            Random Break #{breakNumber} &middot;{" "}
-            <span className="font-semibold text-white">{winnerName}</span>
-          </p>
 
           {/* Cycling / settled team name */}
           <AnimatePresence mode="wait">

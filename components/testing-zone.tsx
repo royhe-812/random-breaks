@@ -6,6 +6,7 @@ import { RotateCcw, ChevronDown, Heart } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
+import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { useDialKit, DialRoot } from "dialkit"
 import "dialkit/styles.css"
 
@@ -316,6 +317,8 @@ export function TestingZone() {
   const [spinKey, setSpinKey] = useState(0)
   const [isSpinning, setIsSpinning] = useState(false)
   const [result, setResult] = useState<Team | null>(null)
+  // Opened by the chevron on the spinner's title row, matching the bid box card.
+  const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false)
 
   /* ── dialkit ──
      Live-tunable spin parameters. The tuple form is [value, min, max, step].
@@ -558,6 +561,7 @@ export function TestingZone() {
                       breakNumber={15}
                       availableSpots={15}
                       totalSpots={32}
+                      onViewSpots={() => setIsBreakSpotsOpen(true)}
                       forceTeamIndex={forcedIndex}
                       spinDuration={spinDurationMs}
                       startSpeed={startSpeed}
@@ -573,6 +577,7 @@ export function TestingZone() {
                       breakNumber={15}
                       availableSpots={15}
                       totalSpots={32}
+                      onViewSpots={() => setIsBreakSpotsOpen(true)}
                       forceTeamIndex={forcedIndex}
                       spinDuration={spinDurationMs}
                       startSpeed={startSpeed}
@@ -593,6 +598,15 @@ export function TestingZone() {
 
             {/* Home indicator */}
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 rounded-full bg-white/30 z-20" />
+
+            {/* Break spots sheet — absolutely positioned, so it fills this phone
+                frame rather than the viewport. Opened by the title row chevron. */}
+            <BreakSpotsSheet
+              isOpen={isBreakSpotsOpen}
+              onClose={() => setIsBreakSpotsOpen(false)}
+              spotsAvailable={15}
+              spotsTotal={32}
+            />
           </div>
         </div>
       </div>
