@@ -320,46 +320,11 @@ export function SpinInPlaceSpinner({
             )}
           </AnimatePresence>
 
-          {/* Spots available row — tapping it (progress ring, label, or chevron)
-              opens the break spots sheet, matching the bid box card affordance. */}
-          <button
-            type="button"
-            onClick={onViewSpots}
-            aria-label="View break spots"
-            className="flex items-center justify-between mt-0.5 w-full text-left hover:opacity-80 transition-opacity"
-          >
-            <div className="flex items-center gap-1.5">
-              <CircularProgress available={availableSpots} total={totalSpots} size={14} />
-              <span className="text-sm" style={{ color: "#f7f7f7" }}>
-                {availableSpots}/{totalSpots} spots available
-              </span>
-            </div>
-            {/* Chevron right */}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8f8f8f" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </button>
+
         </div>
       </div>
 
-      {/* ── Bottom block: divider + footer, anchored to the card bottom ── */}
-      <div>
-        {/* Divider */}
-        <div className="mb-3" style={{ height: 1, backgroundColor: "rgba(255,255,255,0.08)" }} />
 
-        {/* Footer row: "Spots are generated randomly · Break rules" */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm" style={{ color: "#707070" }}>
-            Spots are generated randomly
-          </span>
-          <button
-            className="text-sm underline underline-offset-2 transition-opacity hover:opacity-80"
-            style={{ color: "#707070" }}
-          >
-            Break rules
-          </button>
-        </div>
-      </div>
     </div>
   )
 }
