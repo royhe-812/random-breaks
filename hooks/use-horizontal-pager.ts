@@ -133,7 +133,12 @@ export function useHorizontalPager({ enabled, locked = false, ignoreSelector }: 
            so vertical scrolling of the stream still works. */
         if (Math.abs(dx) > DIRECTION_LOCK_PX && Math.abs(dx) > Math.abs(dy)) {
           d.mode = "drag"
-          viewportRef.current?.setPointerCapture(e.pointerId)
+          /* Capture keeps the gesture alive if the finger leaves the viewport.
+             It throws if the pointer is already gone (fast release, or a
+             synthetic event in tests), which must not abort the drag. */
+          try {
+            viewportRef.current?.setPointerCapture(e.pointerId)
+          } catch {}
         } else if (Math.abs(dy) > DIRECTION_LOCK_PX) {
           d.mode = "cancelled"
           return
