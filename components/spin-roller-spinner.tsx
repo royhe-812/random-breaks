@@ -431,15 +431,14 @@ export function SpinRollerSpinner({
             })}
           </div>
 
-          {/* Soft top/bottom scrims so rows fade out at the drum edges instead
-              of being hard-clipped by the container. */}
+          {/* Solid top/bottom scrims — same card background colour, no gradient. */}
           <div
             className="pointer-events-none absolute inset-x-0 top-0"
-            style={{ height: ITEM_H, background: "linear-gradient(to bottom, rgba(25,25,25,0.85), transparent)" }}
+            style={{ height: ITEM_H, background: "#212121" }}
           />
           <div
             className="pointer-events-none absolute inset-x-0 bottom-0"
-            style={{ height: ITEM_H, background: "linear-gradient(to top, rgba(25,25,25,0.85), transparent)" }}
+            style={{ height: ITEM_H, background: "#212121" }}
           />
         </div>
 
