@@ -351,7 +351,6 @@ export function SpinRollerSpinner({
             aria-label="View break spots"
             className="flex-shrink-0 hover:opacity-80 transition-opacity"
           >
-            <ChevronRight className="w-5 h-5 text-white/40" />
           </button>
         </div>
 
