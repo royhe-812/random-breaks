@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
-import { ChevronRight } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 
 interface SpinRollerSpinnerProps {
@@ -330,8 +329,9 @@ export function SpinRollerSpinner({
 
       <div className="flex flex-col gap-4">
         {/* Auction card title row — mirrors the bid box card in the live stream:
-            the break + box title truncated to one line, with the chevron at the
-            end opening the break spots sheet via onViewSpots. */}
+            the break + box title truncated to one line. The trailing chevron was
+            removed; the spots bar above the card now carries the "View all"
+            affordance that opens the break spots sheet. */}
         <div className="flex items-center justify-between gap-3">
           {/* Title + winner stack — 8px gap */}
           <div className="flex-1 min-w-0 flex flex-col gap-2 text-white">
@@ -345,13 +345,6 @@ export function SpinRollerSpinner({
               <span aria-hidden="true">{"🏆"}</span> {winnerName}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onViewSpots}
-            aria-label="View break spots"
-            className="flex-shrink-0 hover:opacity-80 transition-opacity"
-          >
-          </button>
         </div>
 
         {/* ── Roller drum ── */}
