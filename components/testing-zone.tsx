@@ -336,6 +336,13 @@ export function TestingZone() {
     stopEase: [3, 0.3, 8, 0.1] as [number, number, number, number],
   })
 
+  /* Roller row spacing, in px centre-to-centre between team names. 34 is the
+     drum's native pitch. Lower tightens the names together, higher spreads them
+     apart; the drum's own height stays fixed either way. */
+  const { rowPitch } = useDialKit("Roller rows", {
+    rowPitch: [34, 14, 60, 1] as [number, number, number, number],
+  })
+
   const spinDurationMs = Math.round(spinTime * 1000)
 
   const forcedIndex = forcedTeam ? teams.findIndex(t => t.name === forcedTeam.name) : null
@@ -567,6 +574,7 @@ export function TestingZone() {
                       startSpeed={startSpeed}
                       rampUp={rampUp}
                       stopEase={stopEase}
+                      rowPitch={rowPitch}
                     />
                   ) : (
                     <SpinInPlaceSpinner

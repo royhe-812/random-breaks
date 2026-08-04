@@ -43,6 +43,13 @@ interface SpinRollerSpinnerProps {
    * values ease off early and creep to a halt like a game-show wheel.
    */
   stopEase?: number
+  /**
+   * Centre-to-centre spacing between adjacent team names, in px. Tightens or
+   * expands the drum's rows without resizing the drum itself: the radius stays
+   * fixed, so the centre row keeps its exact size and only the angular
+   * separation of its neighbours changes. Defaults to ITEM_H (34).
+   */
+  rowPitch?: number
 }
 
 /* ── Cylinder geometry ──
@@ -62,10 +69,13 @@ const WIDEST_NAME_W = 172
 const PILL_PAD_X = 16
 /** Fixed width of the centre selection pill: widest name + padding both sides. */
 const PILL_W = WIDEST_NAME_W + PILL_PAD_X * 2
-const STEP_DEG = 20
-const RADIUS = ITEM_H / (STEP_DEG * (Math.PI / 180))
-/** Rows rendered either side of centre — beyond this they're edge-on/hidden. */
-const HALF_WINDOW = 3
+/** Angular separation between rows at the default pitch. Only used to derive
+ *  RADIUS — the live value is computed per-render from the `rowPitch` prop. */
+const DEFAULT_STEP_DEG = 20
+const RADIUS = ITEM_H / (DEFAULT_STEP_DEG * (Math.PI / 180))
+/** Past this angle a row is so close to edge-on it isn't worth drawing. Also
+ *  sets how many rows the visible window needs at a given pitch. */
+const EDGE_ON_DEG = 72
 
 /** Hold time on the winning row after the drum stops, before reporting up. */
 const SETTLE_MS = 800
@@ -169,7 +179,13 @@ export function SpinRollerSpinner({
   startSpeed = 0.15,
   rampUp = 0.3,
   stopEase = 3,
+  rowPitch = ITEM_H,
 }: SpinRollerSpinnerProps) {
+  /* Convert the px pitch into the angular step the rows are laid out on.
+     RADIUS is deliberately left fixed so the centre row's distance from the
+     camera — and therefore its perspective magnification — never shifts as the
+     pitch changes; only its neighbours spread out or close in. */
+  const stepDeg = (rowPitch / RADIUS) * (180 / Math.PI)
   /** Fractional drum position, in rows. Integer values sit dead centre. */
   const [pos, setPos] = useState(0)
   const [landedIndex, setLandedIndex] = useState<number | null>(null)
@@ -288,8 +304,16 @@ export function SpinRollerSpinner({
   /* Build the visible window of rows. Indices wrap with a modulo so the drum
      is endless, while `delta` stays fractional to keep motion perfectly smooth
      between rows. */
+  /* How many rows to render either side of centre. Derived from the live pitch
+     rather than fixed: at a tight pitch more rows fit before going edge-on, and
+     rendering too few would leave visible gaps at the drum's top and bottom.
+     Capped at half the team count so rows never repeat within one window. */
+  const halfWindow = Math.min(
+    Math.floor(teams.length / 2),
+    Math.ceil(EDGE_ON_DEG / stepDeg) + 1,
+  )
   const rows = []
-  for (let k = -HALF_WINDOW; k <= HALF_WINDOW; k++) {
+  for (let k = -halfWindow; k <= halfWindow; k++) {
     const slot = centre + k
     const idx = ((slot % teams.length) + teams.length) % teams.length
     rows.push({ slot, idx, delta: slot - pos, team: teams[idx] })
@@ -371,10 +395,13 @@ export function SpinRollerSpinner({
             style={{ transformStyle: "preserve-3d" }}
           >
             {rows.map(({ slot, idx, delta, team }) => {
-              const angle = delta * STEP_DEG
+              const angle = delta * stepDeg
               // Past ~72° the row is nearly edge-on; drop it entirely.
-              if (Math.abs(angle) > 72) return null
-              const fade = Math.min(1, Math.abs(delta) / 2.1)
+              if (Math.abs(angle) > EDGE_ON_DEG) return null
+              /* Fade tracks the row's *angle*, not its row-index distance, so
+                 the dimming profile looks the same at any pitch. The 2.1
+                 preserves the original falloff at the default pitch. */
+              const fade = Math.min(1, Math.abs(angle) / (2.1 * DEFAULT_STEP_DEG))
               const isCentre = Math.abs(delta) < 0.5
               return (
                 <div
