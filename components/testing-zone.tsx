@@ -190,7 +190,7 @@ function MiniSpinner({ label, forcedTeam, spinKey, variant }: MiniSpinnerProps) 
     </motion.div>
   )
 
-  // ─── Title line ────────────────────────────────────────────────────────
+  // ─── Title line ─────────────────────────────────��──────────────────────
   const titleLine = (
     <AnimatePresence mode="wait">
       {isSpinning ? (
@@ -551,7 +551,7 @@ export function TestingZone() {
               </div>
 
               {isRealVariant ? (
-                <div className="bg-black/40 backdrop-blur rounded-2xl p-4">
+                <div className="bg-black/40 backdrop-blur rounded-2xl p-3">
                   {variant === "roller" ? (
                     <SpinRollerSpinner
                       key={`roller-${spinKey}`}

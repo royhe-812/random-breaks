@@ -293,15 +293,15 @@ export function SpinRollerSpinner({
     // so h-full/justify-between/minHeight would only add dead space.
     <div className="w-full flex flex-col gap-0">
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-4">
         {/* Auction card title row — mirrors the bid box card in the live stream:
             the break + box title truncated to one line, with the chevron at the
             end opening the break spots sheet via onViewSpots. */}
         <div className="flex items-center justify-between gap-3">
-          {/* Title + winner stack — 6px gap per the Figma "item details" frame. */}
-          <div className="flex-1 min-w-0 flex flex-col gap-1.5 text-white">
+          {/* Title + winner stack — 8px gap */}
+          <div className="flex-1 min-w-0 flex flex-col gap-2 text-white">
             <p className="truncate text-sm leading-tight">
-              <span className="font-semibold">
+              <span className="font-normal">
                 {`Random Break #${breakNumber}`}
                 {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
               </span>
