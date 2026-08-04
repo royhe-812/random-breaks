@@ -10,8 +10,7 @@ interface SpinRollerSpinnerProps {
   isSpinning: boolean
   /** Fired once the roller lands — pass the winning team up. */
   onLanded: (team: Team) => void
-  /** @deprecated No longer rendered — the bidder subtitle was replaced by the
-   *  auction card title row. Kept so existing call sites still type-check. */
+  /** Winning bidder's username, shown bold under the title row. */
   winnerName?: string
   /** Break number shown in the subtitle, kept in sync with the bid box card. */
   breakNumber?: number
@@ -298,13 +297,19 @@ export function SpinRollerSpinner({
         {/* Auction card title row — mirrors the bid box card in the live stream:
             the break + box title truncated to one line, with the chevron at the
             end opening the break spots sheet via onViewSpots. */}
-        <div className="flex items-start justify-between gap-2">
-          <p className="flex-1 min-w-0 truncate text-sm leading-tight text-white">
-            <span className="font-semibold">
-              {`Random Break #${breakNumber}`}
-              {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
-            </span>
-          </p>
+        <div className="flex items-center justify-between gap-3">
+          {/* Title + winner stack — 6px gap per the Figma "item details" frame. */}
+          <div className="flex-1 min-w-0 flex flex-col gap-1.5 text-white">
+            <p className="truncate text-sm leading-tight">
+              <span className="font-semibold">
+                {`Random Break #${breakNumber}`}
+                {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
+              </span>
+            </p>
+            <p className="truncate text-sm leading-tight font-bold">
+              <span aria-hidden="true">{"🏆"}</span> {winnerName}
+            </p>
+          </div>
           <button
             type="button"
             onClick={onViewSpots}
