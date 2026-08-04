@@ -1759,7 +1759,6 @@ case "thumbnails-4":
                   }}
                   winnerNames={["Adam007", "boxbreaker", "Chloepulls11"]}
                   breakNumber={displayBreakNumber}
-                  onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
                 />
               ) : selectedAnimation === "spin-in-place-roller" ? (
                 <SpinRollerSpinner

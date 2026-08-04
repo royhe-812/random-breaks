@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronRight } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 
 /* ── Roller, multi ──
@@ -34,8 +33,6 @@ interface SpinRollerMultiSpinnerProps {
   winnerNames?: string[]
   /** Break number shown in the title row, kept in sync with the bid box card. */
   breakNumber?: number
-  /** Tapping the chevron opens the break spots sheet. */
-  onViewSpots?: () => void
   /**
    * Forces the FINAL spin to land on a specific team index. Earlier spins stay
    * random (and avoid this index), so the forced outcome is always reachable —
@@ -189,7 +186,6 @@ export function SpinRollerMultiSpinner({
   onAllLanded,
   winnerNames = ["Adam007", "boxbreaker", "Chloepulls11"],
   breakNumber = 15,
-  onViewSpots,
   forceTeamIndex = null,
   spinDuration = 4000,
   startSpeed = 0.09,
@@ -409,39 +405,29 @@ export function SpinRollerMultiSpinner({
 
   return (
     <div className="w-full flex flex-col gap-4">
-      {/* Title row — mirrors the bid box card: break + box title truncated to one
-          line, the winner currently being drawn beneath it, and the chevron
-          opening the break spots sheet. */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex-1 min-w-0 flex flex-col gap-2 text-white">
-          <p className="truncate text-sm leading-tight">
-            <span className="font-normal">
-              {`Random Break #${breakNumber}`}
-              {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
-            </span>
-          </p>
-          {/* Whose spot is being drawn. Chips below hold the full history. */}
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={activeWinner}
-              className="truncate text-sm leading-tight font-bold"
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.2 }}
-            >
-              <span aria-hidden="true">{"🏆"}</span> {activeWinner}
-            </motion.p>
-          </AnimatePresence>
-        </div>
-        <button
-          type="button"
-          onClick={onViewSpots}
-          aria-label="View break spots"
-          className="flex-shrink-0 hover:opacity-80 transition-opacity"
-        >
-          <ChevronRight className="w-5 h-5 text-white/40" />
-        </button>
+      {/* Title row — mirrors the bid box card: break + box title truncated to
+          one line, with the winner currently being drawn beneath it. `min-w-0`
+          is what lets the title actually truncate inside the flex column. */}
+      <div className="min-w-0 flex flex-col gap-2 text-white">
+        <p className="truncate text-sm leading-tight">
+          <span className="font-normal">
+            {`Random Break #${breakNumber}`}
+            {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
+          </span>
+        </p>
+        {/* Whose spot is being drawn. Chips below hold the full history. */}
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={activeWinner}
+            className="truncate text-sm leading-tight font-bold"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.2 }}
+          >
+            <span aria-hidden="true">{"🏆"}</span> {activeWinner}
+          </motion.p>
+        </AnimatePresence>
       </div>
 
       {/* ── Roller drum ── */}

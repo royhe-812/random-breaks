@@ -594,7 +594,6 @@ export function TestingZone() {
                       isSpinning={isSpinning}
                       onLanded={setResult}
                       breakNumber={15}
-                      onViewSpots={() => setIsBreakSpotsOpen(true)}
                       forceTeamIndex={forcedIndex}
                       spinDuration={spinDurationMs}
                       startSpeed={startSpeed}
