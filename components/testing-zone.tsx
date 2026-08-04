@@ -561,13 +561,15 @@ export function TestingZone() {
               </div>
 
               {isRealVariant ? (
-                <>
+                <div className="flex flex-col">
+                {/* Banner + card share a gap-free wrapper so they read as one
+                    attached unit: the banner rounds the top, the card the bottom. */}
                 <BreakSpotsBar
                   availableSpots={15}
                   totalSpots={32}
                   onViewSpots={() => setIsBreakSpotsOpen(true)}
                 />
-                <div className="bg-black/40 backdrop-blur rounded-2xl p-3">
+                <div className="bg-black/40 backdrop-blur rounded-b-2xl p-3">
                   {variant === "roller" ? (
                     <SpinRollerSpinner
                       key={`roller-${spinKey}`}
@@ -617,7 +619,7 @@ export function TestingZone() {
                     />
                   )}
                 </div>
-                </>
+                </div>
               ) : (
                 <MiniSpinner
                   label={VARIANTS.find(v => v.id === variant)?.label ?? ""}

@@ -5,7 +5,7 @@ interface BreakSpotsBarProps {
   availableSpots?: number
   /** Total spots in the break. */
   totalSpots?: number
-  /** Opens the break spots sheet. The whole bar is the tap target. */
+  /** Opens the break spots sheet. The whole banner is the tap target. */
   onViewSpots?: () => void
 }
 
@@ -43,11 +43,21 @@ function SpotsRing({ available, total, size = 16 }: { available: number; total: 
 }
 
 /**
- * Standalone "N/M spots available" bar that sits above the spinner card.
+ * Inline contextual "N/M spots available" banner (Figma "Incentive Tile").
  *
- * The entire bar is one button rather than just the "View all" affordance, so
- * the counter and the label open the same break spots sheet. That's also why
- * "View all" is a span — a nested <button> would be invalid HTML.
+ * Rather than a standalone box, this sits flush on top of the spinner card and
+ * rounds only its top corners, so banner + card read as one attached unit. The
+ * parent must render it immediately before the card, in a wrapper with no gap,
+ * and the card must round only its bottom corners.
+ *
+ * The Figma tile is 52px tall with 16px of bottom padding tucked *behind* an
+ * opaque buy box. That trick can't be reused here because the spinner card is
+ * translucent glass over the video — a tucked strip bleeds through it. Matching
+ * the tile's 36px visible height instead reproduces the same result exactly.
+ *
+ * The entire banner is one button so the counter and the label open the same
+ * sheet. That's also why "View all" is a span — a nested <button> would be
+ * invalid HTML.
  */
 export function BreakSpotsBar({ availableSpots = 15, totalSpots = 32, onViewSpots }: BreakSpotsBarProps) {
   return (
@@ -55,22 +65,18 @@ export function BreakSpotsBar({ availableSpots = 15, totalSpots = 32, onViewSpot
       type="button"
       onClick={onViewSpots}
       aria-label={`${availableSpots} of ${totalSpots} spots available. View all spots.`}
-      className="w-full flex items-center justify-between gap-3 rounded-2xl px-3 backdrop-blur transition-opacity hover:opacity-90"
-      style={{ backgroundColor: "oklab(0 0 0 / 0.4)" }}
+      className="flex min-h-9 w-full items-center justify-between gap-2 rounded-t-2xl bg-[#363636] px-3 py-2 text-left transition-opacity hover:opacity-90"
     >
       {/* Counter — 4px between ring and label */}
-      <span className="flex items-center gap-1 min-w-0">
+      <span className="flex min-w-0 items-center gap-1">
         <SpotsRing available={availableSpots} total={totalSpots} />
         <span className="truncate text-xs leading-4 text-[#f7f7f7]">
           {availableSpots}/{totalSpots} spots available
         </span>
       </span>
 
-      {/* View all — its 6px vertical padding is what gives the bar its 32px height */}
-      <span className="flex flex-shrink-0 items-center justify-center gap-1.5 rounded-full px-2 py-1.5">
-        <span className="text-sm leading-5 text-[#f7f7f7]">View all</span>
-        <img src="/figma/spots-chevron.svg" alt="" aria-hidden="true" className="h-4 w-4" />
-      </span>
+      {/* Text-only CTA — the frame drops the chevron and underlines the label */}
+      <span className="flex-shrink-0 text-xs leading-4 text-[#4d93fc] underline">View all</span>
     </button>
   )
 }
