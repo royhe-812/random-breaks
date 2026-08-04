@@ -8,6 +8,7 @@ import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
 import { SpinRollerMultiSpinner } from "@/components/spin-roller-multi-spinner"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
+import { BreakSpotsBar } from "@/components/break-spots-bar"
 import { useDialKit, DialRoot } from "dialkit"
 import "dialkit/styles.css"
 
@@ -560,6 +561,12 @@ export function TestingZone() {
               </div>
 
               {isRealVariant ? (
+                <>
+                <BreakSpotsBar
+                  availableSpots={15}
+                  totalSpots={32}
+                  onViewSpots={() => setIsBreakSpotsOpen(true)}
+                />
                 <div className="bg-black/40 backdrop-blur rounded-2xl p-3">
                   {variant === "roller" ? (
                     <SpinRollerSpinner
@@ -610,6 +617,7 @@ export function TestingZone() {
                     />
                   )}
                 </div>
+                </>
               ) : (
                 <MiniSpinner
                   label={VARIANTS.find(v => v.id === variant)?.label ?? ""}
