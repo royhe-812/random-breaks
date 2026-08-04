@@ -570,7 +570,7 @@ export function TestingZone() {
                   totalSpots={32}
                   onViewSpots={() => setIsBreakSpotsOpen(true)}
                 />
-                <div className="relative bg-[#212121] rounded-2xl p-3">
+                <div className="relative bg-[#363636] rounded-2xl p-3">
                   {variant === "roller" ? (
                     <SpinRollerSpinner
                       key={`roller-${spinKey}`}
