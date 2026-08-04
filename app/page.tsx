@@ -24,6 +24,14 @@ import { SingleSpinChipPopulateSpinner } from "@/components/single-spin-chip-pop
 import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
 import { BreakSpotsBar } from "@/components/break-spots-bar"
+
+/**
+ * Visible height of the nested spots tile above the roller card (the tile is
+ * 52px tall and tucks its bottom 16px under the card). The bid box reserves the
+ * same amount so it and the roller overlay are exactly the same height — without
+ * it, the taller roller unit spills upward over the live chat.
+ */
+const SPOTS_TILE_VISIBLE_PX = 36
 import { MockKeyboard } from "@/components/mock-keyboard"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { WinnerCrownReveal } from "@/components/animations/winner-crown-reveal"
@@ -1441,6 +1449,11 @@ case "thumbnails-4":
           }}
           style={{ pointerEvents: spinInPlaceShowing ? "none" : "auto" }}
         >
+          {/* Reserves the exact height the roller's nested spots tile occupies so
+              the bid box and the roller overlay match and neither overlaps chat. */}
+          {selectedAnimation === "spin-in-place-roller" && (
+            <div aria-hidden style={{ height: SPOTS_TILE_VISIBLE_PX }} />
+          )}
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 min-w-0 pr-2">
               {selectedAnimation === "multi-spin-6-titlerow" ? (
@@ -1613,7 +1626,7 @@ case "thumbnails-4":
           {spinInPlaceShowing && (
             <motion.div
               key="spin-in-place"
-              className="absolute inset-0"
+              className="absolute inset-0 flex flex-col"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 16 }}
@@ -1622,24 +1635,23 @@ case "thumbnails-4":
                 opacity: { duration: 0.2, ease: "easeOut" },
               }}
             >
-              {/* Roller only: the spots tile nests behind the card, extending
-                  above its top edge so the card keeps the bid box footprint
-                  exactly. `bottom-full` puts the tile above the card, and the
-                  tile's own -mb-4 tucks its bottom 16px back under it. The card
-                  is `relative` and later in the DOM, so it paints on top. */}
+              {/* Roller only: the spots tile nests behind the card *inside* the
+                  overlay footprint. It's in normal flow, so its 36px of visible
+                  height (52px tall, bottom 16px tucked back under via -mb-4) is
+                  reserved here rather than spilling above the overlay into the
+                  chat. The bid box reserves the same 36px via SPOTS_TILE_VISIBLE
+                  so both containers stay exactly the same height. */}
               {selectedAnimation === "spin-in-place-roller" && (
-                <div className="absolute left-0 right-0 bottom-full flex flex-col">
-                  <BreakSpotsBar
-                    availableSpots={demoSpots}
-                    totalSpots={32}
-                    onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
-                  />
-                </div>
+                <BreakSpotsBar
+                  availableSpots={demoSpots}
+                  totalSpots={32}
+                  onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
+                />
               )}
               {/* Roller uses the tighter 12px padding and #212121 fill dialled in
                   via the testing zone; plain Spin In Place keeps 16px / #191919. */}
               <div
-                className={`relative h-full rounded-2xl ${
+                className={`relative min-h-0 flex-1 rounded-2xl ${
                   selectedAnimation === "spin-in-place-roller" ? "p-3" : "p-4"
                 }`}
                 style={{
