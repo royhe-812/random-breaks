@@ -23,6 +23,7 @@ import { SpotsProgress } from "@/components/spots-progress"
 import { SingleSpinChipPopulateSpinner } from "@/components/single-spin-chip-populate-spinner"
 import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
+import { BreakSpotsBar } from "@/components/break-spots-bar"
 import { MockKeyboard } from "@/components/mock-keyboard"
 import { CardFlipReveal } from "@/components/animations/card-flip-reveal"
 import { WinnerCrownReveal } from "@/components/animations/winner-crown-reveal"
@@ -1612,12 +1613,7 @@ case "thumbnails-4":
           {spinInPlaceShowing && (
             <motion.div
               key="spin-in-place"
-              /* Roller uses the tighter 12px padding dialled in via the testing
-                 zone; plain Spin In Place keeps its original 16px. */
-              className={`absolute inset-0 rounded-2xl ${
-                selectedAnimation === "spin-in-place-roller" ? "p-3" : "p-4"
-              }`}
-              style={{ backgroundColor: "#191919" }}
+              className="absolute inset-0"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 16 }}
@@ -1626,6 +1622,31 @@ case "thumbnails-4":
                 opacity: { duration: 0.2, ease: "easeOut" },
               }}
             >
+              {/* Roller only: the spots tile nests behind the card, extending
+                  above its top edge so the card keeps the bid box footprint
+                  exactly. `bottom-full` puts the tile above the card, and the
+                  tile's own -mb-4 tucks its bottom 16px back under it. The card
+                  is `relative` and later in the DOM, so it paints on top. */}
+              {selectedAnimation === "spin-in-place-roller" && (
+                <div className="absolute left-0 right-0 bottom-full flex flex-col">
+                  <BreakSpotsBar
+                    availableSpots={demoSpots}
+                    totalSpots={32}
+                    onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
+                  />
+                </div>
+              )}
+              {/* Roller uses the tighter 12px padding and #212121 fill dialled in
+                  via the testing zone; plain Spin In Place keeps 16px / #191919. */}
+              <div
+                className={`relative h-full rounded-2xl ${
+                  selectedAnimation === "spin-in-place-roller" ? "p-3" : "p-4"
+                }`}
+                style={{
+                  backgroundColor:
+                    selectedAnimation === "spin-in-place-roller" ? "#212121" : "#191919",
+                }}
+              >
               {selectedAnimation === "spin-in-place-roller" ? (
                 <SpinRollerSpinner
                   isSpinning={spinInPlaceActive}
@@ -1647,6 +1668,7 @@ case "thumbnails-4":
                   onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
                 />
               )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
