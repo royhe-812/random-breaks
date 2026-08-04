@@ -54,11 +54,14 @@ interface SpinRollerSpinnerProps {
    y = R * sin(angle). To make one step of the drum travel exactly ITEM_H at
    centre, R must satisfy R * STEP_RAD = ITEM_H, hence R = ITEM_H / STEP_RAD. */
 const ITEM_H = 34
-/** Fixed width of the centre selection pill.
- *  Sized to the widest NFL team name across all 32 teams — "Washington
- *  Commanders", which measures 172px at the row type (600 14px Geist) — plus
- *  8px padding on each side. Re-measure if the row font/size/weight changes. */
-const PILL_W = 188
+/** Widest NFL team name across all 32 teams — "Washington Commanders" — as
+ *  measured at the row type (600 14px Geist). Re-measure if the row
+ *  font/size/weight changes. */
+const WIDEST_NAME_W = 172
+/** Horizontal padding either side of the name inside the centre pill. */
+const PILL_PAD_X = 16
+/** Fixed width of the centre selection pill: widest name + padding both sides. */
+const PILL_W = WIDEST_NAME_W + PILL_PAD_X * 2
 const STEP_DEG = 20
 const RADIUS = ITEM_H / (STEP_DEG * (Math.PI / 180))
 /** Rows rendered either side of centre — beyond this they're edge-on/hidden. */
