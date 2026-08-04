@@ -55,7 +55,8 @@ export function BreakSpotsBar({ availableSpots = 15, totalSpots = 32, onViewSpot
       type="button"
       onClick={onViewSpots}
       aria-label={`${availableSpots} of ${totalSpots} spots available. View all spots.`}
-      className="w-full flex items-center justify-between gap-3 rounded-2xl bg-[#363636]/50 px-3 backdrop-blur transition-opacity hover:opacity-90"
+      className="w-full flex items-center justify-between gap-3 rounded-2xl px-3 backdrop-blur transition-opacity hover:opacity-90"
+      style={{ backgroundColor: "oklab(0 0 0 / 0.4)" }}
     >
       {/* Counter — 4px between ring and label */}
       <span className="flex items-center gap-1 min-w-0">
