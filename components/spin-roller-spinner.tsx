@@ -380,9 +380,9 @@ export function SpinRollerSpinner({
                   }}
                 >
                   <span
-                    className="truncate font-bold leading-none"
+                    className="truncate font-semibold leading-none"
                     style={{
-                      fontSize: isCentre ? 17 : 16,
+                      fontSize: 14,
                       color: isCentre
                         ? isLanded
                           ? landedTextColor

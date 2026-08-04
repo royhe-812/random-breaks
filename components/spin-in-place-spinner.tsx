@@ -314,7 +314,7 @@ export function SpinInPlaceSpinner({
             {isLanded && winner ? (
               <motion.p
                 key="winner-name"
-                className="font-bold text-lg leading-snug truncate"
+                className="font-semibold text-sm leading-snug truncate"
                 style={{ color: "lab(78.503 -64.9265 39.7492)" }}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -330,7 +330,7 @@ export function SpinInPlaceSpinner({
                  left the name showing a different team than the badge. */
               <motion.p
                 key="spinning-name"
-                className="font-bold text-lg leading-snug truncate"
+                className="font-semibold text-sm leading-snug truncate"
                 animate={{
                   color: justLanded ? "lab(78.503 -64.9265 39.7492)" : "#ffffff",
                 }}
