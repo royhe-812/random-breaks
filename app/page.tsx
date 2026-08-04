@@ -23,6 +23,7 @@ import { SpotsProgress } from "@/components/spots-progress"
 import { SingleSpinChipPopulateSpinner } from "@/components/single-spin-chip-populate-spinner"
 import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
+import { SpinRollerMultiSpinner } from "@/components/spin-roller-multi-spinner"
 import { BreakSpotsBar } from "@/components/break-spots-bar"
 
 import { MockKeyboard } from "@/components/mock-keyboard"
@@ -230,6 +231,11 @@ export default function AnimationShowcase() {
   // bid box fades back in with the updated team title.
   const [spinInPlaceActive, setSpinInPlaceActive] = useState(false)
   const [spinInPlaceSettled, setSpinInPlaceSettled] = useState(false)
+  /**
+   * Roller concept only: whether the card draws one spot or chains three.
+   * Prototype-side control, toggled from the panel beside the device frame.
+   */
+  const [rollerMode, setRollerMode] = useState<"single" | "multi">("single")
   const auctionCardRef = useRef<HTMLDivElement>(null)
   // True while the randomization card is overlaying the bid box.
   const spinInPlaceShowing = isSpinInPlace(selectedAnimation) && spinInPlaceActive
@@ -907,6 +913,50 @@ case "thumbnails-4":
 
   return (
     <div className="w-full min-h-screen bg-zinc-950 flex items-center justify-center p-0 sm:p-4">
+      {/* Roller spin-mode control. Lives OUTSIDE the device frame (which is
+          overflow-hidden and would clip it) and is `fixed`, so it never nudges
+          the centred phone. Hidden under lg, where there's no room beside the
+          frame without covering the prototype. */}
+      {selectedAnimation === "spin-in-place-roller" && (
+        <div
+          role="group"
+          aria-label="Roller spin mode"
+          className="hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-[110] flex-col gap-2 rounded-2xl border border-white/10 bg-zinc-900/95 backdrop-blur p-3 shadow-2xl"
+        >
+          <span className="text-[11px] font-medium uppercase tracking-wide text-white/50">
+            Roller spin
+          </span>
+          {([
+            { id: "single", label: "Single", hint: "1 spot" },
+            { id: "multi", label: "Multi", hint: "3 spots" },
+          ] as const).map((mode) => (
+            <button
+              key={mode.id}
+              onClick={() => setRollerMode(mode.id)}
+              /* Disabled mid-reveal: switching would swap the mounted spinner
+                 while `isSpinning` is still true, restarting the draw. */
+              disabled={spinInPlaceShowing}
+              aria-pressed={rollerMode === mode.id}
+              className={`flex w-28 flex-col items-start rounded-xl px-3 py-2 text-left transition-all ${
+                spinInPlaceShowing
+                  ? "cursor-not-allowed bg-zinc-800/50 text-white/30"
+                  : rollerMode === mode.id
+                  ? "bg-zinc-800 text-white ring-2 ring-inset ring-yellow-400"
+                  : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
+              }`}
+            >
+              <span className="text-xs font-medium">{mode.label}</span>
+              <span className="text-[10px] text-white/40">{mode.hint}</span>
+            </button>
+          ))}
+          {spinInPlaceShowing && (
+            <span className="w-28 text-[10px] leading-tight text-white/40">
+              Locked while spinning
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Device frame sized to an iPhone 17 Pro Max (440 x 956 CSS px). It scales
           down to fit smaller viewports while preserving the phone's aspect ratio. */}
       <div className="relative w-full max-w-[440px] h-screen sm:h-auto sm:aspect-[440/956] sm:max-h-[956px] overflow-hidden bg-black shadow-2xl sm:rounded-[3rem]">
@@ -1654,7 +1704,21 @@ case "thumbnails-4":
                     selectedAnimation === "spin-in-place-roller" ? "#212121" : "#191919",
                 }}
               >
-              {selectedAnimation === "spin-in-place-roller" ? (
+              {selectedAnimation === "spin-in-place-roller" && rollerMode === "multi" ? (
+                /* Multi draws three spots from one drum. `onLanded` fires per
+                   spot, so the reveal must hang off `onAllLanded` instead —
+                   using onLanded here would cut the run short after spot 1. */
+                <SpinRollerMultiSpinner
+                  isSpinning={spinInPlaceActive}
+                  onAllLanded={(landed) => {
+                    const final = landed[landed.length - 1]
+                    if (final) handleSpinInPlaceLanded(final.team)
+                  }}
+                  winnerNames={["Adam007", "boxbreaker", "Chloepulls11"]}
+                  breakNumber={displayBreakNumber}
+                  onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
+                />
+              ) : selectedAnimation === "spin-in-place-roller" ? (
                 <SpinRollerSpinner
                   isSpinning={spinInPlaceActive}
                   onLanded={handleSpinInPlaceLanded}
