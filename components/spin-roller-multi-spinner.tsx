@@ -70,6 +70,9 @@ const DEFAULT_STEP_DEG = 20
 const RADIUS = ITEM_H / (DEFAULT_STEP_DEG * (Math.PI / 180))
 /** Past this angle a row is so close to edge-on it isn't worth drawing. */
 const EDGE_ON_DEG = 72
+/** Height reserved for the picked-team chip row (chips are h-4). Held from the
+ *  first render so the panel never changes height as picks land. */
+const CHIP_ROW_H = 16
 
 /** Hold time on the winning row after the drum stops, before recording it. */
 const SETTLE_MS = 800
@@ -428,153 +431,150 @@ export function SpinRollerMultiSpinner({
         </AnimatePresence>
       </div>
 
-      {/* ── Roller drum ── */}
-      <div
-        className="relative w-full overflow-hidden rounded-md"
-        style={{
-          height: ITEM_H * 3,
-          // Figma: the drum sits LIGHTER than the card so the darker centre
-          // pill reads as a recessed slot cut into it.
-          backgroundColor: "#363636",
-          perspective: 420,
-        }}
-      >
-        {/* Centre selection pill, sitting behind the rows */}
-        <motion.div
-          className="absolute rounded-[4px]"
+      {/* ── Roller panel: drum + picked-team chips ──
+          The lighter Figma fill lives on this wrapper rather than the drum so the
+          divider and chips sit visually *inside* the same panel. The drum itself
+          must stay fixed-height + overflow-hidden to clip its 3D rows, so nested
+          content would be cropped — hence the shared parent. */}
+      <div className="w-full flex flex-col gap-3 rounded-lg p-3" style={{ backgroundColor: "#363636" }}>
+        {/* ── Roller drum ── */}
+        <div
+          className="relative w-full overflow-hidden rounded-md"
           style={{
-            height: ITEM_H - 4,
-            top: "50%",
-            marginTop: -(ITEM_H - 4) / 2,
-            // Fixed width, horizontally centred to match the centred rows.
-            width: PILL_W,
-            left: "50%",
-            marginLeft: -PILL_W / 2,
-            backgroundColor: "#212121",
+            height: ITEM_H * 3,
+            // Transparent: the panel above paints the lighter surface now.
+            backgroundColor: "transparent",
+            perspective: 420,
           }}
-          animate={{
-            scale: justLanded ? [1, 1.04, 1] : 1,
-            backgroundColor: pillColor,
-            boxShadow: landedTeam
-              ? `0 0 20px ${landedTeam.color}40, 0 0 40px ${landedTeam.color}20`
-              : "0 0 0 rgba(0,0,0,0)",
-          }}
-          transition={{
-            scale: { duration: 0.3 },
-            backgroundColor: { duration: 0.25 },
-            boxShadow: { duration: 0.25 },
-          }}
-        />
+        >
+          {/* Centre selection pill, sitting behind the rows */}
+          <motion.div
+            className="absolute rounded-[4px]"
+            style={{
+              height: ITEM_H - 4,
+              top: "50%",
+              marginTop: -(ITEM_H - 4) / 2,
+              // Fixed width, horizontally centred to match the centred rows.
+              width: PILL_W,
+              left: "50%",
+              marginLeft: -PILL_W / 2,
+              backgroundColor: "#212121",
+            }}
+            animate={{
+              scale: justLanded ? [1, 1.04, 1] : 1,
+              backgroundColor: pillColor,
+              boxShadow: landedTeam
+                ? `0 0 20px ${landedTeam.color}40, 0 0 40px ${landedTeam.color}20`
+                : "0 0 0 rgba(0,0,0,0)",
+            }}
+            transition={{
+              scale: { duration: 0.3 },
+              backgroundColor: { duration: 0.25 },
+              boxShadow: { duration: 0.25 },
+            }}
+          />
 
-        {/* Rows, positioned on the surface of the drum */}
-        <div className="absolute inset-0" style={{ transformStyle: "preserve-3d" }}>
-          {rows.map(({ slot, idx, delta, team }) => {
-            const angle = delta * stepDeg
-            // Past ~72° the row is nearly edge-on; drop it entirely.
-            if (Math.abs(angle) > EDGE_ON_DEG) return null
-            /* Fade tracks the row's *angle*, not its row-index distance, so the
-               dimming profile looks the same at any pitch. */
-            const fade = Math.min(1, Math.abs(angle) / (2.1 * DEFAULT_STEP_DEG))
-            const isCentre = Math.abs(delta) < 0.5
-            return (
-              <div
-                key={`${slot}-${idx}`}
-                className="absolute left-0 right-0 flex items-center justify-center px-3"
-                style={{
-                  height: ITEM_H,
-                  top: "50%",
-                  marginTop: -ITEM_H / 2,
-                  transform: `rotateX(${-angle}deg) translateZ(${RADIUS}px)`,
-                  // Rows tip away from the viewer, so they dim with distance.
-                  opacity: 1 - fade * 0.82,
-                  backfaceVisibility: "hidden",
-                }}
-              >
-                <span
-                  className="truncate font-semibold leading-none"
+          {/* Rows, positioned on the surface of the drum */}
+          <div className="absolute inset-0" style={{ transformStyle: "preserve-3d" }}>
+            {rows.map(({ slot, idx, delta, team }) => {
+              const angle = delta * stepDeg
+              // Past ~72° the row is nearly edge-on; drop it entirely.
+              if (Math.abs(angle) > EDGE_ON_DEG) return null
+              /* Fade tracks the row's *angle*, not its row-index distance, so the
+                 dimming profile looks the same at any pitch. */
+              const fade = Math.min(1, Math.abs(angle) / (2.1 * DEFAULT_STEP_DEG))
+              const isCentre = Math.abs(delta) < 0.5
+              return (
+                <div
+                  key={`${slot}-${idx}`}
+                  className="absolute left-0 right-0 flex items-center justify-center px-3"
                   style={{
-                    fontSize: 14,
-                    color: isCentre ? (isLanded ? landedTextColor : "#ffffff") : "#8f8f8f",
+                    height: ITEM_H,
+                    top: "50%",
+                    marginTop: -ITEM_H / 2,
+                    transform: `rotateX(${-angle}deg) translateZ(${RADIUS}px)`,
+                    // Rows tip away from the viewer, so they dim with distance.
+                    opacity: 1 - fade * 0.82,
+                    backfaceVisibility: "hidden",
                   }}
                 >
-                  {team.city} {team.name}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Subtle top/bottom scrims. These MUST fade to transparent — an opaque
-            fill here is exactly as tall as the neighbour rows and would hide
-            them completely. Tinted with the drum colour so it reads as the edge
-            softening rather than a separate layer. */}
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0"
-          style={{
-            height: ITEM_H,
-            background: "linear-gradient(to bottom, rgba(54,54,54,0.6), transparent)",
-          }}
-        />
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0"
-          style={{
-            height: ITEM_H,
-            background: "linear-gradient(to top, rgba(54,54,54,0.6), transparent)",
-          }}
-        />
-      </div>
-
-      {/* Landed spots, as chips. Populates one per spin and stays until reset;
-          once every spot is in, the row becomes a back-and-forth marquee so
-          longer team names stay readable in the narrow card. */}
-      <AnimatePresence>
-        {results.length > 0 && (
-          <motion.div
-            key="chips"
-            layout
-            className="flex flex-col gap-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            {/* Divider separating the drum from the chips row */}
-            <div className="border-t border-white/10" />
-
-            {allDone ? (
-              <BackAndForthMarquee trackClassName="flex gap-2">
-                {results.map(({ spot, team }) => (
-                  <span key={spot} className={chipClass} style={chipStyle}>
+                  <span
+                    className="truncate font-semibold leading-none"
+                    style={{
+                      fontSize: 14,
+                      color: isCentre ? (isLanded ? landedTextColor : "#ffffff") : "#8f8f8f",
+                    }}
+                  >
                     {team.city} {team.name}
                   </span>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Subtle top/bottom scrims. These MUST fade to transparent — an opaque
+              fill here is exactly as tall as the neighbour rows and would hide
+              them completely. Tinted with the panel colour so it reads as the
+              edge softening rather than a separate layer. */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0"
+            style={{
+              height: ITEM_H,
+              background: "linear-gradient(to bottom, rgba(54,54,54,0.6), transparent)",
+            }}
+          />
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0"
+            style={{
+              height: ITEM_H,
+              background: "linear-gradient(to top, rgba(54,54,54,0.6), transparent)",
+            }}
+          />
+        </div>
+
+        {/* Divider separating the drum from the picked-team chips */}
+        <div className="border-t border-white/10" />
+
+        {/* Picked teams, as chips — one per landed spot, kept until reset. The
+            row is always mounted with a reserved height so the panel is its
+            final size before the first spin and never jumps as picks land;
+            only the chips themselves animate in. Once every spot is in, the row
+            becomes a back-and-forth marquee so longer team names stay readable
+            in the narrow card. */}
+        <div className="flex items-center" style={{ minHeight: CHIP_ROW_H }}>
+          {allDone ? (
+            <BackAndForthMarquee trackClassName="flex gap-2">
+              {results.map(({ spot, team }) => (
+                <span key={spot} className={chipClass} style={chipStyle}>
+                  {team.city} {team.name}
+                </span>
+              ))}
+            </BackAndForthMarquee>
+          ) : (
+            <div
+              className="flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
+              <AnimatePresence initial={false}>
+                {results.map(({ spot, team }) => (
+                  <motion.span
+                    key={spot}
+                    layout
+                    initial={{ opacity: 0, scale: 0.8, y: 6 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className={chipClass}
+                    style={chipStyle}
+                  >
+                    {team.city} {team.name}
+                  </motion.span>
                 ))}
-              </BackAndForthMarquee>
-            ) : (
-              <div
-                className="flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-                style={{ WebkitOverflowScrolling: "touch" }}
-              >
-                <AnimatePresence initial={false}>
-                  {results.map(({ spot, team }) => (
-                    <motion.span
-                      key={spot}
-                      layout
-                      initial={{ opacity: 0, scale: 0.8, y: 6 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      transition={{ duration: 0.25, ease: "easeOut" }}
-                      className={chipClass}
-                      style={chipStyle}
-                    >
-                      {team.city} {team.name}
-                    </motion.span>
-                  ))}
-                </AnimatePresence>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
