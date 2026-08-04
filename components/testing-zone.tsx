@@ -290,10 +290,6 @@ const VARIANTS = [
 
 type VariantId = (typeof VARIANTS)[number]["id"]
 
-/** Measured height of the real bid box card, so the hosted spinner sits in the
- *  exact footprint it occupies in the live flow. */
-const CARD_HEIGHT = 223
-
 /* ── Live stream chrome ──
    Same blob assets the production stream in app/page.tsx uses, so the testing
    zone is judged against the identical backdrop rather than a flat panel. */
@@ -378,7 +374,7 @@ export function TestingZone() {
       </header>
 
       <div className="flex flex-col lg:flex-row flex-1 min-h-0">
-        {/* ─── Controls ─────────────────────────────────────────────────── */}
+        {/* ─── Controls ─────────────────────���───────────────────────────── */}
         <div className="lg:w-80 lg:flex-shrink-0 border-b lg:border-b-0 lg:border-r border-white/10 p-6 overflow-y-auto">
           {/* Variant */}
           <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-3">Variant</p>
@@ -552,10 +548,7 @@ export function TestingZone() {
               </div>
 
               {isRealVariant ? (
-                <div
-                  className="bg-black/40 backdrop-blur rounded-2xl p-4"
-                  style={{ height: CARD_HEIGHT }}
-                >
+                <div className="bg-black/40 backdrop-blur rounded-2xl p-4">
                   {variant === "roller" ? (
                     <SpinRollerSpinner
                       key={`roller-${spinKey}`}

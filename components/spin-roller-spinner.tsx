@@ -288,9 +288,9 @@ export function SpinRollerSpinner({
 
   return (
     // Outer card — matches the dark rounded bid box card shape exactly.
-    // h-full + justify-between so it fills the measured bid box height and the
-    // footer row anchors to the bottom.
-    <div className="w-full h-full flex flex-col justify-between gap-0" style={{ minHeight: 120 }}>
+    // Height hugs the content: there's no footer left to anchor to the bottom,
+    // so h-full/justify-between/minHeight would only add dead space.
+    <div className="w-full flex flex-col gap-0">
 
       <div className="flex flex-col gap-2">
         {/* "Random Break #15 · Adam007" subtitle */}

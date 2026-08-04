@@ -256,9 +256,9 @@ export function SpinInPlaceSpinner({
 
   return (
     // Outer card — matches the dark rounded bid box card shape exactly.
-    // h-full + justify-between so it fills the measured bid box height and the
-    // footer row anchors to the bottom (main row stays at the top).
-    <div className="w-full h-full flex flex-col justify-between gap-0" style={{ minHeight: 120 }}>
+    // Height hugs the content: there's no footer left to anchor to the bottom,
+    // so h-full/justify-between/minHeight would only add dead space.
+    <div className="w-full flex flex-col gap-0">
 
       {/* ── Main content row ── */}
       <div className="flex items-stretch gap-3">
