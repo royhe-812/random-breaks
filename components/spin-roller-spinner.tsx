@@ -300,7 +300,7 @@ export function SpinRollerSpinner({
   // Landed team drives the pill treatment, reusing the same `color` the
   // celebration moments use so the two stay visually consistent.
   const landedTeam = landedIndex !== null ? teams[landedIndex] : null
-  const pillColor = landedTeam ? landedTeam.color : "#191919"
+  const pillColor = landedTeam ? landedTeam.color : "#212121"
   const landedTextColor = landedTeam ? readableOn(landedTeam.color) : "#ffffff"
 
   /* Build the visible window of rows. Indices wrap with a modulo so the drum
@@ -352,7 +352,9 @@ export function SpinRollerSpinner({
           className="relative w-full overflow-hidden rounded-md"
           style={{
             height: ITEM_H * 3,
-            backgroundColor: "#212121",
+            // Figma: the drum sits LIGHTER than the card so the darker centre
+            // pill reads as a recessed slot cut into it.
+            backgroundColor: "#363636",
             perspective: 420,
           }}
         >
@@ -367,7 +369,7 @@ export function SpinRollerSpinner({
               width: PILL_W,
               left: "50%",
               marginLeft: -PILL_W / 2,
-              backgroundColor: "#191919",
+              backgroundColor: "#212121",
             }}
             animate={{
               scale: justLanded ? [1, 1.04, 1] : 1,
@@ -431,14 +433,23 @@ export function SpinRollerSpinner({
             })}
           </div>
 
-          {/* Solid top/bottom scrims — same card background colour, no gradient. */}
+          {/* Subtle top/bottom scrims. These MUST fade to transparent — an
+              opaque fill here is exactly as tall as the neighbour rows and
+              would hide them completely. Tinted with the drum colour so it
+              reads as the edge softening rather than a separate layer. */}
           <div
             className="pointer-events-none absolute inset-x-0 top-0"
-            style={{ height: ITEM_H, background: "#212121" }}
+            style={{
+              height: ITEM_H,
+              background: "linear-gradient(to bottom, rgba(54,54,54,0.6), transparent)",
+            }}
           />
           <div
             className="pointer-events-none absolute inset-x-0 bottom-0"
-            style={{ height: ITEM_H, background: "#212121" }}
+            style={{
+              height: ITEM_H,
+              background: "linear-gradient(to top, rgba(54,54,54,0.6), transparent)",
+            }}
           />
         </div>
 
