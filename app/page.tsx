@@ -237,8 +237,34 @@ export default function AnimationShowcase() {
    */
   const [rollerMode, setRollerMode] = useState<"single" | "multi">("single")
   const auctionCardRef = useRef<HTMLDivElement>(null)
+  /**
+   * Multi roller only: the randomization card is taller than the bid box because
+   * it carries the divider + chips row of already-drawn teams. In multi mode the
+   * card is bottom-anchored with auto height, and this measures what it actually
+   * needs so the crossfade wrapper can reserve it. Without that reservation the
+   * chips overflow the wrapper and get cut off at the bottom of the phone.
+   */
+  const rollerCardRef = useRef<HTMLDivElement>(null)
+  const [rollerCardHeight, setRollerCardHeight] = useState(0)
   // True while the randomization card is overlaying the bid box.
   const spinInPlaceShowing = isSpinInPlace(selectedAnimation) && spinInPlaceActive
+
+  /* Track the multi card's natural height. It changes mid-run as chips wrap onto
+     the row, so a ResizeObserver keeps the reserved space in step rather than
+     measuring once on mount. */
+  const isMultiRoller = selectedAnimation === "spin-in-place-roller" && rollerMode === "multi"
+  useEffect(() => {
+    const el = rollerCardRef.current
+    if (!el || !isMultiRoller || !spinInPlaceShowing) {
+      setRollerCardHeight(0)
+      return
+    }
+    const measure = () => setRollerCardHeight(el.offsetHeight)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [isMultiRoller, spinInPlaceShowing])
   const [spinLaterBreakNumber, setSpinLaterBreakNumber] = useState(32) // "Spin Later": each tap of "Sold Out" moves DOWN to the next lower-numbered sold-out break
   // "Spin Later" is a fully sold-out break; the number counts DOWN as the seller
   // works through sold-out breaks (32 → 31 → 30 …).
@@ -1492,8 +1518,15 @@ case "thumbnails-4":
           </div>
         )}
 
-        {/* `relative` also stacks this above the tile's tucked bottom strip. */}
-        <div className="relative">
+        {/* `relative` also stacks this above the tile's tucked bottom strip.
+            In multi mode `minHeight` reserves the taller card's measured height.
+            The bottom overlay is bottom-anchored (`bottom-4`), so that extra
+            height grows the unit UPWARD — the card's chips stay inside the
+            rounded card and the spots tile rides up with it, still nested. */}
+        <div
+          className="relative transition-[min-height] duration-300 ease-out"
+          style={rollerCardHeight ? { minHeight: rollerCardHeight } : undefined}
+        >
 
         {/* Auction Card */}
         <motion.div
@@ -1684,7 +1717,13 @@ case "thumbnails-4":
           {spinInPlaceShowing && (
             <motion.div
               key="spin-in-place"
-              className="absolute inset-0 flex flex-col"
+              /* Single keeps `inset-0` so it matches the bid box footprint
+                 exactly. Multi is bottom-anchored with auto height instead, so
+                 it can grow past the bid box to fit the chips row — the wrapper
+                 reserves that height via the measurement above. */
+              className={`absolute flex flex-col ${
+                isMultiRoller ? "inset-x-0 bottom-0" : "inset-0"
+              }`}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 16 }}
@@ -1696,9 +1735,13 @@ case "thumbnails-4":
               {/* Roller uses the tighter 12px padding and #212121 fill dialled in
                   via the testing zone; plain Spin In Place keeps 16px / #191919. */}
               <div
-                className={`relative min-h-0 flex-1 rounded-2xl ${
-                  selectedAnimation === "spin-in-place-roller" ? "p-3" : "p-4"
-                }`}
+                ref={rollerCardRef}
+                /* `flex-1` only when the overlay has a fixed height to divide.
+                   In multi the overlay is auto-height, so the card must size to
+                   its own content for the measurement to mean anything. */
+                className={`relative rounded-2xl ${
+                  isMultiRoller ? "" : "min-h-0 flex-1"
+                } ${selectedAnimation === "spin-in-place-roller" ? "p-3" : "p-4"}`}
                 style={{
                   backgroundColor:
                     selectedAnimation === "spin-in-place-roller" ? "#212121" : "#191919",
