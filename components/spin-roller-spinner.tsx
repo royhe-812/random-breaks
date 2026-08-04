@@ -322,7 +322,7 @@ export function SpinRollerSpinner({
 
         {/* ── Roller drum ── */}
         <div
-          className="relative w-full overflow-hidden rounded-xl"
+          className="relative w-full overflow-hidden rounded-md"
           style={{
             height: ITEM_H * 3,
             backgroundColor: "rgba(255,255,255,0.05)",
