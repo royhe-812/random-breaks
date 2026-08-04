@@ -6,6 +6,7 @@ import { RotateCcw, ChevronDown, Heart } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
+import { SpinRollerMultiSpinner } from "@/components/spin-roller-multi-spinner"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { useDialKit, DialRoot } from "dialkit"
 import "dialkit/styles.css"
@@ -190,7 +191,7 @@ function MiniSpinner({ label, forcedTeam, spinKey, variant }: MiniSpinnerProps) 
     </motion.div>
   )
 
-  // ─── Title line ─────────────────────────────────���──────────────────────
+  // ─── Title line ─────────────────────────────────����──────────────────────
   const titleLine = (
     <AnimatePresence mode="wait">
       {isSpinning ? (
@@ -283,6 +284,7 @@ function MiniSpinner({ label, forcedTeam, spinKey, variant }: MiniSpinnerProps) 
  *  real production components; the rest reuse the local MiniSpinner. */
 const VARIANTS = [
   { id: "roller", label: "Roller" },
+  { id: "roller-multi", label: "Roller, Multi" },
   { id: "in-place", label: "Spin In Place" },
   { id: "single", label: "Single Spin" },
   { id: "multi3", label: "Multi (3)" },
@@ -346,7 +348,7 @@ export function TestingZone() {
   const spinDurationMs = Math.round(spinTime * 1000)
 
   const forcedIndex = forcedTeam ? teams.findIndex(t => t.name === forcedTeam.name) : null
-  const isRealVariant = variant === "roller" || variant === "in-place"
+  const isRealVariant = variant === "roller" || variant === "roller-multi" || variant === "in-place"
 
   const handleSpin = () => {
     setResult(null)
@@ -568,6 +570,20 @@ export function TestingZone() {
                       breakNumber={15}
                       availableSpots={15}
                       totalSpots={32}
+                      onViewSpots={() => setIsBreakSpotsOpen(true)}
+                      forceTeamIndex={forcedIndex}
+                      spinDuration={spinDurationMs}
+                      startSpeed={startSpeed}
+                      rampUp={rampUp}
+                      stopEase={stopEase}
+                      rowPitch={rowPitch}
+                    />
+                  ) : variant === "roller-multi" ? (
+                    <SpinRollerMultiSpinner
+                      key={`roller-multi-${spinKey}`}
+                      isSpinning={isSpinning}
+                      onLanded={setResult}
+                      breakNumber={15}
                       onViewSpots={() => setIsBreakSpotsOpen(true)}
                       forceTeamIndex={forcedIndex}
                       spinDuration={spinDurationMs}
