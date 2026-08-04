@@ -122,18 +122,6 @@ function buildSpinEase(startSpeed: number, rampFraction: number, stopEase: numbe
   }
 }
 
-/* Team primaries span a huge brightness range (Packers #203731 is nearly black,
-   Steelers #FFB612 bright yellow), so the landed row picks black or white text
-   per WCAG relative luminance rather than hardcoding one. */
-function readableOn(hex: string) {
-  const h = hex.replace("#", "")
-  const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4))
-  const r = toLinear(parseInt(h.slice(0, 2), 16) / 255)
-  const g = toLinear(parseInt(h.slice(2, 4), 16) / 255)
-  const b = toLinear(parseInt(h.slice(4, 6), 16) / 255)
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.42 ? "#101820" : "#ffffff"
-}
-
 /**
  * Marquee that only scrolls when its content overflows, easing right-to-left,
  * pausing, then back — matching the chips row in the other multi variants.
@@ -203,9 +191,6 @@ export function SpinRollerMultiSpinner({
 
   /** Fractional drum position, in rows. Integer values sit dead centre. */
   const [pos, setPos] = useState(0)
-  /** Index of the team the drum is currently resting on, or null mid-spin. */
-  const [landedIndex, setLandedIndex] = useState<number | null>(null)
-  const [justLanded, setJustLanded] = useState(false)
   /** Which spin is running, 0-based. Bumping this starts the next spin. */
   const [spinNo, setSpinNo] = useState(0)
   /** Spots landed so far, oldest first, so chips populate left → right. */
@@ -251,8 +236,6 @@ export function SpinRollerMultiSpinner({
   useEffect(() => {
     if (isSpinning) return
     setPos(0)
-    setLandedIndex(null)
-    setJustLanded(false)
     setSpinNo(0)
     setResults([])
     setAllDone(false)
@@ -301,8 +284,6 @@ export function SpinRollerMultiSpinner({
     const duration = Math.max(300, spinDuration - SETTLE_MS)
     const ease = buildSpinEase(startSpeed, rampUp, stopEase)
 
-    setLandedIndex(null)
-    setJustLanded(false)
     setPos(start)
 
     let lastTick = Math.floor(start)
@@ -330,12 +311,12 @@ export function SpinRollerMultiSpinner({
       const restPos = start + distance
       setPos(restPos)
       restPosRef.current = restPos
-      setJustLanded(true)
 
+      /* Still wait out SETTLE_MS before recording the pick: it holds the landed
+         row under the pill long enough to read. This is spin pacing, not a
+         celebration, so it stays even though the land animation is gone. */
       settleTimer = setTimeout(() => {
         if (cancelled) return
-        setJustLanded(false)
-        setLandedIndex(target)
         takenRef.current = [...takenRef.current, target]
 
         const spot = SPOTS[spinNo]
@@ -369,14 +350,7 @@ export function SpinRollerMultiSpinner({
     if (allDone && results.length === SPOTS.length) onAllLandedRef.current?.(results)
   }, [allDone, results])
 
-  const isLanded = landedIndex !== null
   const centre = Math.round(pos)
-
-  // Landed team drives the pill treatment, reusing the same `color` the
-  // celebration moments use so the two stay visually consistent.
-  const landedTeam = landedIndex !== null ? teams[landedIndex] : null
-  const pillColor = landedTeam ? landedTeam.color : "#212121"
-  const landedTextColor = landedTeam ? readableOn(landedTeam.color) : "#ffffff"
 
   /* One buyer wins all spots, so the trophy line always shows the same name. */
   const activeWinner = winnerName
@@ -447,8 +421,10 @@ export function SpinRollerMultiSpinner({
             perspective: 420,
           }}
         >
-          {/* Centre selection pill, sitting behind the rows */}
-          <motion.div
+          {/* Centre selection pill, sitting behind the rows. Static by design:
+              multi-spin does not celebrate individual landings — the picked
+              teams are reported by the chip row below instead. */}
+          <div
             className="absolute rounded-[4px]"
             style={{
               height: ITEM_H - 4,
@@ -459,18 +435,6 @@ export function SpinRollerMultiSpinner({
               left: "50%",
               marginLeft: -PILL_W / 2,
               backgroundColor: "#212121",
-            }}
-            animate={{
-              scale: justLanded ? [1, 1.04, 1] : 1,
-              backgroundColor: pillColor,
-              boxShadow: landedTeam
-                ? `0 0 20px ${landedTeam.color}40, 0 0 40px ${landedTeam.color}20`
-                : "0 0 0 rgba(0,0,0,0)",
-            }}
-            transition={{
-              scale: { duration: 0.3 },
-              backgroundColor: { duration: 0.25 },
-              boxShadow: { duration: 0.25 },
             }}
           />
 
@@ -502,7 +466,7 @@ export function SpinRollerMultiSpinner({
                     className="truncate font-semibold leading-none"
                     style={{
                       fontSize: 14,
-                      color: isCentre ? (isLanded ? landedTextColor : "#ffffff") : "#8f8f8f",
+                      color: isCentre ? "#ffffff" : "#8f8f8f",
                     }}
                   >
                     {team.city} {team.name}
