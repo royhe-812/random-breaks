@@ -175,9 +175,12 @@ export function SpinRollerSpinner({
   totalSpots = 32,
   onViewSpots,
   forceTeamIndex = null,
-  spinDuration = 4200,
-  startSpeed = 0.15,
-  rampUp = 0.3,
+  /* Defaults below are the values settled on in the Spinner Testing Zone dials,
+     so any instance that doesn't drive them explicitly (e.g. the production
+     "Spin In Place (Roller)") gets the same tuned feel. */
+  spinDuration = 4000,
+  startSpeed = 0.09,
+  rampUp = 0.35,
   stopEase = 3,
   rowPitch = ITEM_H,
 }: SpinRollerSpinnerProps) {

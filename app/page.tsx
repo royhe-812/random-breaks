@@ -1612,7 +1612,11 @@ case "thumbnails-4":
           {spinInPlaceShowing && (
             <motion.div
               key="spin-in-place"
-              className="absolute inset-0 rounded-2xl p-4"
+              /* Roller uses the tighter 12px padding dialled in via the testing
+                 zone; plain Spin In Place keeps its original 16px. */
+              className={`absolute inset-0 rounded-2xl ${
+                selectedAnimation === "spin-in-place-roller" ? "p-3" : "p-4"
+              }`}
               style={{ backgroundColor: "#191919" }}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
