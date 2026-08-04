@@ -562,14 +562,15 @@ export function TestingZone() {
 
               {isRealVariant ? (
                 <div className="flex flex-col">
-                {/* Banner + card share a gap-free wrapper so they read as one
-                    attached unit: the banner rounds the top, the card the bottom. */}
+                {/* The spots tile nests behind this card: its bottom 16px tuck
+                    under the card, which keeps its full 16px top corners and
+                    paints above the tile via `relative`. */}
                 <BreakSpotsBar
                   availableSpots={15}
                   totalSpots={32}
                   onViewSpots={() => setIsBreakSpotsOpen(true)}
                 />
-                <div className="bg-black/40 backdrop-blur rounded-b-2xl p-3">
+                <div className="relative bg-black/40 backdrop-blur rounded-2xl p-3">
                   {variant === "roller" ? (
                     <SpinRollerSpinner
                       key={`roller-${spinKey}`}

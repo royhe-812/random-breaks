@@ -45,15 +45,13 @@ function SpotsRing({ available, total, size = 16 }: { available: number; total: 
 /**
  * Inline contextual "N/M spots available" banner (Figma "Incentive Tile").
  *
- * Rather than a standalone box, this sits flush on top of the spinner card and
- * rounds only its top corners, so banner + card read as one attached unit. The
- * parent must render it immediately before the card, in a wrapper with no gap,
- * and the card must round only its bottom corners.
+ * Rather than a standalone box, this nests *behind* the spinner card: the tile is
+ * 52px tall with its bottom 16px tucked under the card, leaving 36px visible. The
+ * -16px bottom margin creates the overlap, so the card's rounded top corners sit
+ * over the tile and the two read as one nested unit.
  *
- * The Figma tile is 52px tall with 16px of bottom padding tucked *behind* an
- * opaque buy box. That trick can't be reused here because the spinner card is
- * translucent glass over the video — a tucked strip bleeds through it. Matching
- * the tile's 36px visible height instead reproduces the same result exactly.
+ * The parent must render this immediately before the card, in a wrapper with no
+ * gap, and the card keeps its full 16px top corners and paints above this tile.
  *
  * The entire banner is one button so the counter and the label open the same
  * sheet. That's also why "View all" is a span — a nested <button> would be
@@ -65,7 +63,7 @@ export function BreakSpotsBar({ availableSpots = 15, totalSpots = 32, onViewSpot
       type="button"
       onClick={onViewSpots}
       aria-label={`${availableSpots} of ${totalSpots} spots available. View all spots.`}
-      className="flex min-h-9 w-full items-center justify-between gap-2 rounded-t-2xl bg-[#363636] px-3 py-2 text-left transition-opacity hover:opacity-90"
+      className="-mb-4 flex h-13 w-full items-start justify-between gap-2 rounded-t-2xl bg-[#363636] px-3 pt-2.5 text-left transition-opacity hover:opacity-90"
     >
       {/* Counter — 4px between ring and label */}
       <span className="flex min-w-0 items-center gap-1">
