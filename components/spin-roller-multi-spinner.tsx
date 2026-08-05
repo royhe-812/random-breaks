@@ -397,7 +397,7 @@ export function SpinRollerMultiSpinner({
   }
 
   return (
-    <div className="w-full flex flex-col gap-4">
+    <div className="w-full flex flex-col gap-2">
       {/* Title row — mirrors the bid box card: break + box title truncated to
           one line, with the winner currently being drawn beneath it. `min-w-0`
           is what lets the title actually truncate inside the flex column. */}

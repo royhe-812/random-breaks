@@ -348,7 +348,7 @@ export function SpinRollerSpinner({
     // so h-full/justify-between/minHeight would only add dead space.
     <div className="w-full flex flex-col gap-0">
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
         {/* Auction card title row — mirrors the bid box card in the live stream:
             the break + box title truncated to one line. The trailing chevron was
             removed; the spots bar above the card now carries the "View all"
