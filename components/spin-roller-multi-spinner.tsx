@@ -65,6 +65,9 @@ const WIDEST_NAME_W = 172
 const PILL_PAD_X = 16
 /** Fixed width of the centre selection pill: widest name + padding both sides. */
 const PILL_W = WIDEST_NAME_W + PILL_PAD_X * 2
+/** Fill of the centre pill. Nothing sits behind the drum any more, so the pill is
+ *  what marks the selected slot: one step LIGHTER than the #212121 card. */
+const PILL_IDLE = "#363636"
 /** Angular separation between rows at the default pitch; only derives RADIUS. */
 const DEFAULT_STEP_DEG = 20
 const RADIUS = ITEM_H / (DEFAULT_STEP_DEG * (Math.PI / 180))
@@ -405,18 +408,18 @@ export function SpinRollerMultiSpinner({
         </AnimatePresence>
       </div>
 
-      {/* ── Roller panel: drum + picked-team chips ──
-          The lighter Figma fill lives on this wrapper rather than the drum so the
-          divider and chips sit visually *inside* the same panel. The drum itself
-          must stay fixed-height + overflow-hidden to clip its 3D rows, so nested
-          content would be cropped — hence the shared parent. */}
-      <div className="w-full flex flex-col gap-3 rounded-lg p-3" style={{ backgroundColor: "#363636" }}>
+      {/* ── Roller group: drum + picked-team chips ──
+          Unstyled wrapper. It used to carry the lighter panel fill, but the drum
+          now sits flush on the card; this survives purely to group the drum with
+          the divider and chips, since the drum itself must stay fixed-height +
+          overflow-hidden to clip its 3D rows and would crop nested content. */}
+      <div className="w-full flex flex-col gap-3">
         {/* ── Roller drum ── */}
         <div
           className="relative w-full overflow-hidden rounded-md"
           style={{
             height: ITEM_H * 3,
-            // Transparent: the panel above paints the lighter surface now.
+            // No fill of its own — the card shows through behind the rows.
             backgroundColor: "transparent",
             perspective: 420,
           }}
@@ -434,7 +437,7 @@ export function SpinRollerMultiSpinner({
               width: PILL_W,
               left: "50%",
               marginLeft: -PILL_W / 2,
-              backgroundColor: "#212121",
+              backgroundColor: PILL_IDLE,
             }}
           />
 

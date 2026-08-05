@@ -68,6 +68,12 @@ const WIDEST_NAME_W = 172
 const PILL_PAD_X = 16
 /** Fixed width of the centre selection pill: widest name + padding both sides. */
 const PILL_W = WIDEST_NAME_W + PILL_PAD_X * 2
+/** Resting fill of the centre pill. The drum has no fill of its own, so the pill
+ *  is what marks the selected slot: it sits one step LIGHTER than the #212121
+ *  card. (It used to be #212121 against a lighter drum panel — that reads as
+ *  nothing once the panel is gone.) The landed state overrides this with the
+ *  team's own colour. */
+const PILL_IDLE = "#363636"
 /** Angular separation between rows at the default pitch. Only used to derive
  *  RADIUS — the live value is computed per-render from the `rowPitch` prop. */
 const DEFAULT_STEP_DEG = 20
@@ -300,7 +306,7 @@ export function SpinRollerSpinner({
   // Landed team drives the pill treatment, reusing the same `color` the
   // celebration moments use so the two stay visually consistent.
   const landedTeam = landedIndex !== null ? teams[landedIndex] : null
-  const pillColor = landedTeam ? landedTeam.color : "#212121"
+  const pillColor = landedTeam ? landedTeam.color : PILL_IDLE
   const landedTextColor = landedTeam ? readableOn(landedTeam.color) : "#ffffff"
 
   /* Build the visible window of rows. Indices wrap with a modulo so the drum
@@ -352,9 +358,11 @@ export function SpinRollerSpinner({
           className="relative w-full overflow-hidden rounded-md"
           style={{
             height: ITEM_H * 3,
-            // Figma: the drum sits LIGHTER than the card so the darker centre
-            // pill reads as a recessed slot cut into it.
-            backgroundColor: "#363636",
+            /* No fill: the drum sits flush on the card. The lighter surface used
+               to live here, with the darker pill reading as a slot cut into it —
+               that relationship is now inverted onto the pill itself (see
+               PILL_IDLE), since a #212121 pill on the #212121 card would vanish. */
+            backgroundColor: "transparent",
             perspective: 420,
           }}
         >
@@ -369,7 +377,7 @@ export function SpinRollerSpinner({
               width: PILL_W,
               left: "50%",
               marginLeft: -PILL_W / 2,
-              backgroundColor: "#212121",
+              backgroundColor: PILL_IDLE,
             }}
             animate={{
               scale: justLanded ? [1, 1.04, 1] : 1,
