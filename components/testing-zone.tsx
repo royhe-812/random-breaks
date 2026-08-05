@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { RotateCcw, ChevronDown, Heart } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
@@ -347,6 +347,37 @@ export function TestingZone() {
     rowPitch: [26, 14, 60, 1] as [number, number, number, number],
   })
 
+  /* ── Pill reveal ──
+     Feel of the landed pill's three-beat reveal: the outline traces itself, holds,
+     then the team colour fills. Times are in ms here rather than seconds — these
+     are short beats, and ms is the unit the storyboard was cut in. */
+  const { drawMs, drawEase, holdMs, fillMs, strokeWidth, popScale, glow } = useDialKit("Pill reveal", {
+    // Time for the two brackets to travel the whole outline and seal.
+    drawMs: [420, 80, 1600, 10] as [number, number, number, number],
+    /* Pacing of the traced line, in the same spirit as `stopEase` above.
+       0 is constant speed; positive leaps off the corners and glides into the
+       seal; negative creeps out then whips shut. */
+    drawEase: [0, -1, 1, 0.05] as [number, number, number, number],
+    // Beat on the closed outline before the fill. 0 runs them back to back.
+    holdMs: [140, 0, 800, 10] as [number, number, number, number],
+    // The team colour washing in, carrying the pop and glow.
+    fillMs: [320, 60, 1200, 10] as [number, number, number, number],
+    // Outline thickness. Sub-pixel values read as a finer hairline.
+    strokeWidth: [1.5, 0.5, 5, 0.1] as [number, number, number, number],
+    // Peak of the pop that rides the fill; 1 turns it off.
+    popScale: [1.04, 1, 1.2, 0.01] as [number, number, number, number],
+    // Multiplier on the fill's glow; 0 turns it off.
+    glow: [1, 0, 2.5, 0.05] as [number, number, number, number],
+  })
+
+  /* Bundled into one object so both rollers take a single `reveal` prop. Memoised
+     on the dial values: a fresh object every render would re-run the reveal's
+     timing effect continuously and restart the draw mid-animation. */
+  const reveal = useMemo(
+    () => ({ drawMs, drawEase, holdMs, fillMs, strokeWidth, popScale, glow }),
+    [drawMs, drawEase, holdMs, fillMs, strokeWidth, popScale, glow],
+  )
+
   const spinDurationMs = Math.round(spinTime * 1000)
 
   const forcedIndex = forcedTeam ? teams.findIndex(t => t.name === forcedTeam.name) : null
@@ -586,10 +617,11 @@ export function TestingZone() {
                       spinDuration={spinDurationMs}
                       startSpeed={startSpeed}
                       rampUp={rampUp}
-                      stopEase={stopEase}
-                      rowPitch={rowPitch}
-                    />
-                  ) : variant === "roller-multi" ? (
+                    stopEase={stopEase}
+                    rowPitch={rowPitch}
+                    reveal={reveal}
+                  />
+                ) : variant === "roller-multi" ? (
                     <SpinRollerMultiSpinner
                       key={`roller-multi-${spinKey}`}
                       isSpinning={isSpinning}
@@ -601,6 +633,7 @@ export function TestingZone() {
                       rampUp={rampUp}
                       stopEase={stopEase}
                       rowPitch={rowPitch}
+                      reveal={reveal}
                     />
                   ) : (
                     <SpinInPlaceSpinner

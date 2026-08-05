@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { teams, type Team } from "@/components/team-spinner"
-import { RevealPill, useRevealStage } from "@/components/pill-reveal"
+import { RevealPill, useRevealStage, type RevealTuning } from "@/components/pill-reveal"
 
 interface SpinRollerSpinnerProps {
   /** True while spinning, false to reset. */
@@ -49,6 +49,12 @@ interface SpinRollerSpinnerProps {
    * separation of its neighbours changes. Defaults to DEFAULT_ROW_PITCH (26).
    */
   rowPitch?: number
+  /**
+   * Feel of the landed pill's reveal — draw time, pacing, hold, fill, thickness,
+   * pop and glow. Omit for the tuned defaults; the testing zone forwards dial
+   * values through. See components/pill-reveal.tsx.
+   */
+  reveal?: RevealTuning
 }
 
 /* ── Cylinder geometry ──
@@ -217,6 +223,7 @@ export function SpinRollerSpinner({
   rampUp = 0.35,
   stopEase = 3,
   rowPitch = DEFAULT_ROW_PITCH,
+  reveal,
 }: SpinRollerSpinnerProps) {
   /* Convert the px pitch into the angular step the rows are laid out on.
      RADIUS is deliberately left fixed so the centre row's distance from the
@@ -337,7 +344,7 @@ export function SpinRollerSpinner({
   /* Drives the staged reveal: stroke draws in the team's secondary, then the
      primary fills. Held here rather than inside the pill because the landed
      row's label has to change colour in step with the fill. */
-  const revealStage = useRevealStage(landedTeam)
+  const revealStage = useRevealStage(landedTeam, reveal)
   /* Only meaningful once the pill is actually filled — before that the pill is
      still dark, so a dark label picked for a bright primary (Steelers gold)
      would be unreadable. */
@@ -417,6 +424,7 @@ export function SpinRollerSpinner({
             width={PILL_W}
             height={ITEM_H - 4}
             idleColor={PILL_IDLE}
+            {...reveal}
           />
 
           {/* Rows, positioned on the surface of the drum */}

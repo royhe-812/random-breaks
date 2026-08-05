@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { teams, type Team } from "@/components/team-spinner"
-import { RevealPill, useRevealStage, readableOn } from "@/components/pill-reveal"
+import { RevealPill, useRevealStage, readableOn, type RevealTuning } from "@/components/pill-reveal"
 
 /* ── Roller, multi ──
    Same 3D drum as SpinRollerSpinner, but it runs one spin per spot instead of
@@ -51,6 +51,11 @@ interface SpinRollerMultiSpinnerProps {
   /** Centre-to-centre spacing between adjacent team names, in px.
    *  Defaults to DEFAULT_ROW_PITCH (26). */
   rowPitch?: number
+  /**
+   * Feel of each landed pill's reveal — draw time, pacing, hold, fill, thickness,
+   * pop and glow. Applies to every spot in the run. See pill-reveal.tsx.
+   */
+  reveal?: RevealTuning
 }
 
 /* ── Cylinder geometry ──
@@ -217,6 +222,7 @@ export function SpinRollerMultiSpinner({
   rampUp = 0.35,
   stopEase = 3,
   rowPitch = DEFAULT_ROW_PITCH,
+  reveal,
 }: SpinRollerMultiSpinnerProps) {
   /* Convert the px pitch into the angular step the rows sit on. RADIUS stays
      fixed so the centre row's perspective magnification never shifts as the
@@ -403,7 +409,7 @@ export function SpinRollerMultiSpinner({
   /* Landed team drives the pill's staged reveal. Held here, not inside the pill,
      because the landed row's label has to change colour in step with the fill. */
   const landedTeam = landedIndex !== null ? teams[landedIndex] : null
-  const revealStage = useRevealStage(landedTeam)
+  const revealStage = useRevealStage(landedTeam, reveal)
   const landedTextColor = landedTeam ? readableOn(landedTeam.color) : "#ffffff"
 
   /* One buyer wins all spots, so the trophy line always shows the same name. */
@@ -490,9 +496,10 @@ export function SpinRollerMultiSpinner({
             team={landedTeam}
             stage={revealStage}
             width={PILL_W}
-            height={ITEM_H - 4}
-            idleColor={PILL_IDLE}
-          />
+              height={ITEM_H - 4}
+              idleColor={PILL_IDLE}
+              {...reveal}
+            />
 
           {/* Rows, positioned on the surface of the drum */}
           <div className="absolute inset-0" style={{ transformStyle: "preserve-3d" }}>

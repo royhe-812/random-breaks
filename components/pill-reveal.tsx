@@ -16,22 +16,62 @@
  */
 
 import { useEffect, useMemo, useState } from "react"
-import { motion, useReducedMotion } from "framer-motion"
+import { animate, motion, useMotionValue, useReducedMotion, useTransform, type MotionValue } from "framer-motion"
 import type { Team } from "@/components/team-spinner"
 
-/** Stage 1 — time for the two brackets to open and seal, measured on the longest
- *  arm. Shorter arms finish proportionally sooner to keep one constant speed. */
+/* ── Timing defaults ──
+   Every one of these is overridable per-call so the testing zone can put them on
+   dials; these are the tuned values the app ships with. */
+
+/** Stage 1 — time for the two brackets to open and seal. */
 export const STROKE_DRAW_MS = 420
 /** Stage 2 — hold on the finished outline before the fill starts. Short; this is
  *  a beat to let the closed shape register, not a pause. */
 export const STROKE_HOLD_MS = 140
 /** Stage 3 — the primary colour washing in. */
 export const FILL_MS = 320
-/** Total reveal, exported so callers can pace their own timers against it. */
+/** Total reveal at default timings, so callers can pace their own timers. */
 export const REVEAL_TOTAL_MS = STROKE_DRAW_MS + STROKE_HOLD_MS + FILL_MS
+/** Linear draw. See `drawEase` on RevealPill for what the number means. */
+export const STROKE_DRAW_EASE = 0
+/** Outline thickness in px. */
+export const STROKE_WIDTH = 1.5
+
+/**
+ * One signed number describing how the traced line paces itself, in the same
+ * spirit as the spin dials' `stopEase`:
+ *
+ *   0   linear — constant speed all the way round
+ *   >0  ease-out — leaps away from the corners and glides into the seal
+ *   <0  ease-in — creeps out of the corners then whips shut
+ *
+ * Returned as a cubic bezier because it interpolates continuously, so the dial
+ * sweeps smoothly through linear instead of snapping between named curves.
+ */
+function drawEaseCurve(k: number): [number, number, number, number] {
+  const a = Math.min(1, Math.abs(k))
+  // Endpoints are the standard easeOut/easeIn control points, lerped from linear.
+  if (k >= 0) return [0, 0, 1 - 0.42 * a, 1]
+  return [0.42 * a, 0, 1, 1]
+}
 
 /** 0 = idle, 1 = stroke drawing, 2 = filled. */
 export type RevealStage = 0 | 1 | 2
+
+/**
+ * The whole feel of the reveal in one object, so the rollers can forward it from
+ * a dial panel as a single prop rather than seven parallel ones. Every field is
+ * optional and falls back to the tuned default.
+ */
+export interface RevealTuning {
+  drawMs?: number
+  holdMs?: number
+  fillMs?: number
+  drawEase?: number
+  strokeWidth?: number
+  popScale?: number
+  glow?: number
+}
 
 /* ── Stroke colour selection ──
    The stroke sits on a dark pill, so a plain WCAG contrast ratio is the wrong
@@ -150,7 +190,13 @@ function bracketPaths(w: number, h: number, r: number, sw: number) {
  * is what restarts the sequence, and without it a team landing twice in a row
  * would not re-trigger.
  */
-export function useRevealStage(team: Team | null): RevealStage {
+export function useRevealStage(
+  team: Team | null,
+  /* Must match the values handed to RevealPill, or the fill fires at the wrong
+     moment — this hook owns *when* stage 3 starts, the pill only renders it. */
+  timings: { drawMs?: number; holdMs?: number } = {},
+): RevealStage {
+  const { drawMs = STROKE_DRAW_MS, holdMs = STROKE_HOLD_MS } = timings
   const [stage, setStage] = useState<RevealStage>(0)
   const reduceMotion = useReducedMotion()
 
@@ -166,11 +212,52 @@ export function useRevealStage(team: Team | null): RevealStage {
       return
     }
     setStage(1)
-    const t = setTimeout(() => setStage(2), STROKE_DRAW_MS + STROKE_HOLD_MS)
+    const t = setTimeout(() => setStage(2), drawMs + holdMs)
     return () => clearTimeout(t)
-  }, [team, reduceMotion])
+  }, [team, reduceMotion, drawMs, holdMs])
 
   return stage
+}
+
+/** 0–1 alpha as the 2-digit hex suffix an 8-digit colour needs. */
+function alphaHex(a: number) {
+  return Math.round(Math.min(1, Math.max(0, a)) * 255)
+    .toString(16)
+    .padStart(2, "0")
+}
+
+/**
+ * One arm of a bracket, drawn from the shared `drawn` timeline.
+ *
+ * Split into its own component purely so it can call `useTransform` — mapping
+ * the shared px count onto this arm's own 0–1 `pathLength`. Arms shorter than
+ * the longest one therefore hit 1 and stop early, which is what holds the speed
+ * constant and produces the sealed verticals in the storyboard's first frame.
+ */
+function Arm({
+  d,
+  len,
+  drawn,
+  stroke,
+  strokeWidth,
+}: {
+  d: string
+  len: number
+  drawn: MotionValue<number>
+  stroke: string
+  strokeWidth: number
+}) {
+  const pathLength = useTransform(drawn, (px) => Math.min(1, px / len))
+  return (
+    <motion.path
+      d={d}
+      fill="none"
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      style={{ pathLength }}
+    />
+  )
 }
 
 interface RevealPillProps {
@@ -184,6 +271,16 @@ interface RevealPillProps {
   idleColor: string
   radius?: number
   strokeWidth?: number
+  /** Time for the brackets to travel the whole outline and seal. */
+  drawMs?: number
+  /** Time for the primary colour to wash in. */
+  fillMs?: number
+  /** Pacing of the traced line: 0 linear, >0 ease-out, <0 ease-in. */
+  drawEase?: number
+  /** Peak of the pop that rides the fill. 1 disables it. */
+  popScale?: number
+  /** Multiplier on the glow that rides the fill. 0 disables it. */
+  glow?: number
 }
 
 /**
@@ -197,7 +294,12 @@ export function RevealPill({
   height,
   idleColor,
   radius = 4,
-  strokeWidth = 1.5,
+  strokeWidth = STROKE_WIDTH,
+  drawMs = STROKE_DRAW_MS,
+  fillMs = FILL_MS,
+  drawEase = STROKE_DRAW_EASE,
+  popScale = 1.04,
+  glow = 1,
 }: RevealPillProps) {
   const reduceMotion = useReducedMotion()
   const arms = useMemo(
@@ -207,6 +309,30 @@ export function RevealPill({
   const longestArm = Math.max(...arms.map((a) => a.len))
   const stroke = team ? strokeColorFor(team, idleColor) : "transparent"
   const filled = stage === 2 && team !== null
+
+  /* One shared timeline, measured in px of line laid down rather than in each
+     arm's own 0→1 fraction. Every arm reads its pathLength off this single
+     value, so they are matched in *speed* by construction and the easing curve
+     applies once to the whole outline. Giving each arm its own tween instead —
+     even with length-proportional durations — re-fits the curve per arm, so any
+     non-linear ease would put them at different speeds at the same instant. */
+  const drawn = useMotionValue(0)
+
+  useEffect(() => {
+    if (reduceMotion) {
+      drawn.set(stage >= 1 ? longestArm : 0)
+      return
+    }
+    if (stage < 1) {
+      drawn.set(0)
+      return
+    }
+    const controls = animate(drawn, longestArm, {
+      duration: drawMs / 1000,
+      ease: drawEaseCurve(drawEase),
+    })
+    return () => controls.stop()
+  }, [stage, longestArm, drawMs, drawEase, drawn, reduceMotion])
 
   return (
     <motion.div
@@ -224,17 +350,19 @@ export function RevealPill({
       animate={{
         // Pop and glow ride the fill, so the celebration beat lands on stage 3
         // instead of competing with the quiet stroke draw.
-        scale: filled && !reduceMotion ? [1, 1.04, 1] : 1,
+        scale: filled && !reduceMotion && popScale !== 1 ? [1, popScale, 1] : 1,
         backgroundColor: filled && team ? team.color : idleColor,
         boxShadow:
-          filled && team
-            ? `0 0 20px ${team.color}40, 0 0 40px ${team.color}20`
+          filled && team && glow > 0
+            ? /* Alpha scales with the glow dial. Clamped and rounded to a 2-digit
+                 hex pair, since a bare template would emit e.g. "#E318374d.8". */
+              `0 0 ${20 * glow}px ${team.color}${alphaHex(0.3 * glow)}, 0 0 ${40 * glow}px ${team.color}${alphaHex(0.13 * glow)}`
             : "0 0 0 rgba(0,0,0,0)",
       }}
       transition={{
         scale: { duration: 0.3 },
-        backgroundColor: { duration: FILL_MS / 1000 },
-        boxShadow: { duration: FILL_MS / 1000 },
+        backgroundColor: { duration: fillMs / 1000 },
+        boxShadow: { duration: fillMs / 1000 },
       }}
     >
       {/* Outline overlay. `overflow: visible` matters — the stroke's outer edge
@@ -248,27 +376,7 @@ export function RevealPill({
         aria-hidden="true"
       >
         {arms.map((arm, i) => (
-          <motion.path
-            key={i}
-            d={arm.d}
-            fill="none"
-            stroke={stroke}
-            strokeWidth={strokeWidth}
-            strokeLinecap="round"
-            initial={false}
-            animate={{ pathLength: stage >= 1 ? 1 : 0 }}
-            transition={{
-              /* Proportional to arm length, so every arm draws at the same
-                 px/sec and STROKE_DRAW_MS is set by the longest one. The short
-                 verticals therefore seal early and the horizontals close last —
-                 the near-complete verticals in the storyboard's opening frame. */
-              duration: reduceMotion ? 0 : (STROKE_DRAW_MS / 1000) * (arm.len / longestArm),
-              /* Linear, not eased: each arm runs its own duration, so any easing
-                 curve would be re-fitted per arm and desynchronise the speeds
-                 this proportional timing exists to match. */
-              ease: "linear",
-            }}
-          />
+          <Arm key={i} d={arm.d} len={arm.len} drawn={drawn} stroke={stroke} strokeWidth={strokeWidth} />
         ))}
       </svg>
     </motion.div>
