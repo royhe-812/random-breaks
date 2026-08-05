@@ -4,8 +4,9 @@
  * Staged reveal for the roller's centre selection pill.
  *
  * Three beats, matching the storyboard:
- *   1. the team's secondary colour draws itself around the pill's edge as a
- *      stroke, two halves travelling from top-centre and meeting at the bottom
+ *   1. the team's secondary colour draws itself around the pill's edge as two
+ *      brackets, opening from the top-left and bottom-right corners at the same
+ *      time and sealing at the top-right and bottom-left
  *   2. a brief hold on the completed outline
  *   3. the team's primary colour fills the pill, carrying the pop + glow
  *
@@ -14,11 +15,12 @@
  * width) and this is far more logic to keep in sync by hand.
  */
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { motion, useReducedMotion } from "framer-motion"
 import type { Team } from "@/components/team-spinner"
 
-/** Stage 1 — time for the two halves to travel from top-centre to bottom. */
+/** Stage 1 — time for the two brackets to open and seal, measured on the longest
+ *  arm. Shorter arms finish proportionally sooner to keep one constant speed. */
 export const STROKE_DRAW_MS = 420
 /** Stage 2 — hold on the finished outline before the fill starts. Short; this is
  *  a beat to let the closed shape register, not a pause. */
@@ -78,15 +80,33 @@ export function strokeColorFor(team: Team, pillBg: string) {
 }
 
 /**
- * The pill outline, split at top-centre into two halves that both end at
- * bottom-centre — so animating each from `pathLength` 0 to 1 sends them down
- * opposite sides to meet at the bottom.
+ * The pill outline as four arms, forming two L-shaped brackets anchored at the
+ * top-left and bottom-right corners.
  *
- * Both are inset by half the stroke width: SVG centres a stroke on its path, so
- * without the inset the outer half would sit outside the pill and read as a
+ * Each bracket grows in both directions from its own corner, so animating all
+ * four from `pathLength` 0 to 1 opens two brackets at once and seals them at the
+ * *other* two corners — top-right and bottom-left. The arrangement has 180°
+ * rotational symmetry: the bottom-right bracket is the top-left one turned half
+ * a turn, which is what makes the two ends meet exactly.
+ *
+ * Every arm starts and ends at the 45° midpoint of a corner arc rather than at
+ * the straight edge, so each corner's curve is shared half-and-half by the two
+ * arms that touch it. Anchoring at the edges instead would leave the top-right
+ * and bottom-left curves undrawn — a visible notch at each seal.
+ *
+ * All of it is inset by half the stroke width: SVG centres a stroke on its path,
+ * so without the inset the outer half would sit outside the pill and read as a
  * fractionally oversized, softer edge.
+ *
+ * The arms are wildly unequal — on a 255×30 pill the horizontals are ~9x the
+ * verticals — so each one's pixel length is returned alongside its path. The
+ * caller scales each arm's duration by that length to hold a single constant
+ * speed around the whole outline. Sharing one duration instead would animate
+ * them in lockstep as *fractions*, creeping the verticals along at a ninth of
+ * the horizontals' speed, which reads as four separate stretching lines rather
+ * than one line being traced.
  */
-function halfPaths(w: number, h: number, r: number, sw: number) {
+function bracketPaths(w: number, h: number, r: number, sw: number) {
   const i = sw / 2
   const x0 = i
   const y0 = i
@@ -94,17 +114,28 @@ function halfPaths(w: number, h: number, r: number, sw: number) {
   const y1 = h - i
   // Corner radius shrinks with the inset so the stroke stays concentric.
   const rr = Math.max(0, r - i)
-  const midX = w / 2
-  return {
-    // Clockwise: top-centre → right edge → bottom-centre. Sweep flag 1.
-    right:
-      `M ${midX} ${y0} L ${x1 - rr} ${y0} A ${rr} ${rr} 0 0 1 ${x1} ${y0 + rr} ` +
-      `L ${x1} ${y1 - rr} A ${rr} ${rr} 0 0 1 ${x1 - rr} ${y1} L ${midX} ${y1}`,
-    // Counter-clockwise: top-centre → left edge → bottom-centre. Sweep flag 0.
-    left:
-      `M ${midX} ${y0} L ${x0 + rr} ${y0} A ${rr} ${rr} 0 0 0 ${x0} ${y0 + rr} ` +
-      `L ${x0} ${y1 - rr} A ${rr} ${rr} 0 0 0 ${x0 + rr} ${y1} L ${midX} ${y1}`,
-  }
+  /* Offset from a corner's straight-edge tangent to the 45° point on its arc. */
+  const k = rr * (1 - Math.SQRT1_2)
+  // The four corner midpoints every arm runs between.
+  const tl = `${x0 + k} ${y0 + k}`
+  const tr = `${x1 - k} ${y0 + k}`
+  const br = `${x1 - k} ${y1 - k}`
+  const bl = `${x0 + k} ${y1 - k}`
+  /* Each arm spans two corner half-arcs plus one straight edge. */
+  const cornerHalf = (Math.PI * rr) / 4
+  const acrossLen = 2 * cornerHalf + (x1 - x0 - 2 * rr)
+  const downLen = 2 * cornerHalf + (y1 - y0 - 2 * rr)
+  /* Sweep flag 1 traces the outline clockwise, 0 counter-clockwise. */
+  return [
+    // Top-left bracket, clockwise: TL corner → top edge → TR corner.
+    { d: `M ${tl} A ${rr} ${rr} 0 0 1 ${x0 + rr} ${y0} L ${x1 - rr} ${y0} A ${rr} ${rr} 0 0 1 ${tr}`, len: acrossLen },
+    // Top-left bracket, counter-clockwise: TL corner → left edge → BL corner.
+    { d: `M ${tl} A ${rr} ${rr} 0 0 0 ${x0} ${y0 + rr} L ${x0} ${y1 - rr} A ${rr} ${rr} 0 0 0 ${bl}`, len: downLen },
+    // Bottom-right bracket, clockwise: BR corner → bottom edge → BL corner.
+    { d: `M ${br} A ${rr} ${rr} 0 0 1 ${x1 - rr} ${y1} L ${x0 + rr} ${y1} A ${rr} ${rr} 0 0 1 ${bl}`, len: acrossLen },
+    // Bottom-right bracket, counter-clockwise: BR corner → right edge → TR corner.
+    { d: `M ${br} A ${rr} ${rr} 0 0 0 ${x1} ${y1 - rr} L ${x1} ${y0 + rr} A ${rr} ${rr} 0 0 0 ${tr}`, len: downLen },
+  ]
 }
 
 /**
@@ -169,7 +200,11 @@ export function RevealPill({
   strokeWidth = 1.5,
 }: RevealPillProps) {
   const reduceMotion = useReducedMotion()
-  const { left, right } = halfPaths(width, height, radius, strokeWidth)
+  const arms = useMemo(
+    () => bracketPaths(width, height, radius, strokeWidth),
+    [width, height, radius, strokeWidth],
+  )
+  const longestArm = Math.max(...arms.map((a) => a.len))
   const stroke = team ? strokeColorFor(team, idleColor) : "transparent"
   const filled = stage === 2 && team !== null
 
@@ -212,10 +247,10 @@ export function RevealPill({
         style={{ overflow: "visible" }}
         aria-hidden="true"
       >
-        {[left, right].map((d, i) => (
+        {arms.map((arm, i) => (
           <motion.path
             key={i}
-            d={d}
+            d={arm.d}
             fill="none"
             stroke={stroke}
             strokeWidth={strokeWidth}
@@ -223,8 +258,15 @@ export function RevealPill({
             initial={false}
             animate={{ pathLength: stage >= 1 ? 1 : 0 }}
             transition={{
-              duration: reduceMotion ? 0 : STROKE_DRAW_MS / 1000,
-              ease: "easeInOut",
+              /* Proportional to arm length, so every arm draws at the same
+                 px/sec and STROKE_DRAW_MS is set by the longest one. The short
+                 verticals therefore seal early and the horizontals close last —
+                 the near-complete verticals in the storyboard's opening frame. */
+              duration: reduceMotion ? 0 : (STROKE_DRAW_MS / 1000) * (arm.len / longestArm),
+              /* Linear, not eased: each arm runs its own duration, so any easing
+                 curve would be re-fitted per arm and desynchronise the speeds
+                 this proportional timing exists to match. */
+              ease: "linear",
             }}
           />
         ))}
