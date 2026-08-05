@@ -442,7 +442,7 @@ export function SpinRollerMultiSpinner({
           now sits flush on the card; this survives purely to group the drum with
           the divider and chips, since the drum itself must stay fixed-height +
           overflow-hidden to clip its 3D rows and would crop nested content. */}
-      <div className="w-full flex flex-col gap-3">
+      <div className="w-full flex flex-col gap-1">
         {/* ── Roller drum ── */}
         <div
           className="relative w-full overflow-hidden rounded-md"
@@ -522,9 +522,6 @@ export function SpinRollerMultiSpinner({
             style={{ height: ITEM_H, background: scrim("to top") }}
           />
         </div>
-
-        {/* Divider separating the drum from the picked-team chips */}
-        <div className="border-t border-white/10" />
 
         {/* Picked teams, as chips — one per landed spot, kept until reset. The
             row is always mounted with a reserved height so the panel is its
