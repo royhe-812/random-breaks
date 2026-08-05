@@ -47,7 +47,8 @@ interface SpinRollerMultiSpinnerProps {
   rampUp?: number
   /** Shape of each spin's deceleration. */
   stopEase?: number
-  /** Centre-to-centre spacing between adjacent team names, in px. */
+  /** Centre-to-centre spacing between adjacent team names, in px.
+   *  Defaults to DEFAULT_ROW_PITCH (26). */
   rowPitch?: number
 }
 
@@ -58,6 +59,12 @@ interface SpinRollerMultiSpinnerProps {
    y = R * sin(angle), so for one step to travel exactly ITEM_H at centre,
    R must satisfy R * STEP_RAD = ITEM_H. */
 const ITEM_H = 34
+/** Row spacing the drum ships at, in px centre-to-centre. Deliberately tighter
+ *  than ITEM_H: the neighbour rows sit closer to the centre pill than a full row
+ *  box apart. Kept separate from ITEM_H — which still sizes the drum, the row
+ *  boxes, the pill and the scrims — so tightening the spacing never resizes any
+ *  of those. Must stay in sync with the single roller so both modes match. */
+const DEFAULT_ROW_PITCH = 26
 /** Widest NFL team name across all 32 teams — "Washington Commanders" — as
  *  measured at the row type (600 14px Geist). */
 const WIDEST_NAME_W = 172
@@ -200,7 +207,7 @@ export function SpinRollerMultiSpinner({
   startSpeed = 0.09,
   rampUp = 0.35,
   stopEase = 3,
-  rowPitch = ITEM_H,
+  rowPitch = DEFAULT_ROW_PITCH,
 }: SpinRollerMultiSpinnerProps) {
   /* Convert the px pitch into the angular step the rows sit on. RADIUS stays
      fixed so the centre row's perspective magnification never shifts as the
