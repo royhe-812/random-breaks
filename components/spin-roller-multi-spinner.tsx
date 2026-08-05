@@ -70,8 +70,16 @@ const DEFAULT_ROW_PITCH = 26
 const WIDEST_NAME_W = 172
 /** Horizontal padding either side of the name inside the centre pill. */
 const PILL_PAD_X = 16
-/** Fixed width of the centre selection pill: widest name + padding both sides. */
-const PILL_W = WIDEST_NAME_W + PILL_PAD_X * 2
+/** Widen the pill past its snug fit around the longest name. At 1 the pill is
+ *  exactly wide enough for "Washington Commanders" plus padding; 1.25 gives it
+ *  25% more breathing room so shorter names sit in a roomier slot. Applied as a
+ *  scale rather than baked into PILL_PAD_X so the measured name width stays the
+ *  honest minimum. Must stay in sync with the single roller. */
+const PILL_W_SCALE = 1.25
+/** Fixed width of the centre selection pill: the snug widest-name + padding
+ *  measurement, scaled up by PILL_W_SCALE. Rounded to whole px to avoid a
+ *  half-pixel edge once it is centred with a negative margin. */
+const PILL_W = Math.round((WIDEST_NAME_W + PILL_PAD_X * 2) * PILL_W_SCALE)
 /** Fill of the centre pill. Nothing sits behind the drum any more, so the pill is
  *  what marks the selected slot: one step LIGHTER than the #212121 card. */
 const PILL_IDLE = "#363636"
