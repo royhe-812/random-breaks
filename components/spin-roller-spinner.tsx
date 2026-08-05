@@ -74,6 +74,18 @@ const PILL_W = WIDEST_NAME_W + PILL_PAD_X * 2
  *  nothing once the panel is gone.) The landed state overrides this with the
  *  team's own colour. */
 const PILL_IDLE = "#363636"
+/** The card the drum sits on. The edge scrims must be tinted with exactly this
+ *  colour to read as a fade-out; any lighter and they show up as a grey wash. */
+const CARD_RGB = "33,33,33"
+/**
+ * Top/bottom edge scrim. Stops approximate a quadratic ease-out rather than a
+ * straight two-stop ramp: a linear fade puts half its opacity in the middle of
+ * the band, which is what makes the edge read as a hard grey bar. Falling off
+ * quickly and then tapering keeps the very edge covered while blending into the
+ * card. Fully opaque at the edge is safe now that the tint matches the card.
+ */
+const scrim = (dir: "to bottom" | "to top") =>
+  `linear-gradient(${dir}, rgba(${CARD_RGB},1) 0%, rgba(${CARD_RGB},0.72) 22%, rgba(${CARD_RGB},0.4) 45%, rgba(${CARD_RGB},0.16) 68%, rgba(${CARD_RGB},0) 100%)`
 /** Angular separation between rows at the default pitch. Only used to derive
  *  RADIUS — the live value is computed per-render from the `rowPitch` prop. */
 const DEFAULT_STEP_DEG = 20
@@ -443,21 +455,16 @@ export function SpinRollerSpinner({
 
           {/* Subtle top/bottom scrims. These MUST fade to transparent — an
               opaque fill here is exactly as tall as the neighbour rows and
-              would hide them completely. Tinted with the drum colour so it
-              reads as the edge softening rather than a separate layer. */}
+              would hide them completely. Tinted with the card colour (see
+              `scrim`) so they read as the rows dissolving into the card rather
+              than as a grey band laid over it. */}
           <div
             className="pointer-events-none absolute inset-x-0 top-0"
-            style={{
-              height: ITEM_H,
-              background: "linear-gradient(to bottom, rgba(54,54,54,0.6), transparent)",
-            }}
+            style={{ height: ITEM_H, background: scrim("to bottom") }}
           />
           <div
             className="pointer-events-none absolute inset-x-0 bottom-0"
-            style={{
-              height: ITEM_H,
-              background: "linear-gradient(to top, rgba(54,54,54,0.6), transparent)",
-            }}
+            style={{ height: ITEM_H, background: scrim("to top") }}
           />
         </div>
 
