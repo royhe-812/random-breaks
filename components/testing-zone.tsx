@@ -351,13 +351,19 @@ export function TestingZone() {
      Feel of the landed pill's three-beat reveal: the outline traces itself, holds,
      then the team colour fills. Times are in ms here rather than seconds — these
      are short beats, and ms is the unit the storyboard was cut in. */
-  const { drawMs, drawEase, holdMs, fillMs, strokeWidth, popScale, glow } = useDialKit("Pill reveal", {
-    // Time for the two brackets to travel the whole outline and seal.
+  const { drawMs, drawEase, lapTurns, headLen, holdMs, fillMs, strokeWidth, popScale, glow } = useDialKit("Pill reveal", {
+    // Time for the heads to finish their lap, whatever lapTurns is set to.
     drawMs: [420, 80, 1600, 10] as [number, number, number, number],
     /* Pacing of the traced line, in the same spirit as `stopEase` above.
        0 is constant speed; positive leaps off the corners and glides into the
        seal; negative creeps out then whips shut. */
     drawEase: [0, -1, 1, 0.05] as [number, number, number, number],
+    /* Turns each head makes before the fill. 1 is a full lap back to its own
+       corner. 0.5 stops the moment the outline seals — the shortest trip that
+       still closes it, and the closest setting to the old bracket draw. */
+    lapTurns: [1, 0.25, 3, 0.25] as [number, number, number, number],
+    // Length of the bright leading head in px of outline; 0 leaves just a trail.
+    headLen: [34, 0, 140, 2] as [number, number, number, number],
     // Beat on the closed outline before the fill. 0 runs them back to back.
     holdMs: [140, 0, 800, 10] as [number, number, number, number],
     // The team colour washing in, carrying the pop and glow.
@@ -374,8 +380,8 @@ export function TestingZone() {
      on the dial values: a fresh object every render would re-run the reveal's
      timing effect continuously and restart the draw mid-animation. */
   const reveal = useMemo(
-    () => ({ drawMs, drawEase, holdMs, fillMs, strokeWidth, popScale, glow }),
-    [drawMs, drawEase, holdMs, fillMs, strokeWidth, popScale, glow],
+    () => ({ drawMs, drawEase, lapTurns, headLen, holdMs, fillMs, strokeWidth, popScale, glow }),
+    [drawMs, drawEase, lapTurns, headLen, holdMs, fillMs, strokeWidth, popScale, glow],
   )
 
   const spinDurationMs = Math.round(spinTime * 1000)

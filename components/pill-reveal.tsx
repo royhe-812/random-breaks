@@ -36,6 +36,17 @@ export const REVEAL_TOTAL_MS = STROKE_DRAW_MS + STROKE_HOLD_MS + FILL_MS
 export const STROKE_DRAW_EASE = 0
 /** Outline thickness in px. */
 export const STROKE_WIDTH = 1.5
+/** One full turn of the outline before the fill. */
+export const LAP_TURNS = 1
+/** Length of the bright leading head, in px of outline. */
+export const HEAD_LEN = 34
+
+/**
+ * Where each head starts, as a fraction of the perimeter clockwise from the
+ * top-left corner. Half a lap apart, which on a rounded rect lands the second
+ * head exactly on the bottom-right corner — the storyboard's two anchors.
+ */
+const LAP_OFFSETS = [0, 0.5]
 
 /**
  * One signed number describing how the traced line paces itself, in the same
@@ -68,6 +79,8 @@ export interface RevealTuning {
   holdMs?: number
   fillMs?: number
   drawEase?: number
+  lapTurns?: number
+  headLen?: number
   strokeWidth?: number
   popScale?: number
   glow?: number
@@ -120,33 +133,29 @@ export function strokeColorFor(team: Team, pillBg: string) {
 }
 
 /**
- * The pill outline as four arms, forming two L-shaped brackets anchored at the
- * top-left and bottom-right corners.
+ * The pill outline as one continuous closed loop, starting at the 45° midpoint of
+ * the top-left corner and running clockwise.
  *
- * Each bracket grows in both directions from its own corner, so animating all
- * four from `pathLength` 0 to 1 opens two brackets at once and seals them at the
- * *other* two corners — top-right and bottom-left. The arrangement has 180°
- * rotational symmetry: the bottom-right bracket is the top-left one turned half
- * a turn, which is what makes the two ends meet exactly.
+ * A single path rather than four arms because the reveal is now a *lap*: two
+ * heads chase all the way around this one loop, and both the painted trail and
+ * the travelling head are cut out of it with `stroke-dasharray`. Four separate
+ * arms cannot express a segment that crosses a corner mid-travel.
  *
- * Every arm starts and ends at the 45° midpoint of a corner arc rather than at
- * the straight edge, so each corner's curve is shared half-and-half by the two
- * arms that touch it. Anchoring at the edges instead would leave the top-right
- * and bottom-left curves undrawn — a visible notch at each seal.
+ * Starting at a corner's 45° point rather than on a straight edge is what makes
+ * the two heads exactly antipodal. A rounded rect has 180° rotational symmetry,
+ * so the point exactly half a perimeter clockwise from the top-left 45° point is
+ * the bottom-right 45° point — the two corners in the storyboard. Anchoring on an
+ * edge instead would put the second head slightly off its corner.
  *
- * All of it is inset by half the stroke width: SVG centres a stroke on its path,
- * so without the inset the outer half would sit outside the pill and read as a
- * fractionally oversized, softer edge.
+ * Inset by half the stroke width: SVG centres a stroke on its path, so without
+ * the inset the outer half would sit outside the pill and read as a fractionally
+ * oversized, softer edge.
  *
- * The arms are wildly unequal — on a 255×30 pill the horizontals are ~9x the
- * verticals — so each one's pixel length is returned alongside its path. The
- * caller scales each arm's duration by that length to hold a single constant
- * speed around the whole outline. Sharing one duration instead would animate
- * them in lockstep as *fractions*, creeping the verticals along at a ninth of
- * the horizontals' speed, which reads as four separate stretching lines rather
- * than one line being traced.
+ * `len` is the perimeter in px, computed analytically rather than measured, so
+ * the caller can size the head in px and convert to the normalised 0–1 space the
+ * dash maths runs in without touching the DOM.
  */
-function bracketPaths(w: number, h: number, r: number, sw: number) {
+function perimeterPath(w: number, h: number, r: number, sw: number) {
   const i = sw / 2
   const x0 = i
   const y0 = i
@@ -156,26 +165,44 @@ function bracketPaths(w: number, h: number, r: number, sw: number) {
   const rr = Math.max(0, r - i)
   /* Offset from a corner's straight-edge tangent to the 45° point on its arc. */
   const k = rr * (1 - Math.SQRT1_2)
-  // The four corner midpoints every arm runs between.
-  const tl = `${x0 + k} ${y0 + k}`
-  const tr = `${x1 - k} ${y0 + k}`
-  const br = `${x1 - k} ${y1 - k}`
-  const bl = `${x0 + k} ${y1 - k}`
-  /* Each arm spans two corner half-arcs plus one straight edge. */
-  const cornerHalf = (Math.PI * rr) / 4
-  const acrossLen = 2 * cornerHalf + (x1 - x0 - 2 * rr)
-  const downLen = 2 * cornerHalf + (y1 - y0 - 2 * rr)
-  /* Sweep flag 1 traces the outline clockwise, 0 counter-clockwise. */
-  return [
-    // Top-left bracket, clockwise: TL corner → top edge → TR corner.
-    { d: `M ${tl} A ${rr} ${rr} 0 0 1 ${x0 + rr} ${y0} L ${x1 - rr} ${y0} A ${rr} ${rr} 0 0 1 ${tr}`, len: acrossLen },
-    // Top-left bracket, counter-clockwise: TL corner → left edge → BL corner.
-    { d: `M ${tl} A ${rr} ${rr} 0 0 0 ${x0} ${y0 + rr} L ${x0} ${y1 - rr} A ${rr} ${rr} 0 0 0 ${bl}`, len: downLen },
-    // Bottom-right bracket, clockwise: BR corner → bottom edge → BL corner.
-    { d: `M ${br} A ${rr} ${rr} 0 0 1 ${x1 - rr} ${y1} L ${x0 + rr} ${y1} A ${rr} ${rr} 0 0 1 ${bl}`, len: acrossLen },
-    // Bottom-right bracket, counter-clockwise: BR corner → right edge → TR corner.
-    { d: `M ${br} A ${rr} ${rr} 0 0 0 ${x1} ${y1 - rr} L ${x1} ${y0 + rr} A ${rr} ${rr} 0 0 0 ${tr}`, len: downLen },
-  ]
+  const straightW = x1 - x0 - 2 * rr
+  const straightH = y1 - y0 - 2 * rr
+  /* Sweep flag 1 traces the outline clockwise. The first and last arcs are the
+     two halves of the top-left corner, split at the 45° point we start from. */
+  const d = [
+    `M ${x0 + k} ${y0 + k}`,
+    `A ${rr} ${rr} 0 0 1 ${x0 + rr} ${y0}`,
+    `L ${x1 - rr} ${y0}`,
+    `A ${rr} ${rr} 0 0 1 ${x1} ${y0 + rr}`,
+    `L ${x1} ${y1 - rr}`,
+    `A ${rr} ${rr} 0 0 1 ${x1 - rr} ${y1}`,
+    `L ${x0 + rr} ${y1}`,
+    `A ${rr} ${rr} 0 0 1 ${x0} ${y1 - rr}`,
+    `L ${x0} ${y0 + rr}`,
+    `A ${rr} ${rr} 0 0 1 ${x0 + k} ${y0 + k}`,
+  ].join(" ")
+  // Four quarter-arcs make exactly one circle of radius rr.
+  return { d, len: 2 * straightW + 2 * straightH + 2 * Math.PI * rr }
+}
+
+/**
+ * One dash cut out of the closed perimeter, expressed in laps.
+ *
+ * `start` is where the dash begins (0 = top-left corner, 0.5 = bottom-right) and
+ * `len` how far it runs, both as a fraction of the perimeter. The pair sums to
+ * exactly 1 so the pattern tiles once around the loop, which is what lets a dash
+ * cross the seam at the start point without a second copy appearing.
+ *
+ * `stroke-dashoffset` is negated because it means "distance into the pattern that
+ * path position 0 maps to" — the inverse of where the dash lands.
+ */
+function dashFor(start: number, len: number) {
+  const wrapped = ((start % 1) + 1) % 1
+  return {
+    // A zero gap would tile a hairline seam, so go fully solid at a whole lap.
+    strokeDasharray: len >= 1 ? "none" : `${len} ${1 - len}`,
+    strokeDashoffset: -wrapped,
+  }
 }
 
 /**
@@ -226,36 +253,103 @@ function alphaHex(a: number) {
     .padStart(2, "0")
 }
 
+/** Mix a hex colour toward white, for the brighter leading head. */
+function lighten(hex: string, amt: number) {
+  const h = hex.replace("#", "")
+  if (h.length !== 6) return hex
+  const mix = (c: number) =>
+    Math.round(c + (255 - c) * amt)
+      .toString(16)
+      .padStart(2, "0")
+  return `#${mix(parseInt(h.slice(0, 2), 16))}${mix(parseInt(h.slice(2, 4), 16))}${mix(parseInt(h.slice(4, 6), 16))}`
+}
+
 /**
- * One arm of a bracket, drawn from the shared `drawn` timeline.
+ * The trail one head paints behind it: a dash anchored at `offset` that grows
+ * from nothing to the whole loop as the head travels.
  *
- * Split into its own component purely so it can call `useTransform` — mapping
- * the shared px count onto this arm's own 0–1 `pathLength`. Arms shorter than
- * the longest one therefore hit 1 and stop early, which is what holds the speed
- * constant and produces the sealed verticals in the storyboard's first frame.
+ * Capped at one lap, so a head making more than a single turn stops repainting
+ * what it already covered instead of the dash overflowing the pattern.
  */
-function Arm({
+function LapTrail({
   d,
-  len,
-  drawn,
+  offset,
+  travelled,
   stroke,
   strokeWidth,
 }: {
   d: string
-  len: number
-  drawn: MotionValue<number>
+  offset: number
+  travelled: MotionValue<number>
   stroke: string
   strokeWidth: number
 }) {
-  const pathLength = useTransform(drawn, (px) => Math.min(1, px / len))
+  const strokeDasharray = useTransform(travelled, (s) => dashFor(offset, Math.min(1, s)).strokeDasharray)
   return (
     <motion.path
       d={d}
+      pathLength={1}
       fill="none"
       stroke={stroke}
       strokeWidth={strokeWidth}
       strokeLinecap="round"
-      style={{ pathLength }}
+      /* Anchored, so only the dash *length* animates — the trail grows forward
+         from its corner rather than sliding around the loop. */
+      strokeDashoffset={dashFor(offset, 0).strokeDashoffset}
+      style={{ strokeDasharray }}
+    />
+  )
+}
+
+/**
+ * The bright leading head, a short fixed-length dash riding at the front of its
+ * trail. Drawn thicker and lighter than the trail so it still reads while
+ * crossing outline the *other* head has already painted.
+ *
+ * Fades out over the last stretch of the lap rather than vanishing on arrival,
+ * which would pop a hard edge off the corner right before the fill.
+ */
+function LapHead({
+  d,
+  offset,
+  travelled,
+  lapTurns,
+  headFrac,
+  stroke,
+  strokeWidth,
+}: {
+  d: string
+  offset: number
+  travelled: MotionValue<number>
+  lapTurns: number
+  headFrac: number
+  stroke: string
+  strokeWidth: number
+}) {
+  const strokeDashoffset = useTransform(
+    travelled,
+    (s) => dashFor(offset + s - headFrac, headFrac).strokeDashoffset,
+  )
+  /* Fades in off the corner and out on arrival. Both ramps are driven by
+     `travelled` rather than by mount, so a head that mounts mid-lap still
+     resolves correctly — a plain `s <= 0` guard would latch at 0 for a head
+     first rendered after the animation had already begun. */
+  const opacity = useTransform(travelled, (s) => {
+    const fade = Math.min(0.12, lapTurns / 2)
+    const inRamp = Math.min(1, s / Math.min(0.04, lapTurns / 4))
+    const outRamp = Math.min(1, Math.max(0, (lapTurns - s) / fade))
+    return Math.max(0, Math.min(inRamp, outRamp))
+  })
+  return (
+    <motion.path
+      d={d}
+      pathLength={1}
+      fill="none"
+      stroke={lighten(stroke, 0.45)}
+      strokeWidth={strokeWidth * 2.1}
+      strokeLinecap="round"
+      strokeDasharray={dashFor(0, headFrac).strokeDasharray}
+      style={{ strokeDashoffset, opacity }}
     />
   )
 }
@@ -271,12 +365,16 @@ interface RevealPillProps {
   idleColor: string
   radius?: number
   strokeWidth?: number
-  /** Time for the brackets to travel the whole outline and seal. */
+  /** Time for the two heads to complete their lap, whatever `lapTurns` is. */
   drawMs?: number
   /** Time for the primary colour to wash in. */
   fillMs?: number
   /** Pacing of the traced line: 0 linear, >0 ease-out, <0 ease-in. */
   drawEase?: number
+  /** Turns each head makes before the fill. 1 is one full lap. */
+  lapTurns?: number
+  /** Length of the bright leading head in px. 0 draws the trail only. */
+  headLen?: number
   /** Peak of the pop that rides the fill. 1 disables it. */
   popScale?: number
   /** Multiplier on the glow that rides the fill. 0 disables it. */
@@ -298,41 +396,46 @@ export function RevealPill({
   drawMs = STROKE_DRAW_MS,
   fillMs = FILL_MS,
   drawEase = STROKE_DRAW_EASE,
+  lapTurns = LAP_TURNS,
+  headLen = HEAD_LEN,
   popScale = 1.04,
   glow = 1,
 }: RevealPillProps) {
   const reduceMotion = useReducedMotion()
-  const arms = useMemo(
-    () => bracketPaths(width, height, radius, strokeWidth),
+  const loop = useMemo(
+    () => perimeterPath(width, height, radius, strokeWidth),
     [width, height, radius, strokeWidth],
   )
-  const longestArm = Math.max(...arms.map((a) => a.len))
   const stroke = team ? strokeColorFor(team, idleColor) : "transparent"
   const filled = stage === 2 && team !== null
+  /* Head length is authored in px but the dash maths runs in laps. Capped well
+     short of a full turn so the head never eats its own tail. */
+  const headFrac = Math.min(0.4, headLen / loop.len)
 
-  /* One shared timeline, measured in px of line laid down rather than in each
-     arm's own 0→1 fraction. Every arm reads its pathLength off this single
-     value, so they are matched in *speed* by construction and the easing curve
-     applies once to the whole outline. Giving each arm its own tween instead —
-     even with length-proportional durations — re-fits the curve per arm, so any
-     non-linear ease would put them at different speeds at the same instant. */
-  const drawn = useMotionValue(0)
+  /* One shared timeline for both heads, measured in laps travelled. Every trail
+     and head reads its dash off this single value, so the two are matched in
+     speed by construction and the easing curve applies once to the whole lap.
+     Giving each its own tween would re-fit the curve per path, putting them at
+     different speeds at the same instant. */
+  const travelled = useMotionValue(0)
 
   useEffect(() => {
     if (reduceMotion) {
-      drawn.set(stage >= 1 ? longestArm : 0)
+      travelled.set(stage >= 1 ? lapTurns : 0)
       return
     }
     if (stage < 1) {
-      drawn.set(0)
+      travelled.set(0)
       return
     }
-    const controls = animate(drawn, longestArm, {
+    const controls = animate(travelled, lapTurns, {
+      /* The whole lap fits inside drawMs regardless of lapTurns, so raising the
+         turns speeds the head up rather than stretching the reveal. */
       duration: drawMs / 1000,
       ease: drawEaseCurve(drawEase),
     })
     return () => controls.stop()
-  }, [stage, longestArm, drawMs, drawEase, drawn, reduceMotion])
+  }, [stage, lapTurns, drawMs, drawEase, travelled, reduceMotion])
 
   return (
     <motion.div
@@ -375,9 +478,36 @@ export function RevealPill({
         style={{ overflow: "visible" }}
         aria-hidden="true"
       >
-        {arms.map((arm, i) => (
-          <Arm key={i} d={arm.d} len={arm.len} drawn={drawn} stroke={stroke} strokeWidth={strokeWidth} />
+        {/* Two heads half a lap apart — the storyboard's top-left and
+            bottom-right corners. Trails first so the heads ride over them. */}
+        {LAP_OFFSETS.map((offset) => (
+          <LapTrail
+            key={`trail-${offset}`}
+            d={loop.d}
+            offset={offset}
+            travelled={travelled}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+          />
         ))}
+        {/* Mounted for the whole reveal, not gated on the landed team: a path
+            that first renders mid-lap has no further `travelled` change to react
+            to, so its transforms would latch at their mount-time value. Opacity
+            keeps it invisible until the lap starts. */}
+        {!reduceMotion &&
+          headFrac > 0 &&
+          LAP_OFFSETS.map((offset) => (
+            <LapHead
+              key={`head-${offset}`}
+              d={loop.d}
+              offset={offset}
+              travelled={travelled}
+              lapTurns={lapTurns}
+              headFrac={headFrac}
+              stroke={stroke}
+              strokeWidth={strokeWidth}
+            />
+          ))}
       </svg>
     </motion.div>
   )
