@@ -68,6 +68,9 @@ const PILL_W = WIDEST_NAME_W + PILL_PAD_X * 2
 /** Fill of the centre pill. Nothing sits behind the drum any more, so the pill is
  *  what marks the selected slot: one step LIGHTER than the #212121 card. */
 const PILL_IDLE = "#363636"
+/** Hairline rule colour. Shares #363636 with PILL_IDLE by design — both are the
+ *  one step up from the card that separates a surface without adding a new hue. */
+const DIVIDER = "#363636"
 /** The card the drum sits on. The edge scrims must be tinted with exactly this
  *  colour to read as a fade-out; any lighter and they show up as a grey wash. */
 const CARD_RGB = "33,33,33"
@@ -419,6 +422,13 @@ export function SpinRollerMultiSpinner({
           </motion.p>
         </AnimatePresence>
       </div>
+
+      {/* Hairline between the winner line and the drum. Figma measures it at
+          320px, but that is just the card's inner width at that frame size —
+          `align-self: stretch` means "fill the parent", so it stays w-full here
+          instead of being pinned to 320px and mismatching the card. Height 0 +
+          a 1px top border keeps it a true hairline. */}
+      <hr className="w-full m-0 border-0" style={{ height: 0, borderTop: `1px solid ${DIVIDER}` }} />
 
       {/* ── Roller group: drum + picked-team chips ──
           Unstyled wrapper. It used to carry the lighter panel fill, but the drum
