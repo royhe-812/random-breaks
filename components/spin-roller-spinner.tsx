@@ -1,8 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { motion } from "framer-motion"
 import { teams, type Team } from "@/components/team-spinner"
+import { RevealPill, useRevealStage } from "@/components/pill-reveal"
 
 interface SpinRollerSpinnerProps {
   /** True while spinning, false to reset. */
@@ -329,13 +329,18 @@ export function SpinRollerSpinner({
     }
   }, [isSpinning, playTick, forceTeamIndex, spinDuration, startSpeed, rampUp, stopEase])
 
-  const isLanded = landedIndex !== null
   const centre = Math.round(pos)
 
   // Landed team drives the pill treatment, reusing the same `color` the
   // celebration moments use so the two stay visually consistent.
   const landedTeam = landedIndex !== null ? teams[landedIndex] : null
-  const pillColor = landedTeam ? landedTeam.color : PILL_IDLE
+  /* Drives the staged reveal: stroke draws in the team's secondary, then the
+     primary fills. Held here rather than inside the pill because the landed
+     row's label has to change colour in step with the fill. */
+  const revealStage = useRevealStage(landedTeam)
+  /* Only meaningful once the pill is actually filled — before that the pill is
+     still dark, so a dark label picked for a bright primary (Steelers gold)
+     would be unreadable. */
   const landedTextColor = landedTeam ? readableOn(landedTeam.color) : "#ffffff"
 
   /* Build the visible window of rows. Indices wrap with a modulo so the drum
@@ -402,32 +407,16 @@ export function SpinRollerSpinner({
             perspective: 420,
           }}
         >
-          {/* Centre selection pill, sitting behind the rows */}
-          <motion.div
-            className="absolute rounded-[4px]"
-            style={{
-              height: ITEM_H - 4,
-              top: "50%",
-              marginTop: -(ITEM_H - 4) / 2,
-              // Fixed width, horizontally centred to match the centred rows.
-              width: PILL_W,
-              left: "50%",
-              marginLeft: -PILL_W / 2,
-              backgroundColor: PILL_IDLE,
-            }}
-            animate={{
-              scale: justLanded ? [1, 1.04, 1] : 1,
-              backgroundColor: pillColor,
-              // Same glow signature as the celebration moments.
-              boxShadow: landedTeam
-                ? `0 0 20px ${landedTeam.color}40, 0 0 40px ${landedTeam.color}20`
-                : "0 0 0 rgba(0,0,0,0)",
-            }}
-            transition={{
-              scale: { duration: 0.3 },
-              backgroundColor: { duration: 0.25 },
-              boxShadow: { duration: 0.25 },
-            }}
+          {/* Centre selection pill, sitting behind the rows. Self-centring, and
+              owns its own staged reveal — see components/pill-reveal.tsx. The
+              pop and glow it used to fire the instant the drum stopped now ride
+              the fill at the end of that sequence. */}
+          <RevealPill
+            team={landedTeam}
+            stage={revealStage}
+            width={PILL_W}
+            height={ITEM_H - 4}
+            idleColor={PILL_IDLE}
           />
 
           {/* Rows, positioned on the surface of the drum */}
@@ -463,8 +452,11 @@ export function SpinRollerSpinner({
                     className="truncate font-semibold leading-none"
                     style={{
                       fontSize: 14,
+                      /* Flips with the fill, not with landing: during the
+                         stroke stages the pill is still dark, so the label
+                         stays white until the primary is actually behind it. */
                       color: isCentre
-                        ? isLanded
+                        ? revealStage === 2
                           ? landedTextColor
                           : "#ffffff"
                         : "#8f8f8f",

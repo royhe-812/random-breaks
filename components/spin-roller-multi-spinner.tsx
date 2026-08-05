@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { teams, type Team } from "@/components/team-spinner"
+import { RevealPill, useRevealStage, readableOn } from "@/components/pill-reveal"
 
 /* ── Roller, multi ──
    Same 3D drum as SpinRollerSpinner, but it runs one spin per spot instead of
@@ -229,6 +230,11 @@ export function SpinRollerMultiSpinner({
   /** Spots landed so far, oldest first, so chips populate left → right. */
   const [results, setResults] = useState<{ spot: Spot; team: Team }[]>([])
   const [allDone, setAllDone] = useState(false)
+  /** Team index under the pill once the drum has stopped, or null while it is
+   *  moving. Each spin clears it back to null before starting, which is what
+   *  re-arms the reveal — otherwise the same team landing twice in a row would
+   *  not re-trigger it. */
+  const [landedIndex, setLandedIndex] = useState<number | null>(null)
 
   const audioRef = useRef<AudioContext | null>(null)
   /** Drum position the previous spin came to rest on, so the next spin
@@ -272,6 +278,7 @@ export function SpinRollerMultiSpinner({
     setSpinNo(0)
     setResults([])
     setAllDone(false)
+    setLandedIndex(null)
     restPosRef.current = 0
     takenRef.current = []
   }, [isSpinning])
@@ -318,6 +325,10 @@ export function SpinRollerMultiSpinner({
     const ease = buildSpinEase(startSpeed, rampUp, stopEase)
 
     setPos(start)
+    /* Drop the previous spot's pill back to idle before this spin starts, so
+       every pick gets the full stroke-then-fill reveal from a clean slate. The
+       finished pick is already recorded as a chip below, so nothing is lost. */
+    setLandedIndex(null)
 
     let lastTick = Math.floor(start)
     const t0 = performance.now()
@@ -344,6 +355,10 @@ export function SpinRollerMultiSpinner({
       const restPos = start + distance
       setPos(restPos)
       restPosRef.current = restPos
+      /* Start the reveal the moment the drum stops, rather than waiting for the
+         pick to be recorded at SETTLE_MS — the reveal is what makes the landing
+         readable, so it should overlap the settle rather than follow it. */
+      setLandedIndex(target)
 
       /* Still wait out SETTLE_MS before recording the pick: it holds the landed
          row under the pill long enough to read. This is spin pacing, not a
@@ -384,6 +399,12 @@ export function SpinRollerMultiSpinner({
   }, [allDone, results])
 
   const centre = Math.round(pos)
+
+  /* Landed team drives the pill's staged reveal. Held here, not inside the pill,
+     because the landed row's label has to change colour in step with the fill. */
+  const landedTeam = landedIndex !== null ? teams[landedIndex] : null
+  const revealStage = useRevealStage(landedTeam)
+  const landedTextColor = landedTeam ? readableOn(landedTeam.color) : "#ffffff"
 
   /* One buyer wins all spots, so the trophy line always shows the same name. */
   const activeWinner = winnerName
@@ -461,21 +482,16 @@ export function SpinRollerMultiSpinner({
             perspective: 420,
           }}
         >
-          {/* Centre selection pill, sitting behind the rows. Static by design:
-              multi-spin does not celebrate individual landings — the picked
-              teams are reported by the chip row below instead. */}
-          <div
-            className="absolute rounded-[4px]"
-            style={{
-              height: ITEM_H - 4,
-              top: "50%",
-              marginTop: -(ITEM_H - 4) / 2,
-              // Fixed width, horizontally centred to match the centred rows.
-              width: PILL_W,
-              left: "50%",
-              marginLeft: -PILL_W / 2,
-              backgroundColor: PILL_IDLE,
-            }}
+          {/* Centre selection pill, sitting behind the rows. Each spot now gets
+              the same staged reveal as single-spin — stroke in the team's
+              secondary, then the primary fills — resetting to idle before the
+              next spin. The chip row below still carries the running tally. */}
+          <RevealPill
+            team={landedTeam}
+            stage={revealStage}
+            width={PILL_W}
+            height={ITEM_H - 4}
+            idleColor={PILL_IDLE}
           />
 
           {/* Rows, positioned on the surface of the drum */}
@@ -506,7 +522,14 @@ export function SpinRollerMultiSpinner({
                     className="truncate font-semibold leading-none"
                     style={{
                       fontSize: 14,
-                      color: isCentre ? "#ffffff" : "#8f8f8f",
+                      /* Flips with the fill, not with landing: during the stroke
+                         stages the pill is still dark, so the label stays white
+                         until the team's primary is actually behind it. */
+                      color: isCentre
+                        ? revealStage === 2
+                          ? landedTextColor
+                          : "#ffffff"
+                        : "#8f8f8f",
                     }}
                   >
                     {team.city} {team.name}
