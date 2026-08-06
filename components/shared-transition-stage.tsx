@@ -322,6 +322,10 @@ export function SharedTransitionStage({
           className="absolute inset-0"
           style={{
             background: `radial-gradient(120% 90% at 50% 50%, rgba(0,0,0,${scrimOpacity}) 0%, rgba(0,0,0,${Math.min(1, scrimOpacity + 0.12)}) 100%)`,
+            /* Subtle frosting on the drum/chrome behind the scrim. Eases in with
+               the layer's opacity, so the blur ramps up alongside the darkening. */
+            backdropFilter: "blur(3px)",
+            WebkitBackdropFilter: "blur(3px)",
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: flying ? 1 : 0 }}
