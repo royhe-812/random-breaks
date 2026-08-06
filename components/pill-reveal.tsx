@@ -285,6 +285,10 @@ function LapTrail({
   strokeWidth: number
 }) {
   const strokeDasharray = useTransform(travelled, (s) => dashFor(offset, Math.min(1, s)).strokeDasharray)
+  /* Round caps paint a zero-length dash as a dot, so at rest (travelled 0) the
+     two anchors would show as stray dots on the corners. Hide the trail until it
+     actually starts growing; the round leading edge still shows during the draw. */
+  const opacity = useTransform(travelled, (s) => (s > 0 ? 1 : 0))
   return (
     <motion.path
       d={d}
@@ -296,7 +300,7 @@ function LapTrail({
       /* Anchored, so only the dash *length* animates — the trail grows forward
          from its corner rather than sliding around the loop. */
       strokeDashoffset={dashFor(offset, 0).strokeDashoffset}
-      style={{ strokeDasharray }}
+      style={{ strokeDasharray, opacity }}
     />
   )
 }
