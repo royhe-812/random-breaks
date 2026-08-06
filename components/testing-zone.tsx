@@ -408,8 +408,9 @@ export function TestingZone() {
       flightMs: [740, 200, 2000, 20] as [number, number, number, number],
       // Peak lift of the flight arc in px; 0 is a straight line to centre.
       arc: [40, 0, 160, 4] as [number, number, number, number],
-      // Abbreviation size at the centre, in px.
-      centerFont: [30, 16, 60, 1] as [number, number, number, number],
+      // Abbreviation size at the centre, in px. Matches the card's own abbrev
+      // (card height × 0.16) so the flying short form lands identically sized.
+      centerFont: [42, 16, 60, 1] as [number, number, number, number],
       // Peak darkness of the scrim that dims the frame behind the flight; 0 disables it.
       scrimOpacity: [0.72, 0, 1, 0.02] as [number, number, number, number],
       // Peak of the trading card's subtle 3D turn-in, in degrees. 0 disables it.

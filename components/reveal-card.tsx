@@ -145,7 +145,6 @@ interface RevealCardProps {
   drawEase?: number
   lapTurns?: number
   headLen?: number
-  popScale?: number
   glow?: number
   /** Peak of the subtle 3D turn-in, in degrees of rotateY. 0 disables it. */
   tiltDeg?: number
@@ -165,7 +164,6 @@ export function RevealCard({
   drawEase = 0,
   lapTurns = 1,
   headLen = 34,
-  popScale = 1.04,
   glow = 1,
   tiltDeg = 16,
 }: RevealCardProps) {
@@ -202,10 +200,10 @@ export function RevealCard({
         style={{ borderRadius: radius, backgroundColor: idleColor, transformStyle: "preserve-3d" }}
         initial={{ rotateY: reduceMotion ? 0 : -tiltDeg, opacity: 0 }}
         animate={{
-          // The turn-in settles to flat; the pop rides the fill (stage 2).
+          // The turn-in settles to flat. No post-turn scale pulse — the fill and
+          // glow carry the payoff on their own.
           rotateY: 0,
           opacity: 1,
-          scale: filled && !reduceMotion && popScale !== 1 ? [1, popScale, 1] : 1,
           boxShadow:
             filled && team && glow > 0
               ? `0 0 ${26 * glow}px ${team.color}${alphaHex(0.34 * glow)}, 0 0 ${52 * glow}px ${team.color}${alphaHex(0.16 * glow)}`
@@ -215,7 +213,6 @@ export function RevealCard({
           // The turn finishes exactly as the fill begins (draw + hold).
           rotateY: { duration: reduceMotion ? 0 : (drawMs + holdMs) / 1000, ease: [0.22, 0.61, 0.36, 1] },
           opacity: { duration: 0.3 },
-          scale: { duration: 0.3 },
           boxShadow: { duration: fillMs / 1000 },
         }}
       >

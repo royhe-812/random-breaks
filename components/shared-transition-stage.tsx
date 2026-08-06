@@ -114,7 +114,7 @@ export function SharedTransitionStage({
   arc = 40,
   nameFadeMs = 250,
   overlapMs = 160,
-  centerFont = 30,
+  centerFont = 42,
   scrimOpacity = 0.72,
   cardTiltDeg = 16,
 }: SharedTransitionStageProps) {
@@ -394,7 +394,6 @@ export function SharedTransitionStage({
           lapTurns={reveal.lapTurns}
           headLen={reveal.headLen}
           strokeWidth={reveal.strokeWidth}
-          popScale={reveal.popScale}
           glow={reveal.glow}
           tiltDeg={cardTiltDeg}
         />
@@ -436,8 +435,11 @@ export function SharedTransitionStage({
             className="absolute"
             style={{ left: "50%", top: "50%", transform: "translate(-50%,-50%)" }}
           >
+            {/* Weight + tracking match the card's abbreviation exactly, so the
+                flying short form and the card's own "DET" read as one glyph
+                through the crossfade rather than two different renderings. */}
             <motion.div
-              className="font-semibold"
+              className="font-bold"
               style={{
                 x: fx,
                 y: fy,
@@ -445,7 +447,7 @@ export function SharedTransitionStage({
                 opacity: abbrevIn,
                 color,
                 fontSize: centerFont,
-                letterSpacing: "0.02em",
+                letterSpacing: "0.04em",
                 whiteSpace: "pre",
                 lineHeight: 1,
                 textShadow: "0 2px 12px rgba(0,0,0,0.6)",
