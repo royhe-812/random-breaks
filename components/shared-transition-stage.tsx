@@ -29,7 +29,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "framer-motion"
+import { AnimatePresence, animate, motion, useMotionValue } from "framer-motion"
 import { teams, type Team } from "@/components/team-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
 import { RevealPill, useRevealStage, type RevealTuning } from "@/components/pill-reveal"
@@ -70,9 +70,11 @@ interface SharedTransitionStageProps {
   flightMs?: number
   /** Peak lift of the flight arc, in px. 0 is a straight line. */
   arc?: number
-  /** When the letter collapse starts/ends within the flight, as fractions. */
-  morphStart?: number
-  morphEnd?: number
+  /** How long the full name takes to fade out in place at the roller, in ms. */
+  nameFadeMs?: number
+  /** How much the short form's lift-off overlaps the tail of that fade, in ms.
+      Larger = the short form appears sooner, before the full name is fully gone. */
+  overlapMs?: number
   /** Abbreviation font size at the centre, in px. */
   centerFont?: number
   /** Peak darkness of the scrim behind the flight, 0–1. 0 disables it. */
@@ -106,8 +108,8 @@ export function SharedTransitionStage({
   landHoldMs = 440,
   flightMs = 740,
   arc = 40,
-  morphStart = 0.18,
-  morphEnd = 0.82,
+  nameFadeMs = 260,
+  overlapMs = 120,
   centerFont = 30,
   scrimOpacity = 0.72,
 }: SharedTransitionStageProps) {
@@ -124,17 +126,22 @@ export function SharedTransitionStage({
 
   const display = landed ? `${landed.city} ${landed.name}` : ""
 
-  // Flight motion values, owned here so they persist across phase changes.
+  /* Two separate layers now, no longer a single crossfading element:
+       • the full name sits STILL at the roller's centre row (ox/oy/oscale, never
+         animated) and fades out in place via `fullOut`;
+       • the short form lifts off from that same spot and travels+grows to centre
+         (fx/fy/fscale) while fading in via `abbrevIn`.
+     The short form's lift-off slightly overlaps the tail of the full name's
+     fade, so the two beats feel connected rather than strictly sequential. */
+  const ox = useMotionValue(0)
+  const oy = useMotionValue(0)
+  const oscale = useMotionValue(1)
+  const fullOut = useMotionValue(1)
+
   const fx = useMotionValue(0)
   const fy = useMotionValue(0)
   const fscale = useMotionValue(1)
-  /* Crossfade progress, 0 = full name, 1 = abbreviation. The two labels are
-     stacked and cross-faded simultaneously over the whole range — full fades out
-     exactly as abbrev fades in, mirror images — so their opacities always sum to
-     ~1 and there's no dip where the text goes faint mid-swap. */
-  const morph = useMotionValue(0)
-  const fullOpacity = useTransform(morph, [0, 1], [1, 0])
-  const abbrevOpacity = useTransform(morph, [0, 1], [0, 1])
+  const abbrevIn = useMotionValue(0)
   const color = useMotionValue("#ffffff")
 
   const reduce = useMemo(
@@ -153,7 +160,11 @@ export function SharedTransitionStage({
       const rowName = rowNameRef.current
       if (!frame || !rowName || reduce) {
         setHideCentre(true)
-        morph.set(1)
+        fullOut.set(0)
+        abbrevIn.set(1)
+        fx.set(0)
+        fy.set(0)
+        fscale.set(1)
         setPhase("reveal")
         return
       }
@@ -168,33 +179,64 @@ export function SharedTransitionStage({
       const dy = sy - ty
       /* Match the drum row's *rendered* size, not its 14px nominal size: the
          centre row sits on translateZ(RADIUS) under perspective, so it renders
-         larger than 14px. Deriving s0 from the measured height makes the flying
-         copy start exactly the size of the text it lifts off. */
+         larger than 14px. Deriving s0 from the measured height makes both the
+         full-name copy and the short form start exactly the size of the text
+         they replace on the roller. */
       const s0 = sRect.height / centerFont
 
+      // Full name: pinned to the roller row, fades out in place (no travel).
+      ox.set(dx)
+      oy.set(dy)
+      oscale.set(s0)
+      fullOut.set(1)
+      // Short form: starts on that same row, invisible, then lifts off.
       fx.set(dx)
       fy.set(dy)
       fscale.set(s0)
-      morph.set(0)
+      abbrevIn.set(0)
       color.set("#ffffff")
       setHideCentre(true)
       setPhase("flying")
 
+      // Beat 1 — the full name dissolves where it sits on the roller.
+      animate(fullOut, 0, { duration: nameFadeMs / 1000, ease: "easeIn" })
+
+      // Beat 2 — the short form lifts off slightly before the fade completes,
+      // then grows and travels to the centre.
+      const liftDelay = Math.max(0, nameFadeMs - overlapMs) / 1000
       const dur = flightMs / 1000
-      animate(fx, 0, { duration: dur, ease: [0.22, 0.61, 0.36, 1] })
+      animate(fx, 0, { duration: dur, delay: liftDelay, ease: [0.22, 0.61, 0.36, 1] })
       // Arc: lift toward the centre, then settle. A straight tween when arc is 0.
       animate(fy, arc > 0 ? [dy, Math.min(dy, 0) - arc, 0] : 0, {
         duration: dur,
+        delay: liftDelay,
         ease: [0.22, 0.61, 0.36, 1],
       })
-      animate(fscale, 1, { duration: dur, ease: [0.33, 0, 0.2, 1] })
-      animate(morph, 1, {
-        duration: (flightMs * (morphEnd - morphStart)) / 1000,
-        delay: (flightMs * morphStart) / 1000,
-        ease: "easeInOut",
+      animate(fscale, 1, { duration: dur, delay: liftDelay, ease: [0.33, 0, 0.2, 1] })
+      animate(abbrevIn, 1, {
+        duration: Math.min(dur, 0.26),
+        delay: liftDelay,
+        ease: "easeOut",
       })
     },
-    [frameRef, centerFont, flightMs, arc, morphStart, morphEnd, reduce, fx, fy, fscale, morph, color],
+    [
+      frameRef,
+      centerFont,
+      flightMs,
+      arc,
+      nameFadeMs,
+      overlapMs,
+      reduce,
+      ox,
+      oy,
+      oscale,
+      fullOut,
+      fx,
+      fy,
+      fscale,
+      abbrevIn,
+      color,
+    ],
   )
 
   /* The drum owns the spin and calls this once it rests on the winner (after its
@@ -205,10 +247,15 @@ export function SharedTransitionStage({
       setPhase("landed")
       onLanded?.(team)
 
+      // The short form only starts travelling once its lift-off delay elapses,
+      // so the reveal lands a lift-delay later than the raw flight duration.
+      const liftDelay = Math.max(0, nameFadeMs - overlapMs)
+      const arriveAt = landHoldMs + liftDelay + flightMs
+
       const timers: ReturnType<typeof setTimeout>[] = []
       timers.push(setTimeout(() => beginFlight(team), landHoldMs))
-      timers.push(setTimeout(() => setPhase("reveal"), landHoldMs + flightMs))
-      const fillAt = landHoldMs + flightMs + (reveal.drawMs ?? 420) + (reveal.holdMs ?? 140)
+      timers.push(setTimeout(() => setPhase("reveal"), arriveAt))
+      const fillAt = arriveAt + (reveal.drawMs ?? 420) + (reveal.holdMs ?? 140)
       timers.push(
         setTimeout(() => {
           animate(color, readableOn(team.color), { duration: (reveal.fillMs ?? 320) / 1000 })
@@ -218,7 +265,7 @@ export function SharedTransitionStage({
       stageTimers.current = timers
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [landHoldMs, flightMs, reveal.drawMs, reveal.holdMs, reveal.fillMs, beginFlight, onLanded, color],
+    [landHoldMs, flightMs, nameFadeMs, overlapMs, reveal.drawMs, reveal.holdMs, reveal.fillMs, beginFlight, onLanded, color],
   )
 
   useEffect(() => () => stageTimers.current.forEach(clearTimeout), [])
@@ -297,36 +344,61 @@ export function SharedTransitionStage({
         />
       )}
 
-      {/* The flying name: one element for the whole trip, so it owns each glyph.
-          Wrapper is CSS-centred on the frame; the inner motion layer carries the
-          FLIP translate + grow. */}
+      {/* Two independent layers. Each sits in its own wrapper that is CSS-centred
+          on the frame (shrink-wraps its text, then translate(-50%) recentres);
+          the inner motion layer carries only x/y/scale/opacity, offsetting from
+          that centre — the same FLIP pattern the single flying element used. */}
       {flying && landed && (
-        <div
-          className="absolute"
-          style={{ left: "50%", top: "50%", transform: "translate(-50%,-50%)" }}
-        >
-          {/* Full name and abbreviation share one grid cell so they overlap,
-              centred on the same point; only their opacity animates. The grid
-              sizes to the wider label (the full name) and stays put, so the swap
-              has no layout shift. */}
-          <motion.div
-            className="grid place-items-center font-semibold"
-            style={{
-              x: fx,
-              y: fy,
-              scale: fscale,
-              color,
-              fontSize: centerFont,
-              letterSpacing: "0.02em",
-              whiteSpace: "pre",
-              lineHeight: 1,
-              textShadow: "0 2px 12px rgba(0,0,0,0.6)",
-            }}
+        <>
+          {/* Full name — pinned to the roller row (ox/oy/oscale never animate),
+              fading out in place. */}
+          <div
+            className="absolute"
+            style={{ left: "50%", top: "50%", transform: "translate(-50%,-50%)" }}
           >
-            <motion.span style={{ gridArea: "1 / 1", opacity: fullOpacity }}>{display}</motion.span>
-            <motion.span style={{ gridArea: "1 / 1", opacity: abbrevOpacity }}>{landed.abbrev}</motion.span>
-          </motion.div>
-        </div>
+            <motion.div
+              className="font-semibold"
+              style={{
+                x: ox,
+                y: oy,
+                scale: oscale,
+                opacity: fullOut,
+                color: "#ffffff",
+                fontSize: centerFont,
+                letterSpacing: "0.02em",
+                whiteSpace: "pre",
+                lineHeight: 1,
+                textShadow: "0 2px 12px rgba(0,0,0,0.6)",
+              }}
+            >
+              {display}
+            </motion.div>
+          </div>
+
+          {/* Short form — lifts off the same row, grows and travels to centre. */}
+          <div
+            className="absolute"
+            style={{ left: "50%", top: "50%", transform: "translate(-50%,-50%)" }}
+          >
+            <motion.div
+              className="font-semibold"
+              style={{
+                x: fx,
+                y: fy,
+                scale: fscale,
+                opacity: abbrevIn,
+                color,
+                fontSize: centerFont,
+                letterSpacing: "0.02em",
+                whiteSpace: "pre",
+                lineHeight: 1,
+                textShadow: "0 2px 12px rgba(0,0,0,0.6)",
+              }}
+            >
+              {landed.abbrev}
+            </motion.div>
+          </div>
+        </>
       )}
 
       {/* Claimed-by tag, rising in under the pill as the fill lands. */}
