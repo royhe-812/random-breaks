@@ -35,7 +35,8 @@ import { teams, type Team } from "@/components/team-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
 import { useRevealStage, type RevealTuning } from "@/components/pill-reveal"
 import { RevealCard, cardAbbrevCenterOffset, cardAbbrevFontSize } from "@/components/reveal-card"
-import { SpotsProgress } from "@/components/spots-progress"
+import { BreakSpotsBar } from "@/components/break-spots-bar"
+import { SwipeToBid } from "@/components/swipe-to-bid"
 
 /** Black or white foreground per WCAG relative luminance. */
 function readableOn(hex: string) {
@@ -360,24 +361,35 @@ export function SharedTransitionStage({
 
   /* ─── Bid box card ────────────────────────────────────────────────────────
      Once the reveal is dismissed, the roller card gives way to the auction /
-     "bid box" card for this break — the same chrome the live stream shows —
-     now carrying the just-assigned team in its title and a claimed spot. This
-     mirrors the "bid box reactivation" beat in the full flow. */
+     "bid box" card for this break — the same chrome the live stream shows,
+     reusing `BreakSpotsBar` and `SwipeToBid` rather than restating them here.
+
+     This is the "bid box reactivation" beat from the full flow: the spot just
+     assigned is claimed (so the counter is down one) and the box is live again
+     for the next round, which is why the title drops back to a plain "Random
+     Break #N" and the CTA is an armed swipe-to-bid rather than a won state. */
   const bidBox = (
-    <div className="bg-[#212121] rounded-2xl p-4">
+    <div>
+      {/* Incentive tile — tucks its bottom 16px under the card via its own
+          -mb-4, so the two read as one nested unit. */}
+      <BreakSpotsBar
+        availableSpots={Math.max(0, availableSpots - 1)}
+        totalSpots={totalSpots}
+        onViewSpots={onViewSpots}
+      />
+
+      {/* `relative` stacks the card above the tile's tucked bottom strip. */}
+      <div className="relative bg-black/40 backdrop-blur rounded-2xl p-4">
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0 pr-2">
-          <p className="text-sm text-white mb-1 truncate">
+          <p className="text-sm text-white mb-0.5 truncate">
             <span className="font-semibold">
-              {`Random Break #${breakNumber}${landed ? ` - ${landed.city} ${landed.name}` : ""}`}
+              {`Random Break #${breakNumber}`}
               {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
             </span>
           </p>
-          <div className="mb-1">
-            <SpotsProgress available={Math.max(0, availableSpots - 1)} total={totalSpots} size={16} />
-          </div>
           <div className="flex flex-col">
-            <span className="text-white font-bold text-lg">$30.00</span>
+            <span className="text-white font-bold text-lg">$28.00</span>
             <div className="flex items-center gap-1">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -399,36 +411,34 @@ export function SharedTransitionStage({
         </button>
       </div>
 
+      {/* Live again for the next spot, so another bidder now leads and the
+          countdown is running. */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-1.5">
           <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-          <span className="text-green-400 font-medium text-sm">{winnerName}</span>
-          <span className="text-white/60 text-sm">won</span>
+          <span className="text-green-400 font-medium text-sm">Jessica991</span>
+          <span className="text-white/60 text-sm">is winning</span>
         </div>
-        <div className="flex items-center gap-1.5 text-white/50">
-          <div className="w-4 h-4 rounded-full border-2 border-white/40 flex items-center justify-center">
-            <div className="w-1 h-1 rounded-full bg-white/40" />
+        <div className="flex items-center gap-1.5 text-red-500">
+          <div className="w-4 h-4 rounded-full border-2 border-red-500 flex items-center justify-center">
+            <div className="w-1 h-1 rounded-full bg-red-500" />
           </div>
-          <span className="font-medium text-sm">00:00</span>
+          <span className="font-medium text-sm">00:10</span>
         </div>
       </div>
 
       <div className="flex gap-3">
         <button
           type="button"
-          disabled
-          className="px-5 py-2.5 rounded-full font-medium text-sm text-black cursor-not-allowed"
-          style={{ backgroundColor: "#8F8F8F" }}
+          className="px-5 py-2.5 rounded-full font-medium text-sm border border-white/30 text-white transition-colors hover:bg-white/10"
         >
           Max bid
         </button>
-        {/* The winner claimed this spot, so the CTA rests in its "Winning"
-            state rather than an active swipe-to-bid control. */}
-        <div className="relative flex-1 h-14 rounded-full p-1.5" style={{ border: "1px solid rgba(255,255,255,0.3)" }}>
-          <div className="h-full w-full rounded-full bg-green-400 flex items-center justify-center">
-            <span className="text-black font-semibold text-sm">Winning</span>
-          </div>
+        {/* The shared swipe-to-bid control, armed for the next round. */}
+        <div className="flex-1">
+          <SwipeToBid amount={30} onBidConfirmed={() => {}} />
         </div>
+      </div>
       </div>
     </div>
   )
