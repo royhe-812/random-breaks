@@ -145,6 +145,8 @@ interface SharedTransitionStageProps {
   morphEnd?: number
   /** Abbreviation font size at the centre, in px. */
   centerFont?: number
+  /** Peak darkness of the scrim behind the flight, 0–1. 0 disables it. */
+  scrimOpacity?: number
 }
 
 type Phase = "spinning" | "landed" | "flying" | "reveal"
@@ -177,6 +179,7 @@ export function SharedTransitionStage({
   morphStart = 0.18,
   morphEnd = 0.82,
   centerFont = 30,
+  scrimOpacity = 0.72,
 }: SharedTransitionStageProps) {
   const [phase, setPhase] = useState<Phase>("spinning")
   const [landed, setLanded] = useState<Team | null>(null)
@@ -341,6 +344,24 @@ export function SharedTransitionStage({
   // ─── Centre overlay (portalled into the phone frame) ─────────────────────
   const overlay = (
     <div className="pointer-events-none absolute inset-0 z-30">
+      {/* Scrim: darkens the whole frame behind the flight so the flying name and
+          the centre reveal read against the drum and chrome. Fades in with the
+          flight and holds through the reveal; a radial gradient keeps the centre
+          darkest without hard edges. Rendered first, so it sits under the pill,
+          the flying text, and the tag. */}
+      {scrimOpacity > 0 && (
+        <motion.div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background: `radial-gradient(120% 90% at 50% 50%, rgba(0,0,0,${scrimOpacity}) 0%, rgba(0,0,0,${Math.min(1, scrimOpacity + 0.12)}) 100%)`,
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: flying ? 1 : 0 }}
+          transition={{ duration: flightMs / 1000, ease: "easeOut" }}
+        />
+      )}
+
       {/* Hidden measurement copy at the centre font size. */}
       {display && (
         <div

@@ -395,7 +395,7 @@ export function TestingZone() {
      within that flight, and the abbreviation's centre size. The spin itself is
      the real roller and reuses the spin dials above; the pill's reveal reuses the
      `reveal` object. Times in ms — short beats cut against the spin. */
-  const { landHoldMs, flightMs, arc, morphWindow, centerFont } = useDialKit("Shared transition", {
+  const { landHoldMs, flightMs, arc, morphWindow, centerFont, scrimOpacity } = useDialKit("Shared transition", {
     // Extra hold on the full "City Name" (after the drum's own settle) before flight.
     landHoldMs: [440, 0, 1500, 20] as [number, number, number, number],
     // Flight duration, drum centre → screen centre.
@@ -408,6 +408,8 @@ export function TestingZone() {
     morphWindow: [0.64, 0, 1, 0.02] as [number, number, number, number],
     // Abbreviation size at the centre, in px.
     centerFont: [30, 16, 60, 1] as [number, number, number, number],
+    // Peak darkness of the scrim that dims the frame behind the flight; 0 disables it.
+    scrimOpacity: [0.72, 0, 1, 0.02] as [number, number, number, number],
   })
   // Centre the morph window inside the flight: a 0.64 window runs 0.18 → 0.82.
   const morphStart = (1 - morphWindow) / 2
@@ -653,6 +655,7 @@ export function TestingZone() {
                   morphStart={morphStart}
                   morphEnd={morphEnd}
                   centerFont={centerFont}
+                  scrimOpacity={scrimOpacity}
                 />
               ) : isRealVariant ? (
                 <div className="flex flex-col">
