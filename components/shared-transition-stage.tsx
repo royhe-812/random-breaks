@@ -282,13 +282,22 @@ export function SharedTransitionStage({
       onLanded?.(team)
 
       // The short form only starts travelling once its lift-off delay elapses,
-      // so the reveal lands a lift-delay later than the raw flight duration.
+      // so it arrives a lift-delay later than the raw flight duration.
       const liftDelay = Math.max(0, nameFadeMs - overlapMs)
-      const arriveAt = landHoldMs + liftDelay + flightMs
+      const flightStart = landHoldMs + liftDelay
+      const arriveAt = flightStart + flightMs
+
+      /* The card begins tilting in *before* the short form reaches it, so the
+         abbrev lands onto a card that is already turning rather than appearing on
+         a flat, finished card. Lead by ~45% of the flight, clamped so the tilt
+         never starts before the flight itself has lifted off. */
+      const cardLead = Math.min(flightMs * 0.45, 300)
+      const revealAt = Math.max(flightStart, arriveAt - cardLead)
 
       const timers: ReturnType<typeof setTimeout>[] = []
       timers.push(setTimeout(() => beginFlight(team), landHoldMs))
-      timers.push(setTimeout(() => setPhase("reveal"), arriveAt))
+      timers.push(setTimeout(() => setPhase("reveal"), revealAt))
+      // Fill still waits for the abbrev to land and the turn to settle.
       const fillAt = arriveAt + (reveal.drawMs ?? 420) + (reveal.holdMs ?? 140)
       timers.push(
         setTimeout(() => {
