@@ -4,28 +4,34 @@
  * Shared-element transition tester: ties the spin and the reveal together.
  *
  * The story, in five beats:
- *   1. a compact spinner row cycles team names and lands on the winner
+ *   1. the roller drum (the real SpinRollerSpinner) spins and lands on the winner
  *   2. it holds on the full "City Name" for a beat so viewers read it
- *   3. that same text lifts out of the row and flies to the centre of the phone,
- *      and *as it travels* the non-abbreviation letters collapse away so
- *      "DETROIT LIONS" compresses into "DET"
+ *   3. that same text lifts out of the drum's centre row and flies to the centre
+ *      of the phone, and *as it travels* the non-abbreviation letters collapse
+ *      away so "DETROIT LIONS" compresses into "DET"
  *   4. the centre pill runs its staged stroke-and-fill reveal around the abbrev
  *   5. a "Claimed by @user" tag rises in — the team is gone from the spots
  *
+ * The spin is the actual roller, not a bespoke cycler: it is driven with
+ * `disableReveal` so it only spins and lands, handing the reveal off to screen
+ * centre. Its centre row is measured (via `centreRowRef`) as the flight origin,
+ * and hidden (via `hideCentreLabel`) the instant the flying copy takes over.
+ *
  * The flight is a manual FLIP: the flying copy is a single element that lives in
  * an overlay for the whole trip, so it can own every letter. A `layoutId`
- * crossfade between two separate elements (row copy → centre copy) can't express
- * a per-letter collapse, because the two elements have different content.
+ * crossfade between two separate elements can't express a per-letter collapse,
+ * because the two elements have different content.
  *
  * The overlay is portalled into the phone-frame element (passed as `frameRef`)
  * rather than rendered in the spinner slot, so "centre" means the centre of the
- * whole screen and the row keeps its natural place in the bottom stack.
+ * whole screen and the drum keeps its natural place in the bottom stack.
  */
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { AnimatePresence, animate, motion, useMotionValue } from "framer-motion"
 import { teams, type Team } from "@/components/team-spinner"
+import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
 import { RevealPill, useRevealStage, type RevealTuning } from "@/components/pill-reveal"
 
 /** Black or white foreground per WCAG relative luminance. */
@@ -110,17 +116,27 @@ function Glyph({
 
 interface SharedTransitionStageProps {
   frameRef: React.RefObject<HTMLDivElement | null>
-  forcedTeam: Team | null
+  /** Forces the drum to land on this index; leave null for random. */
+  forcedIndex: number | null
   spinKey: number
   isSpinning: boolean
   onLanded?: (team: Team) => void
   reveal: RevealTuning
   winnerName?: string
-  /** Initial name-cycle before the row lands. */
-  spinCycleMs?: number
-  /** Beat on the landed full name before the flight begins. */
+  /** Roller spin feel — forwarded straight to SpinRollerSpinner. */
+  spinDuration?: number
+  startSpeed?: number
+  rampUp?: number
+  stopEase?: number
+  rowPitch?: number
+  /** Roller chrome, kept in sync with the other variants' bid box card. */
+  breakNumber?: number
+  availableSpots?: number
+  totalSpots?: number
+  onViewSpots?: () => void
+  /** Extra beat on the landed full name (after the drum's own settle) before flight. */
   landHoldMs?: number
-  /** Flight duration, row → centre. */
+  /** Flight duration, drum centre → screen centre. */
   flightMs?: number
   /** Peak lift of the flight arc, in px. 0 is a straight line. */
   arc?: number
@@ -131,7 +147,7 @@ interface SharedTransitionStageProps {
   centerFont?: number
 }
 
-type Phase = "idle" | "cycling" | "landed" | "flying" | "reveal"
+type Phase = "spinning" | "landed" | "flying" | "reveal"
 
 const PILL_W = 200
 const PILL_H = 64
@@ -140,13 +156,21 @@ const PILL_IDLE = "#1c1c1e"
 
 export function SharedTransitionStage({
   frameRef,
-  forcedTeam,
+  forcedIndex,
   spinKey,
   isSpinning,
   onLanded,
   reveal,
   winnerName = "Adam007",
-  spinCycleMs = 1400,
+  spinDuration = 4000,
+  startSpeed = 0.09,
+  rampUp = 0.35,
+  stopEase = 3,
+  rowPitch = 26,
+  breakNumber = 15,
+  availableSpots = 15,
+  totalSpots = 32,
+  onViewSpots,
   landHoldMs = 440,
   flightMs = 740,
   arc = 40,
@@ -154,27 +178,23 @@ export function SharedTransitionStage({
   morphEnd = 0.82,
   centerFont = 30,
 }: SharedTransitionStageProps) {
-  /* Winner: the forced outcome, or a mount-stable random team for "Random".
-     Only the random fallback is memoised — reading `forcedTeam` live lets the
-     idle row reflect a newly picked outcome without waiting for a respin, while
-     a run stays stable because a spin remounts this whole component (keyed on
-     spinKey) and the timeline captures `target` in its closure. */
-  const randomTeam = useMemo(
-    () => teams[Math.floor(Math.random() * teams.length)],
-    [],
-  )
-  const target = forcedTeam ?? randomTeam
-  const display = `${target.city} ${target.name}`
-  const displayUpper = display.toUpperCase()
-  const kept = useMemo(() => keptIndices(display, target.abbrev), [display, target.abbrev])
-
-  const [phase, setPhase] = useState<Phase>("idle")
-  const [cycleIdx, setCycleIdx] = useState(0)
-  const [hideRowName, setHideRowName] = useState(false)
+  const [phase, setPhase] = useState<Phase>("spinning")
+  const [landed, setLanded] = useState<Team | null>(null)
+  const [hideCentre, setHideCentre] = useState(false)
   const [showTag, setShowTag] = useState(false)
   const [portalReady, setPortalReady] = useState(false)
 
-  const rowNameRef = useRef<HTMLDivElement>(null)
+  // Attached to the drum's resting centre row — the flight origin.
+  const rowNameRef = useRef<HTMLSpanElement>(null)
+  // Sequence timers, cleared on unmount so a mid-flight respin can't fire stale steps.
+  const stageTimers = useRef<ReturnType<typeof setTimeout>[]>([])
+
+  const display = landed ? `${landed.city} ${landed.name}` : ""
+  const displayUpper = display.toUpperCase()
+  const kept = useMemo(
+    () => (landed ? keptIndices(display, landed.abbrev) : null),
+    [display, landed],
+  )
 
   // Flight motion values, owned here so they persist across phase changes.
   const fx = useMotionValue(0)
@@ -195,181 +215,150 @@ export function SharedTransitionStage({
   useEffect(() => setPortalReady(true), [])
 
   /* Measure each glyph's natural width from a hidden copy rendered at centerFont.
-     `portalReady` is a dep because the measurement copy lives in the portalled
-     overlay, which only mounts after the first render sets portalReady — without
-     it this runs once while measureRef is still null and `widths` stays null,
-     so no glyph ever collapses. */
+     `portalReady` and `display` are deps because the measurement copy lives in
+     the portalled overlay and only has content once the drum has landed — without
+     them this runs while measureRef is empty and `widths` stays null, so no glyph
+     ever collapses. */
   useLayoutEffect(() => {
     const root = measureRef.current
-    if (!root) return
+    if (!root || !display) return
     const els = Array.from(root.children) as HTMLElement[]
     setWidths(els.map((el) => el.getBoundingClientRect().width))
   }, [display, centerFont, portalReady])
 
-  const pillTeam = phase === "reveal" ? target : null
+  const pillTeam = phase === "reveal" ? landed : null
   const stage = useRevealStage(pillTeam, { drawMs: reveal.drawMs, holdMs: reveal.holdMs })
 
-  const beginFlight = useCallback(() => {
-    const frame = frameRef.current
-    const rowName = rowNameRef.current
-    if (!frame || !rowName) {
-      setPhase("reveal")
-      return
-    }
-    // Mount the flying copy for the whole trip so it's visible in motion.
-    setPhase("flying")
-    const fRect = frame.getBoundingClientRect()
-    const sRect = rowName.getBoundingClientRect()
-    // Source centre and target (frame) centre, both in frame-local coords.
-    const sx = sRect.left - fRect.left + sRect.width / 2
-    const sy = sRect.top - fRect.top + sRect.height / 2
-    const tx = fRect.width / 2
-    const ty = fRect.height / 2
-    const dx = sx - tx
-    const dy = sy - ty
-    // The row name renders at ~14px; match it at flight start, grow to 1.
-    const s0 = 14 / centerFont
+  const beginFlight = useCallback(
+    (team: Team) => {
+      const frame = frameRef.current
+      const rowName = rowNameRef.current
+      if (!frame || !rowName || reduce) {
+        setHideCentre(true)
+        morph.set(1)
+        setPhase("reveal")
+        return
+      }
+      const fRect = frame.getBoundingClientRect()
+      const sRect = rowName.getBoundingClientRect()
+      // Source centre and target (frame) centre, in frame-local coords.
+      const sx = sRect.left - fRect.left + sRect.width / 2
+      const sy = sRect.top - fRect.top + sRect.height / 2
+      const tx = fRect.width / 2
+      const ty = fRect.height / 2
+      const dx = sx - tx
+      const dy = sy - ty
+      /* Match the drum row's *rendered* size, not its 14px nominal size: the
+         centre row sits on translateZ(RADIUS) under perspective, so it renders
+         larger than 14px. Deriving s0 from the measured height makes the flying
+         copy start exactly the size of the text it lifts off. */
+      const s0 = sRect.height / centerFont
 
-    fx.set(dx)
-    fy.set(dy)
-    fscale.set(s0)
-    morph.set(0)
-    color.set("#ffffff")
-    setHideRowName(true)
+      fx.set(dx)
+      fy.set(dy)
+      fscale.set(s0)
+      morph.set(0)
+      color.set("#ffffff")
+      setHideCentre(true)
+      setPhase("flying")
 
-    if (reduce) {
-      fx.set(0)
-      fy.set(0)
-      fscale.set(1)
-      morph.set(1)
-      setPhase("reveal")
-      return
-    }
+      const dur = flightMs / 1000
+      animate(fx, 0, { duration: dur, ease: [0.22, 0.61, 0.36, 1] })
+      // Arc: lift toward the centre, then settle. A straight tween when arc is 0.
+      animate(fy, arc > 0 ? [dy, Math.min(dy, 0) - arc, 0] : 0, {
+        duration: dur,
+        ease: [0.22, 0.61, 0.36, 1],
+      })
+      animate(fscale, 1, { duration: dur, ease: [0.33, 0, 0.2, 1] })
+      animate(morph, 1, {
+        duration: (flightMs * (morphEnd - morphStart)) / 1000,
+        delay: (flightMs * morphStart) / 1000,
+        ease: "easeInOut",
+      })
+    },
+    [frameRef, centerFont, flightMs, arc, morphStart, morphEnd, reduce, fx, fy, fscale, morph, color],
+  )
 
-    const dur = flightMs / 1000
-    animate(fx, 0, { duration: dur, ease: [0.22, 0.61, 0.36, 1] })
-    // Arc: lift toward the centre, then settle. A straight tween when arc is 0.
-    animate(fy, arc > 0 ? [dy, Math.min(dy, 0) - arc, 0] : 0, {
-      duration: dur,
-      ease: [0.22, 0.61, 0.36, 1],
-    })
-    animate(fscale, 1, { duration: dur, ease: [0.33, 0, 0.2, 1] })
-    animate(morph, 1, {
-      duration: (flightMs * (morphEnd - morphStart)) / 1000,
-      delay: (flightMs * morphStart) / 1000,
-      ease: "easeInOut",
-    })
-  }, [frameRef, centerFont, flightMs, arc, morphStart, morphEnd, reduce, fx, fy, fscale, morph, color])
+  /* The drum owns the spin and calls this once it rests on the winner (after its
+     own settle flash). From here the stage schedules the rest of the sequence. */
+  const handleLanded = useCallback(
+    (team: Team) => {
+      setLanded(team)
+      setPhase("landed")
+      onLanded?.(team)
 
-  // Master timeline. Remounts per spinKey, so this runs once per spin.
-  useEffect(() => {
-    if (!isSpinning) return
-    let cyc: ReturnType<typeof setInterval> | null = null
-    const timers: ReturnType<typeof setTimeout>[] = []
-
-    setPhase("cycling")
-    setHideRowName(false)
-    setShowTag(false)
-    cyc = setInterval(() => setCycleIdx((i) => (i + 1) % teams.length), 70)
-
-    timers.push(
-      setTimeout(() => {
-        if (cyc) clearInterval(cyc)
-        onLanded?.(target)
-        setPhase("landed")
-      }, spinCycleMs),
-    )
-    timers.push(setTimeout(() => beginFlight(), spinCycleMs + landHoldMs))
-    timers.push(
-      setTimeout(() => setPhase("reveal"), spinCycleMs + landHoldMs + flightMs),
-    )
-    // Tag + colour swap land as the fill starts.
-    const fillAt = spinCycleMs + landHoldMs + flightMs + (reveal.drawMs ?? 420) + (reveal.holdMs ?? 140)
-    timers.push(
-      setTimeout(() => {
-        animate(color, readableOn(target.color), { duration: (reveal.fillMs ?? 320) / 1000 })
-        setShowTag(true)
-      }, fillAt),
-    )
-
-    return () => {
-      if (cyc) clearInterval(cyc)
-      timers.forEach(clearTimeout)
-    }
+      const timers: ReturnType<typeof setTimeout>[] = []
+      timers.push(setTimeout(() => beginFlight(team), landHoldMs))
+      timers.push(setTimeout(() => setPhase("reveal"), landHoldMs + flightMs))
+      const fillAt = landHoldMs + flightMs + (reveal.drawMs ?? 420) + (reveal.holdMs ?? 140)
+      timers.push(
+        setTimeout(() => {
+          animate(color, readableOn(team.color), { duration: (reveal.fillMs ?? 320) / 1000 })
+          setShowTag(true)
+        }, fillAt),
+      )
+      stageTimers.current = timers
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    [landHoldMs, flightMs, reveal.drawMs, reveal.holdMs, reveal.fillMs, beginFlight, onLanded, color],
+  )
 
-  const cycleTeam = teams[cycleIdx]
-  const rowTeam = phase === "cycling" ? cycleTeam : target
-  const rowName = phase === "cycling" ? `${cycleTeam.city} ${cycleTeam.name}` : display
+  useEffect(() => () => stageTimers.current.forEach(clearTimeout), [])
+
   const claimed = phase === "reveal"
   const flying = phase === "flying" || phase === "reveal"
 
-  // ─── Bottom spinner row (lives in the normal slot) ───────────────────────
+  // ─── Bottom slot: the real roller, driven to spin-and-land only ───────────
   const row = (
-    <div className="flex flex-col gap-1">
-      <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold px-1">
-        Shared Element Transition
-      </p>
-      <motion.div
-        className="relative bg-[#212121] rounded-2xl overflow-hidden"
-        animate={{ opacity: claimed ? 0.55 : 1 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="px-4 py-3 flex items-center gap-3">
-          <motion.div
-            className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center font-bold text-xs"
-            style={{ backgroundColor: rowTeam.color, color: readableOn(rowTeam.color) }}
-            animate={{ filter: claimed ? "grayscale(1)" : "grayscale(0)" }}
-            transition={{ duration: 0.4 }}
-          >
-            {rowTeam.abbrev}
-          </motion.div>
-          <div className="flex flex-col flex-1 min-w-0">
-            <div className="h-5 flex items-center">
-              {claimed ? (
-                <span className="text-white/50 text-sm font-semibold line-through">{display}</span>
-              ) : (
-                <div
-                  ref={rowNameRef}
-                  className="font-semibold text-sm truncate"
-                  style={{
-                    color: phase === "landed" || phase === "flying" ? target.color : "#ffffff",
-                    opacity: hideRowName ? 0 : 1,
-                  }}
-                >
-                  {rowName}
-                </div>
-              )}
-            </div>
-            <span className="text-white/50 text-xs mt-0.5">
-              {claimed ? "Claimed — removed from spots" : "14/32 spots available"}
-            </span>
-          </div>
-        </div>
-      </motion.div>
-    </div>
+    <motion.div
+      className="relative bg-[#212121] rounded-2xl p-3"
+      animate={{ opacity: claimed ? 0.55 : 1 }}
+      transition={{ duration: 0.4 }}
+    >
+      <SpinRollerSpinner
+        key={`shared-roller-${spinKey}`}
+        isSpinning={isSpinning}
+        onLanded={handleLanded}
+        winnerName={winnerName}
+        breakNumber={breakNumber}
+        availableSpots={availableSpots}
+        totalSpots={totalSpots}
+        onViewSpots={onViewSpots}
+        forceTeamIndex={forcedIndex}
+        spinDuration={spinDuration}
+        startSpeed={startSpeed}
+        rampUp={rampUp}
+        stopEase={stopEase}
+        rowPitch={rowPitch}
+        reveal={reveal}
+        disableReveal
+        centreRowRef={rowNameRef}
+        hideCentreLabel={hideCentre}
+      />
+    </motion.div>
   )
 
   // ─── Centre overlay (portalled into the phone frame) ─────────────────────
   const overlay = (
     <div className="pointer-events-none absolute inset-0 z-30">
       {/* Hidden measurement copy at the centre font size. */}
-      <div
-        ref={measureRef}
-        aria-hidden
-        className="absolute left-0 top-0 font-semibold"
-        style={{ visibility: "hidden", whiteSpace: "pre", fontSize: centerFont, letterSpacing: "0.02em" }}
-      >
-        {[...displayUpper].map((ch, i) => (
-          <span key={i} style={{ display: "inline-block", whiteSpace: "pre" }}>
-            {ch}
-          </span>
-        ))}
-      </div>
+      {display && (
+        <div
+          ref={measureRef}
+          aria-hidden
+          className="absolute left-0 top-0 font-semibold"
+          style={{ visibility: "hidden", whiteSpace: "pre", fontSize: centerFont, letterSpacing: "0.02em" }}
+        >
+          {[...displayUpper].map((ch, i) => (
+            <span key={i} style={{ display: "inline-block", whiteSpace: "pre" }}>
+              {ch}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* The staged pill reveal, centred in the frame. */}
-      {(phase === "reveal") && (
+      {phase === "reveal" && (
         <RevealPill
           team={pillTeam}
           stage={stage}
@@ -391,7 +380,7 @@ export function SharedTransitionStage({
       {/* The flying name: one element for the whole trip, so it owns each glyph.
           Wrapper is CSS-centred on the frame; the inner motion layer carries the
           FLIP translate + grow. */}
-      {flying && (
+      {flying && landed && (
         <div
           className="absolute"
           style={{ left: "50%", top: "50%", transform: "translate(-50%,-50%)" }}
@@ -414,14 +403,14 @@ export function SharedTransitionStage({
               ? [...displayUpper].map((ch, i) => (
                   <Glyph key={i} ch={ch} keep={kept.has(i)} width={widths?.[i]} morph={morph} />
                 ))
-              : target.abbrev}
+              : landed.abbrev}
           </motion.div>
         </div>
       )}
 
       {/* Claimed-by tag, rising in under the pill as the fill lands. */}
       <AnimatePresence>
-        {showTag && (
+        {showTag && landed && (
           <motion.div
             key="tag"
             className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1"
@@ -432,7 +421,7 @@ export function SharedTransitionStage({
             transition={{ duration: 0.35, ease: "easeOut" }}
           >
             <span className="text-white/90 text-sm font-semibold">
-              Claimed by <span style={{ color: target.secondary }}>@{winnerName}</span>
+              Claimed by <span style={{ color: landed.secondary }}>@{winnerName}</span>
             </span>
             <span className="text-white/40 text-[11px] uppercase tracking-widest">
               Removed from available spots

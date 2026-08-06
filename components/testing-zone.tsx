@@ -390,16 +390,15 @@ export function TestingZone() {
   )
 
   /* ── Shared transition ──
-     Pacing of the shared-element flight: how long the row cycles, the beat on the
-     landed name, the flight to centre, its arc, when the letters collapse within
-     that flight, and the abbreviation's centre size. The pill's own reveal reuses
-     the `reveal` object above. Times in ms — short beats cut against the spin. */
-  const { spinCycleMs, landHoldMs, flightMs, arc, morphWindow, centerFont } = useDialKit("Shared transition", {
-    // Initial name-cycle before the row settles on the winner.
-    spinCycleMs: [1400, 400, 4000, 50] as [number, number, number, number],
-    // Hold on the full "City Name" so viewers read it before it flies.
+     Pacing of the shared-element flight on top of the roller spin: the beat on
+     the landed name, the flight to centre, its arc, when the letters collapse
+     within that flight, and the abbreviation's centre size. The spin itself is
+     the real roller and reuses the spin dials above; the pill's reveal reuses the
+     `reveal` object. Times in ms — short beats cut against the spin. */
+  const { landHoldMs, flightMs, arc, morphWindow, centerFont } = useDialKit("Shared transition", {
+    // Extra hold on the full "City Name" (after the drum's own settle) before flight.
     landHoldMs: [440, 0, 1500, 20] as [number, number, number, number],
-    // Flight duration, row → centre.
+    // Flight duration, drum centre → screen centre.
     flightMs: [740, 200, 2000, 20] as [number, number, number, number],
     // Peak lift of the flight arc in px; 0 is a straight line to centre.
     arc: [40, 0, 160, 4] as [number, number, number, number],
@@ -633,13 +632,21 @@ export function TestingZone() {
                 <SharedTransitionStage
                   key={`shared-${spinKey}`}
                   frameRef={frameRef}
-                  forcedTeam={forcedTeam}
+                  forcedIndex={forcedIndex}
                   spinKey={spinKey}
                   isSpinning={isSpinning}
                   onLanded={setResult}
                   reveal={reveal}
                   winnerName="Adam007"
-                  spinCycleMs={spinCycleMs}
+                  spinDuration={spinDurationMs}
+                  startSpeed={startSpeed}
+                  rampUp={rampUp}
+                  stopEase={stopEase}
+                  rowPitch={rowPitch}
+                  breakNumber={15}
+                  availableSpots={15}
+                  totalSpots={32}
+                  onViewSpots={() => setIsBreakSpotsOpen(true)}
                   landHoldMs={landHoldMs}
                   flightMs={flightMs}
                   arc={arc}

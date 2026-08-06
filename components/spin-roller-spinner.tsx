@@ -55,6 +55,24 @@ interface SpinRollerSpinnerProps {
    * values through. See components/pill-reveal.tsx.
    */
   reveal?: RevealTuning
+  /**
+   * Suppress the drum's own centre-pill stroke/fill reveal. The Shared Element
+   * Transition uses this: the roller only spins and lands, and the reveal is
+   * played at screen centre after the name flies there. The drum still lands and
+   * calls `onLanded`; it just leaves the centre pill idle.
+   */
+  disableReveal?: boolean
+  /**
+   * Attached to the centre (winning) row's name span, so a parent can measure it
+   * as the origin of a shared-element flight. Only the resting centre row carries
+   * it, so it is stable once the drum has landed.
+   */
+  centreRowRef?: React.Ref<HTMLSpanElement>
+  /**
+   * Hide the centre row's name (kept in layout via `visibility`) so a flying copy
+   * can take over without the original showing through underneath it.
+   */
+  hideCentreLabel?: boolean
 }
 
 /* ── Cylinder geometry ──
@@ -224,6 +242,9 @@ export function SpinRollerSpinner({
   stopEase = 3,
   rowPitch = DEFAULT_ROW_PITCH,
   reveal,
+  disableReveal = false,
+  centreRowRef,
+  hideCentreLabel = false,
 }: SpinRollerSpinnerProps) {
   /* Convert the px pitch into the angular step the rows are laid out on.
      RADIUS is deliberately left fixed so the centre row's distance from the
@@ -344,7 +365,7 @@ export function SpinRollerSpinner({
   /* Drives the staged reveal: stroke draws in the team's secondary, then the
      primary fills. Held here rather than inside the pill because the landed
      row's label has to change colour in step with the fill. */
-  const revealStage = useRevealStage(landedTeam, reveal)
+  const revealStage = useRevealStage(disableReveal ? null : landedTeam, reveal)
   /* Only meaningful once the pill is actually filled — before that the pill is
      still dark, so a dark label picked for a bright primary (Steelers gold)
      would be unreadable. */
@@ -457,6 +478,7 @@ export function SpinRollerSpinner({
                   }}
                 >
                   <span
+                    ref={isCentre ? centreRowRef : undefined}
                     className="truncate font-semibold leading-none"
                     style={{
                       fontSize: 14,
@@ -468,6 +490,9 @@ export function SpinRollerSpinner({
                           ? landedTextColor
                           : "#ffffff"
                         : "#8f8f8f",
+                      /* Hidden (but kept in layout) once a shared-element flight
+                         has taken over rendering the centre name. */
+                      visibility: isCentre && hideCentreLabel ? "hidden" : "visible",
                     }}
                   >
                     {team.city} {team.name}
