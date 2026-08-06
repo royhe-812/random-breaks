@@ -120,6 +120,8 @@ export function SharedTransitionStage({
   const [portalReady, setPortalReady] = useState(false)
   // Tap-to-dismiss: fades the reveal + scrim away and hands the frame back.
   const [dismissed, setDismissed] = useState(false)
+  // Compress the drum once the winner has flown off, closing the vacated slot.
+  const [collapse, setCollapse] = useState(false)
 
   // Attached to the drum's resting centre row — the flight origin.
   const rowNameRef = useRef<HTMLSpanElement>(null)
@@ -162,6 +164,7 @@ export function SharedTransitionStage({
       const rowName = rowNameRef.current
       if (!frame || !rowName || reduce) {
         setHideCentre(true)
+        setCollapse(true)
         fullOut.set(0)
         abbrevIn.set(1)
         fx.set(0)
@@ -207,6 +210,10 @@ export function SharedTransitionStage({
       // of the small row text merely disappearing behind the incoming abbrev.
       animate(fullOut, 0, { duration: nameFadeMs / 1000, ease: "linear" })
       animate(oscale, s0 * 0.8, { duration: nameFadeMs / 1000, ease: "easeIn" })
+
+      // Once the full name has finished fading — i.e. the winner has truly left
+      // its row — compress the drum so the neighbours close over the empty slot.
+      stageTimers.current.push(setTimeout(() => setCollapse(true), nameFadeMs))
 
       // Beat 2 — the short form lifts off slightly before the fade completes,
       // then grows and travels to the centre.
@@ -314,10 +321,11 @@ export function SharedTransitionStage({
         stopEase={stopEase}
         rowPitch={rowPitch}
         reveal={reveal}
-        disableReveal
-        centreRowRef={rowNameRef}
-        hideCentreLabel={hideCentre}
-      />
+          disableReveal
+          centreRowRef={rowNameRef}
+          hideCentreLabel={hideCentre}
+          collapseCentre={collapse}
+        />
     </motion.div>
   )
 

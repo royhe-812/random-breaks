@@ -73,6 +73,13 @@ interface SpinRollerSpinnerProps {
    * can take over without the original showing through underneath it.
    */
   hideCentreLabel?: boolean
+  /**
+   * Compress the drum once the winning team has flown off: the rows above centre
+   * slide down and those below slide up by half a pitch, closing the vacated
+   * centre slot, while the now-empty selection pill fades out. Animated purely in
+   * CSS, and only enabled after the drum is at rest, so it never smears the spin.
+   */
+  collapseCentre?: boolean
 }
 
 /* ── Cylinder geometry ──
@@ -245,6 +252,7 @@ export function SpinRollerSpinner({
   disableReveal = false,
   centreRowRef,
   hideCentreLabel = false,
+  collapseCentre = false,
 }: SpinRollerSpinnerProps) {
   /* Convert the px pitch into the angular step the rows are laid out on.
      RADIUS is deliberately left fixed so the centre row's distance from the
@@ -438,15 +446,25 @@ export function SpinRollerSpinner({
           {/* Centre selection pill, sitting behind the rows. Self-centring, and
               owns its own staged reveal — see components/pill-reveal.tsx. The
               pop and glow it used to fire the instant the drum stopped now ride
-              the fill at the end of that sequence. */}
-          <RevealPill
-            team={landedTeam}
-            stage={revealStage}
-            width={PILL_W}
-            height={ITEM_H - 4}
-            idleColor={PILL_IDLE}
-            {...reveal}
-          />
+              the fill at the end of that sequence. Wrapped so it can fade out as
+              the drum compresses — otherwise the empty slot would keep peeking
+              between the two halves as they close over it. */}
+          <div
+            className="absolute inset-0"
+            style={{
+              opacity: collapseCentre ? 0 : 1,
+              transition: "opacity 300ms ease",
+            }}
+          >
+            <RevealPill
+              team={landedTeam}
+              stage={revealStage}
+              width={PILL_W}
+              height={ITEM_H - 4}
+              idleColor={PILL_IDLE}
+              {...reveal}
+            />
+          </div>
 
           {/* Rows, positioned on the surface of the drum */}
           <div
@@ -462,6 +480,20 @@ export function SpinRollerSpinner({
                  preserves the original falloff at the default pitch. */
               const fade = Math.min(1, Math.abs(angle) / (2.1 * DEFAULT_STEP_DEG))
               const isCentre = Math.abs(delta) < 0.5
+              /* Compression: once the winner has flown off, the whole upper half
+                 slides down and the lower half slides up by half a pitch, closing
+                 the vacated centre slot. Applied as a screen-space translateY
+                 (leftmost in the list, so it acts after the 3D rotate) and only
+                 transitioned while collapsing, so the per-frame spin transforms
+                 never smear. `rel` uses the integer slot offset, stable at rest. */
+              const rel = slot - centre
+              const collapseShift = collapseCentre
+                ? rel < 0
+                  ? rowPitch / 2
+                  : rel > 0
+                    ? -rowPitch / 2
+                    : 0
+                : 0
               return (
                 <div
                   key={`${slot}-${idx}`}
@@ -470,7 +502,10 @@ export function SpinRollerSpinner({
                     height: ITEM_H,
                     top: "50%",
                     marginTop: -ITEM_H / 2,
-                    transform: `rotateX(${-angle}deg) translateZ(${RADIUS}px)`,
+                    transform: `translateY(${collapseShift}px) rotateX(${-angle}deg) translateZ(${RADIUS}px)`,
+                    transition: collapseCentre
+                      ? "transform 340ms cubic-bezier(0.22,0.61,0.36,1)"
+                      : undefined,
                     // Rows tip away from the viewer, so they dim and lose
                     // contrast the further they are from centre.
                     opacity: 1 - fade * 0.82,
