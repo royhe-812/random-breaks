@@ -146,6 +146,12 @@ interface RevealCardProps {
   lapTurns?: number
   headLen?: number
   glow?: number
+  /**
+   * Reserve the abbreviation's space without painting it. Used when the caller
+   * owns the abbreviation itself — the short form that flew in from the roller
+   * stays as the card's abbreviation, so the card must not draw a second copy.
+   */
+  hideAbbrev?: boolean
   /** Peak of the subtle 3D turn-in, in degrees of rotateY. 0 disables it. */
   tiltDeg?: number
 }
@@ -166,6 +172,7 @@ export function RevealCard({
   headLen = 34,
   glow = 1,
   tiltDeg = 16,
+  hideAbbrev = false,
 }: RevealCardProps) {
   const reduceMotion = useReducedMotion()
   const stroke = team ? strokeColorFor(team, idleColor) : "transparent"
@@ -227,15 +234,21 @@ export function RevealCard({
 
         {/* Card content — abbreviation, helmet, full name. Rides in on the fill. */}
         <motion.div
-          className="absolute inset-0 flex flex-col items-center justify-between px-4 py-5"
-          style={{ color: ink }}
+          className="absolute inset-0 flex flex-col items-center justify-between px-4"
+          style={{ color: ink, paddingTop: CARD_PAD_Y, paddingBottom: CARD_PAD_Y }}
           initial={{ opacity: 0 }}
           animate={{ opacity: filled ? 1 : 0 }}
           transition={{ duration: fillMs / 1000, delay: filled ? 0.06 : 0 }}
         >
+          {/* When the caller owns the abbreviation (the short form that flew in
+              from the roller), this only reserves its space in the column. */}
           <span
             className="font-bold leading-none"
-            style={{ fontSize: Math.round(height * 0.16), letterSpacing: "0.04em" }}
+            style={{
+              fontSize: cardAbbrevFontSize(height),
+              letterSpacing: "0.04em",
+              visibility: hideAbbrev ? "hidden" : "visible",
+            }}
           >
             {team?.abbrev}
           </span>
@@ -266,6 +279,28 @@ export function RevealCard({
       </motion.div>
     </div>
   )
+}
+
+/* ── Abbreviation geometry ────────────────────────────────────────────────────
+   Shared so the flying short form can land exactly in the card's abbreviation
+   slot. The flight is the *same* text element the card ends up showing, so these
+   numbers have to come from one place rather than being guessed twice. */
+
+/** Vertical padding of the card's content column, in px. */
+export const CARD_PAD_Y = 20
+
+/** Font size of the card's abbreviation for a given card height. */
+export function cardAbbrevFontSize(height: number) {
+  return Math.round(height * 0.16)
+}
+
+/**
+ * Offset of the abbreviation's visual centre from the card's centre, in px
+ * (negative = above centre). `leading-none` makes the line box the font size,
+ * so the glyph centre sits half a font size below the content padding.
+ */
+export function cardAbbrevCenterOffset(height: number) {
+  return -height / 2 + CARD_PAD_Y + cardAbbrevFontSize(height) / 2
 }
 
 /** 0–1 alpha as the 2-digit hex suffix an 8-digit colour needs. */

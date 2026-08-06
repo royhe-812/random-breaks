@@ -33,7 +33,7 @@ import { AnimatePresence, animate, motion, useMotionValue } from "framer-motion"
 import { teams, type Team } from "@/components/team-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
 import { useRevealStage, type RevealTuning } from "@/components/pill-reveal"
-import { RevealCard } from "@/components/reveal-card"
+import { RevealCard, cardAbbrevCenterOffset, cardAbbrevFontSize } from "@/components/reveal-card"
 
 /** Black or white foreground per WCAG relative luminance. */
 function readableOn(hex: string) {
@@ -91,6 +91,13 @@ const CARD_W = 188
 const CARD_H = 264
 const CARD_R = 18
 const PILL_IDLE = "#1c1c1e"
+
+/* The short form that flies out of the drum IS the card's abbreviation — it
+   travels to the card's abbreviation slot and simply stays there, so the card
+   never paints a second copy. Both numbers are derived from the card itself so
+   the flight can't land at a different size or position than the slot it fills. */
+const ABBREV_FONT = cardAbbrevFontSize(CARD_H)
+const ABBREV_TARGET_Y = cardAbbrevCenterOffset(CARD_H)
 
 export function SharedTransitionStage({
   frameRef,
@@ -173,7 +180,7 @@ export function SharedTransitionStage({
         fullOut.set(0)
         abbrevIn.set(1)
         fx.set(0)
-        fy.set(0)
+        fy.set(ABBREV_TARGET_Y)
         fscale.set(1)
         setPhase("reveal")
         return
@@ -193,6 +200,9 @@ export function SharedTransitionStage({
          full-name copy and the short form start exactly the size of the text
          they replace on the roller. */
       const s0 = sRect.height / centerFont
+      /* The abbreviation renders at the card's own font size, not `centerFont`,
+         so it needs its own start scale to leave the row at the row's size. */
+      const s0Abbrev = sRect.height / ABBREV_FONT
 
       // Full name: pinned to the roller row, fades out in place (no travel).
       ox.set(dx)
@@ -202,7 +212,7 @@ export function SharedTransitionStage({
       // Short form: starts on that same row, invisible, then lifts off.
       fx.set(dx)
       fy.set(dy)
-      fscale.set(s0)
+      fscale.set(s0Abbrev)
       abbrevIn.set(0)
       color.set("#ffffff")
       setHideCentre(true)
@@ -225,8 +235,10 @@ export function SharedTransitionStage({
       const liftDelay = Math.max(0, nameFadeMs - overlapMs) / 1000
       const dur = flightMs / 1000
       animate(fx, 0, { duration: dur, delay: liftDelay, ease: [0.22, 0.61, 0.36, 1] })
-      // Arc: lift toward the centre, then settle. A straight tween when arc is 0.
-      animate(fy, arc > 0 ? [dy, Math.min(dy, 0) - arc, 0] : 0, {
+      /* Arc: lift toward the target, then settle. The target is the card's
+         abbreviation slot (above centre), not the frame centre — this element
+         stays put afterwards and serves as the card's abbreviation. */
+      animate(fy, arc > 0 ? [dy, Math.min(dy, ABBREV_TARGET_Y) - arc, ABBREV_TARGET_Y] : ABBREV_TARGET_Y, {
         duration: dur,
         delay: liftDelay,
         ease: [0.22, 0.61, 0.36, 1],
@@ -288,15 +300,6 @@ export function SharedTransitionStage({
   )
 
   useEffect(() => () => stageTimers.current.forEach(clearTimeout), [])
-
-  /* The flying abbreviation hands off to the trading card: once the reveal phase
-     starts, the card turns in over the centre and the small flying copy fades
-     out beneath it, so we don't show two abbreviations at once. */
-  useEffect(() => {
-    if (phase !== "reveal") return
-    const c = animate(abbrevIn, 0, { duration: 0.22, ease: "easeIn" })
-    return () => c.stop()
-  }, [phase, abbrevIn])
 
   /* Tap the scrim once the team is revealed to dismiss it: stop any pending
      sequence steps and let the overlay fade out. */
@@ -396,6 +399,9 @@ export function SharedTransitionStage({
           strokeWidth={reveal.strokeWidth}
           glow={reveal.glow}
           tiltDeg={cardTiltDeg}
+          /* The flown-in short form is the abbreviation; the card only holds
+             its place so the helmet and name still sit correctly. */
+          hideAbbrev
         />
       )}
 
@@ -435,9 +441,12 @@ export function SharedTransitionStage({
             className="absolute"
             style={{ left: "50%", top: "50%", transform: "translate(-50%,-50%)" }}
           >
-            {/* Weight + tracking match the card's abbreviation exactly, so the
-                flying short form and the card's own "DET" read as one glyph
-                through the crossfade rather than two different renderings. */}
+            {/* This element does not hand off to a second copy — it lands in the
+                card's abbreviation slot and stays there AS the card's
+                abbreviation (the card itself only reserves the space). Size,
+                weight and tracking therefore come from the card's own geometry.
+                The drop shadow only helps while it's flying over the scrim, so it
+                is dropped once it's resting on the card face. */}
             <motion.div
               className="font-bold"
               style={{
@@ -446,11 +455,11 @@ export function SharedTransitionStage({
                 scale: fscale,
                 opacity: abbrevIn,
                 color,
-                fontSize: centerFont,
+                fontSize: ABBREV_FONT,
                 letterSpacing: "0.04em",
                 whiteSpace: "pre",
                 lineHeight: 1,
-                textShadow: "0 2px 12px rgba(0,0,0,0.6)",
+                textShadow: phase === "reveal" ? "none" : "0 2px 12px rgba(0,0,0,0.6)",
               }}
             >
               {landed.abbrev}
