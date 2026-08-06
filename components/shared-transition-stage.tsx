@@ -457,24 +457,38 @@ export function SharedTransitionStage({
         </>
       )}
 
-      {/* Claimed-by tag, rising in under the pill as the fill lands. */}
+      {/* Headline above the card — "{winner}'s spot was assigned". */}
       <AnimatePresence>
         {showTag && landed && (
           <motion.div
-            key="tag"
-            className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1"
-            style={{ top: `calc(50% + ${CARD_H / 2 + 18}px)` }}
-            initial={{ opacity: 0, y: 10 }}
+            key="headline"
+            className="absolute left-1/2 -translate-x-1/2 w-[280px] text-center"
+            style={{ top: `calc(50% - ${CARD_H / 2 + 74}px)` }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
           >
-            <span className="text-white/90 text-sm font-semibold">
-              Claimed by <span style={{ color: landed.secondary }}>@{winnerName}</span>
+            <span className="block text-white text-2xl font-bold leading-tight text-balance">
+              {winnerName}&apos;s spot was assigned
             </span>
-            <span className="text-white/40 text-[11px] uppercase tracking-widest">
-              Removed from available spots
-            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Dismiss hint below the card. */}
+      <AnimatePresence>
+        {showTag && landed && (
+          <motion.div
+            key="dismiss-hint"
+            className="absolute left-1/2 -translate-x-1/2 text-center"
+            style={{ top: `calc(50% + ${CARD_H / 2 + 22}px)` }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut", delay: 0.1 }}
+          >
+            <span className="text-white/50 text-sm font-medium">Tap anywhere to dismiss</span>
           </motion.div>
         )}
       </AnimatePresence>
