@@ -32,7 +32,8 @@ import { createPortal } from "react-dom"
 import { AnimatePresence, animate, motion, useMotionValue } from "framer-motion"
 import { teams, type Team } from "@/components/team-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
-import { RevealPill, useRevealStage, type RevealTuning } from "@/components/pill-reveal"
+import { useRevealStage, type RevealTuning } from "@/components/pill-reveal"
+import { RevealCard } from "@/components/reveal-card"
 
 /** Black or white foreground per WCAG relative luminance. */
 function readableOn(hex: string) {
@@ -79,13 +80,16 @@ interface SharedTransitionStageProps {
   centerFont?: number
   /** Peak darkness of the scrim behind the flight, 0–1. 0 disables it. */
   scrimOpacity?: number
+  /** Peak of the trading card's subtle 3D turn-in, in degrees. 0 disables it. */
+  cardTiltDeg?: number
 }
 
 type Phase = "spinning" | "landed" | "flying" | "reveal"
 
-const PILL_W = 200
-const PILL_H = 64
-const PILL_R = 16
+// The reveal is now a portrait trading card rather than a flat pill.
+const CARD_W = 188
+const CARD_H = 264
+const CARD_R = 18
 const PILL_IDLE = "#1c1c1e"
 
 export function SharedTransitionStage({
@@ -112,6 +116,7 @@ export function SharedTransitionStage({
   overlapMs = 160,
   centerFont = 30,
   scrimOpacity = 0.72,
+  cardTiltDeg = 16,
 }: SharedTransitionStageProps) {
   const [phase, setPhase] = useState<Phase>("spinning")
   const [landed, setLanded] = useState<Team | null>(null)
@@ -284,6 +289,15 @@ export function SharedTransitionStage({
 
   useEffect(() => () => stageTimers.current.forEach(clearTimeout), [])
 
+  /* The flying abbreviation hands off to the trading card: once the reveal phase
+     starts, the card turns in over the centre and the small flying copy fades
+     out beneath it, so we don't show two abbreviations at once. */
+  useEffect(() => {
+    if (phase !== "reveal") return
+    const c = animate(abbrevIn, 0, { duration: 0.22, ease: "easeIn" })
+    return () => c.stop()
+  }, [phase, abbrevIn])
+
   /* Tap the scrim once the team is revealed to dismiss it: stop any pending
      sequence steps and let the overlay fade out. */
   const handleDismiss = useCallback(() => {
@@ -364,16 +378,17 @@ export function SharedTransitionStage({
         />
       )}
 
-      {/* The staged pill reveal, centred in the frame. */}
+      {/* The staged trading-card reveal, centred in the frame. */}
       {phase === "reveal" && (
-        <RevealPill
+        <RevealCard
           team={pillTeam}
           stage={stage}
-          width={PILL_W}
-          height={PILL_H}
-          radius={PILL_R}
+          width={CARD_W}
+          height={CARD_H}
+          radius={CARD_R}
           idleColor={PILL_IDLE}
           drawMs={reveal.drawMs}
+          holdMs={reveal.holdMs}
           fillMs={reveal.fillMs}
           drawEase={reveal.drawEase}
           lapTurns={reveal.lapTurns}
@@ -381,6 +396,7 @@ export function SharedTransitionStage({
           strokeWidth={reveal.strokeWidth}
           popScale={reveal.popScale}
           glow={reveal.glow}
+          tiltDeg={cardTiltDeg}
         />
       )}
 
@@ -447,7 +463,7 @@ export function SharedTransitionStage({
           <motion.div
             key="tag"
             className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1"
-            style={{ top: `calc(50% + ${PILL_H / 2 + 18}px)` }}
+            style={{ top: `calc(50% + ${CARD_H / 2 + 18}px)` }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}

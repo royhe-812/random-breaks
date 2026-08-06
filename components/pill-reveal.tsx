@@ -354,6 +354,114 @@ function LapHead({
   )
 }
 
+/**
+ * The two-headed lap-stroke outline, extracted so both the flat centre pill and
+ * the trading-card reveal draw the exact same tuned line rather than keeping two
+ * copies of this dash maths in sync. Owns its own `travelled` timeline, driven
+ * off the `drawing` flag (stage ≥ 1). Purely an overlay — the caller supplies the
+ * box (width/height/radius) and the stroke colour.
+ */
+export function LapStrokeOutline({
+  width,
+  height,
+  radius,
+  stroke,
+  strokeWidth = STROKE_WIDTH,
+  drawMs = STROKE_DRAW_MS,
+  drawEase = STROKE_DRAW_EASE,
+  lapTurns = LAP_TURNS,
+  headLen = HEAD_LEN,
+  drawing,
+}: {
+  width: number
+  height: number
+  radius: number
+  stroke: string
+  strokeWidth?: number
+  drawMs?: number
+  drawEase?: number
+  lapTurns?: number
+  headLen?: number
+  /** True once the outline should be tracing (stage ≥ 1). */
+  drawing: boolean
+}) {
+  const reduceMotion = useReducedMotion()
+  const loop = useMemo(
+    () => perimeterPath(width, height, radius, strokeWidth),
+    [width, height, radius, strokeWidth],
+  )
+  /* Head length is authored in px but the dash maths runs in laps. Capped well
+     short of a full turn so the head never eats its own tail. */
+  const headFrac = Math.min(0.4, headLen / loop.len)
+
+  /* One shared timeline for both heads, measured in laps travelled. Every trail
+     and head reads its dash off this single value, so the two are matched in
+     speed by construction and the easing curve applies once to the whole lap. */
+  const travelled = useMotionValue(0)
+
+  useEffect(() => {
+    if (reduceMotion) {
+      travelled.set(drawing ? lapTurns : 0)
+      return
+    }
+    if (!drawing) {
+      travelled.set(0)
+      return
+    }
+    const controls = animate(travelled, lapTurns, {
+      /* The whole lap fits inside drawMs regardless of lapTurns, so raising the
+         turns speeds the head up rather than stretching the reveal. */
+      duration: drawMs / 1000,
+      ease: drawEaseCurve(drawEase),
+    })
+    return () => controls.stop()
+  }, [drawing, lapTurns, drawMs, drawEase, travelled, reduceMotion])
+
+  return (
+    /* `overflow: visible` matters — the stroke's outer edge would otherwise be
+       clipped by the svg's own box at the corners. */
+    <svg
+      className="pointer-events-none absolute inset-0"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      style={{ overflow: "visible" }}
+      aria-hidden="true"
+    >
+      {/* Two heads half a lap apart — the storyboard's top-left and bottom-right
+          corners. Trails first so the heads ride over them. */}
+      {LAP_OFFSETS.map((offset) => (
+        <LapTrail
+          key={`trail-${offset}`}
+          d={loop.d}
+          offset={offset}
+          travelled={travelled}
+          stroke={stroke}
+          strokeWidth={strokeWidth}
+        />
+      ))}
+      {/* Mounted for the whole reveal, not gated on the landed team: a path that
+          first renders mid-lap has no further `travelled` change to react to, so
+          its transforms would latch at their mount-time value. Opacity keeps it
+          invisible until the lap starts. */}
+      {!reduceMotion &&
+        headFrac > 0 &&
+        LAP_OFFSETS.map((offset) => (
+          <LapHead
+            key={`head-${offset}`}
+            d={loop.d}
+            offset={offset}
+            travelled={travelled}
+            lapTurns={lapTurns}
+            headFrac={headFrac}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+          />
+        ))}
+    </svg>
+  )
+}
+
 interface RevealPillProps {
   /** The landed team, or null while spinning / idle. */
   team: Team | null
@@ -402,40 +510,8 @@ export function RevealPill({
   glow = 1,
 }: RevealPillProps) {
   const reduceMotion = useReducedMotion()
-  const loop = useMemo(
-    () => perimeterPath(width, height, radius, strokeWidth),
-    [width, height, radius, strokeWidth],
-  )
   const stroke = team ? strokeColorFor(team, idleColor) : "transparent"
   const filled = stage === 2 && team !== null
-  /* Head length is authored in px but the dash maths runs in laps. Capped well
-     short of a full turn so the head never eats its own tail. */
-  const headFrac = Math.min(0.4, headLen / loop.len)
-
-  /* One shared timeline for both heads, measured in laps travelled. Every trail
-     and head reads its dash off this single value, so the two are matched in
-     speed by construction and the easing curve applies once to the whole lap.
-     Giving each its own tween would re-fit the curve per path, putting them at
-     different speeds at the same instant. */
-  const travelled = useMotionValue(0)
-
-  useEffect(() => {
-    if (reduceMotion) {
-      travelled.set(stage >= 1 ? lapTurns : 0)
-      return
-    }
-    if (stage < 1) {
-      travelled.set(0)
-      return
-    }
-    const controls = animate(travelled, lapTurns, {
-      /* The whole lap fits inside drawMs regardless of lapTurns, so raising the
-         turns speeds the head up rather than stretching the reveal. */
-      duration: drawMs / 1000,
-      ease: drawEaseCurve(drawEase),
-    })
-    return () => controls.stop()
-  }, [stage, lapTurns, drawMs, drawEase, travelled, reduceMotion])
 
   return (
     <motion.div
@@ -468,47 +544,19 @@ export function RevealPill({
         boxShadow: { duration: fillMs / 1000 },
       }}
     >
-      {/* Outline overlay. `overflow: visible` matters — the stroke's outer edge
-          would otherwise be clipped by the svg's own box at the corners. */}
-      <svg
-        className="pointer-events-none absolute inset-0"
+      {/* Outline overlay — the shared two-headed lap stroke. */}
+      <LapStrokeOutline
         width={width}
         height={height}
-        viewBox={`0 0 ${width} ${height}`}
-        style={{ overflow: "visible" }}
-        aria-hidden="true"
-      >
-        {/* Two heads half a lap apart — the storyboard's top-left and
-            bottom-right corners. Trails first so the heads ride over them. */}
-        {LAP_OFFSETS.map((offset) => (
-          <LapTrail
-            key={`trail-${offset}`}
-            d={loop.d}
-            offset={offset}
-            travelled={travelled}
-            stroke={stroke}
-            strokeWidth={strokeWidth}
-          />
-        ))}
-        {/* Mounted for the whole reveal, not gated on the landed team: a path
-            that first renders mid-lap has no further `travelled` change to react
-            to, so its transforms would latch at their mount-time value. Opacity
-            keeps it invisible until the lap starts. */}
-        {!reduceMotion &&
-          headFrac > 0 &&
-          LAP_OFFSETS.map((offset) => (
-            <LapHead
-              key={`head-${offset}`}
-              d={loop.d}
-              offset={offset}
-              travelled={travelled}
-              lapTurns={lapTurns}
-              headFrac={headFrac}
-              stroke={stroke}
-              strokeWidth={strokeWidth}
-            />
-          ))}
-      </svg>
+        radius={radius}
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+        drawMs={drawMs}
+        drawEase={drawEase}
+        lapTurns={lapTurns}
+        headLen={headLen}
+        drawing={stage >= 1}
+      />
     </motion.div>
   )
 }
