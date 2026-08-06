@@ -7,8 +7,8 @@
  *   1. the roller drum (the real SpinRollerSpinner) spins and lands on the winner
  *   2. it holds on the full "City Name" for a beat so viewers read it
  *   3. that same text lifts out of the drum's centre row and flies to the centre
- *      of the phone, and *as it travels* the non-abbreviation letters collapse
- *      away so "DETROIT LIONS" compresses into "DET"
+ *      of the phone, and *as it travels* the full "Detroit Lions" crossfades into
+ *      the short "DET"
  *   4. the centre pill runs its staged stroke-and-fill reveal around the abbrev
  *   5. a "Claimed by @user" tag rises in — the team is gone from the spots
  *
@@ -17,19 +17,19 @@
  * centre. Its centre row is measured (via `centreRowRef`) as the flight origin,
  * and hidden (via `hideCentreLabel`) the instant the flying copy takes over.
  *
- * The flight is a manual FLIP: the flying copy is a single element that lives in
- * an overlay for the whole trip, so it can own every letter. A `layoutId`
- * crossfade between two separate elements can't express a per-letter collapse,
- * because the two elements have different content.
+ * The flight is a manual FLIP on a single overlay element that carries the
+ * translate + grow. Inside it, the full name and the abbreviation are stacked in
+ * one grid cell and cross-faded on opacity — a plain, subtle swap rather than a
+ * per-letter collapse, which read as janky as the glyph widths animated shut.
  *
  * The overlay is portalled into the phone-frame element (passed as `frameRef`)
  * rather than rendered in the spinner slot, so "centre" means the centre of the
  * whole screen and the drum keeps its natural place in the bottom stack.
  */
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
-import { AnimatePresence, animate, motion, useMotionValue } from "framer-motion"
+import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "framer-motion"
 import { teams, type Team } from "@/components/team-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
 import { RevealPill, useRevealStage, type RevealTuning } from "@/components/pill-reveal"
@@ -42,76 +42,6 @@ function readableOn(hex: string) {
   const g = lin(parseInt(h.slice(2, 4), 16) / 255)
   const b = lin(parseInt(h.slice(4, 6), 16) / 255)
   return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.42 ? "#101820" : "#ffffff"
-}
-
-/**
- * The source-string indices to KEEP so the remaining glyphs spell the abbrev.
- *
- * Every NFL abbrev here is a subsequence of its uppercased "CITY NAME"
- * (KANSAS CITY → KC, DETROIT LIONS → DET, NEW YORK JETS → NYJ), so a greedy
- * left-to-right match always succeeds. Returns null if it somehow doesn't, so
- * the caller can fall back to a plain crossfade rather than dropping letters.
- */
-function keptIndices(display: string, abbrev: string): Set<number> | null {
-  const up = display.toUpperCase()
-  const kept = new Set<number>()
-  let a = 0
-  for (let i = 0; i < up.length && a < abbrev.length; i++) {
-    if (up[i] === abbrev[a]) {
-      kept.add(i)
-      a++
-    }
-  }
-  return a === abbrev.length ? kept : null
-}
-
-/**
- * One glyph of the flying name. Kept glyphs hold their measured width for the
- * whole trip; collapsing glyphs shrink their width to 0 and fade, which pulls
- * the kept glyphs together into the abbreviation. Width (not scaleX) is what
- * makes the neighbours actually slide in rather than leave a gap.
- */
-function Glyph({
-  ch,
-  keep,
-  width,
-  morph,
-}: {
-  ch: string
-  keep: boolean
-  width: number | undefined
-  morph: ReturnType<typeof useMotionValue<number>>
-}) {
-  const ref = useRef<HTMLSpanElement>(null)
-  useEffect(() => {
-    if (keep || width == null) return
-    const apply = (m: number) => {
-      const el = ref.current
-      if (!el) return
-      el.style.width = `${width * (1 - m)}px`
-      el.style.opacity = String(Math.max(0, 1 - m * 1.4))
-    }
-    // Apply the current value on mount, not just future changes — a glyph that
-    // first renders after (or mid-) the morph would otherwise stay full width.
-    apply(morph.get())
-    return morph.on("change", apply)
-  }, [keep, width, morph])
-  if (keep) {
-    return <span style={{ display: "inline-block", whiteSpace: "pre" }}>{ch}</span>
-  }
-  return (
-    <span
-      ref={ref}
-      style={{
-        display: "inline-block",
-        whiteSpace: "pre",
-        overflow: "hidden",
-        width: width != null ? width : "auto",
-      }}
-    >
-      {ch}
-    </span>
-  )
 }
 
 interface SharedTransitionStageProps {
@@ -193,22 +123,18 @@ export function SharedTransitionStage({
   const stageTimers = useRef<ReturnType<typeof setTimeout>[]>([])
 
   const display = landed ? `${landed.city} ${landed.name}` : ""
-  const displayUpper = display.toUpperCase()
-  const kept = useMemo(
-    () => (landed ? keptIndices(display, landed.abbrev) : null),
-    [display, landed],
-  )
 
   // Flight motion values, owned here so they persist across phase changes.
   const fx = useMotionValue(0)
   const fy = useMotionValue(0)
   const fscale = useMotionValue(1)
+  /* Crossfade progress, 0 = full name, 1 = abbreviation. The two labels are
+     stacked and cross-faded on these, with a small overlap so neither goes fully
+     invisible mid-swap. */
   const morph = useMotionValue(0)
+  const fullOpacity = useTransform(morph, [0, 0.55], [1, 0])
+  const abbrevOpacity = useTransform(morph, [0.45, 1], [0, 1])
   const color = useMotionValue("#ffffff")
-
-  // Glyph widths, measured once at the centre font size (pre-scale space).
-  const measureRef = useRef<HTMLDivElement>(null)
-  const [widths, setWidths] = useState<number[] | null>(null)
 
   const reduce = useMemo(
     () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -216,18 +142,6 @@ export function SharedTransitionStage({
   )
 
   useEffect(() => setPortalReady(true), [])
-
-  /* Measure each glyph's natural width from a hidden copy rendered at centerFont.
-     `portalReady` and `display` are deps because the measurement copy lives in
-     the portalled overlay and only has content once the drum has landed — without
-     them this runs while measureRef is empty and `widths` stays null, so no glyph
-     ever collapses. */
-  useLayoutEffect(() => {
-    const root = measureRef.current
-    if (!root || !display) return
-    const els = Array.from(root.children) as HTMLElement[]
-    setWidths(els.map((el) => el.getBoundingClientRect().width))
-  }, [display, centerFont, portalReady])
 
   const pillTeam = phase === "reveal" ? landed : null
   const stage = useRevealStage(pillTeam, { drawMs: reveal.drawMs, holdMs: reveal.holdMs })
@@ -362,22 +276,6 @@ export function SharedTransitionStage({
         />
       )}
 
-      {/* Hidden measurement copy at the centre font size. */}
-      {display && (
-        <div
-          ref={measureRef}
-          aria-hidden
-          className="absolute left-0 top-0 font-semibold"
-          style={{ visibility: "hidden", whiteSpace: "pre", fontSize: centerFont, letterSpacing: "0.02em" }}
-        >
-          {[...displayUpper].map((ch, i) => (
-            <span key={i} style={{ display: "inline-block", whiteSpace: "pre" }}>
-              {ch}
-            </span>
-          ))}
-        </div>
-      )}
-
       {/* The staged pill reveal, centred in the frame. */}
       {phase === "reveal" && (
         <RevealPill
@@ -406,8 +304,12 @@ export function SharedTransitionStage({
           className="absolute"
           style={{ left: "50%", top: "50%", transform: "translate(-50%,-50%)" }}
         >
+          {/* Full name and abbreviation share one grid cell so they overlap,
+              centred on the same point; only their opacity animates. The grid
+              sizes to the wider label (the full name) and stays put, so the swap
+              has no layout shift. */}
           <motion.div
-            className="font-semibold"
+            className="grid place-items-center font-semibold"
             style={{
               x: fx,
               y: fy,
@@ -420,11 +322,8 @@ export function SharedTransitionStage({
               textShadow: "0 2px 12px rgba(0,0,0,0.6)",
             }}
           >
-            {kept
-              ? [...displayUpper].map((ch, i) => (
-                  <Glyph key={i} ch={ch} keep={kept.has(i)} width={widths?.[i]} morph={morph} />
-                ))
-              : landed.abbrev}
+            <motion.span style={{ gridArea: "1 / 1", opacity: fullOpacity }}>{display}</motion.span>
+            <motion.span style={{ gridArea: "1 / 1", opacity: abbrevOpacity }}>{landed.abbrev}</motion.span>
           </motion.div>
         </div>
       )}
