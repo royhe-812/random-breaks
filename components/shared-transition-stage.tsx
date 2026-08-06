@@ -82,6 +82,8 @@ interface SharedTransitionStageProps {
   scrimOpacity?: number
   /** Peak of the trading card's subtle 3D turn-in, in degrees. 0 disables it. */
   cardTiltDeg?: number
+  /** Duration of the card's one-shot gloss shimmer, in ms. Lower = faster. */
+  shimmerMs?: number
 }
 
 type Phase = "spinning" | "landed" | "flying" | "reveal"
@@ -124,6 +126,7 @@ export function SharedTransitionStage({
   centerFont = 42,
   scrimOpacity = 0.72,
   cardTiltDeg = 16,
+  shimmerMs = 620,
 }: SharedTransitionStageProps) {
   const [phase, setPhase] = useState<Phase>("spinning")
   const [landed, setLanded] = useState<Team | null>(null)
@@ -399,6 +402,7 @@ export function SharedTransitionStage({
           strokeWidth={reveal.strokeWidth}
           glow={reveal.glow}
           tiltDeg={cardTiltDeg}
+          shimmerMs={shimmerMs}
           /* The flown-in short form is the abbreviation; the card only holds
              its place so the helmet and name still sit correctly. */
           hideAbbrev

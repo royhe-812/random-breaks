@@ -154,6 +154,8 @@ interface RevealCardProps {
   hideAbbrev?: boolean
   /** Peak of the subtle 3D turn-in, in degrees of rotateY. 0 disables it. */
   tiltDeg?: number
+  /** Duration of the one-shot gloss shimmer sweep, in ms. Lower = faster. */
+  shimmerMs?: number
 }
 
 export function RevealCard({
@@ -172,8 +174,11 @@ export function RevealCard({
   headLen = 34,
   glow = 1,
   tiltDeg = 16,
+  shimmerMs = 620,
   hideAbbrev = false,
 }: RevealCardProps) {
+  // The turn-in occupies draw + hold; the shimmer waits for it to finish.
+  const tiltMs = drawMs + holdMs
   const reduceMotion = useReducedMotion()
   const stroke = team ? strokeColorFor(team, idleColor) : "transparent"
   const filled = stage === 2 && team !== null
@@ -264,12 +269,14 @@ export function RevealCard({
         </motion.div>
 
         {/* One-shot gloss shimmer — a single diagonal light band that sweeps
-            across the face while the card turns in, then never repeats. It rides
-            above the content but below the outline, is clipped by the card's
-            overflow-hidden, and is skipped entirely for reduced motion. The band
-            is wider than the card and starts fully off the left edge so no seam
-            is visible at rest; `mix-blend-screen` makes it read as light on the
-            gradient rather than a grey overlay. */}
+            across the face right after the card finishes turning in, then never
+            repeats. It rides above the content but below the outline, is clipped
+            by the card's overflow-hidden, and is skipped entirely for reduced
+            motion. The band is wider than the card and starts fully off the left
+            edge so no seam is visible at rest; `mix-blend-screen` makes it read
+            as light on the gradient rather than a grey overlay. Its own
+            `shimmerMs` controls the sweep speed, delayed by the tilt duration so
+            it fires once the card has settled flat. */}
         {!reduceMotion && (
           <motion.div
             className="pointer-events-none absolute inset-0"
@@ -278,10 +285,15 @@ export function RevealCard({
             initial={{ x: "-140%", opacity: 0 }}
             animate={{ x: "140%", opacity: [0, 1, 1, 0] }}
             transition={{
-              // Sweep spans the turn-in window so the shine tracks the tilt.
-              duration: (drawMs + holdMs) / 1000,
+              // Fire after the turn settles; sweep at the dialled speed.
+              delay: tiltMs / 1000,
+              duration: shimmerMs / 1000,
               ease: [0.4, 0, 0.2, 1],
-              opacity: { duration: (drawMs + holdMs) / 1000, times: [0, 0.15, 0.85, 1] },
+              opacity: {
+                delay: tiltMs / 1000,
+                duration: shimmerMs / 1000,
+                times: [0, 0.15, 0.85, 1],
+              },
             }}
           >
             <div

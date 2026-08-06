@@ -395,8 +395,17 @@ export function TestingZone() {
      to the centre, growing as it goes (beat 2), slightly overlapping the tail of
      the fade. The spin itself is the real roller and reuses the spin dials above;
      the pill's reveal reuses the `reveal` object. Times in ms. */
-  const { landHoldMs, nameFadeMs, overlapMs, flightMs, arc, centerFont, scrimOpacity, cardTiltDeg } =
-    useDialKit("Shared transition", {
+  const {
+    landHoldMs,
+    nameFadeMs,
+    overlapMs,
+    flightMs,
+    arc,
+    centerFont,
+    scrimOpacity,
+    cardTiltDeg,
+    shimmerMs,
+  } = useDialKit("Shared transition", {
       // Extra hold on the full "City Name" (after the drum's own settle) before beat 1.
       landHoldMs: [440, 0, 1500, 20] as [number, number, number, number],
       // Beat 1: how long the full name takes to fade out in place at the roller.
@@ -415,6 +424,8 @@ export function TestingZone() {
       scrimOpacity: [0.72, 0, 1, 0.02] as [number, number, number, number],
       // Peak of the trading card's subtle 3D turn-in, in degrees. 0 disables it.
       cardTiltDeg: [45, 0, 45, 1] as [number, number, number, number],
+      // Sweep speed of the one-shot gloss shimmer, in ms. Lower = faster.
+      shimmerMs: [620, 200, 2000, 20] as [number, number, number, number],
     })
 
   const spinDurationMs = Math.round(spinTime * 1000)
@@ -659,6 +670,7 @@ export function TestingZone() {
                   centerFont={centerFont}
                   scrimOpacity={scrimOpacity}
                   cardTiltDeg={cardTiltDeg}
+                  shimmerMs={shimmerMs}
                 />
               ) : isRealVariant ? (
                 <div className="flex flex-col">
