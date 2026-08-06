@@ -30,10 +30,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { AnimatePresence, animate, motion, useMotionValue } from "framer-motion"
+import { ChevronRight, Star } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
 import { useRevealStage, type RevealTuning } from "@/components/pill-reveal"
 import { RevealCard, cardAbbrevCenterOffset, cardAbbrevFontSize } from "@/components/reveal-card"
+import { SpotsProgress } from "@/components/spots-progress"
 
 /** Black or white foreground per WCAG relative luminance. */
 function readableOn(hex: string) {
@@ -328,12 +330,10 @@ export function SharedTransitionStage({
   const scrimInteractive = phase === "reveal" && !dismissed
 
   // ─── Bottom slot: the real roller, driven to spin-and-land only ───────────
-  const row = (
-    <motion.div
-      className="relative bg-[#212121] rounded-2xl p-3"
-      animate={{ opacity: claimed ? 0.55 : 1 }}
-      transition={{ duration: 0.4 }}
-    >
+  // Opacity (the claimed dim + the dismiss fade) is owned by the crossfade
+  // wrapper below, so this is a plain card shell.
+  const rollerCard = (
+    <div className="bg-[#212121] rounded-2xl p-3">
       <SpinRollerSpinner
         key={`shared-roller-${spinKey}`}
         isSpinning={isSpinning}
@@ -355,7 +355,118 @@ export function SharedTransitionStage({
           hideCentreLabel={hideCentre}
           collapseCentre={collapse}
         />
-    </motion.div>
+    </div>
+  )
+
+  /* ─── Bid box card ────────────────────────────────────────────────────────
+     Once the reveal is dismissed, the roller card gives way to the auction /
+     "bid box" card for this break — the same chrome the live stream shows —
+     now carrying the just-assigned team in its title and a claimed spot. This
+     mirrors the "bid box reactivation" beat in the full flow. */
+  const bidBox = (
+    <div className="bg-[#212121] rounded-2xl p-4">
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex-1 min-w-0 pr-2">
+          <p className="text-sm text-white mb-1 truncate">
+            <span className="font-semibold">
+              {`Random Break #${breakNumber}${landed ? ` - ${landed.city} ${landed.name}` : ""}`}
+              {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
+            </span>
+          </p>
+          <div className="mb-1">
+            <SpotsProgress available={Math.max(0, availableSpots - 1)} total={totalSpots} size={16} />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-white font-bold text-lg">$30.00</span>
+            <div className="flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M6.2998 1C7.37676 1 8.25 1.87324 8.25 2.9502V3.75H9.38965C9.8451 3.75004 10.2759 3.95696 10.5605 4.3125L11.6709 5.70117C11.8838 5.96724 12 6.29819 12 6.63867V8C11.9999 8.82823 11.3285 9.5 10.5 9.5H9.5C9.5 10.3284 8.82843 11 8 11C7.17157 11 6.5 10.3284 6.5 9.5H4C4 10.3284 3.32843 11 2.5 11C1.67157 11 1 10.3284 1 9.5H0.75C0.335786 9.5 0 9.16421 0 8.75C0 8.33579 0.335786 8 0.75 8H6.2998C6.54833 8 6.75 7.79833 6.75 7.5498V2.9502C6.75 2.70167 6.54833 2.5 6.2998 2.5H0.75C0.335786 2.5 0 2.16421 0 1.75C0 1.33579 0.335786 1 0.75 1H6.2998ZM8.25 7.5498C8.25 7.70495 8.22955 7.85531 8.19531 8H10.5V6.6377L9.38965 5.25H8.25V7.5498ZM3.75 4.5C4.16421 4.5 4.5 4.83579 4.5 5.25C4.5 5.66421 4.16421 6 3.75 6H0.75C0.335786 6 0 5.66421 0 5.25C0 4.83579 0.335786 4.5 0.75 4.5H3.75Z"
+                  fill="rgba(255,255,255,0.5)"
+                />
+              </svg>
+              <span className="text-white/50 text-sm">$5 shipping</span>
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onViewSpots}
+          aria-label="View break spots"
+          className="flex-shrink-0 mt-1 hover:opacity-80 transition-opacity"
+        >
+          <ChevronRight className="w-5 h-5 text-white/40" />
+        </button>
+      </div>
+
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-1.5">
+          <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+          <span className="text-green-400 font-medium text-sm">{winnerName}</span>
+          <span className="text-white/60 text-sm">won</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-white/50">
+          <div className="w-4 h-4 rounded-full border-2 border-white/40 flex items-center justify-center">
+            <div className="w-1 h-1 rounded-full bg-white/40" />
+          </div>
+          <span className="font-medium text-sm">00:00</span>
+        </div>
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          type="button"
+          disabled
+          className="px-5 py-2.5 rounded-full font-medium text-sm text-black cursor-not-allowed"
+          style={{ backgroundColor: "#8F8F8F" }}
+        >
+          Max bid
+        </button>
+        {/* The winner claimed this spot, so the CTA rests in its "Winning"
+            state rather than an active swipe-to-bid control. */}
+        <div className="relative flex-1 h-14 rounded-full p-1.5" style={{ border: "1px solid rgba(255,255,255,0.3)" }}>
+          <div className="h-full w-full rounded-full bg-green-400 flex items-center justify-center">
+            <span className="text-black font-semibold text-sm">Winning</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  /* Roller ⇆ bid box crossfade. Whichever card is active sits in normal flow so
+     it reserves its own (differing) height; the other overlays it, bottom-
+     anchored so the swap grows/shrinks upward from the bottom of the stack
+     rather than shoving the chat around from the top. */
+  const bottomSlot = (
+    <div className="relative">
+      <motion.div
+        className={dismissed ? "absolute inset-x-0 bottom-0" : "relative"}
+        initial={false}
+        animate={{ opacity: dismissed ? 0 : claimed ? 0.55 : 1, y: dismissed ? -12 : 0 }}
+        transition={{
+          opacity: { duration: dismissed ? 0.2 : 0.4, ease: "easeOut" },
+          y: { duration: 0.32, ease: [0.32, 0.72, 0, 1] },
+        }}
+        style={{ pointerEvents: dismissed ? "none" : "auto" }}
+        aria-hidden={dismissed || undefined}
+      >
+        {rollerCard}
+      </motion.div>
+
+      <motion.div
+        className={dismissed ? "relative" : "absolute inset-x-0 bottom-0"}
+        initial={false}
+        animate={{ opacity: dismissed ? 1 : 0, y: dismissed ? 0 : 12 }}
+        transition={{
+          opacity: { duration: 0.3, ease: "easeOut", delay: dismissed ? 0.08 : 0 },
+          y: { duration: 0.32, ease: [0.32, 0.72, 0, 1], delay: dismissed ? 0.08 : 0 },
+        }}
+        style={{ pointerEvents: dismissed ? "auto" : "none" }}
+        aria-hidden={dismissed ? undefined : true}
+      >
+        {bidBox}
+      </motion.div>
+    </div>
   )
 
   // ─── Centre overlay (portalled into the phone frame) ─────────────────────
@@ -521,7 +632,7 @@ export function SharedTransitionStage({
 
   return (
     <>
-      {row}
+      {bottomSlot}
       {portalReady && frameRef.current ? createPortal(overlay, frameRef.current) : null}
     </>
   )
