@@ -401,10 +401,10 @@ export function TestingZone() {
       // Extra hold on the full "City Name" (after the drum's own settle) before beat 1.
       landHoldMs: [440, 0, 1500, 20] as [number, number, number, number],
       // Beat 1: how long the full name takes to fade out in place at the roller.
-      nameFadeMs: [260, 60, 800, 20] as [number, number, number, number],
+      nameFadeMs: [420, 60, 900, 20] as [number, number, number, number],
       /* How much the short form's lift-off overlaps the tail of that fade.
          Larger = short form appears sooner, before the full name is fully gone. */
-      overlapMs: [120, 0, 400, 10] as [number, number, number, number],
+      overlapMs: [160, 0, 400, 10] as [number, number, number, number],
       // Beat 2: flight duration, roller row → screen centre (short form only).
       flightMs: [740, 200, 2000, 20] as [number, number, number, number],
       // Peak lift of the flight arc in px; 0 is a straight line to centre.
