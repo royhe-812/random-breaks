@@ -74,10 +74,11 @@ interface SpinRollerSpinnerProps {
    */
   hideCentreLabel?: boolean
   /**
-   * Compress the drum once the winning team has flown off: the rows above centre
-   * slide down and those below slide up by half a pitch, closing the vacated
-   * centre slot, while the now-empty selection pill fades out. Animated purely in
-   * CSS, and only enabled after the drum is at rest, so it never smears the spin.
+   * Close the drum up once the winning team has flown off, as a list removal: the
+   * rows below the vacated slot climb one pitch to take its place while the rows
+   * above hold, so the next team slides into the selection container. The
+   * container itself stays put and keeps framing the centred name. Animated purely
+   * in CSS, and only enabled after the drum is at rest, so it never smears the spin.
    */
   collapseCentre?: boolean
 }
@@ -446,25 +447,18 @@ export function SpinRollerSpinner({
           {/* Centre selection pill, sitting behind the rows. Self-centring, and
               owns its own staged reveal — see components/pill-reveal.tsx. The
               pop and glow it used to fire the instant the drum stopped now ride
-              the fill at the end of that sequence. Wrapped so it can fade out as
-              the drum compresses — otherwise the empty slot would keep peeking
-              between the two halves as they close over it. */}
-          <div
-            className="absolute inset-0"
-            style={{
-              opacity: collapseCentre ? 0 : 1,
-              transition: "opacity 300ms ease",
-            }}
-          >
-            <RevealPill
-              team={landedTeam}
-              stage={revealStage}
-              width={PILL_W}
-              height={ITEM_H - 4}
-              idleColor={PILL_IDLE}
-              {...reveal}
-            />
-          </div>
+              the fill at the end of that sequence. It stays put through the
+              collapse — it is the drum's selection container, not part of the
+              removed row, so the rows close ranks *underneath* it and it keeps
+              framing whichever name is now centred. */}
+          <RevealPill
+            team={landedTeam}
+            stage={revealStage}
+            width={PILL_W}
+            height={ITEM_H - 4}
+            idleColor={PILL_IDLE}
+            {...reveal}
+          />
 
           {/* Rows, positioned on the surface of the drum */}
           <div
@@ -472,28 +466,36 @@ export function SpinRollerSpinner({
             style={{ transformStyle: "preserve-3d" }}
           >
             {rows.map(({ slot, idx, delta, team }) => {
-              const angle = delta * stepDeg
+              /* Compression is a list removal, not a squeeze: the winner's slot is
+                 vacated, so every row *below* it climbs one pitch to close ranks
+                 while the rows above stay put. Advancing the row's own drum angle
+                 (rather than nudging it with a screen-space translate) means it
+                 travels along the drum surface and arrives flat and centred — so
+                 the selection container still frames a real name instead of
+                 sitting empty over a gap. `rel` is the integer slot offset, which
+                 is stable once the drum is at rest. */
+              const rel = slot - centre
+              const collapseRows = collapseCentre && rel > 0 ? 1 : 0
+              /* The vacated row itself is left in place but hidden: the incoming
+                 row lands exactly on top of it, and its label is the one that flew
+                 away. */
+              const vacated = collapseCentre && rel === 0
+              const effDelta = delta - collapseRows
+              const angle = effDelta * stepDeg
               // Past ~72° the row is nearly edge-on; drop it entirely.
               if (Math.abs(angle) > EDGE_ON_DEG) return null
               /* Fade tracks the row's *angle*, not its row-index distance, so
                  the dimming profile looks the same at any pitch. The 2.1
-                 preserves the original falloff at the default pitch. */
+                 preserves the original falloff at the default pitch. Because the
+                 angle is post-collapse, the row sliding into the centre brightens
+                 as it arrives rather than staying dim there. */
               const fade = Math.min(1, Math.abs(angle) / (2.1 * DEFAULT_STEP_DEG))
+              /* Two distinct notions of "centre": `isCentre` is the winner's row
+                 (the flight's measurement source, fixed pre-collapse), while
+                 `isVisualCentre` is whichever row is actually sitting in the
+                 container right now. */
               const isCentre = Math.abs(delta) < 0.5
-              /* Compression: once the winner has flown off, the whole upper half
-                 slides down and the lower half slides up by half a pitch, closing
-                 the vacated centre slot. Applied as a screen-space translateY
-                 (leftmost in the list, so it acts after the 3D rotate) and only
-                 transitioned while collapsing, so the per-frame spin transforms
-                 never smear. `rel` uses the integer slot offset, stable at rest. */
-              const rel = slot - centre
-              const collapseShift = collapseCentre
-                ? rel < 0
-                  ? rowPitch / 2
-                  : rel > 0
-                    ? -rowPitch / 2
-                    : 0
-                : 0
+              const isVisualCentre = !vacated && Math.abs(effDelta) < 0.5
               return (
                 <div
                   key={`${slot}-${idx}`}
@@ -502,13 +504,15 @@ export function SpinRollerSpinner({
                     height: ITEM_H,
                     top: "50%",
                     marginTop: -ITEM_H / 2,
-                    transform: `translateY(${collapseShift}px) rotateX(${-angle}deg) translateZ(${RADIUS}px)`,
+                    transform: `rotateX(${-angle}deg) translateZ(${RADIUS}px)`,
+                    /* Only transitioned while collapsing, so the per-frame spin
+                       transforms are never smeared by an interpolation. */
                     transition: collapseCentre
-                      ? "transform 340ms cubic-bezier(0.22,0.61,0.36,1)"
+                      ? "transform 340ms cubic-bezier(0.22,0.61,0.36,1), opacity 340ms ease"
                       : undefined,
                     // Rows tip away from the viewer, so they dim and lose
                     // contrast the further they are from centre.
-                    opacity: 1 - fade * 0.82,
+                    opacity: vacated ? 0 : 1 - fade * 0.82,
                     backfaceVisibility: "hidden",
                   }}
                 >
@@ -520,8 +524,8 @@ export function SpinRollerSpinner({
                       /* Flips with the fill, not with landing: during the
                          stroke stages the pill is still dark, so the label
                          stays white until the primary is actually behind it. */
-                      color: isCentre
-                        ? revealStage === 2
+                      color: isVisualCentre
+                        ? isCentre && revealStage === 2
                           ? landedTextColor
                           : "#ffffff"
                         : "#8f8f8f",
