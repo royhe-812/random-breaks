@@ -395,25 +395,26 @@ export function TestingZone() {
      within that flight, and the abbreviation's centre size. The spin itself is
      the real roller and reuses the spin dials above; the pill's reveal reuses the
      `reveal` object. Times in ms — short beats cut against the spin. */
-  const { landHoldMs, flightMs, arc, morphWindow, centerFont, scrimOpacity } = useDialKit("Shared transition", {
+  const { landHoldMs, flightMs, arc, morphDone, centerFont, scrimOpacity } = useDialKit("Shared transition", {
     // Extra hold on the full "City Name" (after the drum's own settle) before flight.
     landHoldMs: [440, 0, 1500, 20] as [number, number, number, number],
     // Flight duration, drum centre → screen centre.
     flightMs: [740, 200, 2000, 20] as [number, number, number, number],
     // Peak lift of the flight arc in px; 0 is a straight line to centre.
     arc: [40, 0, 160, 4] as [number, number, number, number],
-    /* Where in the flight the letter-collapse happens, as a centred fraction.
-       0 morphs across the whole flight; 0.6 keeps the full name readable at the
-       ends and does the compression in the middle 60%. */
-    morphWindow: [0.64, 0, 1, 0.02] as [number, number, number, number],
+    /* Fraction of the flight by which the name→abbrev crossfade is fully done.
+       0.55 finishes it just past halfway, so the swap reads as happening on the
+       way to the centre rather than on arrival. Lower = swaps sooner. */
+    morphDone: [0.55, 0.2, 1, 0.02] as [number, number, number, number],
     // Abbreviation size at the centre, in px.
     centerFont: [30, 16, 60, 1] as [number, number, number, number],
     // Peak darkness of the scrim that dims the frame behind the flight; 0 disables it.
     scrimOpacity: [0.72, 0, 1, 0.02] as [number, number, number, number],
   })
-  // Centre the morph window inside the flight: a 0.64 window runs 0.18 → 0.82.
-  const morphStart = (1 - morphWindow) / 2
-  const morphEnd = 1 - morphStart
+  /* Front-loaded window: start right away, finish by morphDone, so the text has
+     already become the abbreviation before it reaches its final spot. */
+  const morphStart = 0
+  const morphEnd = morphDone
 
   const spinDurationMs = Math.round(spinTime * 1000)
 
