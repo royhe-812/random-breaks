@@ -129,11 +129,12 @@ export function SharedTransitionStage({
   const fy = useMotionValue(0)
   const fscale = useMotionValue(1)
   /* Crossfade progress, 0 = full name, 1 = abbreviation. The two labels are
-     stacked and cross-faded on these, with a small overlap so neither goes fully
-     invisible mid-swap. */
+     stacked and cross-faded simultaneously over the whole range — full fades out
+     exactly as abbrev fades in, mirror images — so their opacities always sum to
+     ~1 and there's no dip where the text goes faint mid-swap. */
   const morph = useMotionValue(0)
-  const fullOpacity = useTransform(morph, [0, 0.55], [1, 0])
-  const abbrevOpacity = useTransform(morph, [0.45, 1], [0, 1])
+  const fullOpacity = useTransform(morph, [0, 1], [1, 0])
+  const abbrevOpacity = useTransform(morph, [0, 1], [0, 1])
   const color = useMotionValue("#ffffff")
 
   const reduce = useMemo(
