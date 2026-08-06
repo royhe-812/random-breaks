@@ -263,6 +263,41 @@ export function RevealCard({
           </div>
         </motion.div>
 
+        {/* One-shot gloss shimmer — a single diagonal light band that sweeps
+            across the face while the card turns in, then never repeats. It rides
+            above the content but below the outline, is clipped by the card's
+            overflow-hidden, and is skipped entirely for reduced motion. The band
+            is wider than the card and starts fully off the left edge so no seam
+            is visible at rest; `mix-blend-screen` makes it read as light on the
+            gradient rather than a grey overlay. */}
+        {!reduceMotion && (
+          <motion.div
+            className="pointer-events-none absolute inset-0"
+            style={{ mixBlendMode: "screen" }}
+            aria-hidden="true"
+            initial={{ x: "-140%", opacity: 0 }}
+            animate={{ x: "140%", opacity: [0, 1, 1, 0] }}
+            transition={{
+              // Sweep spans the turn-in window so the shine tracks the tilt.
+              duration: (drawMs + holdMs) / 1000,
+              ease: [0.4, 0, 0.2, 1],
+              opacity: { duration: (drawMs + holdMs) / 1000, times: [0, 0.15, 0.85, 1] },
+            }}
+          >
+            <div
+              className="absolute top-0 h-full"
+              style={{
+                // A band ~55% of the card width, angled and feathered at the edges.
+                left: "-10%",
+                width: "45%",
+                transform: "skewX(-18deg)",
+                background:
+                  "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 35%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0.15) 65%, transparent 100%)",
+              }}
+            />
+          </motion.div>
+        )}
+
         {/* The shared two-headed lap-stroke outline, drawn around the card. */}
         <LapStrokeOutline
           width={width}
