@@ -118,6 +118,8 @@ export function SharedTransitionStage({
   const [hideCentre, setHideCentre] = useState(false)
   const [showTag, setShowTag] = useState(false)
   const [portalReady, setPortalReady] = useState(false)
+  // Tap-to-dismiss: fades the reveal + scrim away and hands the frame back.
+  const [dismissed, setDismissed] = useState(false)
 
   // Attached to the drum's resting centre row — the flight origin.
   const rowNameRef = useRef<HTMLSpanElement>(null)
@@ -275,8 +277,19 @@ export function SharedTransitionStage({
 
   useEffect(() => () => stageTimers.current.forEach(clearTimeout), [])
 
-  const claimed = phase === "reveal"
+  /* Tap the scrim once the team is revealed to dismiss it: stop any pending
+     sequence steps and let the overlay fade out. */
+  const handleDismiss = useCallback(() => {
+    if (phase !== "reveal" || dismissed) return
+    stageTimers.current.forEach(clearTimeout)
+    setDismissed(true)
+  }, [phase, dismissed])
+
+  // Row un-dims on dismiss; the overlay children stay phase-gated so they fade
+  // out together via the wrapper rather than popping out one by one.
+  const claimed = phase === "reveal" && !dismissed
   const flying = phase === "flying" || phase === "reveal"
+  const scrimInteractive = phase === "reveal" && !dismissed
 
   // ─── Bottom slot: the real roller, driven to spin-and-land only ───────────
   const row = (
@@ -310,7 +323,11 @@ export function SharedTransitionStage({
 
   // ─── Centre overlay (portalled into the phone frame) ─────────────────────
   const overlay = (
-    <div className="pointer-events-none absolute inset-0 z-30">
+    <motion.div
+      className="pointer-events-none absolute inset-0 z-30"
+      animate={{ opacity: dismissed ? 0 : 1 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+    >
       {/* Scrim: darkens the whole frame behind the flight so the flying name and
           the centre reveal read against the drum and chrome. Fades in with the
           flight and holds through the reveal; a radial gradient keeps the centre
@@ -318,7 +335,10 @@ export function SharedTransitionStage({
           the flying text, and the tag. */}
       {scrimOpacity > 0 && (
         <motion.div
-          aria-hidden
+          role={scrimInteractive ? "button" : undefined}
+          aria-label={scrimInteractive ? "Dismiss reveal" : undefined}
+          aria-hidden={scrimInteractive ? undefined : true}
+          onClick={scrimInteractive ? handleDismiss : undefined}
           className="absolute inset-0"
           style={{
             background: `radial-gradient(120% 90% at 50% 50%, rgba(0,0,0,${scrimOpacity}) 0%, rgba(0,0,0,${Math.min(1, scrimOpacity + 0.12)}) 100%)`,
@@ -326,6 +346,9 @@ export function SharedTransitionStage({
                the layer's opacity, so the blur ramps up alongside the darkening. */
             backdropFilter: "blur(3px)",
             WebkitBackdropFilter: "blur(3px)",
+            /* Only tappable once the team is revealed; a tap dismisses it. */
+            pointerEvents: scrimInteractive ? "auto" : "none",
+            cursor: scrimInteractive ? "pointer" : "default",
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: flying ? 1 : 0 }}
@@ -431,7 +454,7 @@ export function SharedTransitionStage({
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   )
 
   return (
