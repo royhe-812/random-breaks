@@ -108,7 +108,7 @@ export function SharedTransitionStage({
   landHoldMs = 440,
   flightMs = 740,
   arc = 40,
-  nameFadeMs = 420,
+  nameFadeMs = 250,
   overlapMs = 160,
   centerFont = 30,
   scrimOpacity = 0.72,
@@ -200,11 +200,11 @@ export function SharedTransitionStage({
 
       // Beat 1 — the full name dissolves where it sits on the roller. Linear
       // opacity so the dimming is visible from the first frame (easeIn held it at
-      // full opacity and read as a cut). It also blooms up ~14% as it goes, which
-      // turns the fade into a readable exit gesture instead of the small row text
-      // merely disappearing behind the incoming abbreviation.
+      // full opacity and read as a cut). It also shrinks 20% as it goes, so the
+      // fade reads as a readable exit gesture — the name receding away — instead
+      // of the small row text merely disappearing behind the incoming abbrev.
       animate(fullOut, 0, { duration: nameFadeMs / 1000, ease: "linear" })
-      animate(oscale, s0 * 1.14, { duration: nameFadeMs / 1000, ease: "easeOut" })
+      animate(oscale, s0 * 0.8, { duration: nameFadeMs / 1000, ease: "easeIn" })
 
       // Beat 2 — the short form lifts off slightly before the fade completes,
       // then grows and travels to the centre.
