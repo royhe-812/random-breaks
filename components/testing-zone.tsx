@@ -400,7 +400,7 @@ export function TestingZone() {
       // Extra hold on the full "City Name" (after the drum's own settle) before beat 1.
       landHoldMs: [440, 0, 1500, 20] as [number, number, number, number],
       // Beat 1: how long the full name takes to fade out in place at the roller.
-      nameFadeMs: [250, 60, 900, 20] as [number, number, number, number],
+      nameFadeMs: [260, 60, 900, 20] as [number, number, number, number],
       /* How much the short form's lift-off overlaps the tail of that fade.
          Larger = short form appears sooner, before the full name is fully gone. */
       overlapMs: [160, 0, 400, 10] as [number, number, number, number],
@@ -414,7 +414,7 @@ export function TestingZone() {
       // Peak darkness of the scrim that dims the frame behind the flight; 0 disables it.
       scrimOpacity: [0.72, 0, 1, 0.02] as [number, number, number, number],
       // Peak of the trading card's subtle 3D turn-in, in degrees. 0 disables it.
-      cardTiltDeg: [16, 0, 45, 1] as [number, number, number, number],
+      cardTiltDeg: [45, 0, 45, 1] as [number, number, number, number],
     })
 
   const spinDurationMs = Math.round(spinTime * 1000)
