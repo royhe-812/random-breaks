@@ -9,6 +9,7 @@ import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
 import { SpinRollerMultiSpinner } from "@/components/spin-roller-multi-spinner"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { BreakSpotsBar } from "@/components/break-spots-bar"
+import { SharedTransitionStage } from "@/components/shared-transition-stage"
 import { useDialKit, DialRoot } from "dialkit"
 import "dialkit/styles.css"
 
@@ -287,6 +288,7 @@ const VARIANTS = [
   { id: "roller", label: "Roller" },
   { id: "roller-multi", label: "Roller, Multi" },
   { id: "in-place", label: "Spin In Place" },
+  { id: "shared", label: "Shared Transition" },
   { id: "single", label: "Single Spin" },
   { id: "multi3", label: "Multi (3)" },
   { id: "multi2", label: "Multi (2)" },
@@ -322,6 +324,9 @@ export function TestingZone() {
   const [result, setResult] = useState<Team | null>(null)
   // Opened by the chevron on the spinner's title row, matching the bid box card.
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false)
+  /* The phone-frame element. The shared-transition overlay portals into it so
+     "centre" is the centre of the whole screen, not the spinner slot. */
+  const frameRef = useRef<HTMLDivElement>(null)
 
   /* ── dialkit ──
      Live-tunable spin parameters. The tuple form is [value, min, max, step].
@@ -383,6 +388,31 @@ export function TestingZone() {
     () => ({ drawMs, drawEase, lapTurns, headLen, holdMs, fillMs, strokeWidth, popScale, glow }),
     [drawMs, drawEase, lapTurns, headLen, holdMs, fillMs, strokeWidth, popScale, glow],
   )
+
+  /* ── Shared transition ──
+     Pacing of the shared-element flight: how long the row cycles, the beat on the
+     landed name, the flight to centre, its arc, when the letters collapse within
+     that flight, and the abbreviation's centre size. The pill's own reveal reuses
+     the `reveal` object above. Times in ms — short beats cut against the spin. */
+  const { spinCycleMs, landHoldMs, flightMs, arc, morphWindow, centerFont } = useDialKit("Shared transition", {
+    // Initial name-cycle before the row settles on the winner.
+    spinCycleMs: [1400, 400, 4000, 50] as [number, number, number, number],
+    // Hold on the full "City Name" so viewers read it before it flies.
+    landHoldMs: [440, 0, 1500, 20] as [number, number, number, number],
+    // Flight duration, row → centre.
+    flightMs: [740, 200, 2000, 20] as [number, number, number, number],
+    // Peak lift of the flight arc in px; 0 is a straight line to centre.
+    arc: [40, 0, 160, 4] as [number, number, number, number],
+    /* Where in the flight the letter-collapse happens, as a centred fraction.
+       0 morphs across the whole flight; 0.6 keeps the full name readable at the
+       ends and does the compression in the middle 60%. */
+    morphWindow: [0.64, 0, 1, 0.02] as [number, number, number, number],
+    // Abbreviation size at the centre, in px.
+    centerFont: [30, 16, 60, 1] as [number, number, number, number],
+  })
+  // Centre the morph window inside the flight: a 0.64 window runs 0.18 → 0.82.
+  const morphStart = (1 - morphWindow) / 2
+  const morphEnd = 1 - morphStart
 
   const spinDurationMs = Math.round(spinTime * 1000)
 
@@ -520,6 +550,7 @@ export function TestingZone() {
         {/* ─── Mobile frame ─────────────────────────────────────────────── */}
         <div className="flex-1 flex items-start justify-center p-6 lg:p-10 overflow-y-auto">
           <div
+            ref={frameRef}
             className="relative flex-shrink-0 rounded-[44px] border-4 border-zinc-800 bg-black overflow-hidden"
             /* 390 x 848 keeps the iPhone 17 Pro Max 440:956 ratio the production
                device frame uses, so vertical spacing reads true. */
@@ -598,7 +629,25 @@ export function TestingZone() {
                 <Heart className="w-5 h-5 text-red-500 fill-red-500" />
               </div>
 
-              {isRealVariant ? (
+              {variant === "shared" ? (
+                <SharedTransitionStage
+                  key={`shared-${spinKey}`}
+                  frameRef={frameRef}
+                  forcedTeam={forcedTeam}
+                  spinKey={spinKey}
+                  isSpinning={isSpinning}
+                  onLanded={setResult}
+                  reveal={reveal}
+                  winnerName="Adam007"
+                  spinCycleMs={spinCycleMs}
+                  landHoldMs={landHoldMs}
+                  flightMs={flightMs}
+                  arc={arc}
+                  morphStart={morphStart}
+                  morphEnd={morphEnd}
+                  centerFont={centerFont}
+                />
+              ) : isRealVariant ? (
                 <div className="flex flex-col">
                 {/* The spots tile nests behind this card: its bottom 16px tuck
                     under the card, which keeps its full 16px top corners and
