@@ -334,7 +334,17 @@ export function SharedTransitionStage({
   // Opacity (the claimed dim + the dismiss fade) is owned by the crossfade
   // wrapper below, so this is a plain card shell.
   const rollerCard = (
-    <div className="bg-[#212121] rounded-2xl p-3">
+    <div>
+      {/* Incentive tile — the spinner renders only its inner content and expects
+          the parent to supply this, since the bar carries the "View all"
+          affordance in place of the card's removed chevron. Its own -mb-4 tucks
+          its bottom strip under the card so the two read as one nested unit.
+          Still the pre-claim count here; the bid box decrements it after the
+          spot is assigned. */}
+      <BreakSpotsBar availableSpots={availableSpots} totalSpots={totalSpots} onViewSpots={onViewSpots} />
+
+      {/* `relative` stacks the card above the tile's tucked bottom strip. */}
+      <div className="relative bg-[#212121] rounded-2xl p-3">
       <SpinRollerSpinner
         key={`shared-roller-${spinKey}`}
         isSpinning={isSpinning}
@@ -356,6 +366,7 @@ export function SharedTransitionStage({
           hideCentreLabel={hideCentre}
           collapseCentre={collapse}
         />
+      </div>
     </div>
   )
 
