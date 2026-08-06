@@ -405,6 +405,8 @@ export function TestingZone() {
     scrimOpacity,
     cardTiltDeg,
     shimmerMs,
+    spinCount,
+    betweenSpinsMs,
   } = useDialKit("Shared transition", {
       // Extra hold on the full "City Name" (after the drum's own settle) before beat 1.
       landHoldMs: [440, 0, 1500, 20] as [number, number, number, number],
@@ -426,6 +428,10 @@ export function TestingZone() {
       cardTiltDeg: [45, 0, 45, 1] as [number, number, number, number],
       // Sweep speed of the one-shot gloss shimmer, in ms. Lower = faster.
       shimmerMs: [620, 200, 2000, 20] as [number, number, number, number],
+      // Spins the viewer gets. 1 = straight through; 2+ adds the pick step.
+      spinCount: [2, 1, 4, 1] as [number, number, number, number],
+      // Beat between one spin landing and the next starting, in ms.
+      betweenSpinsMs: [520, 0, 1500, 20] as [number, number, number, number],
     })
 
   const spinDurationMs = Math.round(spinTime * 1000)
@@ -671,6 +677,8 @@ export function TestingZone() {
                   scrimOpacity={scrimOpacity}
                   cardTiltDeg={cardTiltDeg}
                   shimmerMs={shimmerMs}
+                  spinCount={spinCount}
+                  betweenSpinsMs={betweenSpinsMs}
                 />
               ) : isRealVariant ? (
                 <div className="flex flex-col">

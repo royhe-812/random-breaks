@@ -87,9 +87,16 @@ interface SharedTransitionStageProps {
   cardTiltDeg?: number
   /** Duration of the card's one-shot gloss shimmer, in ms. Lower = faster. */
   shimmerMs?: number
+  /** How many spins the viewer gets. >1 spins that many times, then lets them
+      pick which of the landed teams to keep. 1 keeps the straight-through flow. */
+  spinCount?: number
+  /** Beat between one spin landing and the drum starting the next, in ms. */
+  betweenSpinsMs?: number
 }
 
-type Phase = "spinning" | "landed" | "flying" | "reveal"
+/* "picking" only occurs when spinCount > 1: every spin has landed and the stage
+   is waiting for the viewer to tap one of the candidate pills. */
+type Phase = "spinning" | "landed" | "picking" | "flying" | "reveal"
 
 // The reveal is now a portrait trading card rather than a flat pill.
 const CARD_W = 188
@@ -130,10 +137,27 @@ export function SharedTransitionStage({
   scrimOpacity = 0.72,
   cardTiltDeg = 16,
   shimmerMs = 620,
+  spinCount = 1,
+  betweenSpinsMs = 520,
 }: SharedTransitionStageProps) {
+  const rounds = Math.max(1, Math.round(spinCount))
+  const isMulti = rounds > 1
+
   const [phase, setPhase] = useState<Phase>("spinning")
   const [landed, setLanded] = useState<Team | null>(null)
   const [hideCentre, setHideCentre] = useState(false)
+  /* Multi-spin bookkeeping. `round` remounts the drum for each new spin, and
+     `results` accumulates one landed team per spin, in spin order. */
+  const [round, setRound] = useState(0)
+  const [results, setResults] = useState<Team[]>([])
+  const [roundForced, setRoundForced] = useState<number | null>(forcedIndex)
+  /* Once a candidate is tapped, the losers dim in place and the picked pill's own
+     label is hidden so the flying copy can stand in for it. */
+  const [picked, setPicked] = useState<Team | null>(null)
+  const [hidePickedLabel, setHidePickedLabel] = useState(false)
+  /* Per-candidate label refs — the tapped one is the flight origin, exactly as
+     the drum's centre row is in the single-spin flow. */
+  const pillLabelRefs = useRef(new Map<string, HTMLSpanElement | null>())
   const [showTag, setShowTag] = useState(false)
   const [portalReady, setPortalReady] = useState(false)
   // Tap-to-dismiss: fades the reveal + scrim away and hands the frame back.
@@ -146,7 +170,10 @@ export function SharedTransitionStage({
   // Sequence timers, cleared on unmount so a mid-flight respin can't fire stale steps.
   const stageTimers = useRef<ReturnType<typeof setTimeout>[]>([])
 
-  const display = landed ? `${landed.city} ${landed.name}` : ""
+  /* The team the centre stage is about: whatever the drum landed on in the
+     single-spin flow, or whatever the viewer picked in the multi-spin one. */
+  const hero = isMulti ? picked : landed
+  const display = hero ? `${hero.city} ${hero.name}` : ""
 
   /* Two separate layers now, no longer a single crossfading element:
        • the full name sits STILL at the roller's centre row (ox/oy/oscale, never
@@ -173,16 +200,24 @@ export function SharedTransitionStage({
 
   useEffect(() => setPortalReady(true), [])
 
-  const pillTeam = phase === "reveal" ? landed : null
+  const pillTeam = phase === "reveal" ? hero : null
   const stage = useRevealStage(pillTeam, { drawMs: reveal.drawMs, holdMs: reveal.holdMs })
 
+  /* `originEl` is whatever on-screen text the card grows out of: the drum's
+     resting centre row in the single-spin flow, or the tapped candidate pill's
+     label in the multi-spin one. Everything downstream is measured from its rect,
+     so the shared-element hand-off is identical in both cases. */
   const beginFlight = useCallback(
-    (team: Team) => {
+    (team: Team, originEl: HTMLElement | null) => {
       const frame = frameRef.current
-      const rowName = rowNameRef.current
+      const rowName = originEl
       if (!frame || !rowName || reduce) {
-        setHideCentre(true)
-        setCollapse(true)
+        if (isMulti) {
+          setHidePickedLabel(true)
+        } else {
+          setHideCentre(true)
+          setCollapse(true)
+        }
         fullOut.set(0)
         abbrevIn.set(1)
         fx.set(0)
@@ -221,7 +256,9 @@ export function SharedTransitionStage({
       fscale.set(s0Abbrev)
       abbrevIn.set(0)
       color.set("#ffffff")
-      setHideCentre(true)
+      // Blank whichever label the flying copy is standing in for.
+      if (isMulti) setHidePickedLabel(true)
+      else setHideCentre(true)
       setPhase("flying")
 
       // Beat 1 — the full name dissolves where it sits on the roller. Linear
@@ -232,9 +269,11 @@ export function SharedTransitionStage({
       animate(fullOut, 0, { duration: nameFadeMs / 1000, ease: "linear" })
       animate(oscale, s0 * 0.8, { duration: nameFadeMs / 1000, ease: "easeIn" })
 
-      // Once the full name has finished fading — i.e. the winner has truly left
-      // its row — compress the drum so the neighbours close over the empty slot.
-      stageTimers.current.push(setTimeout(() => setCollapse(true), nameFadeMs))
+      /* Once the full name has finished fading — i.e. the winner has truly left
+         its row — compress the drum so the neighbours close over the empty slot.
+         Only meaningful when the drum row *was* the origin; in the multi-spin flow
+         the card grows out of a pill, so the drum has nothing to close over. */
+      if (!isMulti) stageTimers.current.push(setTimeout(() => setCollapse(true), nameFadeMs))
 
       // Beat 2 — the short form lifts off slightly before the fade completes,
       // then grows and travels to the centre.
@@ -264,6 +303,7 @@ export function SharedTransitionStage({
       nameFadeMs,
       overlapMs,
       reduce,
+      isMulti,
       ox,
       oy,
       oscale,
@@ -276,18 +316,17 @@ export function SharedTransitionStage({
     ],
   )
 
-  /* The drum owns the spin and calls this once it rests on the winner (after its
-     own settle flash). From here the stage schedules the rest of the sequence. */
-  const handleLanded = useCallback(
-    (team: Team) => {
-      setLanded(team)
-      setPhase("landed")
-      onLanded?.(team)
-
+  /* Schedules the centre-stage beats for one team: hold, flight, card turn-in,
+     then the fill + headline. `originEl` is resolved at fire time rather than
+     captured, so a pill that is still animating into place when the tap lands is
+     measured where it actually ends up. Shared by both flows — the only
+     difference between them is which element the card grows out of. */
+  const runReveal = useCallback(
+    (team: Team, getOrigin: () => HTMLElement | null, holdMs: number) => {
       // The short form only starts travelling once its lift-off delay elapses,
       // so it arrives a lift-delay later than the raw flight duration.
       const liftDelay = Math.max(0, nameFadeMs - overlapMs)
-      const flightStart = landHoldMs + liftDelay
+      const flightStart = holdMs + liftDelay
       const arriveAt = flightStart + flightMs
 
       /* The card begins tilting in *before* the short form reaches it, so the
@@ -298,7 +337,7 @@ export function SharedTransitionStage({
       const revealAt = Math.max(flightStart, arriveAt - cardLead)
 
       const timers: ReturnType<typeof setTimeout>[] = []
-      timers.push(setTimeout(() => beginFlight(team), landHoldMs))
+      timers.push(setTimeout(() => beginFlight(team, getOrigin()), holdMs))
       timers.push(setTimeout(() => setPhase("reveal"), revealAt))
       // Fill still waits for the abbrev to land and the turn to settle.
       const fillAt = arriveAt + (reveal.drawMs ?? 420) + (reveal.holdMs ?? 140)
@@ -311,7 +350,59 @@ export function SharedTransitionStage({
       stageTimers.current = timers
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [landHoldMs, flightMs, nameFadeMs, overlapMs, reveal.drawMs, reveal.holdMs, reveal.fillMs, beginFlight, onLanded, color],
+    [flightMs, nameFadeMs, overlapMs, reveal.drawMs, reveal.holdMs, reveal.fillMs, beginFlight, color],
+  )
+
+  /* The drum owns the spin and calls this once it rests on a team (after its own
+     settle flash). Single-spin goes straight into the reveal; multi-spin banks the
+     result and either queues the next spin or opens the pick step. */
+  const handleLanded = useCallback(
+    (team: Team) => {
+      setLanded(team)
+      setPhase("landed")
+      onLanded?.(team)
+
+      if (!isMulti) {
+        runReveal(team, () => rowNameRef.current, landHoldMs)
+        return
+      }
+
+      const banked = [...results, team]
+      setResults(banked)
+
+      if (banked.length >= rounds) {
+        // Every spin is in. Raise the scrim and hand the choice to the viewer.
+        stageTimers.current = [setTimeout(() => setPhase("picking"), landHoldMs)]
+        return
+      }
+
+      /* Queue the next spin on a team that hasn't come up yet, so the candidates
+         are always distinct, then remount the drum by bumping `round`. */
+      const used = new Set(banked.map((t) => teams.indexOf(t)))
+      const pool = teams.map((_, i) => i).filter((i) => !used.has(i))
+      const next = pool.length ? pool[Math.floor(Math.random() * pool.length)] : null
+      stageTimers.current = [
+        setTimeout(() => {
+          setRoundForced(next)
+          setRound((r) => r + 1)
+          setPhase("spinning")
+        }, betweenSpinsMs),
+      ]
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isMulti, rounds, results, betweenSpinsMs, landHoldMs, runReveal, onLanded],
+  )
+
+  /* Tapping a candidate commits it: the losers dim in place and the chosen pill
+     hands its label off to the flying copy. Zero hold — the tap *is* the beat. */
+  const handlePick = useCallback(
+    (team: Team) => {
+      if (phase !== "picking") return
+      stageTimers.current.forEach(clearTimeout)
+      setPicked(team)
+      runReveal(team, () => pillLabelRefs.current.get(team.abbrev) ?? null, 0)
+    },
+    [phase, runReveal],
   )
 
   useEffect(() => () => stageTimers.current.forEach(clearTimeout), [])
@@ -326,8 +417,13 @@ export function SharedTransitionStage({
 
   // Row un-dims on dismiss; the overlay children stay phase-gated so they fade
   // out together via the wrapper rather than popping out one by one.
-  const claimed = phase === "reveal" && !dismissed
+  const claimed = (phase === "reveal" || phase === "picking") && !dismissed
   const flying = phase === "flying" || phase === "reveal"
+  /* The scrim also has to be up for the pick step, which happens before any
+     flight — otherwise the candidate pills would float over an undimmed drum. */
+  const scrimUp = flying || phase === "picking"
+  /* Only the finished reveal is dismissable. During the pick step a stray tap
+     must not throw the choice away. */
   const scrimInteractive = phase === "reveal" && !dismissed
 
   // ─── Bottom slot: the real roller, driven to spin-and-land only ───────────
@@ -346,7 +442,9 @@ export function SharedTransitionStage({
       {/* `relative` stacks the card above the tile's tucked bottom strip. */}
       <div className="relative bg-[#212121] rounded-2xl p-3">
       <SpinRollerSpinner
-        key={`shared-roller-${spinKey}`}
+        /* `round` is part of the key so each additional spin remounts the drum
+           and replays its spin-up from scratch. */
+        key={`shared-roller-${spinKey}-${round}`}
         isSpinning={isSpinning}
         onLanded={handleLanded}
         winnerName={winnerName}
@@ -354,7 +452,7 @@ export function SharedTransitionStage({
         availableSpots={availableSpots}
         totalSpots={totalSpots}
         onViewSpots={onViewSpots}
-        forceTeamIndex={forcedIndex}
+        forceTeamIndex={roundForced}
         spinDuration={spinDuration}
         startSpeed={startSpeed}
         rampUp={rampUp}
@@ -520,7 +618,7 @@ export function SharedTransitionStage({
             cursor: scrimInteractive ? "pointer" : "default",
           }}
           initial={{ opacity: 0 }}
-          animate={{ opacity: flying ? 1 : 0 }}
+          animate={{ opacity: scrimUp ? 1 : 0 }}
           transition={{ duration: flightMs / 1000, ease: "easeOut" }}
         />
       )}
@@ -554,7 +652,7 @@ export function SharedTransitionStage({
           on the frame (shrink-wraps its text, then translate(-50%) recentres);
           the inner motion layer carries only x/y/scale/opacity, offsetting from
           that centre — the same FLIP pattern the single flying element used. */}
-      {flying && landed && (
+      {flying && hero && (
         <>
           {/* Full name — pinned to the roller row (ox/oy/oscale never animate),
               fading out in place. */}
@@ -607,15 +705,89 @@ export function SharedTransitionStage({
                 textShadow: phase === "reveal" ? "none" : "0 2px 12px rgba(0,0,0,0.6)",
               }}
             >
-              {landed.abbrev}
+              {hero.abbrev}
             </motion.div>
           </div>
         </>
       )}
 
+      {/* ─── Candidate pills (multi-spin only) ───────────────────────────────
+          One pill per spin, in spin order, anchored to the bottom of the frame.
+          They stay mounted through the reveal so the ones the viewer passed up
+          fade and desaturate *in place* rather than vanishing. The picked pill
+          instead empties out: its label is the element that flies to the card, so
+          the shell fades as the label departs. */}
+      {isMulti && (phase === "picking" || phase === "flying" || phase === "reveal") && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-5 flex flex-col items-center gap-2 px-4">
+          <AnimatePresence>
+            {phase === "picking" && (
+              <motion.span
+                key="pick-prompt"
+                className="block text-white/70 text-xs font-semibold uppercase tracking-widest"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.28, ease: "easeOut" }}
+              >
+                {`Tap to keep 1 of your ${rounds} spins`}
+              </motion.span>
+            )}
+          </AnimatePresence>
+
+          {results.map((t, i) => {
+            const isPicked = picked?.abbrev === t.abbrev
+            const isLoser = picked !== null && !isPicked
+            return (
+              <motion.button
+                key={`${t.abbrev}-${i}`}
+                type="button"
+                disabled={phase !== "picking"}
+                onClick={() => handlePick(t)}
+                aria-label={`Keep ${t.city} ${t.name}`}
+                className="rounded-full px-6 py-3 min-w-[200px] font-bold text-white text-base transition-colors disabled:cursor-default"
+                style={{
+                  backgroundColor: PILL_IDLE,
+                  border: "1px solid rgba(255,255,255,0.14)",
+                  boxShadow: "0 6px 20px rgba(0,0,0,0.45)",
+                  // Only the pick step accepts taps; afterwards they are inert.
+                  pointerEvents: phase === "picking" ? "auto" : "none",
+                  cursor: phase === "picking" ? "pointer" : "default",
+                }}
+                initial={{ opacity: 0, y: 14, scale: 0.96 }}
+                animate={{
+                  // Losers dim and desaturate where they sit; the picked shell
+                  // empties as its label flies off; unresolved pills sit at rest.
+                  opacity: isLoser ? 0.3 : isPicked ? 0 : 1,
+                  filter: isLoser ? "grayscale(1)" : "grayscale(0)",
+                  y: 0,
+                  scale: isLoser ? 0.97 : 1,
+                }}
+                transition={{
+                  // Staggered entrance, in the order the spins landed.
+                  duration: isPicked ? nameFadeMs / 1000 : 0.34,
+                  ease: "easeOut",
+                  delay: picked === null ? 0.06 + i * 0.07 : 0,
+                }}
+              >
+                {/* The label is the flight origin, so it is measured and hidden
+                    independently of the shell around it. */}
+                <span
+                  ref={(el) => {
+                    pillLabelRefs.current.set(t.abbrev, el)
+                  }}
+                  style={{ visibility: isPicked && hidePickedLabel ? "hidden" : "visible" }}
+                >
+                  {`${t.city} ${t.name}`}
+                </span>
+              </motion.button>
+            )
+          })}
+        </div>
+      )}
+
       {/* Headline above the card — "{winner}'s spot was assigned". */}
       <AnimatePresence>
-        {showTag && landed && (
+        {showTag && hero && (
           <motion.div
             key="headline"
             className="absolute left-1/2 -translate-x-1/2 w-[280px] text-center"
@@ -634,7 +806,7 @@ export function SharedTransitionStage({
 
       {/* Dismiss hint below the card. */}
       <AnimatePresence>
-        {showTag && landed && (
+        {showTag && hero && (
           <motion.div
             key="dismiss-hint"
             className="absolute left-1/2 -translate-x-1/2 text-center"
