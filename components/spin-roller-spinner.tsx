@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { teams, type Team } from "@/components/team-spinner"
 import { RevealPill, useRevealStage, type RevealTuning } from "@/components/pill-reveal"
+import { useRollerMotionBlur } from "@/components/roller-motion-blur"
 
 interface SpinRollerSpinnerProps {
   /** True while spinning, false to reset. */
@@ -49,6 +50,14 @@ interface SpinRollerSpinnerProps {
    * separation of its neighbours changes. Defaults to DEFAULT_ROW_PITCH (26).
    */
   rowPitch?: number
+  /**
+   * Strength of the drum's velocity-driven motion blur. 1 is the physically
+   * derived smear; 0 turns it off. The blur tracks instantaneous speed, so it
+   * ramps in with the drum and is always gone by the time it rests on the winner.
+   */
+  motionBlur?: number
+  /** Ceiling on the blur's stdDeviation, in px, so peak speed can't grey out the drum. */
+  motionBlurMax?: number
   /**
    * Feel of the landed pill's reveal — draw time, pacing, hold, fill, thickness,
    * pop and glow. Omit for the tuned defaults; the testing zone forwards dial
@@ -249,6 +258,8 @@ export function SpinRollerSpinner({
   rampUp = 0.35,
   stopEase = 3,
   rowPitch = DEFAULT_ROW_PITCH,
+  motionBlur = 1,
+  motionBlurMax = 10,
   reveal,
   disableReveal = false,
   centreRowRef,
@@ -368,6 +379,17 @@ export function SpinRollerSpinner({
 
   const centre = Math.round(pos)
 
+  /* Velocity-driven motion blur. Derived from `pos` rather than from the spin
+     phase, so it needs no wiring into the landing sequence: once the drum stops
+     moving the measured velocity is zero and the winner renders crisp. */
+  const { blurProps, filter: motionBlurFilter } = useRollerMotionBlur({
+    pos,
+    active: isSpinning,
+    rowPitch,
+    strength: motionBlur,
+    maxPx: motionBlurMax,
+  })
+
   // Landed team drives the pill treatment, reusing the same `color` the
   // celebration moments use so the two stay visually consistent.
   const landedTeam = landedIndex !== null ? teams[landedIndex] : null
@@ -444,6 +466,10 @@ export function SpinRollerSpinner({
             perspective: 420,
           }}
         >
+          {/* Filter definition for the rows' motion blur. Carries no visual of
+              its own — the rows reference it by id. */}
+          {motionBlurFilter}
+
           {/* Centre selection pill, sitting behind the rows. Self-centring, and
               owns its own staged reveal — see components/pill-reveal.tsx. The
               pop and glow it used to fire the instant the drum stopped now ride
@@ -532,6 +558,10 @@ export function SpinRollerSpinner({
                       /* Hidden (but kept in layout) once a shared-element flight
                          has taken over rendering the centre name. */
                       visibility: isCentre && hideCentreLabel ? "hidden" : "visible",
+                      /* Vertical-only smear, scaled to the drum's live speed.
+                         Applied to the span rather than the row so it cannot
+                         flatten the parent's preserve-3d and kill the curve. */
+                      ...blurProps.style,
                     }}
                   >
                     {team.city} {team.name}

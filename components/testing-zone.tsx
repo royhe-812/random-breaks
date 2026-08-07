@@ -348,8 +348,13 @@ export function TestingZone() {
      tighter than the drum's native 34, which pulls the neighbour rows closer to
      the centre pill. Lower tightens the names further, higher spreads them
      apart; the drum's own height stays fixed either way. */
-  const { rowPitch } = useDialKit("Roller rows", {
+  const { rowPitch, motionBlur, motionBlurMax } = useDialKit("Roller rows", {
     rowPitch: [26, 14, 60, 1] as [number, number, number, number],
+    /* Motion blur is derived from the drum's live velocity, so these only scale
+       a physically-modelled smear rather than setting it directly. 0 turns it
+       off; the cap stops peak speed from greying the drum out entirely. */
+    motionBlur: [1, 0, 3, 0.05] as [number, number, number, number],
+    motionBlurMax: [10, 0, 24, 0.5] as [number, number, number, number],
   })
 
   /* ── Pill reveal ──
@@ -664,6 +669,8 @@ export function TestingZone() {
                   rampUp={rampUp}
                   stopEase={stopEase}
                   rowPitch={rowPitch}
+                  motionBlur={motionBlur}
+                  motionBlurMax={motionBlurMax}
                   breakNumber={15}
                   availableSpots={15}
                   totalSpots={32}
@@ -707,6 +714,8 @@ export function TestingZone() {
                       rampUp={rampUp}
                     stopEase={stopEase}
                     rowPitch={rowPitch}
+                    motionBlur={motionBlur}
+                    motionBlurMax={motionBlurMax}
                     reveal={reveal}
                   />
                 ) : variant === "roller-multi" ? (
@@ -721,6 +730,8 @@ export function TestingZone() {
                       rampUp={rampUp}
                       stopEase={stopEase}
                       rowPitch={rowPitch}
+                      motionBlur={motionBlur}
+                      motionBlurMax={motionBlurMax}
                       reveal={reveal}
                     />
                   ) : (

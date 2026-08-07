@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { teams, type Team } from "@/components/team-spinner"
 import { RevealPill, useRevealStage, readableOn, type RevealTuning } from "@/components/pill-reveal"
+import { useRollerMotionBlur } from "@/components/roller-motion-blur"
 
 /* ── Roller, multi ──
    Same 3D drum as SpinRollerSpinner, but it runs one spin per spot instead of
@@ -52,7 +53,15 @@ interface SpinRollerMultiSpinnerProps {
    *  Defaults to DEFAULT_ROW_PITCH (26). */
   rowPitch?: number
   /**
-   * Feel of each landed pill's reveal — draw time, pacing, hold, fill, thickness,
+   * Strength of the drum's velocity-driven motion blur. 1 is the physically
+   * derived smear; 0 turns it off. Tracks instantaneous speed, so it ramps in
+   * with each spin and is gone by the time that spot's winner is at rest.
+   */
+  motionBlur?: number
+  /** Ceiling on the blur's stdDeviation, in px. */
+  motionBlurMax?: number
+  /**
+  * Feel of each landed pill's reveal — draw time, pacing, hold, fill, thickness,
    * pop and glow. Applies to every spot in the run. See pill-reveal.tsx.
    */
   reveal?: RevealTuning
@@ -222,8 +231,10 @@ export function SpinRollerMultiSpinner({
   rampUp = 0.35,
   stopEase = 3,
   rowPitch = DEFAULT_ROW_PITCH,
+  motionBlur = 1,
+  motionBlurMax = 10,
   reveal,
-}: SpinRollerMultiSpinnerProps) {
+  }: SpinRollerMultiSpinnerProps) {
   /* Convert the px pitch into the angular step the rows sit on. RADIUS stays
      fixed so the centre row's perspective magnification never shifts as the
      pitch changes; only its neighbours spread out or close in. */
@@ -406,6 +417,17 @@ export function SpinRollerMultiSpinner({
 
   const centre = Math.round(pos)
 
+  /* Velocity-driven motion blur. Because it reads speed rather than spin state it
+     needs no per-spin wiring: it ramps in on each spin, falls to zero while the
+     drum holds a landed spot, then ramps again for the next one. */
+  const { blurProps, filter: motionBlurFilter } = useRollerMotionBlur({
+    pos,
+    active: isSpinning,
+    rowPitch,
+    strength: motionBlur,
+    maxPx: motionBlurMax,
+  })
+
   /* Landed team drives the pill's staged reveal. Held here, not inside the pill,
      because the landed row's label has to change colour in step with the fill. */
   const landedTeam = landedIndex !== null ? teams[landedIndex] : null
@@ -488,6 +510,9 @@ export function SpinRollerMultiSpinner({
             perspective: 420,
           }}
         >
+          {/* Filter definition for the rows' motion blur — referenced by id. */}
+          {motionBlurFilter}
+
           {/* Centre selection pill, sitting behind the rows. Each spot now gets
               the same staged reveal as single-spin — stroke in the team's
               secondary, then the primary fills — resetting to idle before the
@@ -537,6 +562,10 @@ export function SpinRollerMultiSpinner({
                           ? landedTextColor
                           : "#ffffff"
                         : "#8f8f8f",
+                      /* Vertical-only smear, scaled to the drum's live speed.
+                         Applied to the span rather than the row so it cannot
+                         flatten the parent's preserve-3d and kill the curve. */
+                      ...blurProps.style,
                     }}
                   >
                     {team.city} {team.name}

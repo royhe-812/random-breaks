@@ -63,6 +63,10 @@ interface SharedTransitionStageProps {
   rampUp?: number
   stopEase?: number
   rowPitch?: number
+  /** Strength of the drum's velocity-driven motion blur; 0 disables it. */
+  motionBlur?: number
+  /** Ceiling on the blur's stdDeviation, in px. */
+  motionBlurMax?: number
   /** Roller chrome, kept in sync with the other variants' bid box card. */
   breakNumber?: number
   availableSpots?: number
@@ -124,6 +128,8 @@ export function SharedTransitionStage({
   rampUp = 0.35,
   stopEase = 3,
   rowPitch = 26,
+  motionBlur = 1,
+  motionBlurMax = 10,
   breakNumber = 15,
   availableSpots = 15,
   totalSpots = 32,
@@ -458,6 +464,8 @@ export function SharedTransitionStage({
         rampUp={rampUp}
         stopEase={stopEase}
         rowPitch={rowPitch}
+        motionBlur={motionBlur}
+        motionBlurMax={motionBlurMax}
         reveal={reveal}
           disableReveal
           centreRowRef={rowNameRef}
