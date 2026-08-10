@@ -7,6 +7,7 @@ import { teams, type Team } from "@/components/team-spinner"
 import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
 import { SpinRollerMultiSpinner } from "@/components/spin-roller-multi-spinner"
+import { SpinTickerSpinner } from "@/components/spin-ticker-spinner"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { BreakSpotsBar } from "@/components/break-spots-bar"
 import { SharedTransitionStage } from "@/components/shared-transition-stage"
@@ -444,7 +445,12 @@ export function TestingZone() {
   const spinDurationMs = Math.round(spinTime * 1000)
 
   const forcedIndex = forcedTeam ? teams.findIndex(t => t.name === forcedTeam.name) : null
-  const isRealVariant = variant === "roller" || variant === "roller-multi" || variant === "in-place"
+  const isRealVariant =
+    variant === "roller" ||
+    variant === "roller-multi" ||
+    variant === "ticker" ||
+    variant === "ticker-multi" ||
+    variant === "in-place"
 
   const handleSpin = () => {
     setResult(null)
@@ -482,7 +488,7 @@ export function TestingZone() {
       </header>
 
       <div className="flex flex-col lg:flex-row flex-1 min-h-0">
-        {/* ─── Controls ─────────────────────���───────────────────────────── */}
+        {/* ─── Controls ─────────────────────���───────��───────────────────── */}
         <div className="lg:w-80 lg:flex-shrink-0 border-b lg:border-b-0 lg:border-r border-white/10 p-6 overflow-y-auto">
           {/* Variant */}
           <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-3">Variant</p>
