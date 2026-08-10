@@ -287,6 +287,8 @@ function MiniSpinner({ label, forcedTeam, spinKey, variant }: MiniSpinnerProps) 
 const VARIANTS = [
   { id: "roller", label: "Roller" },
   { id: "roller-multi", label: "Roller, Multi" },
+  { id: "ticker", label: "Ticker" },
+  { id: "ticker-multi", label: "Ticker, Multi" },
   { id: "in-place", label: "Spin In Place" },
   { id: "shared", label: "Shared Transition" },
   { id: "single", label: "Single Spin" },

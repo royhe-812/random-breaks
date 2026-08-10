@@ -24,6 +24,7 @@ import { SingleSpinChipPopulateSpinner } from "@/components/single-spin-chip-pop
 import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
 import { SpinRollerMultiSpinner } from "@/components/spin-roller-multi-spinner"
+import { SpinTickerSpinner } from "@/components/spin-ticker-spinner"
 import { BreakSpotsBar } from "@/components/break-spots-bar"
 
 import { MockKeyboard } from "@/components/mock-keyboard"
@@ -48,7 +49,7 @@ import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { TestingZone } from "@/components/testing-zone"
 import { useHorizontalPager } from "@/hooks/use-horizontal-pager"
 
-type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "horizontal-swipe" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "ticker" | "horizontal-swipe" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 // Both manual concepts share the same behavior (extra 4th manual chip, chat
 // wording, item-card label); they only differ in how the chip is marked:
@@ -68,18 +69,25 @@ const isSingleSpin = (a: AnimationType) =>
 // swaps the randomization card's visual treatment for a picker-wheel drum.
 // "Horizontal Swipe" inherits that same flow too; it only changes how the two
 // cards are presented (a side-by-side pager instead of a vertical crossfade).
+// "Ticker" is the same deal as Roller: identical flow, and only the
+// randomization treatment differs (one name cutting instantly in place).
 const isSpinInPlace = (a: AnimationType) =>
-  a === "spin-in-place" || a === "spin-in-place-roller" || a === "horizontal-swipe"
+  a === "spin-in-place" || a === "spin-in-place-roller" || a === "ticker" || a === "horizontal-swipe"
 
 // Concepts that draw the randomization card as the roller drum: tighter 12px
 // padding, #212121 fill, spots row inside the card (so the bid box drops its own
-// SpotsProgress), and the Single/Multi drum toggle.
+// SpotsProgress), and the Single/Multi drum toggle. Ticker shares all of that
+// card chrome — it only swaps the drum itself for the instant-cut ticker.
 const usesRollerCard = (a: AnimationType) =>
-  a === "spin-in-place-roller" || a === "horizontal-swipe"
+  a === "spin-in-place-roller" || a === "ticker" || a === "horizontal-swipe"
+
+/** The instant-cut ticker treatment, in place of the 3D drum. */
+const usesTicker = (a: AnimationType) => a === "ticker"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "single-spin-populate", name: "Single Spin" },
   { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
+  { id: "ticker", name: "Ticker" },
   { id: "horizontal-swipe", name: "Horizontal Swipe" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-4-auto", name: "Multi-Spin Text" },
@@ -992,11 +1000,11 @@ case "thumbnails-4":
       {usesRollerCard(selectedAnimation) && (
         <div
           role="group"
-          aria-label="Roller spin mode"
+          aria-label={usesTicker(selectedAnimation) ? "Ticker spin mode" : "Roller spin mode"}
           className="hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-[110] flex-col gap-2 rounded-2xl border border-white/10 bg-zinc-900/95 backdrop-blur p-3 shadow-2xl"
         >
           <span className="text-[11px] font-medium uppercase tracking-wide text-white/50">
-            Roller spin
+            {usesTicker(selectedAnimation) ? "Ticker spin" : "Roller spin"}
           </span>
           {([
             { id: "single", label: "Single", hint: "1 spot" },
@@ -1818,7 +1826,29 @@ case "thumbnails-4":
                   backgroundColor: usesRollerCard(selectedAnimation) ? "#212121" : "#191919",
                 }}
               >
-              {usesRollerCard(selectedAnimation) && rollerMode === "multi" ? (
+              {usesTicker(selectedAnimation) ? (
+                /* Ticker handles both modes itself, so it takes `mode` rather
+                   than being swapped for a separate multi component. In multi
+                   the reveal must hang off `onAllLanded` — `onLanded` fires per
+                   spot and would cut the run short after spot 1. */
+                <SpinTickerSpinner
+                  isSpinning={spinInPlaceActive}
+                  mode={rollerMode}
+                  onLanded={
+                    rollerMode === "multi" ? undefined : handleSpinInPlaceLanded
+                  }
+                  onAllLanded={
+                    rollerMode === "multi"
+                      ? (landed) => {
+                          const final = landed[landed.length - 1]
+                          if (final) handleSpinInPlaceLanded(final.team)
+                        }
+                      : undefined
+                  }
+                  winnerName="Adam007"
+                  breakNumber={displayBreakNumber}
+                />
+              ) : usesRollerCard(selectedAnimation) && rollerMode === "multi" ? (
                 /* Multi draws three spots from one drum. `onLanded` fires per
                    spot, so the reveal must hang off `onAllLanded` instead —
                    using onLanded here would cut the run short after spot 1. */
