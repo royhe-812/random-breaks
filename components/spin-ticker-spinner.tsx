@@ -50,23 +50,41 @@ interface SpinTickerSpinnerProps {
 }
 
 /* ── Layout ──
-   Deliberately shares ITEM_H, the pill width maths and the two greys with the
-   rollers: Ticker is the same card with a different randomization treatment, so
-   the selection pill must be the exact same object in the same place. Only the
-   *contents* of that pill differ — one name swapping in place instead of a drum
-   of names travelling past. */
-const ITEM_H = 34
-/** Widest NFL team name — "Washington Commanders" — at the row type
- *  (600 14px Geist). Re-measure if the label font/size/weight changes. */
-const WIDEST_NAME_W = 172
-const PILL_PAD_X = 16
-/** Matches the rollers so the pill is identical across all three concepts. */
-const PILL_W_SCALE = 1.25
-const PILL_W = Math.round((WIDEST_NAME_W + PILL_PAD_X * 2) * PILL_W_SCALE)
-/** Resting fill of the pill: one step lighter than the #212121 card. */
-const PILL_IDLE = "#363636"
-/** Hairline rule. Shares #363636 with PILL_IDLE by design. */
-const DIVIDER = "#363636"
+   Per frame 817:27591 the ticker is NOT the roller's drum minus the outer rows:
+   it is its own inset panel with a smaller, lighter, more rounded pill and a
+   label above it. So the geometry here is deliberately independent of the
+   rollers' — only the card chrome around it (title, divider, chips) is shared. */
+/** Widest name in the actual 17-team list — "Los Angeles Chargers" — measured at
+ *  the pill's own type (700 14px Market Sans) via canvas measureText. Re-measure
+ *  if the team list or the label's font/size/weight changes. */
+const WIDEST_NAME_W = 149
+/** Pill width, exactly as authored in frame 817:27758. The ticker holds one fixed
+ *  width for every name (see the fixed-width note on the label), so it has to
+ *  clear the widest one — at 149px it does, with 20px of room a side. */
+const PILL_W = 190
+/** Room the label keeps inside the pill on the worst-case name, so `truncate` can
+ *  never bite into a name that would otherwise fit. */
+const PILL_PAD_X = Math.floor((PILL_W - WIDEST_NAME_W) / 2)
+/** Pill height and radius, both straight from frame 817:27758. */
+const PILL_H = 20
+const PILL_RADIUS = 8
+
+/* ── Randomizer panel (frame 817:27737) ──
+   The randomizer is now its own inset panel rather than a bare region of the
+   card: a #363636 rounded box holding the "Randomizing spot for …" line and the
+   pill, centred as a group. */
+/** Inset panel fill. */
+const PANEL_BG = "#363636"
+const PANEL_RADIUS = 8
+/** Panel height, from the frame. Fixed so the card never resizes mid-spin. */
+const PANEL_H = 138
+/** Gap between the label and the pill, from the frame. */
+const PANEL_GAP = 8
+/** Resting fill of the pill (frame 817:27758). Much lighter than the rollers'
+ *  #363636 — light enough that the reveal's stroke test has to allow *darker*
+ *  strokes as well as brighter ones, or 9 of the 17 teams collapse onto the same
+ *  neutral outline. See DARK_STROKE_MIN_PILL_LUMA in pill-reveal.tsx. */
+const PILL_IDLE = "#767676"
 /** Height reserved for the picked-team chip row (chips are h-4), held from the
  *  first render so the panel never changes height as picks land. */
 const CHIP_ROW_H = 16
@@ -404,39 +422,56 @@ export function SpinTickerSpinner({
         </p>
       </div>
 
-      {/* Hairline between the title and the ticker, matching the rollers. */}
-      <hr className="w-full m-0 border-0" style={{ height: 0, borderTop: `1px solid ${DIVIDER}` }} />
+      {/* ── Randomizer panel (frame 817:27737) ──
+          The randomizer is its own inset #363636 box rather than a bare region
+          of the card, holding the label and the pill centred as a group. It
+          replaces the rollers' hairline-divider + trophy-line arrangement: the
+          panel's own label already carries the winner's name, so a trophy line
+          above it would print the same name twice.
 
-      <div className="w-full flex flex-col gap-1">
-        {/* Whose spot is being drawn, per the Figma frame. This carries the
-            winner's name, so unlike the rollers there is no separate trophy
-            line above the divider — that would print the same name twice. */}
-        <p className="truncate text-sm leading-tight text-white">
-          <span aria-hidden="true">{"🏆"}</span>{" "}
-          <span className="font-bold">{activeWinner}</span>
+          Height is fixed rather than derived from the contents so the card is
+          its final size before the first tick and never resizes mid-spin. */}
+      <div
+        className="w-full flex flex-col items-center justify-center"
+        style={{
+          height: PANEL_H,
+          gap: PANEL_GAP,
+          backgroundColor: PANEL_BG,
+          borderRadius: PANEL_RADIUS,
+          paddingTop: PANEL_GAP,
+          paddingBottom: PANEL_GAP,
+        }}
+      >
+        {/* Whose spot is being drawn (frame 817:27750). */}
+        <p className="truncate text-center" style={{ fontSize: 12, lineHeight: "16px", color: "#f7f7f7" }}>
+          {`Randomizing spot for ${activeWinner}:`}
         </p>
 
         {/* ── Ticker ──
-            The roller's drum reduced to its centre row. Same height as the
-            drum's selection slot so the card keeps its proportions, but there
-            is no perspective, no 3D and no motion blur: nothing here travels,
-            so there is no direction to smear along. A blur would just read as
-            the text being out of focus. */}
+            The roller's drum reduced to a single row. No perspective, no 3D and
+            no motion blur: nothing here travels, so there is no direction to
+            smear along — a blur would just read as the text being out of focus.
+
+            Sized to the pill exactly, so the pill is the row. */}
         <div
-          className="relative w-full flex items-center justify-center"
-          style={{ height: ITEM_H * 3 }}
+          className="relative flex items-center justify-center"
+          style={{ width: PILL_W, height: PILL_H }}
           /* The name changes far too fast to be worth announcing mid-run; the
-             winner is announced by the host once it lands. */
+             settled winner is announced by the live region below. */
           aria-hidden="true"
         >
           {/* Selection pill, sitting behind the name. Self-centring, and owns
-              its own staged reveal — see components/pill-reveal.tsx. */}
+              its own staged reveal — see components/pill-reveal.tsx.
+              `midToneIdle` switches stroke selection to the symmetric contrast
+              rule, which this lighter #767676 pill needs. */}
           <RevealPill
             team={landedTeam}
             stage={revealStage}
             width={PILL_W}
-            height={ITEM_H - 4}
+            height={PILL_H}
+            radius={PILL_RADIUS}
             idleColor={PILL_IDLE}
+            midToneIdle
             {...reveal}
           />
 
@@ -445,55 +480,57 @@ export function SpinTickerSpinner({
               pill's width dozens of times a second on top of the text change,
               which reads as jitter rather than as a ticker. */}
           <span
-            className="relative truncate text-center font-semibold leading-none"
+            className="relative truncate text-center font-bold"
             style={{
               width: PILL_W - PILL_PAD_X * 2,
               fontSize: 14,
-              /* Flips with the fill, not with landing: during the stroke stages
-                 the pill is still dark, so the label stays white until the
-                 primary is actually behind it. */
+              lineHeight: `${PILL_H}px`,
+              /* Flips with the fill, not with landing: through the stroke stages
+                 the pill is still the idle grey, so the label stays white until
+                 the primary is actually behind it. */
               color: revealStage === 2 ? landedTextColor : "#ffffff",
             }}
           >
             {shownTeam.city} {shownTeam.name}
           </span>
         </div>
-
-        {/* Live region carrying only the settled result, so assistive tech gets
-            the outcome without the hundreds of intermediate names. */}
-        <p className="sr-only" aria-live="polite">
-          {landedTeam ? `${activeWinner} drew the ${landedTeam.city} ${landedTeam.name}` : ""}
-        </p>
-
-        {/* Picked teams, as chips — multi only, one per landed spot. The row is
-            always mounted with a reserved height so the card is its final size
-            before the first spin and never jumps as picks land. */}
-        {mode === "multi" && (
-          <div className="flex items-center" style={{ minHeight: CHIP_ROW_H }}>
-            <div
-              className="flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-              style={{ WebkitOverflowScrolling: "touch" }}
-            >
-              <AnimatePresence initial={false}>
-                {results.map(({ spot, team }) => (
-                  <motion.span
-                    key={spot}
-                    layout
-                    initial={{ opacity: 0, scale: 0.8, y: 6 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
-                    className={chipClass}
-                    style={chipStyle}
-                  >
-                    {team.city} {team.name}
-                  </motion.span>
-                ))}
-              </AnimatePresence>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Live region carrying only the settled result, so assistive tech gets
+          the outcome without the hundreds of intermediate names. */}
+      <p className="sr-only" aria-live="polite">
+        {landedTeam ? `${activeWinner} drew the ${landedTeam.city} ${landedTeam.name}` : ""}
+      </p>
+
+      {/* Picked teams, as chips — multi only, one per landed spot. Sits outside
+          the panel so the panel can keep its fixed frame height, and is always
+          mounted with a reserved row height so the card is its final size before
+          the first spin and never jumps as picks land. */}
+      {mode === "multi" && (
+        <div className="flex items-center" style={{ minHeight: CHIP_ROW_H }}>
+          <div
+            className="flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            <AnimatePresence initial={false}>
+              {results.map(({ spot, team }) => (
+                <motion.span
+                  key={spot}
+                  layout
+                  initial={{ opacity: 0, scale: 0.8, y: 6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className={chipClass}
+                  style={chipStyle}
+                >
+                  {team.city} {team.name}
+                </motion.span>
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

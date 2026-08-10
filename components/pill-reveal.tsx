@@ -120,16 +120,79 @@ const MIN_STROKE_LUMA_RATIO = 1.6
 const NEUTRAL_STROKE = "#E6E6E6"
 
 /**
+ * Pill luminance at or above which a *darker* stroke becomes legible, so the
+ * test can stop being one-directional. Sits well above the dark pills the
+ * rollers use (#212121 ≈ 0.012, #363636 ≈ 0.037) and below the Ticker's
+ * #767676 ≈ 0.181, so widening the rule provably cannot change what the
+ * rollers already draw.
+ */
+const DARK_STROKE_MIN_PILL_LUMA = 0.15
+
+/**
  * The team's secondary colour where it is visible, else the primary, else a
  * light neutral. Four teams have a near-black secondary (Bengals and Jets pure
  * black, Steelers #101820, Broncos #002244) and would otherwise draw an
  * invisible stroke.
+ *
+ * On a dark pill the test has to be *directional* — brighter than the pill —
+ * because a symmetric contrast ratio scores pure black higher than a mid red
+ * purely for being further from the pill, which is the opposite of what we want.
+ *
+ * But that rule only holds while the pill is dark. On the Ticker's mid-grey
+ * #767676 the brighter-only test rejects 9 of 17 teams (every navy and dark red)
+ * and collapses them all onto the same neutral stroke — even though navy on
+ * mid-grey is perfectly legible, just *darker*. So above
+ * DARK_STROKE_MIN_PILL_LUMA the darker direction is allowed too, which takes the
+ * neutral fallback from 9 teams back down to 1 (the Dolphins, whose orange and
+ * teal both sit too close to the pill in either direction).
  */
 export function strokeColorFor(team: Team, pillBg: string) {
-  const floor = relativeLuminance(pillBg) * MIN_STROKE_LUMA_RATIO
-  if (relativeLuminance(team.secondary) >= floor) return team.secondary
-  if (relativeLuminance(team.color) >= floor) return team.color
+  const pillLuma = relativeLuminance(pillBg)
+  const brightFloor = pillLuma * MIN_STROKE_LUMA_RATIO
+  /* Same ratio expressed downwards, in WCAG's +0.05 offset space so it stays
+     meaningful as the candidate approaches black. */
+  const darkCeiling = (pillLuma + 0.05) / MIN_STROKE_LUMA_RATIO - 0.05
+  const allowDark = pillLuma >= DARK_STROKE_MIN_PILL_LUMA
+
+  // Secondary first, then primary — the team's own order of preference.
+  for (const candidate of [team.secondary, team.color]) {
+    const luma = relativeLuminance(candidate)
+    if (luma >= brightFloor) return candidate
+    if (allowDark && luma <= darkCeiling) return candidate
+  }
   return NEUTRAL_STROKE
+}
+
+/** Minimum WCAG contrast ratio for a stroke to read against a mid-tone pill. */
+const MIN_STROKE_CONTRAST = 1.6
+/** Dark counterpart to NEUTRAL_STROKE, for when the pill is the lighter side. */
+const NEUTRAL_STROKE_DARK = "#101820"
+
+/**
+ * As `strokeColorFor`, but accepting contrast in *either* direction.
+ *
+ * The directional rule above is right on the rollers' near-black #363636 pill:
+ * there is no headroom below it, so "visible" and "brighter" are the same
+ * requirement.
+ *
+ * On a mid-grey pill (Ticker's #767676) that rule collapses. The brightness floor
+ * rises to a luminance of ~0.29, which most NFL primaries and secondaries —
+ * overwhelmingly navies, dark reds and dark greens — sit far below, so over half
+ * the league fails both tests and draws the same flat NEUTRAL_STROKE. The outline
+ * stops identifying the team, which is the whole reason it is drawn in the team's
+ * own colour.
+ *
+ * A mid-tone base has headroom on both sides, so the honest test there is
+ * contrast rather than brightness: a navy stroke reads perfectly well on mid-grey,
+ * just darker rather than lighter. The neutral fallback has to flip to the dark
+ * end too, for the same reason.
+ */
+export function strokeColorOn(team: Team, pillBg: string) {
+  const bg = relativeLuminance(pillBg)
+  const ratio = (l: number) => (Math.max(l, bg) + 0.05) / (Math.min(l, bg) + 0.05)
+  if (ratio(relativeLuminance(team.secondary)) >= MIN_STROKE_CONTRAST) return team.secondary
+  if (ratio(relativeLuminance(team.color)) >= MIN_STROKE_CONTRAST) return team.color
+  return bg > 0.18 ? NEUTRAL_STROKE_DARK : NEUTRAL_STROKE
 }
 
 /**
@@ -491,6 +554,12 @@ interface RevealPillProps {
   popScale?: number
   /** Multiplier on the glow that rides the fill. 0 disables it. */
   glow?: number
+  /**
+   * Set when `idleColor` is a mid-tone rather than near-black, which switches
+   * stroke selection from "must be brighter" to "must contrast either way".
+   * See `strokeColorOn`.
+   */
+  midToneIdle?: boolean
 }
 
 /**
@@ -512,9 +581,14 @@ export function RevealPill({
   headLen = HEAD_LEN,
   popScale = 1.04,
   glow = 1,
+  midToneIdle = false,
 }: RevealPillProps) {
   const reduceMotion = useReducedMotion()
-  const stroke = team ? strokeColorFor(team, idleColor) : "transparent"
+  const stroke = team
+    ? midToneIdle
+      ? strokeColorOn(team, idleColor)
+      : strokeColorFor(team, idleColor)
+    : "transparent"
   const filled = stage === 2 && team !== null
 
   return (

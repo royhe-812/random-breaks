@@ -720,7 +720,25 @@ export function TestingZone() {
                     motionBlurMax={motionBlurMax}
                     reveal={reveal}
                   />
-                ) : variant === "roller-multi" ? (
+                ) : variant === "ticker" || variant === "ticker-multi" ? (
+                    /* One component covers both modes, so the key includes the
+                       mode — otherwise toggling Single↔Multi would reuse the
+                       mounted instance and keep the previous run's spot list. */
+                    <SpinTickerSpinner
+                      key={`${variant}-${spinKey}`}
+                      isSpinning={isSpinning}
+                      mode={variant === "ticker-multi" ? "multi" : "single"}
+                      onLanded={setResult}
+                      winnerName="Adam007"
+                      breakNumber={15}
+                      forceTeamIndex={forcedIndex}
+                      spinDuration={spinDurationMs}
+                      startSpeed={startSpeed}
+                      rampUp={rampUp}
+                      stopEase={stopEase}
+                      reveal={reveal}
+                    />
+                  ) : variant === "roller-multi" ? (
                     <SpinRollerMultiSpinner
                       key={`roller-multi-${spinKey}`}
                       isSpinning={isSpinning}
