@@ -461,9 +461,9 @@ export function SpinTickerSpinner({
           aria-hidden="true"
         >
           {/* Selection pill, sitting behind the name. Self-centring, and owns
-              its own staged reveal — see components/pill-reveal.tsx.
-              `midToneIdle` switches stroke selection to the symmetric contrast
-              rule, which this lighter #767676 pill needs. */}
+              its own staged reveal — see components/pill-reveal.tsx. It picks the
+              stroke from `idleColor`, so this lighter pill gets the darker-stroke
+              branch automatically. */}
           <RevealPill
             team={landedTeam}
             stage={revealStage}
@@ -471,7 +471,6 @@ export function SpinTickerSpinner({
             height={PILL_H}
             radius={PILL_RADIUS}
             idleColor={PILL_IDLE}
-            midToneIdle
             {...reveal}
           />
 

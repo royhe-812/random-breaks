@@ -118,6 +118,8 @@ const MIN_STROKE_LUMA_RATIO = 1.6
  *  secondary is pure black and whose primary is a very dark green). Deliberately
  *  not pure white so it still reads as a stroke rather than a UI highlight. */
 const NEUTRAL_STROKE = "#E6E6E6"
+/** Dark counterpart to NEUTRAL_STROKE, for when the pill is the lighter side. */
+const NEUTRAL_STROKE_DARK = "#101820"
 
 /**
  * Pill luminance at or above which a *darker* stroke becomes legible, so the
@@ -145,11 +147,16 @@ const DARK_STROKE_MIN_PILL_LUMA = 0.15
  * DARK_STROKE_MIN_PILL_LUMA the darker direction is allowed too, which takes the
  * neutral fallback from 9 teams back down to 1 (the Dolphins, whose orange and
  * teal both sit too close to the pill in either direction).
+ *
+ * Note this stays a *directional* test in both cases rather than becoming a
+ * symmetric contrast ratio. A symmetric ratio would rank pure black above a mid
+ * red on a dark pill purely for being further away, which is the opposite of what
+ * a visible outline needs.
  */
 export function strokeColorFor(team: Team, pillBg: string) {
   const pillLuma = relativeLuminance(pillBg)
   const brightFloor = pillLuma * MIN_STROKE_LUMA_RATIO
-  /* Same ratio expressed downwards, in WCAG's +0.05 offset space so it stays
+  /* The same ratio expressed downwards, in WCAG's +0.05 offset space so it stays
      meaningful as the candidate approaches black. */
   const darkCeiling = (pillLuma + 0.05) / MIN_STROKE_LUMA_RATIO - 0.05
   const allowDark = pillLuma >= DARK_STROKE_MIN_PILL_LUMA
@@ -160,39 +167,9 @@ export function strokeColorFor(team: Team, pillBg: string) {
     if (luma >= brightFloor) return candidate
     if (allowDark && luma <= darkCeiling) return candidate
   }
-  return NEUTRAL_STROKE
-}
-
-/** Minimum WCAG contrast ratio for a stroke to read against a mid-tone pill. */
-const MIN_STROKE_CONTRAST = 1.6
-/** Dark counterpart to NEUTRAL_STROKE, for when the pill is the lighter side. */
-const NEUTRAL_STROKE_DARK = "#101820"
-
-/**
- * As `strokeColorFor`, but accepting contrast in *either* direction.
- *
- * The directional rule above is right on the rollers' near-black #363636 pill:
- * there is no headroom below it, so "visible" and "brighter" are the same
- * requirement.
- *
- * On a mid-grey pill (Ticker's #767676) that rule collapses. The brightness floor
- * rises to a luminance of ~0.29, which most NFL primaries and secondaries —
- * overwhelmingly navies, dark reds and dark greens — sit far below, so over half
- * the league fails both tests and draws the same flat NEUTRAL_STROKE. The outline
- * stops identifying the team, which is the whole reason it is drawn in the team's
- * own colour.
- *
- * A mid-tone base has headroom on both sides, so the honest test there is
- * contrast rather than brightness: a navy stroke reads perfectly well on mid-grey,
- * just darker rather than lighter. The neutral fallback has to flip to the dark
- * end too, for the same reason.
- */
-export function strokeColorOn(team: Team, pillBg: string) {
-  const bg = relativeLuminance(pillBg)
-  const ratio = (l: number) => (Math.max(l, bg) + 0.05) / (Math.min(l, bg) + 0.05)
-  if (ratio(relativeLuminance(team.secondary)) >= MIN_STROKE_CONTRAST) return team.secondary
-  if (ratio(relativeLuminance(team.color)) >= MIN_STROKE_CONTRAST) return team.color
-  return bg > 0.18 ? NEUTRAL_STROKE_DARK : NEUTRAL_STROKE
+  /* Both neutrals are legible on a mid-grey pill, so pick whichever is further
+     from it; on the dark pills this always resolves to the light one. */
+  return allowDark ? NEUTRAL_STROKE_DARK : NEUTRAL_STROKE
 }
 
 /**
@@ -554,12 +531,6 @@ interface RevealPillProps {
   popScale?: number
   /** Multiplier on the glow that rides the fill. 0 disables it. */
   glow?: number
-  /**
-   * Set when `idleColor` is a mid-tone rather than near-black, which switches
-   * stroke selection from "must be brighter" to "must contrast either way".
-   * See `strokeColorOn`.
-   */
-  midToneIdle?: boolean
 }
 
 /**
@@ -581,14 +552,9 @@ export function RevealPill({
   headLen = HEAD_LEN,
   popScale = 1.04,
   glow = 1,
-  midToneIdle = false,
 }: RevealPillProps) {
   const reduceMotion = useReducedMotion()
-  const stroke = team
-    ? midToneIdle
-      ? strokeColorOn(team, idleColor)
-      : strokeColorFor(team, idleColor)
-    : "transparent"
+  const stroke = team ? strokeColorFor(team, idleColor) : "transparent"
   const filled = stage === 2 && team !== null
 
   return (
