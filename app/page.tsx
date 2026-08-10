@@ -851,6 +851,12 @@ export default function AnimationShowcase() {
         return <CardFlipReveal key={key} {...props} />
       case "spin-in-place-roller":
         return <CardFlipReveal key={key} {...props} />
+      /* Ticker only swaps the drum for the instant-cut treatment, so it takes the
+         same winning reveal as the roller it shares its card chrome with. Without
+         this case it fell through to `default: return null`, which still set
+         `isRevealing` — so the backdrop dimmed but no reveal ever played. */
+      case "ticker":
+        return <CardFlipReveal key={key} {...props} />
       case "multi-spin-repeat":
         return <CardFlipReveal key={key} {...props} />
       case "multi-spin":
@@ -1622,7 +1628,7 @@ case "thumbnails-4":
                     <span className="text-white font-semibold text-sm whitespace-nowrap">
                       {(showWinner || spotAssigned) && winnerTeam
                         ? `Random Break #${breakNumber} - ${winnerTeam.city} ${winnerTeam.name}`
-                        : `Random Break #${breakNumber}`} — 2025 Panini Luminance Football Hobby PYT Box Break #903
+                        : `Random Break #${breakNumber}`} ��� 2025 Panini Luminance Football Hobby PYT Box Break #903
                     </span>
                   </BackAndForthMarquee>
                 </div>
