@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import { teams, type Team } from "@/components/team-spinner"
-import { type RevealTuning } from "@/components/pill-reveal"
+import { RevealPill, useRevealStage, readableOn, type RevealTuning } from "@/components/pill-reveal"
 
 type Spot = 1 | 2 | 3
 const MULTI_SPOTS: Spot[] = [1, 2, 3]
@@ -54,34 +54,55 @@ interface SpinTickerSpinnerProps {
    it is its own inset panel with a smaller, lighter, more rounded pill and a
    label above it. So the geometry here is deliberately independent of the
    rollers' — only the card chrome around it (title, divider, chips) is shared. */
-/** "Randomizing spot for …" label above the wordmark. Kept at the 1.5× the rest
- *  of the card was tuned to (frame's 12px → 18). */
-const LABEL_SIZE = 18
-const LABEL_LINE = 24
-/** The wordmark lockup that replaced the pill. The team NAME is the hero, so it
- *  is far larger than the old 21px pill text — this is what gives the region its
- *  mass. Both lines are single-line: the longest of the 17 team names ("Patriots"
- *  / "Steelers", 8ch) clears ~185px at 40/800, and the longest city ("San
- *  Francisco", 13ch) clears ~120px at 18/500 — both well inside the 326px card. */
-const CITY_SIZE = 18
-const NAME_SIZE = 40
+/** Type scale for the randomizer, held as one factor against the frame's own
+ *  sizes so the label, the name and the pill that has to contain them can never
+ *  drift apart. 1 is frame-exact (label 12 / name 14); 1.5 is the current ask. */
+const TYPE_SCALE = 1.5
+/** Label above the pill (frame 817:27750). */
+const LABEL_SIZE = 12 * TYPE_SCALE
+const LABEL_LINE = 16 * TYPE_SCALE
+/** The team name inside the pill (frame 817:27758). */
+const NAME_SIZE = 14 * TYPE_SCALE
+/** Widest name in the actual 17-team list — "Los Angeles Chargers" — measured at
+ *  the pill's own type (700 21px) via canvas measureText against the live list.
+ *  Re-measure if the team list or the name's font/size/weight changes: at the
+ *  frame's 14px it is 150, and it scales with NAME_SIZE, not with the pill. */
+const WIDEST_NAME_W = 225
+/** Pill width. Frame 817:27758 authors this at 190, but the ticker holds one
+ *  fixed width for every name (see the fixed-width note on the label), so the
+ *  binding constraint is the widest name rather than the frame: 285 clears 225
+ *  with 30px a side, and still fits the card's 326px inner width. */
+const PILL_W = 285
+/** Room the label keeps inside the pill on the worst-case name, so `truncate` can
+ *  never bite into a name that would otherwise fit. */
+const PILL_PAD_X = Math.floor((PILL_W - WIDEST_NAME_W) / 2)
+/** Pill height and radius (frame 817:27758, scaled with the type it contains —
+ *  a 21px name does not fit the frame's 20px pill). */
+const PILL_H = 30
+const PILL_RADIUS = 12
 
 /* ── Randomizer region (frame 817:27737) ──
-   A bare region of the card holding the "Randomizing spot for …" label and the
-   hero wordmark, centred as a group. The frame gives it no fill — a divider above
-   is what separates it from the title instead of an inset surface. */
+   A bare region of the card holding the "Randomizing spot for …" line and the
+   pill, centred as a group. The frame gives it no fill — a divider above is what
+   separates it from the title instead of an inset surface. */
 /** Hairline rule colour. Matches both rollers' DIVIDER so the three cards agree. */
 const DIVIDER = "#363636"
-/** Region height. Fixed so the card never resizes mid-spin. Sized to hold the
- *  three stacked lines (label 24 + city 18 + name 40 + gaps ≈ 102 with padding)
- *  with slack above and below for the glow to bloom without clipping. */
+/** Region height. Fixed so the card never resizes mid-spin, so it has to absorb
+ *  the taller type: +8 from the label's line box (16→24) and +10 from the pill
+ *  (20→30) over the 126 that fitted the frame-exact sizes. */
 const PANEL_H = 144
-  /** Gap between the label and the wordmark. A small gap lets the big name read
-   *  as its own block rather than crowding the "Randomizing spot for …" line. */
-  const PANEL_GAP = 6
+  /** Gap between the label and the pill. 0 closes the label onto the pill so the
+   *  two read as one stacked unit — at 1.5x type their own line boxes already
+   *  carry enough air. */
+  const PANEL_GAP = 0
   /** Vertical breathing room inside the region. Held separately from PANEL_GAP so
-   *  the label/name gap and the region's padding stay independent. */
+   *  closing the label/pill gap does not also strip the region's padding. */
   const PANEL_PAD_Y = 8
+/** Resting fill of the pill (frame 817:27758). Much lighter than the rollers'
+ *  #363636 — light enough that the reveal's stroke test has to allow *darker*
+ *  strokes as well as brighter ones, or 9 of the 17 teams collapse onto the same
+ *  neutral outline. See DARK_STROKE_MIN_PILL_LUMA in pill-reveal.tsx. */
+const PILL_IDLE = "#767676"
 /** Height reserved for the picked-team chip row (chips are h-4), held from the
  *  first render so the panel never changes height as picks land. */
 const CHIP_ROW_H = 16
@@ -379,12 +400,17 @@ export function SpinTickerSpinner({
   const shownIdx = ((step % n) + n) % n
   const shownTeam = teams[shownIdx]
 
-  // Landed team drives the wordmark's settled treatment (colour wash + pop).
+  // Landed team drives the pill treatment, reusing the same `color` the
+  // celebration moments use so the two stay visually consistent.
   const landedTeam = landedIndex !== null ? teams[landedIndex] : null
-  /* True once the spin has settled on a team — flips the glow to full bloom and
-     washes the name to its team tint. Gated on !disableReveal so the shared-
-     transition host, which owns its own landing, gets a plain settle. */
-  const landed = !disableReveal && landedTeam !== null
+  /* Drives the staged reveal: stroke draws in the team's secondary, then the
+     primary fills. Held here rather than inside the pill because the label has
+     to change colour in step with the fill. */
+  const revealStage = useRevealStage(disableReveal ? null : landedTeam, reveal)
+  /* Only meaningful once the pill is actually filled — before that the pill is
+     still dark, so a dark label picked for a bright primary (Steelers gold)
+     would be unreadable. */
+  const landedTextColor = landedTeam ? readableOn(landedTeam.color) : "#ffffff"
 
   /* One buyer wins all spots, so the label always shows the same name. */
   const activeWinner = winnerName
@@ -447,64 +473,51 @@ export function SpinTickerSpinner({
           {`Randomizing spot for ${activeWinner}:`}
         </p>
 
-        {/* ── Ticker, as a hero wordmark ──
-            The roller's 3-row drum reduced to a single name, but presented as a
-            two-line lockup (city over team) that fills the region rather than a
-            small pill floating in it. Nothing travels, so there is no motion
-            blur; each name cuts in place at the tick rate.
+        {/* ── Ticker ──
+            The roller's drum reduced to a single row. No perspective, no 3D and
+            no motion blur: nothing here travels, so there is no direction to
+            smear along — a blur would just read as the text being out of focus.
 
-            The name stays white while spinning — calm and readable across all 17
-            teams — and washes to a team tint on landing. Identity during the spin
-            comes from the glow behind it, which recolours on every cut.
-            `color-mix(… white)` lifts near-black brands (Texans, Jets) to a
-            visible hue so the flash never disappears, and keeps the landed name
-            readable on the dark card without a per-team luma test. */}
-        <div className="relative flex flex-col items-center justify-center" aria-hidden="true">
-          {/* Colour glow behind the name. Colour is set inline so it cuts
-              instantly with each tick; only opacity/scale animate, so the hue
-              snaps while the bloom eases. */}
-          <motion.div
-            aria-hidden="true"
-            className="pointer-events-none absolute left-1/2 top-1/2"
-            style={{
-              width: 260,
-              height: 120,
-              x: "-50%",
-              y: "-50%",
-              borderRadius: "9999px",
-              filter: "blur(28px)",
-              background: `radial-gradient(closest-side, color-mix(in oklch, ${shownTeam.color} 82%, white) 0%, transparent 72%)`,
-            }}
-            initial={false}
-            animate={{
-              opacity: landed ? 0.55 : 0.22,
-              scale: landed && !reduceMotion ? 1.08 : 0.92,
-            }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            Sized to the pill exactly, so the pill is the row. */}
+        <div
+          className="relative flex items-center justify-center"
+          style={{ width: PILL_W, height: PILL_H }}
+          /* The name changes far too fast to be worth announcing mid-run; the
+             settled winner is announced by the live region below. */
+          aria-hidden="true"
+        >
+          {/* Selection pill, sitting behind the name. Self-centring, and owns
+              its own staged reveal — see components/pill-reveal.tsx. It picks the
+              stroke from `idleColor`, so this lighter pill gets the darker-stroke
+              branch automatically. */}
+          <RevealPill
+            team={landedTeam}
+            stage={revealStage}
+            width={PILL_W}
+            height={PILL_H}
+            radius={PILL_RADIUS}
+            idleColor={PILL_IDLE}
+            {...reveal}
           />
 
-          {/* City — the smaller line of the lockup. */}
+          {/* The one visible name. Fixed to the pill's width and centred, so
+              only the text swaps — letting it hug each name would strobe the
+              pill's width dozens of times a second on top of the text change,
+              which reads as jitter rather than as a ticker. */}
           <span
-            className="relative z-10 max-w-[300px] truncate text-center font-medium leading-none transition-colors duration-500"
-            style={{ fontSize: CITY_SIZE, color: landed ? "#d4d4d4" : "#8f8f8f" }}
-          >
-            {shownTeam.city}
-          </span>
-
-          {/* Team name — the hero. Pops on landing (skipped under reduced motion)
-              and washes from white to a readable team tint. */}
-          <motion.span
-            className="relative z-10 mt-1 block max-w-[320px] truncate text-center font-extrabold leading-none tracking-tight transition-colors duration-500"
+            className="relative truncate text-center font-bold"
             style={{
+              width: PILL_W - PILL_PAD_X * 2,
               fontSize: NAME_SIZE,
-              color: landed ? `color-mix(in oklch, ${shownTeam.color} 62%, white)` : "#ffffff",
+              lineHeight: `${PILL_H}px`,
+              /* Flips with the fill, not with landing: through the stroke stages
+                 the pill is still the idle grey, so the label stays white until
+                 the primary is actually behind it. */
+              color: revealStage === 2 ? landedTextColor : "#ffffff",
             }}
-            initial={false}
-            animate={{ scale: landed && !reduceMotion ? [1, 1.14, 1] : 1 }}
-            transition={{ duration: 0.5, times: [0, 0.42, 1], ease: [0.22, 1, 0.36, 1] }}
           >
-            {shownTeam.name}
-          </motion.span>
+            {shownTeam.city} {shownTeam.name}
+          </span>
         </div>
       </div>
 
