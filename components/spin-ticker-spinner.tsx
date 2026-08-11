@@ -92,9 +92,8 @@ const DIVIDER = "#363636"
  *  (20→30) over the 126 that fitted the frame-exact sizes. */
 const PANEL_H = 144
   /** Gap between the label and the pill. 0 closes the label onto the pill so the
-   *  two read as one stacked unit — at 1.5x type their own line boxes already
-   *  carry enough air. */
-  const PANEL_GAP = 0
+  *  two read as a visually separated label and content block. */
+  const PANEL_GAP = 8
   /** Vertical breathing room inside the region. Held separately from PANEL_GAP so
    *  closing the label/pill gap does not also strip the region's padding. */
   const PANEL_PAD_Y = 8
