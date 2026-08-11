@@ -59,8 +59,8 @@ interface SpinTickerSpinnerProps {
  *  drift apart. 1 is frame-exact (label 12 / name 14); 1.5 is the current ask. */
 const TYPE_SCALE = 1.5
 /** Label above the pill (frame 817:27750). */
-const LABEL_SIZE = 12 * TYPE_SCALE
-const LABEL_LINE = 16 * TYPE_SCALE
+const LABEL_SIZE = 14
+const LABEL_LINE = 16
 /** The team name inside the pill (frame 817:27758). */
 const NAME_SIZE = 14 * TYPE_SCALE
 /** Widest name in the actual 17-team list — "Los Angeles Chargers" — measured at
@@ -87,9 +87,9 @@ const PILL_RADIUS = 12
    separates it from the title instead of an inset surface. */
 /** Hairline rule colour. Matches both rollers' DIVIDER so the three cards agree. */
 const DIVIDER = "#363636"
-  /** Gap between the label and the pill. 0 closes the label onto the pill so the
-  *  two read as a visually separated label and content block. */
-  const PANEL_GAP = 8
+  /** Gap between the label and the pill. Tighter spacing brings them closer while
+  *  maintaining visual separation between the label and the pill. */
+  const PANEL_GAP = 4
   /** Vertical breathing room inside the region. Held separately from PANEL_GAP so
    *  closing the label/pill gap does not also strip the region's padding. */
   const PANEL_PAD_Y = 8
