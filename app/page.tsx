@@ -1523,13 +1523,16 @@ case "thumbnails-4":
             randomization card overlays it with `absolute inset-0` so it matches
             the bid box size exactly. Both animate simultaneously: the outgoing
             card lifts up and fades, the incoming card rises into place. */}
-        {/* Roller only: the inline "spots available" incentive tile, per Figma.
+        {/* Roller + Ticker: the inline "spots available" incentive tile, per Figma.
             It sits above the crossfade container in normal flow and tucks its
             bottom 16px back under it (-mb-4 on the tile), so it reads as one
             nested unit. Because it lives OUTSIDE the crossfade wrapper it stays
             put while the bid box swaps to the randomization card — one
-            persistent tile, no flicker, and both cards keep identical heights. */}
-        {selectedAnimation === "spin-in-place-roller" && (
+            persistent tile serving BOTH boxes, no flicker, and both cards keep
+            identical heights. Gated on usesRollerCard because the tile's tuck
+            depends on the card below it having 16px rounded top corners, which is
+            exactly what that predicate already tracks. */}
+        {usesRollerCard(selectedAnimation) && (
           /* -mb-2 cancels the parent's gap-2, which would otherwise eat half of
              the tile's own -mb-4 and leave it tucked only 8px instead of the
              16px the design calls for. */

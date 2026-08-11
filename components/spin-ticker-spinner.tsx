@@ -91,8 +91,13 @@ const DIVIDER = "#363636"
  *  the taller type: +8 from the label's line box (16→24) and +10 from the pill
  *  (20→30) over the 126 that fitted the frame-exact sizes. */
 const PANEL_H = 144
-  /** Gap between the label and the pill. */
-  const PANEL_GAP = 16
+  /** Gap between the label and the pill. 0 closes the label onto the pill so the
+   *  two read as one stacked unit — at 1.5x type their own line boxes already
+   *  carry enough air. */
+  const PANEL_GAP = 0
+  /** Vertical breathing room inside the region. Held separately from PANEL_GAP so
+   *  closing the label/pill gap does not also strip the region's padding. */
+  const PANEL_PAD_Y = 8
 /** Resting fill of the pill (frame 817:27758). Much lighter than the rollers'
  *  #363636 — light enough that the reveal's stroke test has to allow *darker*
  *  strokes as well as brighter ones, or 9 of the 17 teams collapse onto the same
@@ -422,7 +427,7 @@ export function SpinTickerSpinner({
   )
 
   return (
-    <div className="w-full flex flex-col gap-2">
+    <div className="w-full flex flex-col gap-4">
       {/* Title row — mirrors the bid box card and both rollers: break + box
           title truncated to one line. `min-w-0` is what lets it actually
           truncate inside the flex column. */}
@@ -456,8 +461,8 @@ export function SpinTickerSpinner({
         style={{
           height: PANEL_H,
           gap: PANEL_GAP,
-          paddingTop: PANEL_GAP,
-          paddingBottom: PANEL_GAP,
+          paddingTop: PANEL_PAD_Y,
+          paddingBottom: PANEL_PAD_Y,
         }}
       >
         {/* Whose spot is being drawn (frame 817:27750). */}
@@ -476,7 +481,7 @@ export function SpinTickerSpinner({
             Sized to the pill exactly, so the pill is the row. */}
         <div
           className="relative flex items-center justify-center"
-          style={{ width: PILL_W, height: PILL_H, gap: 0 }}
+          style={{ width: PILL_W, height: PILL_H }}
           /* The name changes far too fast to be worth announcing mid-run; the
              settled winner is announced by the live region below. */
           aria-hidden="true"
