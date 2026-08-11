@@ -569,7 +569,6 @@ export function RevealPill({
         marginLeft: -width / 2,
         borderRadius: radius,
         backgroundColor: idleColor,
-        paddingTop: -1,
       }}
       animate={{
         // Pop and glow ride the fill, so the celebration beat lands on stage 3
