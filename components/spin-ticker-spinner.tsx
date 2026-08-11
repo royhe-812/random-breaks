@@ -62,7 +62,7 @@ const TYPE_SCALE = 1.5
 const LABEL_SIZE = 14
 const LABEL_LINE = 16
 /** The team name inside the pill (frame 817:27758). */
-const NAME_SIZE = 14 * TYPE_SCALE
+const NAME_SIZE = 18
 /** Widest name in the actual 17-team list — "Los Angeles Chargers" — measured at
  *  the pill's own type (700 21px) via canvas measureText against the live list.
  *  Re-measure if the team list or the name's font/size/weight changes: at the
