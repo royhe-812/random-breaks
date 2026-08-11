@@ -69,15 +69,16 @@ const PILL_PAD_X = Math.floor((PILL_W - WIDEST_NAME_W) / 2)
 const PILL_H = 20
 const PILL_RADIUS = 8
 
-/* ── Randomizer panel (frame 817:27737) ──
-   The randomizer is now its own inset panel rather than a bare region of the
-   card: a #363636 rounded box holding the "Randomizing spot for …" line and the
-   pill, centred as a group. */
-/** Inset panel fill. */
-const PANEL_BG = "#363636"
-const PANEL_RADIUS = 8
-/** Panel height, from the frame. Fixed so the card never resizes mid-spin. */
-const PANEL_H = 138
+/* ── Randomizer region (frame 817:27737) ──
+   A bare region of the card holding the "Randomizing spot for …" line and the
+   pill, centred as a group. The frame gives it no fill — a divider above is what
+   separates it from the title instead of an inset surface. */
+/** Hairline rule colour. Matches both rollers' DIVIDER so the three cards agree. */
+const DIVIDER = "#363636"
+/** Region height (frame 817:27737). Fixed so the card never resizes mid-spin.
+ *  126 rather than the old 138 because the divider row now takes the difference:
+ *  126 + 1px rule + the card's 8px gap lands within 3px of the previous card. */
+const PANEL_H = 126
 /** Gap between the label and the pill, from the frame. */
 const PANEL_GAP = 8
 /** Resting fill of the pill (frame 817:27758). Much lighter than the rollers'
@@ -422,12 +423,19 @@ export function SpinTickerSpinner({
         </p>
       </div>
 
-      {/* ── Randomizer panel (frame 817:27737) ──
-          The randomizer is its own inset #363636 box rather than a bare region
-          of the card, holding the label and the pill centred as a group. It
-          replaces the rollers' hairline-divider + trophy-line arrangement: the
-          panel's own label already carries the winner's name, so a trophy line
-          above it would print the same name twice.
+      {/* Hairline between the title and the randomizer (frame 817:27762, a 0-height
+          LINE). Figma exports it as divider.svg, but a 1px rule is not artwork —
+          rendering it as the same bordered `hr` both rollers use keeps the three
+          cards identical instead of introducing an <img> for one hairline.
+          Measured at 320px in the frame, which is just the card's inner width, so
+          it stays w-full here rather than being pinned and mismatching the card. */}
+      <hr className="w-full m-0 border-0" style={{ height: 0, borderTop: `1px solid ${DIVIDER}` }} />
+
+      {/* ── Randomizer region (frame 817:27737) ──
+          Holds the label and the pill centred as a group. The frame gives this
+          node a radius but no fill: it is a bare region of the card, not an inset
+          surface, so the pill reads as the only object on the card. The divider
+          above is what separates it from the title now.
 
           Height is fixed rather than derived from the contents so the card is
           its final size before the first tick and never resizes mid-spin. */}
@@ -436,8 +444,6 @@ export function SpinTickerSpinner({
         style={{
           height: PANEL_H,
           gap: PANEL_GAP,
-          backgroundColor: PANEL_BG,
-          borderRadius: PANEL_RADIUS,
           paddingTop: PANEL_GAP,
           paddingBottom: PANEL_GAP,
         }}
