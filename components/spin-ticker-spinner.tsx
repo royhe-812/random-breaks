@@ -54,20 +54,32 @@ interface SpinTickerSpinnerProps {
    it is its own inset panel with a smaller, lighter, more rounded pill and a
    label above it. So the geometry here is deliberately independent of the
    rollers' — only the card chrome around it (title, divider, chips) is shared. */
+/** Type scale for the randomizer, held as one factor against the frame's own
+ *  sizes so the label, the name and the pill that has to contain them can never
+ *  drift apart. 1 is frame-exact (label 12 / name 14); 1.5 is the current ask. */
+const TYPE_SCALE = 1.5
+/** Label above the pill (frame 817:27750). */
+const LABEL_SIZE = 12 * TYPE_SCALE
+const LABEL_LINE = 16 * TYPE_SCALE
+/** The team name inside the pill (frame 817:27758). */
+const NAME_SIZE = 14 * TYPE_SCALE
 /** Widest name in the actual 17-team list — "Los Angeles Chargers" — measured at
- *  the pill's own type (700 14px Market Sans) via canvas measureText. Re-measure
- *  if the team list or the label's font/size/weight changes. */
-const WIDEST_NAME_W = 149
-/** Pill width, exactly as authored in frame 817:27758. The ticker holds one fixed
- *  width for every name (see the fixed-width note on the label), so it has to
- *  clear the widest one — at 149px it does, with 20px of room a side. */
-const PILL_W = 190
+ *  the pill's own type (700 21px) via canvas measureText against the live list.
+ *  Re-measure if the team list or the name's font/size/weight changes: at the
+ *  frame's 14px it is 150, and it scales with NAME_SIZE, not with the pill. */
+const WIDEST_NAME_W = 225
+/** Pill width. Frame 817:27758 authors this at 190, but the ticker holds one
+ *  fixed width for every name (see the fixed-width note on the label), so the
+ *  binding constraint is the widest name rather than the frame: 285 clears 225
+ *  with 30px a side, and still fits the card's 326px inner width. */
+const PILL_W = 285
 /** Room the label keeps inside the pill on the worst-case name, so `truncate` can
  *  never bite into a name that would otherwise fit. */
 const PILL_PAD_X = Math.floor((PILL_W - WIDEST_NAME_W) / 2)
-/** Pill height and radius, both straight from frame 817:27758. */
-const PILL_H = 20
-const PILL_RADIUS = 8
+/** Pill height and radius (frame 817:27758, scaled with the type it contains —
+ *  a 21px name does not fit the frame's 20px pill). */
+const PILL_H = 30
+const PILL_RADIUS = 12
 
 /* ── Randomizer region (frame 817:27737) ──
    A bare region of the card holding the "Randomizing spot for …" line and the
@@ -75,10 +87,10 @@ const PILL_RADIUS = 8
    separates it from the title instead of an inset surface. */
 /** Hairline rule colour. Matches both rollers' DIVIDER so the three cards agree. */
 const DIVIDER = "#363636"
-/** Region height (frame 817:27737). Fixed so the card never resizes mid-spin.
- *  126 rather than the old 138 because the divider row now takes the difference:
- *  126 + 1px rule + the card's 8px gap lands within 3px of the previous card. */
-const PANEL_H = 126
+/** Region height. Fixed so the card never resizes mid-spin, so it has to absorb
+ *  the taller type: +8 from the label's line box (16→24) and +10 from the pill
+ *  (20→30) over the 126 that fitted the frame-exact sizes. */
+const PANEL_H = 144
 /** Gap between the label and the pill, from the frame. */
 const PANEL_GAP = 8
 /** Resting fill of the pill (frame 817:27758). Much lighter than the rollers'
@@ -449,7 +461,10 @@ export function SpinTickerSpinner({
         }}
       >
         {/* Whose spot is being drawn (frame 817:27750). */}
-        <p className="truncate text-center" style={{ fontSize: 12, lineHeight: "16px", color: "#f7f7f7" }}>
+        <p
+          className="truncate text-center"
+          style={{ fontSize: LABEL_SIZE, lineHeight: `${LABEL_LINE}px`, color: "#f7f7f7" }}
+        >
           {`Randomizing spot for ${activeWinner}:`}
         </p>
 
@@ -488,7 +503,7 @@ export function SpinTickerSpinner({
             className="relative truncate text-center font-bold"
             style={{
               width: PILL_W - PILL_PAD_X * 2,
-              fontSize: 14,
+              fontSize: NAME_SIZE,
               lineHeight: `${PILL_H}px`,
               /* Flips with the fill, not with landing: through the stroke stages
                  the pill is still the idle grey, so the label stays white until
