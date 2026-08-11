@@ -87,10 +87,6 @@ const PILL_RADIUS = 12
    separates it from the title instead of an inset surface. */
 /** Hairline rule colour. Matches both rollers' DIVIDER so the three cards agree. */
 const DIVIDER = "#363636"
-/** Region height. Fixed so the card never resizes mid-spin, so it has to absorb
- *  the taller type: +8 from the label's line box (16→24) and +10 from the pill
- *  (20→30) over the 126 that fitted the frame-exact sizes. */
-const PANEL_H = 144
   /** Gap between the label and the pill. 0 closes the label onto the pill so the
   *  two read as a visually separated label and content block. */
   const PANEL_GAP = 8
@@ -195,17 +191,14 @@ export function SpinTickerSpinner({
 }: SpinTickerSpinnerProps) {
   const spots = mode === "multi" ? MULTI_SPOTS : SINGLE_SPOTS
 
-  /* Region height, mode-aware.
-     - multi keeps the tall PANEL_H: the picked-team chip row sits directly below
-       it, so the region's extra height is what balances the card as picks land.
-     - single has nothing below the region, so the same tall box left the single
-       label+pill pooling in the lower third with a big empty gap under the title
-       (and the bottom even clipping past the card). Sizing single to hug its
-       fixed-size content — label line + gap + pill + symmetric padding — drops the
-       card to ~bid-box height, so the randomizer reads centred rather than
-       bottom-anchored. It still can't resize mid-spin: one pill, one label, both
-       fixed. */
-  const panelH = mode === "multi" ? PANEL_H : PANEL_PAD_Y * 2 + LABEL_LINE + PANEL_GAP + PILL_H
+  /* Region height. Both modes hug the same fixed content — label line + gap +
+     pill + symmetric padding — so the "Randomizing spot for …" box is identical
+     in single and multi. Multi used to keep a taller fixed height (144), which
+       made its box read ~66px taller than single's; the picked-team chip row is a
+     separate element below the box, so it does not need the box itself padded out.
+     Height is still fixed (not content-derived) so the card is its final size
+     before the first tick and never resizes mid-spin. */
+  const panelH = PANEL_PAD_Y * 2 + LABEL_LINE + PANEL_GAP + PILL_H
 
   /** Absolute tick counter, in names. Floored from the eased position, so it is
    *  already an integer — the name changes the instant this changes. */
