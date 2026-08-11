@@ -195,6 +195,18 @@ export function SpinTickerSpinner({
 }: SpinTickerSpinnerProps) {
   const spots = mode === "multi" ? MULTI_SPOTS : SINGLE_SPOTS
 
+  /* Region height, mode-aware.
+     - multi keeps the tall PANEL_H: the picked-team chip row sits directly below
+       it, so the region's extra height is what balances the card as picks land.
+     - single has nothing below the region, so the same tall box left the single
+       label+pill pooling in the lower third with a big empty gap under the title
+       (and the bottom even clipping past the card). Sizing single to hug its
+       fixed-size content — label line + gap + pill + symmetric padding — drops the
+       card to ~bid-box height, so the randomizer reads centred rather than
+       bottom-anchored. It still can't resize mid-spin: one pill, one label, both
+       fixed. */
+  const panelH = mode === "multi" ? PANEL_H : PANEL_PAD_Y * 2 + LABEL_LINE + PANEL_GAP + PILL_H
+
   /** Absolute tick counter, in names. Floored from the eased position, so it is
    *  already an integer — the name changes the instant this changes. */
   const [step, setStep] = useState(0)
@@ -458,7 +470,7 @@ export function SpinTickerSpinner({
       <div
         className="w-full flex flex-col items-center justify-center"
         style={{
-          height: PANEL_H,
+          height: panelH,
           gap: PANEL_GAP,
           paddingTop: PANEL_PAD_Y,
           paddingBottom: PANEL_PAD_Y,
