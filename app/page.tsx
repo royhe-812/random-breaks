@@ -47,9 +47,8 @@ import { InStreamExperience } from "@/components/in-stream-experience"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { TestingZone } from "@/components/testing-zone"
-import { useHorizontalPager } from "@/hooks/use-horizontal-pager"
 
-type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "ticker" | "horizontal-swipe" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 // Both manual concepts share the same behavior (extra 4th manual chip, chat
 // wording, item-card label); they only differ in how the chip is marked:
@@ -67,19 +66,17 @@ const isSingleSpin = (a: AnimationType) =>
 // "Spin In Place (Roller)" shares the whole Spin In Place flow — the bid box
 // cross-slide, the card reveal ordering, the bid box reactivation — and only
 // swaps the randomization card's visual treatment for a picker-wheel drum.
-// "Horizontal Swipe" inherits that same flow too; it only changes how the two
-// cards are presented (a side-by-side pager instead of a vertical crossfade).
 // "Ticker" is the same deal as Roller: identical flow, and only the
 // randomization treatment differs (one name cutting instantly in place).
 const isSpinInPlace = (a: AnimationType) =>
-  a === "spin-in-place" || a === "spin-in-place-roller" || a === "ticker" || a === "horizontal-swipe"
+  a === "spin-in-place" || a === "spin-in-place-roller" || a === "ticker"
 
 // Concepts that draw the randomization card as the roller drum: tighter 12px
 // padding, #212121 fill, spots row inside the card (so the bid box drops its own
 // SpotsProgress), and the Single/Multi drum toggle. Ticker shares all of that
 // card chrome — it only swaps the drum itself for the instant-cut ticker.
 const usesRollerCard = (a: AnimationType) =>
-  a === "spin-in-place-roller" || a === "ticker" || a === "horizontal-swipe"
+  a === "spin-in-place-roller" || a === "ticker"
 
 /** The instant-cut ticker treatment, in place of the 3D drum. */
 const usesTicker = (a: AnimationType) => a === "ticker"
@@ -88,7 +85,6 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "single-spin-populate", name: "Single Spin" },
   { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
   { id: "ticker", name: "Ticker" },
-  { id: "horizontal-swipe", name: "Horizontal Swipe" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-4-auto", name: "Multi-Spin Text" },
   // Temporarily hidden from the concepts list (kept for potential future use):
@@ -271,45 +267,13 @@ export default function AnimationShowcase() {
   // True while the randomization card is overlaying the bid box.
   const spinInPlaceShowing = isSpinInPlace(selectedAnimation) && spinInPlaceActive
 
-  /**
-   * "Horizontal Swipe": same two cards as the Roller concept, but laid out as a
-   * two-page pager. Page 0 is the buy box, page 1 is the randomization card, and
-   * only one is ever visible. Both stay mounted so the buyer can swipe back and
-   * forth freely; the randomizer still drives the flow via spinInPlaceActive.
-   */
-  const isHorizontalSwipe = selectedAnimation === "horizontal-swipe"
-  const pager = useHorizontalPager({
-    enabled: isHorizontalSwipe,
-    /* Locked only while the drum is actually turning — once it settles on a team
-       the buyer can swipe back to the buy box again. */
-    locked: spinInPlaceActive && !spinInPlaceSettled,
-    // The bid slider keeps its own horizontal swipe-to-confirm gesture.
-    ignoreSelector: "[data-page-swipe-ignore]",
-  })
-  const onSpinnerPage = isHorizontalSwipe && pager.page === 1
-
-  /* Auto-advance to the drum when randomization starts, and come back to the buy
-     box when the round resets. Keyed off the randomizer flag rather than the page
-     so a manual peek before bidding is never yanked back. */
-  useEffect(() => {
-    if (!isHorizontalSwipe) return
-    pager.goTo(spinInPlaceActive ? 1 : 0)
-  }, [isHorizontalSwipe, spinInPlaceActive, pager.goTo])
-
-  // Switching concepts always starts back on the buy box, with no slide.
-  useEffect(() => {
-    pager.jumpTo(0)
-  }, [selectedAnimation, pager.jumpTo])
-
   /* Track the multi card's natural height. It changes mid-run as chips wrap onto
      the row, so a ResizeObserver keeps the reserved space in step rather than
      measuring once on mount. */
   const isMultiRoller = usesRollerCard(selectedAnimation) && rollerMode === "multi"
   useEffect(() => {
     const el = rollerCardRef.current
-    /* In the pager the card is mounted the whole time, not just mid-spin, so the
-       measurement has to stay live whenever it is on screen. */
-    if (!el || !isMultiRoller || !(spinInPlaceShowing || isHorizontalSwipe)) {
+    if (!el || !isMultiRoller || !spinInPlaceShowing) {
       setRollerCardHeight(0)
       return
     }
@@ -318,7 +282,7 @@ export default function AnimationShowcase() {
     const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [isMultiRoller, spinInPlaceShowing, isHorizontalSwipe])
+  }, [isMultiRoller, spinInPlaceShowing])
   const [spinLaterBreakNumber, setSpinLaterBreakNumber] = useState(32) // "Spin Later": each tap of "Sold Out" moves DOWN to the next lower-numbered sold-out break
   // "Spin Later" is a fully sold-out break; the number counts DOWN as the seller
   // works through sold-out breaks (32 → 31 → 30 …).
@@ -1583,15 +1547,9 @@ case "thumbnails-4":
             The bottom overlay is bottom-anchored (`bottom-4`), so that extra
             height grows the unit UPWARD — the card's chips stay inside the
             rounded card and the spots tile rides up with it, still nested. */}
-        {/* In Horizontal Swipe this doubles as the pager viewport: it clips the
-            off-screen page and owns the swipe gesture. */}
         <div
-          ref={isHorizontalSwipe ? pager.viewportRef : undefined}
-          className={`relative transition-[min-height] duration-300 ease-out ${
-            isHorizontalSwipe ? "overflow-hidden touch-pan-y" : ""
-          }`}
+          className="relative transition-[min-height] duration-300 ease-out"
           style={rollerCardHeight ? { minHeight: rollerCardHeight } : undefined}
-          {...(isHorizontalSwipe ? pager.handlers : {})}
         >
 
         {/* Auction Card */}
@@ -1599,11 +1557,9 @@ case "thumbnails-4":
           ref={auctionCardRef}
           className="bg-black/40 backdrop-blur rounded-2xl p-4"
           initial={false}
-          /* The pager slides horizontally instead of crossfading, so the vertical
-             lift and the fade are both held flat there. */
           animate={{
-            opacity: isHorizontalSwipe ? 1 : spinInPlaceShowing ? 0 : 1,
-            y: isHorizontalSwipe ? 0 : spinInPlaceShowing ? -16 : 0,
+            opacity: spinInPlaceShowing ? 0 : 1,
+            y: spinInPlaceShowing ? -16 : 0,
           }}
           transition={{
             y: { duration: 0.32, ease: [0.32, 0.72, 0, 1] },
@@ -1611,12 +1567,7 @@ case "thumbnails-4":
             // never sit at ~50/50 and blend into a muddy overlap mid-slide.
             opacity: { duration: 0.2, ease: "easeOut" },
           }}
-          style={{
-            // Driven by the pager's track offset; a motion value, so dragging the
-            // page does not re-render this subtree on every pointermove.
-            ...(isHorizontalSwipe ? { x: pager.x } : null),
-            pointerEvents: (isHorizontalSwipe ? onSpinnerPage : spinInPlaceShowing) ? "none" : "auto",
-          }}
+          style={{ pointerEvents: spinInPlaceShowing ? "none" : "auto" }}
         >
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 min-w-0 pr-2">
@@ -1729,9 +1680,7 @@ case "thumbnails-4":
                 </div>
               </div>
             ) : (
-            /* data-page-swipe-ignore: the slider's own horizontal drag wins
-               inside these bounds, so the pager declines gestures starting here. */
-            <div className="flex-1" data-page-swipe-ignore="true">
+            <div className="flex-1">
               <SwipeToBid 
                 // Remount on reactivation so the slider drops its latched
                 // internal "sold out" state and returns to the idle swipe state.
@@ -1789,9 +1738,7 @@ case "thumbnails-4":
 
         {/* Randomization card — overlays the bid box at identical size */}
         <AnimatePresence>
-          {/* The pager keeps this page mounted the whole time so the buyer can
-              swipe to the drum before bidding and back afterwards. */}
-          {(spinInPlaceShowing || isHorizontalSwipe) && (
+          {spinInPlaceShowing && (
             <motion.div
               key="spin-in-place"
               /* Single keeps `inset-0` so it matches the bid box footprint
@@ -1801,22 +1748,13 @@ case "thumbnails-4":
               className={`absolute flex flex-col ${
                 isMultiRoller ? "inset-x-0 bottom-0" : "inset-0"
               }`}
-              initial={isHorizontalSwipe ? false : { opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={isHorizontalSwipe ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+              exit={{ opacity: 0, y: 16 }}
               transition={{
                 y: { duration: 0.32, ease: [0.32, 0.72, 0, 1] },
                 opacity: { duration: 0.2, ease: "easeOut" },
               }}
-              style={
-                isHorizontalSwipe
-                  ? {
-                      // Parked one full width to the right of the buy box.
-                      x: pager.incomingX,
-                      pointerEvents: onSpinnerPage ? "auto" : "none",
-                    }
-                  : undefined
-              }
             >
               {/* Roller uses the tighter 12px padding and #212121 fill dialled in
                   via the testing zone; plain Spin In Place keeps 16px / #191919. */}
