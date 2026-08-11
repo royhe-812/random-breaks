@@ -91,8 +91,8 @@ const DIVIDER = "#363636"
  *  the taller type: +8 from the label's line box (16→24) and +10 from the pill
  *  (20→30) over the 126 that fitted the frame-exact sizes. */
 const PANEL_H = 144
-/** Gap between the label and the pill, from the frame. */
-const PANEL_GAP = 8
+  /** Gap between the label and the pill. */
+  const PANEL_GAP = 16
 /** Resting fill of the pill (frame 817:27758). Much lighter than the rollers'
  *  #363636 — light enough that the reveal's stroke test has to allow *darker*
  *  strokes as well as brighter ones, or 9 of the 17 teams collapse onto the same
@@ -476,7 +476,7 @@ export function SpinTickerSpinner({
             Sized to the pill exactly, so the pill is the row. */}
         <div
           className="relative flex items-center justify-center"
-          style={{ width: PILL_W, height: PILL_H }}
+          style={{ width: PILL_W, height: PILL_H, gap: 0 }}
           /* The name changes far too fast to be worth announcing mid-run; the
              settled winner is announced by the live region below. */
           aria-hidden="true"
