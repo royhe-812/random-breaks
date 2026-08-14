@@ -1536,7 +1536,7 @@ case "thumbnails-4":
         {/* Auction Card */}
         <motion.div
           ref={auctionCardRef}
-          className="bg-black/40 backdrop-blur rounded-2xl p-4"
+          className="rounded-2xl overflow-hidden"
           initial={false}
           animate={{
             opacity: spinInPlaceShowing ? 0 : 1,
@@ -1550,6 +1550,20 @@ case "thumbnails-4":
           }}
           style={{ pointerEvents: spinInPlaceShowing ? "none" : "auto" }}
         >
+          {/* Incentive Tile — spots row (Figma). The card's overflow-hidden
+              rounds its top corners; a bottom border divides it from the Buy
+              Box below. The underlined "View spots" CTA opens the spots sheet. */}
+          <button
+            type="button"
+            onClick={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
+            aria-label={`${demoSpots} of 32 spots available. View spots.`}
+            className="flex w-full items-center justify-between gap-2 border-b border-[#363636] bg-[#363636]/50 px-3 py-2 text-left backdrop-blur transition-opacity hover:opacity-90"
+          >
+            <span className="text-xs leading-4 text-[#f7f7f7]">{demoSpots}/32 spots available</span>
+            <span className="flex-shrink-0 text-xs leading-4 text-[#8f8f8f] underline">View spots</span>
+          </button>
+
+          <div className="bg-black/40 backdrop-blur p-4">
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1 min-w-0 pr-2">
               {selectedAnimation === "multi-spin-6-titlerow" ? (
@@ -1591,16 +1605,14 @@ case "thumbnails-4":
                 </div>
               </div>
             </div>
-            {/* Chevron opens the break spots sheet, matching the other concepts
-                that expose it via their own "View spots" affordance. */}
-            <button
-              type="button"
-              onClick={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
-              aria-label="View break spots"
-              className={`flex-shrink-0 hover:opacity-80 transition-opacity ${selectedAnimation === "multi-spin-6-titlerow" ? "mt-0" : "mt-1"}`}
+            {/* Decorative chevron — the "View spots" CTA in the incentive tile
+                now opens the sheet, so this is non-interactive per design. */}
+            <div
+              aria-hidden="true"
+              className={`flex-shrink-0 ${selectedAnimation === "multi-spin-6-titlerow" ? "mt-0" : "mt-1"}`}
             >
               <ChevronRight className="w-5 h-5 text-white/40" />
-            </button>
+            </div>
           </div>
           
           <div className="flex items-center justify-between mb-3">
@@ -1700,6 +1712,7 @@ case "thumbnails-4":
               />
             </div>
             )}
+          </div>
           </div>
         </motion.div>
 

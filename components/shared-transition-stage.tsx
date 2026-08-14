@@ -478,7 +478,21 @@ export function SharedTransitionStage({
      Break #N" and the CTA is an armed swipe-to-bid rather than a won state. */
   const bidBox = (
     <div>
-      <div className="relative bg-black/40 backdrop-blur rounded-2xl p-4">
+      <div className="relative rounded-2xl overflow-hidden">
+      {/* Incentive Tile — spots row (Figma). The spot just assigned is claimed,
+          so the counter is down one; the underlined "View spots" CTA opens the
+          spots sheet, and a bottom border divides it from the Buy Box. */}
+      <button
+        type="button"
+        onClick={onViewSpots}
+        aria-label={`${Math.max(0, availableSpots - 1)} of ${totalSpots} spots available. View spots.`}
+        className="flex w-full items-center justify-between gap-2 border-b border-[#363636] bg-[#363636]/50 px-3 py-2 text-left backdrop-blur transition-opacity hover:opacity-90"
+      >
+        <span className="text-xs leading-4 text-[#f7f7f7]">{Math.max(0, availableSpots - 1)}/{totalSpots} spots available</span>
+        <span className="flex-shrink-0 text-xs leading-4 text-[#8f8f8f] underline">View spots</span>
+      </button>
+
+      <div className="bg-black/40 backdrop-blur p-4">
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0 pr-2">
           <p className="text-sm text-white mb-0.5 truncate">
@@ -500,14 +514,10 @@ export function SharedTransitionStage({
             </div>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={onViewSpots}
-          aria-label="View break spots"
-          className="flex-shrink-0 mt-1 hover:opacity-80 transition-opacity"
-        >
+        {/* Decorative chevron — the "View spots" CTA above opens the sheet. */}
+        <div aria-hidden="true" className="flex-shrink-0 mt-1">
           <ChevronRight className="w-5 h-5 text-white/40" />
-        </button>
+        </div>
       </div>
 
       {/* Live again for the next spot, so another bidder now leads and the
@@ -537,6 +547,7 @@ export function SharedTransitionStage({
         <div className="flex-1">
           <SwipeToBid amount={30} onBidConfirmed={() => {}} />
         </div>
+      </div>
       </div>
       </div>
     </div>
