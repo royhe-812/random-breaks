@@ -296,23 +296,7 @@ export function MultiSpinSpinner({
                   </div>
                 )}
               </AnimatePresence>
-              <button onClick={onViewSpots} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-                <CircularProgress available={availableSpots} total={totalSpots} size={16} />
-                <span className="text-sm text-white">
-                  {availableSpots}/{totalSpots} spots available
-                </span>
-              </button>
             </div>
-
-            <button
-              onClick={onViewSpots}
-              className="flex items-center gap-1 text-white/50 hover:text-white/70 transition-colors flex-shrink-0"
-            >
-              <span className="text-sm">View spots</span>
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
           </div>
         </div>
 

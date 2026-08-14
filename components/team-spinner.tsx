@@ -330,41 +330,7 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
                   </motion.span>
                 )}
               </AnimatePresence>
-              <button 
-                onClick={() => {
-                  // Cycle through demo states: null (actual) -> 20 (green >50%) -> 12 (yellow 30-50%) -> 5 (red <30%) -> null
-                  if (demoSpots === null) setDemoSpots(20)
-                  else if (demoSpots === 20) setDemoSpots(12)
-                  else if (demoSpots === 12) setDemoSpots(5)
-                  else setDemoSpots(null)
-                }}
-                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-              >
-                <CircularProgress available={demoSpots ?? availableSpots} total={totalSpots} size={16} />
-                <span className="text-sm text-white">
-                  {demoSpots ?? availableSpots}/{totalSpots} spots available
-                </span>
-              </button>
           </div>
-
-          {/* View all link */}
-          <button 
-            onClick={onViewSpots}
-            className="flex items-center gap-1 text-white/50 hover:text-white/70 transition-colors"
-          >
-            <span className="text-sm">View spots</span>
-            <svg 
-              className="w-4 h-4" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            >
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </button>
         </motion.div>
     </div>
   )
