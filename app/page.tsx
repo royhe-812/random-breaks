@@ -1557,7 +1557,7 @@ case "thumbnails-4":
             type="button"
             onClick={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
             aria-label={`${demoSpots} of 32 spots available. View spots.`}
-            className="flex w-full items-center justify-between gap-2 border-b border-[#363636] bg-[#363636]/50 px-3 py-2 text-left backdrop-blur transition-opacity hover:opacity-90"
+            className="flex w-full items-center justify-between gap-2 border-b border-[#363636] bg-black/40 px-3 py-2 text-left backdrop-blur transition-opacity hover:opacity-90"
           >
             <span className="text-xs leading-4 text-[#f7f7f7]">{demoSpots}/32 spots available</span>
             <span className="flex-shrink-0 text-xs leading-4 text-[#8f8f8f] underline">View spots</span>
