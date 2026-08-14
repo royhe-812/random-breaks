@@ -486,7 +486,7 @@ export function SharedTransitionStage({
         type="button"
         onClick={onViewSpots}
         aria-label={`${Math.max(0, availableSpots - 1)} of ${totalSpots} spots available. View spots.`}
-        className="flex w-full items-center justify-between gap-2 border-b border-[#363636] bg-black/40 px-3 py-2 text-left backdrop-blur transition-opacity hover:opacity-90"
+        className="flex w-full items-center justify-between gap-2 border-b border-[#363636] bg-black/40 px-4 py-2 text-left backdrop-blur transition-opacity hover:opacity-90"
       >
         <span className="text-xs leading-4 text-[#f7f7f7]">{Math.max(0, availableSpots - 1)}/{totalSpots} spots available</span>
         <span className="flex-shrink-0 text-xs leading-4 text-[#8f8f8f] underline">View spots</span>
