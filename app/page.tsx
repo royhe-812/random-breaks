@@ -1523,28 +1523,6 @@ case "thumbnails-4":
             randomization card overlays it with `absolute inset-0` so it matches
             the bid box size exactly. Both animate simultaneously: the outgoing
             card lifts up and fades, the incoming card rises into place. */}
-        {/* Roller + Ticker: the inline "spots available" incentive tile, per Figma.
-            It sits above the crossfade container in normal flow and tucks its
-            bottom 16px back under it (-mb-4 on the tile), so it reads as one
-            nested unit. Because it lives OUTSIDE the crossfade wrapper it stays
-            put while the bid box swaps to the randomization card — one
-            persistent tile serving BOTH boxes, no flicker, and both cards keep
-            identical heights. Gated on usesRollerCard because the tile's tuck
-            depends on the card below it having 16px rounded top corners, which is
-            exactly what that predicate already tracks. */}
-        {usesRollerCard(selectedAnimation) && (
-          /* -mb-2 cancels the parent's gap-2, which would otherwise eat half of
-             the tile's own -mb-4 and leave it tucked only 8px instead of the
-             16px the design calls for. */
-          <div className="-mb-2">
-            <BreakSpotsBar
-              availableSpots={demoSpots}
-              totalSpots={32}
-              onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
-            />
-          </div>
-        )}
-
         {/* `relative` also stacks this above the tile's tucked bottom strip.
             In multi mode `minHeight` reserves the taller card's measured height.
             The bottom overlay is bottom-anchored (`bottom-4`), so that extra
@@ -1602,20 +1580,6 @@ case "thumbnails-4":
                     {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
                   </span>
                 </p>
-              )}
-              {/* Option 4 - latest: radial progress arc + spots available beneath the title */}
-              {selectedAnimation === "multi-spin-6-titlerow" && (
-                <button
-                  onClick={cycleSpots}
-                  className="mb-1 hover:opacity-80 transition-opacity"
-                >
-                  <SpotsProgress available={demoSpots} total={32} size={16} />
-                </button>
-              )}
-              {selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "single-spin-later" && selectedAnimation !== "multi-spin-repeat" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "pack-rip" && selectedAnimation !== "gift-reveal" && selectedAnimation !== "slot-machine" && selectedAnimation !== "battle" && selectedAnimation !== "carousel" && !usesRollerCard(selectedAnimation) && (
-                <button onClick={cycleSpots} className="mb-1 hover:opacity-80 transition-opacity text-left">
-                  <SpotsProgress available={demoSpots} total={32} size={16} />
-                </button>
               )}
               <div className="flex flex-col">
                 <span className="text-white font-bold text-lg">{hasWon ? '$30.00' : '$28.00'}</span>

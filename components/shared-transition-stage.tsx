@@ -437,15 +437,6 @@ export function SharedTransitionStage({
   // wrapper below, so this is a plain card shell.
   const rollerCard = (
     <div>
-      {/* Incentive tile — the spinner renders only its inner content and expects
-          the parent to supply this, since the bar carries the "View all"
-          affordance in place of the card's removed chevron. Its own -mb-4 tucks
-          its bottom strip under the card so the two read as one nested unit.
-          Still the pre-claim count here; the bid box decrements it after the
-          spot is assigned. */}
-      <BreakSpotsBar availableSpots={availableSpots} totalSpots={totalSpots} onViewSpots={onViewSpots} />
-
-      {/* `relative` stacks the card above the tile's tucked bottom strip. */}
       <div className="relative bg-[#212121] rounded-2xl p-3">
       <SpinRollerSpinner
         /* `round` is part of the key so each additional spin remounts the drum
@@ -487,15 +478,6 @@ export function SharedTransitionStage({
      Break #N" and the CTA is an armed swipe-to-bid rather than a won state. */
   const bidBox = (
     <div>
-      {/* Incentive tile — tucks its bottom 16px under the card via its own
-          -mb-4, so the two read as one nested unit. */}
-      <BreakSpotsBar
-        availableSpots={Math.max(0, availableSpots - 1)}
-        totalSpots={totalSpots}
-        onViewSpots={onViewSpots}
-      />
-
-      {/* `relative` stacks the card above the tile's tucked bottom strip. */}
       <div className="relative bg-black/40 backdrop-blur rounded-2xl p-4">
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0 pr-2">
