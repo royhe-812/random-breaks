@@ -492,7 +492,7 @@ export function SharedTransitionStage({
         <span className="flex-shrink-0 text-xs leading-4 text-[#8f8f8f] underline">View spots</span>
       </button>
 
-      <div className="bg-black/40 backdrop-blur p-4">
+      <div className="bg-black/40 backdrop-blur px-4 py-2">
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0 pr-2">
           <p className="text-sm text-white mb-0.5 truncate">
@@ -712,7 +712,7 @@ export function SharedTransitionStage({
         </>
       )}
 
-      {/* ─── Candidate pills (multi-spin only) ───────────────────────────────
+      {/* ─── Candidate pills (multi-spin only) ���──────────────────────────────
           One pill per spin, in spin order, anchored to the bottom of the frame.
           They stay mounted through the reveal so the ones the viewer passed up
           fade and desaturate *in place* rather than vanishing. The picked pill
