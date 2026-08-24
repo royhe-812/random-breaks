@@ -2,6 +2,13 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { motion } from "framer-motion"
+import { MultiSpinSpinnerLab } from "@/components/multi-spin-spinner-lab"
+import {
+  LANDED_SPOTS as SPOTS,
+  abbreviatePlayer,
+  type DataMode,
+  type Spot,
+} from "@/lib/multi-spin-data"
 
 /* ── Multi Spin Testing Zone ──
    A focused sandbox for the chip/pill row at the bottom of the randomizer card
@@ -15,42 +22,6 @@ import { motion } from "framer-motion"
    the same card at the same width. It is deliberately self-contained and static
    (no spinning) — the point is the resting pill row, not the animation. */
 
-interface Spot {
-  city: string
-  team: string
-  abbrev: string
-  color: string
-  /** Up to 3 star players on this spot. */
-  players: string[]
-}
-
-/* Three landed spots — the worst realistic case: two spots with three long
-   player names each, one with two. Mirrors the 3-spot multi-spin outcome. */
-const SPOTS: Spot[] = [
-  {
-    city: "San Francisco",
-    team: "49ers",
-    abbrev: "SF",
-    color: "#AA0000",
-    players: ["Christian McCaffrey", "Brandon Aiyuk", "George Kittle"],
-  },
-  {
-    city: "Detroit",
-    team: "Lions",
-    abbrev: "DET",
-    color: "#0076B6",
-    players: ["Amon-Ra St. Brown", "Jahmyr Gibbs", "Sam LaPorta"],
-  },
-  {
-    city: "Cincinnati",
-    team: "Bengals",
-    abbrev: "CIN",
-    color: "#FB4F14",
-    players: ["Ja'Marr Chase", "Tee Higgins"],
-  },
-]
-
-type DataMode = "teams" | "players"
 type Treatment = "marquee" | "abbreviated" | "truncate"
 
 const TREATMENTS: { id: Treatment; label: string; blurb: string }[] = [
@@ -70,19 +41,6 @@ const TREATMENTS: { id: Treatment; label: string; blurb: string }[] = [
     blurb: "Each pill clips with an ellipsis at a fixed width. Tap a pill to expand the full name.",
   },
 ]
-
-/* Name suffixes that must not be mistaken for the surname when abbreviating. */
-const SUFFIXES = new Set(["jr", "sr", "ii", "iii", "iv", "v"])
-
-function abbreviatePlayer(full: string) {
-  const parts = full.trim().split(/\s+/)
-  if (parts.length === 1) return parts[0]
-  let last = parts[parts.length - 1]
-  if (SUFFIXES.has(last.replace(/\./g, "").toLowerCase()) && parts.length > 2) {
-    last = parts[parts.length - 2]
-  }
-  return `${parts[0][0]}. ${last}`
-}
 
 /** Label for a spot's pill given the current data + treatment. */
 function spotLabel(spot: Spot, data: DataMode, treatment: Treatment) {
@@ -325,8 +283,8 @@ export function MultiSpinTestingZone() {
         <header className="flex flex-col gap-1">
           <h1 className="text-lg font-bold">Multi Spin Testing Zone</h1>
           <p className="text-sm text-white/50">
-            Comparing pill treatments for the randomizer card when spots list up to three
-            players. Toggle the content and cycle the treatments.
+            Long-name treatments for the multi-spin randomizer, where a single spot can list up
+            to three players. The Content toggle drives both sections below.
           </p>
         </header>
 
@@ -341,7 +299,7 @@ export function MultiSpinTestingZone() {
             ]}
           />
           <Segmented
-            label="Treatment"
+            label="Pill treatment"
             value={treatment}
             onChange={setTreatment}
             options={TREATMENTS.map((t) => ({ id: t.id, label: t.label }))}
@@ -353,6 +311,11 @@ export function MultiSpinTestingZone() {
         </p>
 
         <RandomizerCard data={data} treatment={treatment} />
+
+        <hr className="border-0" style={{ height: 0, borderTop: "1px solid rgba(255,255,255,0.1)" }} />
+
+        {/* Second subject: the spinner itself, sharing the content toggle above. */}
+        <MultiSpinSpinnerLab data={data} />
       </div>
     </div>
   )
