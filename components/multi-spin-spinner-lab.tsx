@@ -42,6 +42,18 @@ const PERSPECTIVE = 420
 const PILL_IDLE = "#363636"
 const CARD_RGB = "33,33,33"
 
+/* ── Multi-spin ──
+   A buyer who owns two spots spins twice in one sitting, so the card needs
+   somewhere to keep result #1 while result #2 is still being drawn. */
+
+/** Beat the landed name is held in the pill before it flies to the bank. Long
+ *  enough to actually read the winner — the flight is not the reveal. */
+const READ_MS = 950
+/** Duration of the shrink-and-pop flight into the bank. */
+const FLY_MS = 520
+/** Type size of a banked chip. Every pool label fits one line at this size. */
+const BANK_FONT = 12
+
 const scrim = (dir: "to bottom" | "to top") =>
   `linear-gradient(${dir}, rgba(${CARD_RGB},1) 0%, rgba(${CARD_RGB},0.72) 22%, rgba(${CARD_RGB},0.4) 45%, rgba(${CARD_RGB},0.16) 68%, rgba(${CARD_RGB},0) 100%)`
 
@@ -182,13 +194,53 @@ function RowMarquee({ text, width }: { text: string; width: number }) {
   )
 }
 
+/** One already-drawn result, parked at the bottom of the card. */
+type BankEntry = { id: number; idx: number; settled: boolean }
+/** Geometry for the pill → bank flight, in card-relative px. */
+type Flight = {
+  id: number
+  label: string
+  from: { x: number; y: number; w: number; h: number }
+  to: { x: number; y: number; w: number; h: number }
+}
+
 export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
   const [treatment, setTreatment] = useState<SpinTreatment>("shrink")
   const [pos, setPos] = useState(0)
-  const [phase, setPhase] = useState<"idle" | "spinning" | "landed">("idle")
+  const [phase, setPhase] = useState<"idle" | "spinning" | "landed" | "flying">("idle")
+
+  /** How many spots this buyer is drawing in one sitting. */
+  const [spinCount, setSpinCount] = useState<1 | 2>(1)
+  const [banked, setBanked] = useState<BankEntry[]>([])
+  const [flight, setFlight] = useState<Flight | null>(null)
+  /* True once this round's winner has moved to the bank. Without it the centre
+     label returns when the flight ends and the name sits in two places at
+     once — undoing the very thing the flight just showed. */
+  const [vacated, setVacated] = useState(false)
 
   const rafRef = useRef<number | null>(null)
   const posRef = useRef(0)
+  /* Indices already drawn this sitting. Kept in a ref as well as in `banked`
+     because the next round is scheduled from a timeout that would otherwise
+     close over a stale copy. */
+  const bankedIdxRef = useRef<number[]>([])
+  const bankIdRef = useRef(0)
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
+  const cardRef = useRef<HTMLDivElement>(null)
+  const pillRef = useRef<HTMLDivElement>(null)
+  const slotRefs = useRef(new Map<number, HTMLElement>())
+
+  const clearTimers = useCallback(() => {
+    timersRef.current.forEach(clearTimeout)
+    timersRef.current = []
+  }, [])
+
+  /* Mirrors of props/state the scheduled callbacks read. A timeout fired three
+     seconds into a spin would otherwise see the values from when it was set. */
+  const spinCountRef = useRef(spinCount)
+  spinCountRef.current = spinCount
+  const dataRef = useRef(data)
+  dataRef.current = data
 
   const stacked = isStacked(treatment)
   const itemH = stacked ? 51 : ITEM_H
@@ -296,16 +348,22 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
   const centreIdx = mod(Math.round(pos), POOL.length)
   const landedSpot = POOL[centreIdx]
 
-  const spin = useCallback(() => {
+  /** Spin the drum to a specific pool index, then hand back control. */
+  const spinTo = useCallback((targetIdx: number, onLand: () => void) => {
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
     const start = posRef.current
+    const from = Math.round(start)
     const laps = 4
-    const stepsToTarget = 1 + Math.floor(Math.random() * POOL.length)
-    const end = Math.round(start) + laps * POOL.length + stepsToTarget
+    /* Land on the chosen index rather than a random number of steps, so round
+       two can be forced away from the spot round one already took. */
+    let end = from + laps * POOL.length
+    end += mod(targetIdx - mod(end, POOL.length), POOL.length)
+    if (end <= from) end += POOL.length
     const duration = 3200
     const t0 = performance.now()
 
     setPhase("spinning")
+    setVacated(false)
 
     const tick = (now: number) => {
       const t = clamp((now - t0) / duration, 0, 1)
@@ -319,15 +377,94 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
         posRef.current = end
         setPos(end)
         setPhase("landed")
+        onLand()
       }
     }
     rafRef.current = requestAnimationFrame(tick)
   }, [])
 
-  // Stop any in-flight spin on unmount.
+  /* The multi-spin chain. Each round: spin → hold the winner so it can be read
+     → shrink it into the bank → spin the next. Written as mutually recursive
+     callbacks rather than an effect chain so the timing stays explicit. */
+  const runRoundRef = useRef<(round: number) => void>(() => {})
+
+  const finishFlight = useCallback(
+    (id: number, round: number, total: number) => {
+      setFlight(null)
+      setBanked((prev) => prev.map((b) => (b.id === id ? { ...b, settled: true } : b)))
+      setVacated(true)
+      /* Leave the flying phase or the sitting never ends: `busy` would stay
+         true and the Spin button would sit disabled on "Spinning…" forever. */
+      setPhase("landed")
+      if (round + 1 < total) {
+        const t = setTimeout(() => runRoundRef.current(round + 1), 260)
+        timersRef.current.push(t)
+      }
+    },
+    [],
+  )
+  const finishFlightRef = useRef(finishFlight)
+  finishFlightRef.current = finishFlight
+
+  const runRound = useCallback(
+    (round: number) => {
+      const total = spinCountRef.current
+      /* Keep results distinct: a two-spot buyer drawing the same spot twice
+         would look like the randomizer is broken. */
+      const used = bankedIdxRef.current
+      const allowed = POOL.map((_, i) => i).filter((i) => !used.includes(i))
+      const target = allowed[Math.floor(Math.random() * allowed.length)] ?? 0
+
+      spinTo(target, () => {
+        if (total < 2) return // Single spin: land and stay landed, as before.
+        const t = setTimeout(() => {
+          const id = ++bankIdRef.current
+          bankedIdxRef.current = [...bankedIdxRef.current, target]
+          setBanked((prev) => [...prev, { id, idx: target, settled: false }])
+
+          /* Measure only once the (hidden) destination chip is in the DOM, so
+             the flight lands on the chip's real geometry instead of a guess. */
+          requestAnimationFrame(() => {
+            const card = cardRef.current
+            const pill = pillRef.current
+            const slot = slotRefs.current.get(id)
+            if (!card || !pill || !slot) {
+              finishFlightRef.current(id, round, total)
+              return
+            }
+            const c = card.getBoundingClientRect()
+            const o = pill.getBoundingClientRect()
+            const d = slot.getBoundingClientRect()
+            setFlight({
+              id,
+              label: fullLabel(POOL[target], dataRef.current),
+              from: { x: o.left - c.left, y: o.top - c.top, w: o.width, h: o.height },
+              to: { x: d.left - c.left, y: d.top - c.top, w: d.width, h: d.height },
+            })
+            setPhase("flying")
+          })
+        }, READ_MS)
+        timersRef.current.push(t)
+      })
+    },
+    [spinTo],
+  )
+  runRoundRef.current = runRound
+
+  /** Start a fresh sitting: clear the bank, then run every round in turn. */
+  const startSequence = useCallback(() => {
+    clearTimers()
+    bankedIdxRef.current = []
+    setBanked([])
+    setFlight(null)
+    runRound(0)
+  }, [clearTimers, runRound])
+
+  // Stop any in-flight spin or scheduled round on unmount.
   useEffect(
     () => () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+      timersRef.current.forEach(clearTimeout)
     },
     [],
   )
@@ -336,21 +473,40 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
   useEffect(() => {
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
     rafRef.current = null
+    timersRef.current.forEach(clearTimeout)
+    timersRef.current = []
     posRef.current = 0
     setPos(0)
     setPhase("idle")
-  }, [treatment, data])
+    // A half-finished sitting must not survive into another treatment.
+    bankedIdxRef.current = []
+    setBanked([])
+    setFlight(null)
+  }, [treatment, data, spinCount])
 
   const stepDeg = (pitch / radius) * (180 / Math.PI)
   const spinning = phase === "spinning"
   const landed = phase === "landed"
+  const flying = phase === "flying"
+
+  /* Multi-spin is a breakout-only exploration for now: the other treatments
+     are still being judged on the single-spin problem, and giving them a bank
+     would change what they are being compared on. */
+  const multiEnabled = treatment === "breakout"
+  const multi = multiEnabled && spinCount > 1
+  /** Rendered type size of a drum row — authored 14px, magnified by the cylinder. */
+  const drumFontPx = 14 * magnification
+  const busy = spinning || flying
+  const sittingDone = multi && banked.length === spinCount && banked.every((b) => b.settled)
 
   /* Pill geometry. Only the breakout treatment changes it, and only at rest.
      The pill grows to fit THIS name rather than always slamming to the card
      edge, so a short winner keeps a snug pill and only a genuinely long one
      uses the full interior. */
   const needed = neededPillW[centreIdx] ?? PILL_W
-  const breakout = treatment === "breakout" && landed
+  /* Once the winner has flown to the bank the pill has nothing to fit, so it
+     eases back to its neutral 255px rather than holding a wide empty shell. */
+  const breakout = treatment === "breakout" && landed && !vacated
   /** True when even the full card interior cannot hold the name at 14px. */
   const breakoutMarquee = breakout && needed > CARD_INNER_W
   const pillW = breakout ? clamp(needed, PILL_W, CARD_INNER_W) : PILL_W
@@ -400,8 +556,12 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
         {activeBlurb}
       </p>
 
-      {/* The randomizer box */}
-      <div className="w-full max-w-[375px] rounded-2xl bg-[#212121] p-4 text-white">
+      {/* The randomizer box. `relative` anchors the flight layer, which is
+          positioned in card-relative coordinates. */}
+      <div
+        ref={cardRef}
+        className="relative w-full max-w-[375px] rounded-2xl bg-[#212121] p-4 text-white"
+      >
         <p className="truncate text-sm leading-tight">
           Randomizing for <span className="font-semibold">@Chrisjames</span>
         </p>
@@ -420,6 +580,7 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
         >
           {/* Centre selection pill */}
           <div
+            ref={pillRef}
             className="pointer-events-none absolute left-1/2 top-1/2 rounded-full transition-[width] duration-300 ease-out"
             style={{
               width: pillW,
@@ -427,6 +588,9 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
               marginLeft: -pillW / 2,
               marginTop: -(itemH - 4) / 2,
               backgroundColor: PILL_IDLE,
+              /* The pill IS the thing that flies to the bank, so the original
+                 must vacate the moment the flyer takes over. */
+              opacity: flying ? 0 : 1,
             }}
           />
 
@@ -465,7 +629,10 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
                   top: "50%",
                   marginTop: -itemH / 2,
                   transform: `rotateX(${-angle}deg) translateZ(${radius}px)`,
-                  opacity: 1 - fade * 0.82,
+                  /* The centre label leaves with the pill during the flight and
+                     stays gone afterwards — otherwise the banked name appears
+                     in two places at once. */
+                  opacity: isCentre && (flying || vacated) ? 0 : 1 - fade * 0.82,
                 }}
               >
                 {stacked ? (
@@ -560,6 +727,89 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
           </div>
         )}
 
+        {/* ── Banked results ──
+            Where a drawn spot lives once the drum has moved on. Present for the
+            whole sitting (not just after the first land) so the card does not
+            change height mid-flight and the flight has a real target to aim at. */}
+        {multi && (
+          <div className="mt-3">
+            <hr className="-mx-4 mb-3 border-0" style={{ height: 0, borderTop: "1px solid #363636" }} />
+            <div className="mb-2 flex items-baseline justify-between">
+              <span className="text-[11px] font-medium uppercase tracking-wide text-white/40">
+                Your spots
+              </span>
+              <span className="text-[11px] tabular-nums text-white/40">
+                {banked.filter((b) => b.settled).length} of {spinCount}
+              </span>
+            </div>
+
+            <div className="flex flex-col items-start gap-1.5">
+              {banked.map((b) => (
+                <span
+                  key={b.id}
+                  ref={(el) => {
+                    if (el) slotRefs.current.set(b.id, el)
+                    else slotRefs.current.delete(b.id)
+                  }}
+                  className="max-w-full whitespace-nowrap rounded-full px-3 py-1 font-semibold"
+                  style={{
+                    fontSize: BANK_FONT,
+                    background: "rgba(255,255,255,0.09)",
+                    /* Held invisible but laid out while its result is still in
+                       flight: the chip is the flight's measured destination, so
+                       it has to occupy its final geometry before the flyer moves. */
+                    visibility: b.settled ? "visible" : "hidden",
+                  }}
+                >
+                  {fullLabel(POOL[b.idx], data)}
+                </span>
+              ))}
+
+              {/* Slots still to be drawn, so the buyer can see what is owed. */}
+              {Array.from({ length: Math.max(0, spinCount - banked.length) }).map((_, i) => (
+                <span
+                  key={`empty-${i}`}
+                  className="rounded-full border border-dashed border-white/15 px-3 py-1 text-white/25"
+                  style={{ fontSize: BANK_FONT }}
+                >
+                  Spin {banked.length + i + 1}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Flight layer ──
+            One element morphing from the pill's geometry to the banked chip's:
+            position, size and type size all animate, so the name shrinks into
+            place rather than being scaled (which would distort the text). */}
+        {flight && (
+          <motion.div
+            aria-hidden="true"
+            className="pointer-events-none absolute z-10 flex items-center justify-center overflow-hidden whitespace-nowrap rounded-full font-semibold text-white"
+            initial={{
+              left: flight.from.x,
+              top: flight.from.y,
+              width: flight.from.w,
+              height: flight.from.h,
+              fontSize: drumFontPx,
+            }}
+            animate={{
+              left: flight.to.x,
+              top: flight.to.y,
+              width: flight.to.w,
+              height: flight.to.h,
+              fontSize: BANK_FONT,
+            }}
+            transition={{ duration: FLY_MS / 1000, ease: [0.22, 1, 0.36, 1] }}
+            onAnimationComplete={() =>
+              finishFlightRef.current(flight.id, banked.length - 1, spinCount)
+            }
+            style={{ background: PILL_IDLE }}
+          >
+            {flight.label}
+          </motion.div>
+        )}
       </div>
 
       {/* The action lives OUTSIDE the randomizer box, directly beneath it: the
@@ -567,14 +817,41 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
           on it. Matching the card's max-width keeps the two visually paired,
           and `min-w` stops the button resizing between the "Spin" and
           "Spinning…" labels. */}
-      <div className="flex w-full max-w-[375px] justify-end">
+      <div className="flex w-full max-w-[375px] items-center justify-between gap-3">
+        {/* Scenario toggle. Breakout-only, but the slot is always occupied so
+            the Spin button does not shift when switching treatments. */}
+        {multiEnabled ? (
+          <div
+            className="flex items-center gap-0.5 rounded-full bg-zinc-800 p-0.5"
+            role="group"
+            aria-label="Number of spins"
+          >
+            {([1, 2] as const).map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setSpinCount(n)}
+                disabled={busy}
+                aria-pressed={spinCount === n}
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all disabled:opacity-40 ${
+                  spinCount === n ? "bg-white text-zinc-900" : "text-white/70 hover:text-white"
+                }`}
+              >
+                {n === 1 ? "Single spin" : "2 spins"}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <span />
+        )}
+
         <button
           type="button"
-          onClick={spin}
-          disabled={spinning}
-          className="min-w-[120px] rounded-full bg-[#3665F3] px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+          onClick={startSequence}
+          disabled={busy}
+          className="min-w-[120px] shrink-0 rounded-full bg-[#3665F3] px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
         >
-          {spinning ? "Spinning…" : "Spin"}
+          {busy ? "Spinning…" : sittingDone ? "Spin again" : multi ? "Spin 2 spots" : "Spin"}
         </button>
       </div>
 
