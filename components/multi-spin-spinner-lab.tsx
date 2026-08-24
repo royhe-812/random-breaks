@@ -34,6 +34,11 @@ const EDGE_ON_DEG = 72
 const PILL_PAD_X = 16
 /** The shipping pill width. */
 const PILL_W = 255
+
+/* How long the reel takes to close the gap left by a banked winner. The next
+   round must not start before this finishes, or the rows are still sliding when
+   the spin snaps them back and the shift is never actually seen. */
+const CLOSE_UP_MS = 300
 /** Card interior width — the widest a pill can ever break out to. */
 const CARD_INNER_W = 343
 /** Perspective depth of the drum stage. */
@@ -398,7 +403,9 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
          true and the Spin button would sit disabled on "Spinning…" forever. */
       setPhase("landed")
       if (round + 1 < total) {
-        const t = setTimeout(() => runRoundRef.current(round + 1), 260)
+        /* Hold long enough for the reel to finish closing the gap (plus a beat
+           to read the new centre) before the next round takes off. */
+        const t = setTimeout(() => runRoundRef.current(round + 1), CLOSE_UP_MS + 110)
         timersRef.current.push(t)
       } else {
         /* The scroller was jumped to the end to measure the flight target.
@@ -632,7 +639,15 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
           {rowWindow.map((k) => {
             const idx = base + k
             const spot = POOL[mod(idx, POOL.length)]
-            const offset = idx - pos
+            /* Once the winner has flown to the bank its row is empty, and the
+               reel would otherwise hold a name-shaped hole in the middle while
+               the next round is prepared. Everything BELOW the vacated centre
+               takes one step up to fill it — the same way a list closes when an
+               item is removed — so the drum never shows a blank spot. Rows above
+               keep their place; pulling them down too would read as the reel
+               spinning backwards. */
+            const closeUp = vacated && !sittingDone && idx - pos > 0.5 ? 1 : 0
+            const offset = idx - pos - closeUp
             const angle = offset * stepDeg
             if (Math.abs(angle) > EDGE_ON_DEG) return null
 
@@ -664,6 +679,12 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
                   top: "50%",
                   marginTop: -itemH / 2,
                   transform: `rotateX(${-angle}deg) translateZ(${radius}px)`,
+                  /* Only ease the close-up. During a spin `pos` changes every
+                     frame, so a transform transition would lag behind the reel
+                     and smear it. */
+                  transition: spinning
+                    ? "none"
+                    : `transform ${CLOSE_UP_MS}ms cubic-bezier(.22,1,.36,1), opacity 220ms linear`,
                   /* The centre label leaves with the pill during the flight and
                      stays gone afterwards — otherwise the banked name appears
                      in two places at once. */
