@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { motion } from "framer-motion"
 import { MultiSpinSpinnerLab } from "@/components/multi-spin-spinner-lab"
-import { MultiSpinRecoSpotlight } from "@/components/multi-spin-reco-spotlight"
+import { MultiSpinRecoScan } from "@/components/multi-spin-reco-scan"
 import {
   LANDED_SPOTS as SPOTS,
   abbreviatePlayer,
@@ -320,8 +320,9 @@ export function MultiSpinTestingZone() {
 
         <hr className="border-0" style={{ height: 0, borderTop: "1px solid rgba(255,255,255,0.1)" }} />
 
-        {/* Third subject: the recommended alternative to the drum. */}
-        <MultiSpinRecoSpotlight data={data} />
+        {/* Third subject: the recommended alternative to the drum. Runs on its
+            own spot model, so it is independent of the Content toggle above. */}
+        <MultiSpinRecoScan />
       </div>
     </div>
   )

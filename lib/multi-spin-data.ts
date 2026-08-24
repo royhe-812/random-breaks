@@ -131,3 +131,104 @@ export function shortLabel(spot: Spot, data: DataMode, sep = SEP) {
   if (data === "teams") return spot.team
   return spot.players.map(abbreviatePlayer).join(sep)
 }
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Scalable spot model
+   ────────────────────────────────────────────────────────────────────────────
+   The `Spot` shape above models a spot as "a team, which has players". That is
+   wrong for real breaks and it is what broke the first recommendation:
+
+     - A spot can be ONE team, ONE player, or SEVERAL of either, mixed.
+     - Players are not derivable from a team. Rosters change mid-season, so any
+       team -> players mapping is stale the moment someone is traded.
+     - There is no reliable short code for a player name, and initials collide.
+
+   So a spot is just an ORDERED LIST OF LITERAL ENTRIES, and the only stable
+   identifier is the spot's NUMBER — buyers own "spot 7" regardless of what it
+   is later relabelled to. Nothing here is derived from anything else. */
+
+export type EntryKind = "team" | "player"
+
+export interface SpotEntry {
+  /** Rendered verbatim. Never abbreviated, never used to look anything up. */
+  name: string
+  kind: EntryKind
+}
+
+export interface RosterSpot {
+  /** 1-based spot number. The durable handle; survives trades and relabelling. */
+  n: number
+  entries: SpotEntry[]
+}
+
+const team = (name: string): SpotEntry => ({ name, kind: "team" })
+const player = (name: string): SpotEntry => ({ name, kind: "player" })
+
+/**
+ * A deliberately uneven break: every shape a spot can take, including the ones
+ * that broke the token approach. Order is intentional — a single short team
+ * name sits next to a three-player spot so the layout is judged on the jump
+ * between them, not on a uniform set.
+ */
+export const ROSTER_SPOTS: RosterSpot[] = [
+  { n: 1, entries: [team("Kansas City Chiefs")] },
+  { n: 2, entries: [player("Christian McCaffrey")] },
+  {
+    n: 3,
+    entries: [
+      player("Amon-Ra St. Brown"),
+      player("Jahmyr Gibbs"),
+      player("Sam LaPorta"),
+    ],
+  },
+  { n: 4, entries: [team("New York Giants"), team("New York Jets")] },
+  {
+    n: 5,
+    /* Mixed kinds in one spot — impossible to express as "a team plus its
+       roster", which is exactly the case the first attempt could not render. */
+    entries: [team("Washington Commanders"), player("Brian Robinson Jr.")],
+  },
+  { n: 6, entries: [player("Ja'Marr Chase"), player("Tee Higgins")] },
+  {
+    n: 7,
+    entries: [
+      player("Victor Wembanyama"),
+      player("Cade Cunningham"),
+      player("Paolo Banchero"),
+    ],
+  },
+  { n: 8, entries: [team("Green Bay Packers")] },
+  { n: 9, entries: [player("Patrick Mahomes"), player("Travis Kelce")] },
+  { n: 10, entries: [team("Jacksonville Jaguars"), player("Trevor Lawrence")] },
+  { n: 11, entries: [player("Shai Gilgeous-Alexander")] },
+  { n: 12, entries: [team("Tampa Bay Buccaneers")] },
+]
+
+/** Filler used only to pad a break out to a larger spot count. */
+const FILLER: SpotEntry[][] = [
+  [team("Denver Broncos")],
+  [player("Justin Jefferson"), player("Jordan Addison")],
+  [team("Baltimore Ravens")],
+  [player("Anthony Edwards")],
+  [team("Los Angeles Chargers"), team("Los Angeles Rams")],
+]
+
+/**
+ * A break of exactly `count` spots. Used to prove the layout holds at the top
+ * of the range (the live card advertises 32) rather than asserting that it does.
+ */
+export function makeBreak(count: number): RosterSpot[] {
+  const out: RosterSpot[] = []
+  for (let i = 0; i < count; i++) {
+    const src = i < ROSTER_SPOTS.length
+      ? ROSTER_SPOTS[i].entries
+      : FILLER[(i - ROSTER_SPOTS.length) % FILLER.length]
+    out.push({ n: i + 1, entries: src })
+  }
+  return out
+}
+
+/** Flat label for announcements and measurement. Joins entries literally. */
+export function spotLabel(spot: RosterSpot, sep = SEP) {
+  return spot.entries.map((e) => e.name).join(sep)
+}
