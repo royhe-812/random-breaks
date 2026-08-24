@@ -573,18 +573,22 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
           style={{ height: 0, borderTop: "1px solid #363636" }}
         />
 
-        {/* Drum */}
-        <div
-          className="relative w-full overflow-hidden rounded-md transition-opacity duration-500"
-          style={{
-            height: DRUM_H,
-            backgroundColor: "transparent",
-            perspective: 420,
-            /* Once every spot is drawn the drum has no job left. Fading it back
-               stops the empty centre reading as a missing result and hands
-               attention to the bank, which is now the answer. */
-            opacity: sittingDone ? 0.35 : 1,
+        {/* Drum.
+            Once every spot is drawn the drum has no job left, so it collapses to
+            nothing and the bank rises to take its place. Merely dimming it (the
+            first attempt) still reserved ~200px of dead band above the results,
+            which read as a spot that had failed to fill. Height is animated
+            rather than toggled so the bank slides up instead of jumping. */}
+        <motion.div
+          className="relative w-full overflow-hidden rounded-md"
+          initial={false}
+          animate={{
+            height: sittingDone ? 0 : DRUM_H,
+            opacity: sittingDone ? 0 : 1,
+            marginBottom: sittingDone ? -12 : 0,
           }}
+          transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+          style={{ backgroundColor: "transparent", perspective: 420 }}
         >
           {/* Centre selection pill */}
           <div
@@ -705,7 +709,7 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
             className="pointer-events-none absolute inset-x-0 bottom-0"
             style={{ height: ITEM_H, background: scrim("to top") }}
           />
-        </div>
+        </motion.div>
 
         {/* Supporting roster line — the second field in the teamBelow treatment. */}
         {treatment === "teamBelow" && (
@@ -744,7 +748,15 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
             change height mid-flight and the flight has a real target to aim at. */}
         {multi && (
           <div className="mt-3">
-            <hr className="-mx-4 mb-3 border-0" style={{ height: 0, borderTop: "1px solid #363636" }} />
+            {/* With the drum collapsed this rule would sit a few px under the
+                header's rule, reading as a double hairline. The header's rule
+                already separates the bank at that point. */}
+            {!sittingDone && (
+              <hr
+                className="-mx-4 mb-3 border-0"
+                style={{ height: 0, borderTop: "1px solid #363636" }}
+              />
+            )}
             <div className="mb-2 flex items-baseline justify-between">
               <span className="text-[11px] font-medium uppercase tracking-wide text-white/40">
                 Your spots
