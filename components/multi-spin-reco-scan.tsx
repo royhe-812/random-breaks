@@ -20,7 +20,7 @@
    which is the reel feeling without putting text on a cylinder. */
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { makeBreak, spotLabel, type RosterSpot } from "@/lib/multi-spin-data"
+import { makeBreak, spotLabel } from "@/lib/multi-spin-data"
 
 /** Live card width, matching the drum lab so the two compare fairly. */
 const CARD_W = 375
@@ -40,16 +40,6 @@ function hopDelay(i: number) {
   return FAST_MS + (SLOW_MS - FAST_MS) * Math.pow(t, EASE)
 }
 
-/** "3 players", "1 team", "1 team · 1 player" — counted, never derived. */
-function composition(spot: RosterSpot) {
-  const teams = spot.entries.filter((e) => e.kind === "team").length
-  const players = spot.entries.length - teams
-  const parts: string[] = []
-  if (teams) parts.push(`${teams} team${teams > 1 ? "s" : ""}`)
-  if (players) parts.push(`${players} player${players > 1 ? "s" : ""}`)
-  return parts.join(" · ")
-}
-
 type Phase = "idle" | "running" | "landed"
 
 export function MultiSpinRecoScan() {
@@ -63,6 +53,12 @@ export function MultiSpinRecoScan() {
   const spots = useMemo(() => makeBreak(count), [count])
   const activeSpot = spots[activeIdx] ?? spots[0]
   const landed = phase === "landed"
+
+  /* Every spot must carry a number, so the number column is sized from the
+     largest one in the break rather than assuming two digits. Padding keeps
+     "07" and "112" the same width, so the names stay on a single left edge
+     instead of stepping in when the break crosses 10 / 100. */
+  const padLen = String(spots.length).length
 
   const stop = useCallback(() => {
     if (timer.current) clearTimeout(timer.current)
@@ -143,7 +139,9 @@ export function MultiSpinRecoScan() {
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[11px] uppercase tracking-wide text-white/40">Break size</span>
         <div className="flex gap-1 rounded-full bg-zinc-800 p-1">
-          {[12, 32].map((c) => (
+          {/* 120 is here to prove the number column survives crossing 100,
+              not because a break is likely to be that large. */}
+          {[12, 32, 120].map((c) => (
             <button
               key={c}
               type="button"
@@ -198,13 +196,14 @@ export function MultiSpinRecoScan() {
                     {/* The number is the durable identity: it is what a buyer
                         owns, and it is unaffected by relabelling or trades. */}
                     <span
-                      className="mt-px flex-shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold tabular-nums"
+                      className="mt-px flex-shrink-0 rounded px-1.5 py-0.5 text-center text-[11px] font-bold tabular-nums"
                       style={{
                         background: isWinner ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.08)",
                         color: isWinner ? "#111111" : "rgba(255,255,255,0.55)",
+                        minWidth: `calc(${padLen}ch + 12px)`,
                       }}
                     >
-                      {String(spot.n).padStart(2, "0")}
+                      {String(spot.n).padStart(padLen, "0")}
                     </span>
 
                     <span className="flex min-w-0 flex-col gap-0.5">
@@ -220,12 +219,6 @@ export function MultiSpinRecoScan() {
                           {e.name}
                         </span>
                       ))}
-                      <span
-                        className="text-[10px] uppercase tracking-wide"
-                        style={{ color: isWinner ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.35)" }}
-                      >
-                        {composition(spot)}
-                      </span>
                     </span>
                   </li>
                 )
