@@ -13,8 +13,10 @@
         "Christian McCaffrey · ..." asserts those players are on that team,
         which is exactly the claim that goes stale mid-season.
 
-   So this version derives NOTHING. A spot is an ordered list of literal entries
-   and its number is the only stable handle. One surface: the row IS the result,
+   So this version derives NOTHING. A spot is an ordered list of literal entries,
+   rendered as-is. The model still carries a spot number (`n`) as a stable key,
+   but it is not shown: a number per row added a column without telling the
+   viewer anything the names do not. One surface: the row IS the result,
    rendered verbatim at full size, wrapping as far as it needs to. Motion comes
    from the selection travelling down the list and the list scrolling under it,
    which is the reel feeling without putting text on a cylinder. */
@@ -53,12 +55,6 @@ export function MultiSpinRecoScan() {
   const spots = useMemo(() => makeBreak(count), [count])
   const activeSpot = spots[activeIdx] ?? spots[0]
   const landed = phase === "landed"
-
-  /* Every spot must carry a number, so the number column is sized from the
-     largest one in the break rather than assuming two digits. Padding keeps
-     "07" and "112" the same width, so the names stay on a single left edge
-     instead of stepping in when the break crosses 10 / 100. */
-  const padLen = String(spots.length).length
 
   const stop = useCallback(() => {
     if (timer.current) clearTimeout(timer.current)
@@ -128,9 +124,8 @@ export function MultiSpinRecoScan() {
           </span>
         </div>
         <p className="text-xs leading-relaxed text-white/50">
-          A spot is a list of literal names and a number. Nothing is abbreviated, coloured by
-          team, or looked up — so trades, mixed team/player spots, and any name length are all
-          just text.
+          A spot is just a list of literal names. Nothing is abbreviated, coloured by team, or
+          looked up — so trades, mixed team/player spots, and any name length are all just text.
         </p>
       </header>
 
@@ -139,9 +134,9 @@ export function MultiSpinRecoScan() {
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[11px] uppercase tracking-wide text-white/40">Break size</span>
         <div className="flex gap-1 rounded-full bg-zinc-800 p-1">
-          {/* 120 is here to prove the number column survives crossing 100,
-              not because a break is likely to be that large. */}
-          {[12, 32, 120].map((c) => (
+          {/* 32 is the top of the realistic range the live card advertises. The
+              120 case is gone with the number column it existed to stress. */}
+          {[12, 32].map((c) => (
             <button
               key={c}
               type="button"
@@ -164,7 +159,18 @@ export function MultiSpinRecoScan() {
           <div
             ref={viewportRef}
             className="relative overflow-y-auto rounded-xl"
-            style={{ height: VIEWPORT_H, background: "#1A1A1A" }}
+            style={{
+              height: VIEWPORT_H,
+              background: "#1A1A1A",
+              /* Now that each spot is a solid block, a row cut dead straight by
+                 the viewport edge reads as broken rather than as "more below".
+                 Fading the edges keeps the partial rows legible as continuation.
+                 The centred winner is never near an edge, so it stays crisp. */
+              maskImage:
+                "linear-gradient(to bottom, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%)",
+            }}
           >
             {/* Half-viewport padding top and bottom. Without it the centring
                 target for the first and last rows falls outside the scroll
@@ -172,7 +178,7 @@ export function MultiSpinRecoScan() {
                 appear jammed against the edge — which reads as a clipped
                 highlight rather than a landed winner. */}
             <ul
-              className="relative flex flex-col gap-1 px-1.5"
+              className="relative flex flex-col gap-1.5 px-1.5"
               style={{ paddingTop: VIEWPORT_H / 2, paddingBottom: VIEWPORT_H / 2 }}
             >
               {spots.map((spot, i) => {
@@ -184,42 +190,36 @@ export function MultiSpinRecoScan() {
                     ref={(el) => {
                       rowRefs.current[i] = el
                     }}
-                    className="flex items-start gap-2.5 rounded-lg px-2.5 py-2"
+                    className="flex min-w-0 flex-col gap-0.5 rounded-lg px-3 py-2"
                     style={{
-                      background: isWinner ? "#FFFFFF" : isActive ? "#3A3A3A" : "transparent",
+                      /* With the number badge gone there is no left anchor
+                         marking where one spot ends and the next begins, so a
+                         three-entry spot beside a one-entry spot would read as
+                         a single four-line group. Every row therefore carries
+                         its own surface: the block IS the spot boundary. */
+                      background: isWinner
+                        ? "#FFFFFF"
+                        : isActive
+                          ? "#3A3A3A"
+                          : "rgba(255,255,255,0.045)",
                       /* Dim the field once a winner exists so the result reads
                          first, but keep it present — it is the proof of fairness. */
                       opacity: landed && !isWinner ? 0.35 : 1,
                       transition: "background 140ms ease-out, opacity 220ms ease-out",
                     }}
                   >
-                    {/* The number is the durable identity: it is what a buyer
-                        owns, and it is unaffected by relabelling or trades. */}
-                    <span
-                      className="mt-px flex-shrink-0 rounded px-1.5 py-0.5 text-center text-[11px] font-bold tabular-nums"
-                      style={{
-                        background: isWinner ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.08)",
-                        color: isWinner ? "#111111" : "rgba(255,255,255,0.55)",
-                        minWidth: `calc(${padLen}ch + 12px)`,
-                      }}
-                    >
-                      {String(spot.n).padStart(padLen, "0")}
-                    </span>
-
-                    <span className="flex min-w-0 flex-col gap-0.5">
-                      {/* One line per entry: never joined into a single string,
-                          so a multi-entry spot cannot read as one long name and
-                          nothing implies the entries belong to each other. */}
-                      {spot.entries.map((e) => (
-                        <span
-                          key={e.name}
-                          className="text-[15px] font-semibold leading-snug text-pretty"
-                          style={{ color: isWinner ? "#111111" : "rgba(255,255,255,0.92)" }}
-                        >
-                          {e.name}
-                        </span>
-                      ))}
-                    </span>
+                    {/* One line per entry: never joined into a single string,
+                        so a multi-entry spot cannot read as one long name and
+                        nothing implies the entries belong to each other. */}
+                    {spot.entries.map((e) => (
+                      <span
+                        key={e.name}
+                        className="text-[15px] font-semibold leading-snug text-pretty"
+                        style={{ color: isWinner ? "#111111" : "rgba(255,255,255,0.92)" }}
+                      >
+                        {e.name}
+                      </span>
+                    ))}
                   </li>
                 )
               })}
@@ -227,7 +227,10 @@ export function MultiSpinRecoScan() {
           </div>
 
           <p className="sr-only" role="status">
-            {landed ? `Winner: spot ${activeSpot.n}, ${spotLabel(activeSpot)}` : ""}
+            {/* Announce exactly what is on screen. Naming a spot number here
+                would tell screen reader users something sighted users can no
+                longer see. */}
+            {landed ? `Winner: ${spotLabel(activeSpot)}` : ""}
           </p>
 
           <button
@@ -249,12 +252,17 @@ export function MultiSpinRecoScan() {
           shrinking to fit a pill.
         </p>
         <p>
-          <span className="text-white">It survives trades.</span> Entries are rendered verbatim
-          and a spot&apos;s number never changes, so nothing is derived from a roster that can
-          go stale. Mixed spots — a team and a player together — are just two lines.
+          <span className="text-white">It survives trades.</span> Entries are rendered verbatim,
+          so nothing is derived from a roster that can go stale. Mixed spots — a team and a
+          player together — are just two lines. Each spot sits on its own block, which is what
+          keeps a three-name spot from blurring into the one below it.
         </p>
         <p>
-          <span className="text-white">Tradeoff, honestly.</span> You only see about three spots
+          {/* Explicit {" "}: this text chunk is bounded by the {count} expression
+              below, and the compiler strips the leading space, yielding
+              "honestly.You". Verify with textContent, not the screenshot. */}
+          <span className="text-white">Tradeoff, honestly.</span>{" "}
+          You only see about three spots
           at a time, so this gives up the &quot;whole field visible&quot; claim I made for the
           token grid; at {count} spots the scroll is the motion. It also drops the slot-machine
           shape, so the tension rests entirely on the hop cadence slowing down.
