@@ -229,6 +229,7 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
   const cardRef = useRef<HTMLDivElement>(null)
   const pillRef = useRef<HTMLDivElement>(null)
   const slotRefs = useRef(new Map<number, HTMLElement>())
+  const bankScrollRef = useRef<HTMLDivElement>(null)
 
   const clearTimers = useCallback(() => {
     timersRef.current.forEach(clearTimeout)
@@ -399,6 +400,14 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
       if (round + 1 < total) {
         const t = setTimeout(() => runRoundRef.current(round + 1), 260)
         timersRef.current.push(t)
+      } else {
+        /* The scroller was jumped to the end to measure the flight target.
+           Leaving it parked there truncates spot 1 mid-word, so the finished
+           sitting eases back to read from the beginning. */
+        const t = setTimeout(() => {
+          bankScrollRef.current?.scrollTo({ left: 0, behavior: "smooth" })
+        }, 220)
+        timersRef.current.push(t)
       }
     },
     [],
@@ -432,6 +441,13 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
               finishFlightRef.current(id, round, total)
               return
             }
+            /* Bring the new chip into view BEFORE measuring. In a horizontal
+               scroller the newest chip can start beyond the right edge, and a
+               flight aimed at an off-screen rect flies out of the card. Jump
+               (not smooth) so the rect is final by the time we read it. */
+            const scroller = bankScrollRef.current
+            if (scroller) scroller.scrollLeft = scroller.scrollWidth
+
             const c = card.getBoundingClientRect()
             const o = pill.getBoundingClientRect()
             const d = slot.getBoundingClientRect()
@@ -770,7 +786,17 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
               </span>
             </div>
 
-            <div className="flex flex-col items-start gap-1.5">
+            {/* Spots sit on one row and scroll sideways. Full roster labels are
+                far wider than the 343px interior, so wrapping them would stack
+                the card taller with every spin; a scroller keeps the card a
+                fixed height whatever the pool contains. The negative margin +
+                matching padding lets chips run to the card's edges instead of
+                stopping short at the content inset. */}
+            <div
+              ref={bankScrollRef}
+              className="no-scrollbar -mx-4 flex snap-x snap-mandatory items-start gap-1.5 overflow-x-auto px-4 pb-1"
+              style={{ scrollbarWidth: "none" }}
+            >
               {banked.map((b) => (
                 <span
                   key={b.id}
@@ -778,7 +804,7 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
                     if (el) slotRefs.current.set(b.id, el)
                     else slotRefs.current.delete(b.id)
                   }}
-                  className="max-w-full whitespace-nowrap rounded-full px-3 py-1 font-semibold"
+                  className="shrink-0 snap-start whitespace-nowrap rounded-full px-3 py-1 font-semibold"
                   style={{
                     fontSize: BANK_FONT,
                     background: "rgba(255,255,255,0.09)",
@@ -796,7 +822,7 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
               {Array.from({ length: Math.max(0, spinCount - banked.length) }).map((_, i) => (
                 <span
                   key={`empty-${i}`}
-                  className="rounded-full border border-dashed border-white/15 px-3 py-1 text-white/25"
+                  className="shrink-0 snap-start whitespace-nowrap rounded-full border border-dashed border-white/15 px-3 py-1 text-white/25"
                   style={{ fontSize: BANK_FONT }}
                 >
                   Spin {banked.length + i + 1}

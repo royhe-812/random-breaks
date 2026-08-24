@@ -123,3 +123,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Horizontal chip scrollers inside the phone-sized prototype cards. A desktop
+   scrollbar track eats ~15px of an already-tight 343px interior and reads as
+   chrome that would not exist on the device being prototyped. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
