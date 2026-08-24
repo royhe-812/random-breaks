@@ -575,13 +575,21 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
 
         {/* Drum */}
         <div
-          className="relative w-full overflow-hidden rounded-md"
-          style={{ height: DRUM_H, backgroundColor: "transparent", perspective: 420 }}
+          className="relative w-full overflow-hidden rounded-md transition-opacity duration-500"
+          style={{
+            height: DRUM_H,
+            backgroundColor: "transparent",
+            perspective: 420,
+            /* Once every spot is drawn the drum has no job left. Fading it back
+               stops the empty centre reading as a missing result and hands
+               attention to the bank, which is now the answer. */
+            opacity: sittingDone ? 0.35 : 1,
+          }}
         >
           {/* Centre selection pill */}
           <div
             ref={pillRef}
-            className="pointer-events-none absolute left-1/2 top-1/2 rounded-full transition-[width] duration-300 ease-out"
+            className="pointer-events-none absolute left-1/2 top-1/2 rounded-full transition-[width,opacity] duration-300 ease-out"
             style={{
               width: pillW,
               height: itemH - 4,
@@ -589,8 +597,11 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
               marginTop: -(itemH - 4) / 2,
               backgroundColor: PILL_IDLE,
               /* The pill IS the thing that flies to the bank, so the original
-                 must vacate the moment the flyer takes over. */
-              opacity: flying ? 0 : 1,
+                 must vacate the moment the flyer takes over — and stay gone
+                 afterwards. Leaving it visible once its name has been banked
+                 parks a hollow grey capsule in the middle of the drum, which
+                 reads as a rendering fault rather than an empty selection. */
+              opacity: flying || vacated ? 0 : 1,
             }}
           />
 
