@@ -403,16 +403,15 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
       {/* The randomizer box */}
       <div className="w-full max-w-[375px] rounded-2xl bg-[#212121] p-4 text-white">
         <p className="truncate text-sm leading-tight">
-          Random Break #15
-          <span className="text-white/60">
-            {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
-          </span>
-        </p>
-        <p className="mt-1 text-xs text-white/50">
-          {spinning ? "Spinning…" : landed ? "Landed" : "Ready to spin"}
+          Randomizing for <span className="font-semibold">@Chrisjames</span>
         </p>
 
-        <hr className="my-3 border-0" style={{ height: 0, borderTop: "1px solid #363636" }} />
+        {/* -mx-4 cancels the card's p-4 so the rule spans the full card width
+            rather than stopping at the content inset. */}
+        <hr
+          className="-mx-4 my-3 border-0"
+          style={{ height: 0, borderTop: "1px solid #363636" }}
+        />
 
         {/* Drum */}
         <div
@@ -561,14 +560,19 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={spin}
-          disabled={spinning}
-          className="mt-3 w-full rounded-full bg-[#3665F3] py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
-        >
-          {spinning ? "Spinning…" : "Spin"}
-        </button>
+        {/* Right-aligned action. The button sizes to its label instead of
+            filling the card, so `min-w` keeps it from resizing between the
+            "Spin" and "Spinning…" labels. */}
+        <div className="mt-3 flex justify-end">
+          <button
+            type="button"
+            onClick={spin}
+            disabled={spinning}
+            className="min-w-[120px] rounded-full bg-[#3665F3] px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+          >
+            {spinning ? "Spinning…" : "Spin"}
+          </button>
+        </div>
       </div>
 
       {/* Honest cost read-outs, so a treatment can be rejected on evidence. */}
