@@ -72,7 +72,7 @@ export const SPIN_TREATMENTS: { id: SpinTreatment; label: string; blurb: string 
     id: "breakout",
     label: "Pill breaks out",
     blurb:
-      "The drum spins at the normal 255px width; on landing the pill animates out to the full 343px card interior. Buys ~88px of extra room at the exact moment it is needed, and only lightly scales type if the name still overruns.",
+      "The drum spins at the normal 255px width; on landing the pill grows to exactly the width this name needs at full 14px — a snug pill for a short winner, the whole 343px card interior for a long one. Type is never shrunk. If even the full interior can't hold the name, the landed row marquees instead.",
   },
   {
     id: "abbrevReveal",
@@ -218,7 +218,6 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
   )
 
   const narrowAvail = innerFor(PILL_W)
-  const wideAvail = innerFor(CARD_INNER_W)
 
   /** Font scale per pool index for the shrink treatment. */
   const shrinkScales = useMemo(
@@ -231,11 +230,17 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
     () => shortWidths.map((w) => (w > 0 ? clamp(narrowAvail / w, 0.5, 1) : 1)),
     [shortWidths, narrowAvail],
   )
-  /** Gentler scale used once a broken-out pill has the full card width. */
-  const wideScales = useMemo(
-    () => widths.map((w) => (w > 0 ? clamp(wideAvail / w, 0.7, 1) : 1)),
-    [widths, wideAvail],
+  /* Breakout does not shrink type at all. Instead the pill grows to exactly the
+     width this name needs at full 14px — inverting innerFor(), so the un-magnified
+     text width is scaled back up by the perspective magnification before the
+     padding is added. Capped at the card interior; anything that still doesn't
+     fit falls back to a marquee rather than shrinking. */
+  const pillWidthFor = useCallback(
+    (w: number) => w * magnification + PILL_PAD_X * 2,
+    [magnification],
   )
+  /** Pill width each pool entry would need to show its whole name at 14px. */
+  const neededPillW = useMemo(() => widths.map(pillWidthFor), [widths, pillWidthFor])
 
   /** Smallest size the viewer actually perceives — the honest cost read-out.
    *  Type is authored un-magnified, so the on-screen size is scale x magnification. */
@@ -250,10 +255,10 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
     return Math.round(Math.min(...shortScales) * 14 * magnification * 10) / 10
   }, [shortScales, magnification])
 
-  /** Whether any name still overruns even at the full card width. */
-  const overrunsAtFullWidth = useMemo(
-    () => widths.some((w) => w > wideAvail),
-    [widths, wideAvail],
+  /** How many pool entries can't fit even at the full card interior. */
+  const marqueeCount = useMemo(
+    () => neededPillW.filter((w) => w > CARD_INNER_W).length,
+    [neededPillW],
   )
 
   const centreIdx = mod(Math.round(pos), POOL.length)
@@ -308,8 +313,15 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
   const spinning = phase === "spinning"
   const landed = phase === "landed"
 
-  /* Pill geometry. Only the breakout treatment changes it, and only at rest. */
-  const pillW = treatment === "breakout" && landed ? CARD_INNER_W : PILL_W
+  /* Pill geometry. Only the breakout treatment changes it, and only at rest.
+     The pill grows to fit THIS name rather than always slamming to the card
+     edge, so a short winner keeps a snug pill and only a genuinely long one
+     uses the full interior. */
+  const needed = neededPillW[centreIdx] ?? PILL_W
+  const breakout = treatment === "breakout" && landed
+  /** True when even the full card interior cannot hold the name at 14px. */
+  const breakoutMarquee = breakout && needed > CARD_INNER_W
+  const pillW = breakout ? clamp(needed, PILL_W, CARD_INNER_W) : PILL_W
 
   /* Rows are drawn as a window around the centre so a finite pool can spin
      forever without rendering hundreds of nodes. */
@@ -403,8 +415,8 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
                team names already fit at 14px, so only the full name is scaled. */
             let scale = 1
             if (treatment === "shrink") scale = shrinkScales[poolIdx] ?? 1
-            else if (treatment === "breakout" && landed && isCentre)
-              scale = wideScales[poolIdx] ?? 1
+            /* Breakout deliberately has no scale branch: it pays in width, and
+               then in time via the marquee, never in type size. */
             else if (treatment === "abbrevReveal")
               // The revealed full name has to fit the same 255px pill, or the
               // "reveal" hands back a truncated name and the treatment is moot.
@@ -443,8 +455,10 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
                       ) : null,
                     )}
                   </div>
-                ) : treatment === "marquee" && isCentre && landed ? (
-                  /* Only the settled row scrolls; a moving reel must not. */
+                ) : isCentre && ((treatment === "marquee" && landed) || breakoutMarquee) ? (
+                  /* Only the settled row scrolls; a moving reel must not. In
+                     breakout this is the fallback: the pill has already grown
+                     as far as the card allows and the name still overruns. */
                   <div className="text-[14px] font-semibold">
                     <RowMarquee text={label} width={contentW} />
                   </div>
@@ -455,10 +469,15 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
                       width: contentW,
                       fontSize: 14 * scale,
                       // Scaling type, not transform, keeps the row on the cylinder.
+                      // Breakout animates WIDTH (it never touches type) and must
+                      // use the same 300ms as the pill, or the text box snaps to
+                      // full width while the pill is still growing under it.
                       transition:
-                        treatment === "breakout" || treatment === "abbrevReveal"
-                          ? "font-size 300ms ease-out"
-                          : undefined,
+                        treatment === "breakout"
+                          ? "width 300ms ease-out"
+                          : treatment === "abbrevReveal"
+                            ? "font-size 300ms ease-out"
+                            : undefined,
                     }}
                   >
                     {label}
@@ -528,8 +547,26 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
             {smallestPx < 11 ? " — below comfortable reading size on a phone." : "."}
           </p>
         )}
-        {treatment === "breakout" && overrunsAtFullWidth && (
-          <p>Some names still overrun the {CARD_INNER_W}px card, so type scales slightly on landing.</p>
+        {treatment === "breakout" && (
+          <>
+            <p>
+              {marqueeCount === 0
+                ? `Every name in this pool fits by widening alone — the pill never has to marquee.`
+                : `${marqueeCount} of ${POOL.length} names need more than the ${CARD_INNER_W}px interior, so those marquee instead of shrinking.`}
+            </p>
+            {landed && (
+              <p>
+                This winner:{" "}
+                <span className="text-white">
+                  {PILL_W}px → {Math.round(pillW)}px
+                </span>
+                {breakoutMarquee
+                  ? ` (capped at the card interior, needs ${Math.round(needed)}px — marqueeing)`
+                  : " — full name, full size, no marquee needed"}
+                .
+              </p>
+            )}
+          </>
         )}
         {treatment === "abbrevReveal" && data === "players" && (
           <>

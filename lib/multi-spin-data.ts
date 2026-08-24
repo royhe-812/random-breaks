@@ -17,10 +17,14 @@ export type DataMode = "teams" | "players"
 export const SEP = " · "
 
 /**
- * The pool the drum spins through. Ten real teams, each with three star
- * players, so the reel contains the genuine worst case rather than a
- * hand-picked long name. "Washington Commanders" is the widest team name and
- * is what the live pill width (255px) was originally sized around.
+ * The pool the drum spins through. Ten real teams with an UNEVEN number of
+ * players each — one, two or three — because a uniform three-player pool hides
+ * behaviour: with every name the same (over)length, a width-adaptive pill can
+ * only ever look maxed out. The mix means the reel covers all three outcomes:
+ * names that fit the 255px pill as-is, names that need an intermediate width,
+ * and names too long for even the 343px card interior.
+ * "Washington Commanders" is the widest team name and is what the live pill
+ * width (255px) was originally sized around.
  */
 export const POOL: Spot[] = [
   {
@@ -42,28 +46,28 @@ export const POOL: Spot[] = [
     team: "Bengals",
     abbrev: "CIN",
     color: "#FB4F14",
-    players: ["Ja'Marr Chase", "Tee Higgins", "Joe Burrow"],
+    players: ["Ja'Marr Chase", "Tee Higgins"],
   },
   {
     city: "Kansas City",
     team: "Chiefs",
     abbrev: "KC",
     color: "#E31837",
-    players: ["Patrick Mahomes", "Travis Kelce", "Isiah Pacheco"],
+    players: ["Patrick Mahomes", "Travis Kelce"],
   },
   {
     city: "Philadelphia",
     team: "Eagles",
     abbrev: "PHI",
     color: "#004C54",
-    players: ["Jalen Hurts", "A.J. Brown", "DeVonta Smith"],
+    players: ["Jalen Hurts", "A.J. Brown"],
   },
   {
     city: "Miami",
     team: "Dolphins",
     abbrev: "MIA",
     color: "#008E97",
-    players: ["Tyreek Hill", "Jaylen Waddle", "De'Von Achane"],
+    players: ["Tyreek Hill"],
   },
   {
     city: "Washington",
@@ -77,14 +81,14 @@ export const POOL: Spot[] = [
     team: "Vikings",
     abbrev: "MIN",
     color: "#4F2683",
-    players: ["Justin Jefferson", "Jordan Addison", "T.J. Hockenson"],
+    players: ["Justin Jefferson"],
   },
   {
     city: "Jacksonville",
     team: "Jaguars",
     abbrev: "JAX",
     color: "#006778",
-    players: ["Trevor Lawrence", "Brian Thomas Jr.", "Travis Etienne"],
+    players: ["Trevor Lawrence", "Brian Thomas Jr."],
   },
   {
     city: "Los Angeles",
