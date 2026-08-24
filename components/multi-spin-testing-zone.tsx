@@ -285,18 +285,21 @@ export function MultiSpinTestingZone() {
           <h1 className="text-lg font-bold">Multi Spin Testing Zone</h1>
           <p className="text-sm text-white/50">
             Long-name treatments for the multi-spin randomizer, where a single spot can list up
-            to three players. The Content toggle drives both sections below.
+            to three players. The Break type toggle drives both sections below.
           </p>
         </header>
 
         <div className="flex flex-wrap gap-6">
+          {/* Same state as the spinner section's own "Break type" switcher, so
+              the labels are kept identical — two controls that read differently
+              for one piece of state look like two independent settings. */}
           <Segmented
-            label="Content"
+            label="Break type"
             value={data}
             onChange={setData}
             options={[
-              { id: "teams", label: "NFL teams" },
-              { id: "players", label: "NFL players" },
+              { id: "players", label: "Player breaks" },
+              { id: "teams", label: "Single-team breaks" },
             ]}
           />
           <Segmented
@@ -315,8 +318,10 @@ export function MultiSpinTestingZone() {
 
         <hr className="border-0" style={{ height: 0, borderTop: "1px solid rgba(255,255,255,0.1)" }} />
 
-        {/* Second subject: the spinner itself, sharing the content toggle above. */}
-        <MultiSpinSpinnerLab data={data} />
+        {/* Second subject: the spinner itself, sharing the content toggle above.
+            It also renders its own copy of that control, since this one has
+            scrolled out of view by the time you are spinning. */}
+        <MultiSpinSpinnerLab data={data} onDataChange={setData} />
 
         <hr className="border-0" style={{ height: 0, borderTop: "1px solid rgba(255,255,255,0.1)" }} />
 

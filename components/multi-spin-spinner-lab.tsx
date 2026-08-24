@@ -209,7 +209,18 @@ type Flight = {
   to: { x: number; y: number; w: number; h: number }
 }
 
-export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
+export function MultiSpinSpinnerLab({
+  data,
+  onDataChange,
+}: {
+  data: DataMode
+  /* The break shape is owned by the page so this section and the resting pill
+     row above it are always judged on the same names. This section renders its
+     own control for it because the page-level one is several hundred px up, out
+     of view while you are spinning — but both write the SAME state, so they can
+     never disagree. */
+  onDataChange: (d: DataMode) => void
+}) {
   const [treatment, setTreatment] = useState<SpinTreatment>("shrink")
   const [pos, setPos] = useState(0)
   const [phase, setPhase] = useState<"idle" | "spinning" | "landed" | "flying">("idle")
@@ -550,6 +561,39 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
           horizontally. Spin each one with the same names to compare.
         </p>
       </header>
+
+      {/* Break-shape switcher. Placed above the treatment switcher because it
+          changes WHAT is being spun, and every treatment is only meaningful
+          relative to that. Single-team breaks put one short team name in each
+          spot, which is the case the 255px pill was originally sized for; player
+          breaks are the overflow case the treatments exist to solve. */}
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-white/40">
+          Break type
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {(
+            [
+              { id: "players", label: "Player breaks" },
+              { id: "teams", label: "Single-team breaks" },
+            ] as const
+          ).map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              onClick={() => onDataChange(o.id)}
+              aria-pressed={data === o.id}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                data === o.id
+                  ? "bg-white text-zinc-900"
+                  : "bg-zinc-800 text-white/70 hover:text-white"
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Treatment switcher */}
       <div className="flex flex-col gap-1.5">
