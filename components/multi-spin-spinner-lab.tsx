@@ -597,21 +597,15 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
         />
 
         {/* Drum.
-            Once every spot is drawn the drum has no job left, so it fades out —
-            but it KEEPS its height. Collapsing it to zero (an earlier attempt)
-            made the whole card resize under the cursor at the end of every
-            sitting, which is more disruptive than the empty band it saved. The
-            reserved space also keeps the card a constant height between spins,
-            so "Spin again" never moves. */}
-        <motion.div
+            Stays fully visible and at full height for the life of the card. Two
+            earlier attempts at "tidying up" the spent drum were both rejected:
+            collapsing it to zero resized the whole card at the end of every
+            sitting, and fading it out left a dead hole where the reel had been.
+            The reel keeps reading as a live list of the remaining pool instead,
+            which also holds the card at a constant height so "Spin again" never
+            moves. */}
+        <div
           className="relative w-full overflow-hidden rounded-md"
-          /* Faded out, the reel rows are invisible but still in the text and
-             accessibility tree, so a screen reader would announce five stale
-             names after the sitting has already resolved. */
-          aria-hidden={sittingDone || undefined}
-          initial={false}
-          animate={{ opacity: sittingDone ? 0 : 1 }}
-          transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
           style={{ height: DRUM_H, backgroundColor: "transparent", perspective: 420 }}
         >
           {/* Centre selection pill */}
@@ -643,7 +637,12 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
                item is removed — so the drum never shows a blank spot. Rows above
                keep their place; pulling them down too would read as the reel
                spinning backwards. */
-            const closeUp = vacated && !sittingDone && idx - pos > 0.5 ? 1 : 0
+            /* Applies to the FINAL round too, now that the drum stays on screen
+               after the sitting. It used to be gated to `!sittingDone` because
+               the whole drum was being hidden at the end, so closing the gap was
+               pointless; leaving that gate in place is what left the blank band
+               in the resting state. */
+            const closeUp = vacated && idx - pos > 0.5 ? 1 : 0
             const offset = idx - pos - closeUp
             const angle = offset * stepDeg
             if (Math.abs(angle) > EDGE_ON_DEG) return null
@@ -747,7 +746,7 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
             className="pointer-events-none absolute inset-x-0 bottom-0"
             style={{ height: ITEM_H, background: scrim("to top") }}
           />
-        </motion.div>
+        </div>
 
         {/* Supporting roster line — the second field in the teamBelow treatment. */}
         {treatment === "teamBelow" && (
