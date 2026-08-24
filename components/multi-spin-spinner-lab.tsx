@@ -560,19 +560,22 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
           </div>
         )}
 
-        {/* Right-aligned action. The button sizes to its label instead of
-            filling the card, so `min-w` keeps it from resizing between the
-            "Spin" and "Spinning…" labels. */}
-        <div className="mt-3 flex justify-end">
-          <button
-            type="button"
-            onClick={spin}
-            disabled={spinning}
-            className="min-w-[120px] rounded-full bg-[#3665F3] px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
-          >
-            {spinning ? "Spinning…" : "Spin"}
-          </button>
-        </div>
+      </div>
+
+      {/* The action lives OUTSIDE the randomizer box, directly beneath it: the
+          card is the thing being randomized, the button is the control acting
+          on it. Matching the card's max-width keeps the two visually paired,
+          and `min-w` stops the button resizing between the "Spin" and
+          "Spinning…" labels. */}
+      <div className="flex w-full max-w-[375px] justify-end">
+        <button
+          type="button"
+          onClick={spin}
+          disabled={spinning}
+          className="min-w-[120px] rounded-full bg-[#3665F3] px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+        >
+          {spinning ? "Spinning…" : "Spin"}
+        </button>
       </div>
 
       {/* Honest cost read-outs, so a treatment can be rejected on evidence. */}
