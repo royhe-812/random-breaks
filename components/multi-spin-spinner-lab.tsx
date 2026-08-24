@@ -581,6 +581,10 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
             rather than toggled so the bank slides up instead of jumping. */}
         <motion.div
           className="relative w-full overflow-hidden rounded-md"
+          /* At height 0 the reel rows are invisible but still in the text and
+             accessibility tree, so a screen reader would announce five stale
+             names after the sitting has already resolved. */
+          aria-hidden={sittingDone || undefined}
           initial={false}
           animate={{
             height: sittingDone ? 0 : DRUM_H,
@@ -742,7 +746,7 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
           </div>
         )}
 
-        {/* ── Banked results ──
+        {/* ── Banked results ─��
             Where a drawn spot lives once the drum has moved on. Present for the
             whole sitting (not just after the first land) so the card does not
             change height mid-flight and the flight has a real target to aim at. */}
