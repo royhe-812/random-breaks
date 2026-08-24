@@ -597,25 +597,22 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
         />
 
         {/* Drum.
-            Once every spot is drawn the drum has no job left, so it collapses to
-            nothing and the bank rises to take its place. Merely dimming it (the
-            first attempt) still reserved ~200px of dead band above the results,
-            which read as a spot that had failed to fill. Height is animated
-            rather than toggled so the bank slides up instead of jumping. */}
+            Once every spot is drawn the drum has no job left, so it fades out —
+            but it KEEPS its height. Collapsing it to zero (an earlier attempt)
+            made the whole card resize under the cursor at the end of every
+            sitting, which is more disruptive than the empty band it saved. The
+            reserved space also keeps the card a constant height between spins,
+            so "Spin again" never moves. */}
         <motion.div
           className="relative w-full overflow-hidden rounded-md"
-          /* At height 0 the reel rows are invisible but still in the text and
+          /* Faded out, the reel rows are invisible but still in the text and
              accessibility tree, so a screen reader would announce five stale
              names after the sitting has already resolved. */
           aria-hidden={sittingDone || undefined}
           initial={false}
-          animate={{
-            height: sittingDone ? 0 : DRUM_H,
-            opacity: sittingDone ? 0 : 1,
-            marginBottom: sittingDone ? -12 : 0,
-          }}
+          animate={{ opacity: sittingDone ? 0 : 1 }}
           transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-          style={{ backgroundColor: "transparent", perspective: 420 }}
+          style={{ height: DRUM_H, backgroundColor: "transparent", perspective: 420 }}
         >
           {/* Centre selection pill */}
           <div
@@ -789,15 +786,12 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
             change height mid-flight and the flight has a real target to aim at. */}
         {multi && (
           <div className="mt-3">
-            {/* With the drum collapsed this rule would sit a few px under the
-                header's rule, reading as a double hairline. The header's rule
-                already separates the bank at that point. */}
-            {!sittingDone && (
-              <hr
-                className="-mx-4 mb-3 border-0"
-                style={{ height: 0, borderTop: "1px solid #363636" }}
-              />
-            )}
+            {/* Always shown: the drum keeps its height now, so this rule is a
+                full drum away from the header's and never doubles up with it. */}
+            <hr
+              className="-mx-4 mb-3 border-0"
+              style={{ height: 0, borderTop: "1px solid #363636" }}
+            />
             <div className="mb-2 flex items-baseline justify-between">
               <span className="text-[11px] font-medium uppercase tracking-wide text-white/40">
                 Your spots
