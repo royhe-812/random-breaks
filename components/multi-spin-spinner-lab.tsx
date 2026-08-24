@@ -780,11 +780,24 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
         )}
 
         {/* ── Banked results ─��
-            Where a drawn spot lives once the drum has moved on. Present for the
-            whole sitting (not just after the first land) so the card does not
-            change height mid-flight and the flight has a real target to aim at. */}
-        {multi && (
-          <div className="mt-3">
+            Where a drawn spot lives once the drum has moved on. Hidden until the
+            first spot is actually drawn: a row of "Spin 1 / Spin 2" dashed
+            placeholders under a "0 of 2" counter is a promise the card has not
+            kept yet, and it competes with the drum for attention at the one
+            moment the drum is the whole story.
+
+            It mounts in the SAME commit that appends the (hidden) destination
+            chip, one frame before the flight measures that chip, so the flight
+            still has real geometry to aim at. Only `opacity` is animated —
+            animating height here would move the chip while the pill is mid-flight
+            and the landing would miss. */}
+        {multi && banked.length > 0 && (
+          <motion.div
+            className="mt-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.24, ease: "linear" }}
+          >
             {/* Always shown: the drum keeps its height now, so this rule is a
                 full drum away from the header's and never doubles up with it. */}
             <hr
@@ -843,7 +856,7 @@ export function MultiSpinSpinnerLab({ data }: { data: DataMode }) {
                 </span>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* ── Flight layer ──
