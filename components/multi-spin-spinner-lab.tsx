@@ -111,41 +111,73 @@ function stackedLines(spot: Spot, data: DataMode): [string, string] {
   return [`${p[0]} · ${p[1]}`, p[2]]
 }
 
+/** Gap between the two copies in a looping marquee, px. */
+const MARQUEE_GAP = 48
+/** Marquee travel speed, px per second. Constant regardless of name length. */
+const MARQUEE_SPEED = 55
+
 /**
- * Marquee that scrolls only when its content overflows: eases across, pauses,
- * then returns. Used for the landed centre row.
+ * Marquee that scrolls only when its content overflows. Travels continuously
+ * leftwards and wraps: the text is rendered twice, and the track is animated by
+ * exactly one copy-plus-gap before snapping back, so the second copy lands
+ * precisely where the first began and the seam is invisible.
+ *
+ * A ping-pong (run left, pause, reverse) was tried first and reads badly here —
+ * the reversal draws the eye back to a name it has already read, and the pause
+ * looks like the animation has hung. A one-way loop matches the ticker idiom
+ * people already expect for a name that does not fit.
  */
 function RowMarquee({ text, width }: { text: string; width: number }) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const trackRef = useRef<HTMLSpanElement>(null)
-  const [overflow, setOverflow] = useState(0)
+  const copyRef = useRef<HTMLSpanElement>(null)
+  const [copyW, setCopyW] = useState(0)
+  const [overflowing, setOverflowing] = useState(false)
 
   useLayoutEffect(() => {
     const c = containerRef.current
-    const t = trackRef.current
-    if (!c || !t) return
-    setOverflow(Math.max(0, t.scrollWidth - c.clientWidth))
+    const one = copyRef.current
+    if (!c || !one) return
+    /* Measure ONE copy, not the track: the track always overflows because it
+       deliberately holds two copies plus the gap. */
+    const w = one.getBoundingClientRect().width
+    setCopyW(w)
+    setOverflowing(w > c.clientWidth + 0.5)
   }, [text, width])
+
+  /* Distance for one full cycle. Travelling exactly copy + gap is what makes
+     the wrap seamless — any other distance visibly jumps. */
+  const distance = copyW + MARQUEE_GAP
 
   return (
     <div ref={containerRef} className="overflow-hidden" style={{ width }}>
-      <motion.span
-        ref={trackRef}
-        className="inline-block whitespace-nowrap"
-        animate={overflow > 0 ? { x: [0, -overflow, -overflow, 0, 0] } : { x: 0 }}
+      <motion.div
+        className="flex w-max flex-nowrap"
+        style={{ gap: MARQUEE_GAP }}
+        animate={overflowing ? { x: [0, -distance] } : { x: 0 }}
         transition={
-          overflow > 0
+          overflowing
             ? {
-                duration: 5 + overflow / 40,
-                times: [0, 0.42, 0.56, 0.96, 1],
+                duration: distance / MARQUEE_SPEED,
                 repeat: Infinity,
+                // Linear only: any easing makes the wrap stutter, and speed
+                // must not vary with name length.
                 ease: "linear",
+                repeatType: "loop",
               }
             : undefined
         }
       >
-        {text}
-      </motion.span>
+        <span ref={copyRef} className="whitespace-nowrap">
+          {text}
+        </span>
+        {/* Trailing copy exists purely to fill the gap left by the first as it
+            exits. Hidden from assistive tech so the name is not read twice. */}
+        {overflowing && (
+          <span className="whitespace-nowrap" aria-hidden="true">
+            {text}
+          </span>
+        )}
+      </motion.div>
     </div>
   )
 }
