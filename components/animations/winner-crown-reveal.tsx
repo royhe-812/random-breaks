@@ -15,10 +15,39 @@ interface WinnerCrownRevealProps {
   variant?: "default" | "subtle" | "takeover"
 }
 
-/* Stacked "WINNER" lines in the in-box takeover, per the Figma frame. Six is
-   from the design, and it's also what fills a ~215px box without the type
-   getting too small to read. */
-const TAKEOVER_LINES = 6
+/* Stacked "WINNER" wordmarks in the in-box takeover. Four at the same size as
+   the six they replace, so the stack is deliberately less dense than before —
+   it no longer fills the box top to bottom. */
+const TAKEOVER_LINES = 4
+
+/* The supplied wordmark, inlined rather than loaded from /public: it renders
+   without needing `dangerouslyAllowSVG` for next/image, and four copies cost no
+   extra requests. Aspect ratio is fixed by the artwork. */
+const WORDMARK_W = 102
+const WORDMARK_H = 23
+
+/* Wordmark width as a fraction of box height. 0.777 reproduces the 167px width
+   the live text lines measured in a 215px box, which is what keeps these
+   "sized the same as you have now" rather than rescaling for the lower count. */
+const WORDMARK_W_RATIO = 0.777
+
+function WinnerWordmark({ width }: { width: number }) {
+  return (
+    <svg
+      width={width}
+      height={(width * WORDMARK_H) / WORDMARK_W}
+      viewBox={`0 0 ${WORDMARK_W} ${WORDMARK_H}`}
+      fill="none"
+      aria-hidden="true"
+      style={{ display: "block", filter: "drop-shadow(0 2px 10px rgba(0,0,0,0.45))" }}
+    >
+      <path
+        d="M4.39728 21L0.688676 1.81313H4.8351L7.38477 15.4371L10.192 1.81313H14.9307L18.047 15.5401L20.3134 1.81313H24.434L20.6997 21H15.9352L12.5614 6.34586L9.16181 21H4.39728ZM25.9471 21V1.81313H29.9648V21H25.9471ZM48.807 21H45.0726L36.6252 8.01989V21H32.8394V1.81313H36.5737L45.0211 14.7932V1.81313H48.807V21ZM67.6709 21H63.9365L55.4892 8.01989V21H51.7033V1.81313H55.4377L63.885 14.7932V1.81313H67.6709V21ZM70.5672 21V1.81313H82.6202V5.21268H74.5849V9.48788H81.1522V12.8874H74.5849V17.6004H82.6202V21H70.5672ZM84.7029 21V1.81313H92.0428C96.7301 1.81313 98.8677 4.33704 98.8677 7.47905C98.8677 9.89994 97.6057 11.9345 94.9015 12.7329L101.469 21H96.318L90.1113 13.1192H88.7205V21H84.7029ZM88.7205 9.89994H91.6308C93.5366 9.89994 94.6955 8.92128 94.6955 7.47905C94.6955 6.01106 93.5366 5.0324 91.6308 5.0324H88.7205V9.89994Z"
+        fill="#4CE160"
+      />
+    </svg>
+  )
+}
 
 /* Ambient floaters for the "subtle" variant, modelled on the tap-a-heart effect
    in live streams: a few elements rise out of the bottom corners, drift gently
@@ -174,7 +203,12 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
      Rounded + clipped so the crowns and the dropping text can't spill past the
      card's corners. */
   if (variant === "takeover") {
-    const lineH = boxH ? (boxH * 0.9) / TAKEOVER_LINES : 0
+    /* Sized off the box, not off TAKEOVER_LINES — dropping 6 lines to 4 should
+       not scale the artwork up. */
+    const markW = boxH ? boxH * WORDMARK_W_RATIO : 0
+    const markH = (markW * WORDMARK_H) / WORDMARK_W
+    /* ~8% gap, matching the spacing the text lines had between cap heights. */
+    const rowGap = markH * 0.08
     return (
       <div
         className="absolute inset-0 z-40 overflow-hidden rounded-2xl pointer-events-none"
@@ -186,7 +220,7 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
             faintly visible underneath, which is what makes this read as the box
             being taken OVER rather than swapped for a different card. */}
         <motion.div
-          className="absolute inset-0 bg-black/70 backdrop-blur-[2px]"
+          className="absolute inset-0 bg-black/70 backdrop-blur-[12px]"
           initial={{ opacity: 0 }}
           animate={{ opacity: phase === "show" ? 1 : 0 }}
           transition={{ duration: phase === "show" ? 0.25 : 0.4 }}
@@ -207,17 +241,15 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
               {/* Stacked lines, each fading slightly further back — the same
                   depth cue as the full-screen version, and they rise in on a
                   stagger then drop out together. */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center"
+                style={{ gap: rowGap }}
+              >
                 {[...Array(TAKEOVER_LINES)].map((_, i) => (
-                  <motion.span
+                  <motion.div
                     key={i}
-                    className="font-black text-[#4CE160] tracking-tight whitespace-nowrap"
-                    style={{
-                      fontSize: lineH / 0.78,
-                      lineHeight: `${lineH}px`,
-                      opacity: 1 - i * 0.1,
-                    }}
-                    initial={{ opacity: 0, y: lineH * 1.6, scale: 0.72 }}
+                    style={{ opacity: 1 - i * 0.1 }}
+                    initial={{ opacity: 0, y: markH * 1.6, scale: 0.72 }}
                     animate={{ opacity: 1 - i * 0.1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: boxH * 0.75 + i * 14, scale: 0.72 }}
                     transition={{
@@ -227,8 +259,8 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
                       exit: { duration: 0.5, delay: 0, ease: [0.4, 0, 0.2, 1] },
                     }}
                   >
-                    WINNER
-                  </motion.span>
+                    <WinnerWordmark width={markW} />
+                  </motion.div>
                 ))}
               </div>
 
