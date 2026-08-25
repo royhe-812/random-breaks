@@ -74,9 +74,9 @@ const isSingleSpin = (a: AnimationType) =>
 // a new roller variant is registered once — the failure mode this avoids is a
 // variant that satisfies some gates but not others, which reads as a broken
 // animation rather than a missing registration.
-// "Roller, Subtle Winning" is currently an exact duplicate of "Spin In Place
-// (Roller)"; it exists as its own id so the winning moment can be softened on it
-// without disturbing the original.
+// "Spin In Place, Subtle Winning" is currently an exact duplicate of "Spin In
+// Place (Roller)"; it exists as its own id so the winning moment can be softened
+// on it without disturbing the original.
 const isRollerConcept = (a: AnimationType) =>
   a === "spin-in-place-roller" || a === "spin-in-place-roller-subtle"
 
@@ -95,7 +95,7 @@ const usesTicker = (a: AnimationType) => a === "ticker"
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "single-spin-populate", name: "Single Spin" },
   { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
-  { id: "spin-in-place-roller-subtle", name: "Roller, Subtle Winning" },
+  { id: "spin-in-place-roller-subtle", name: "Spin In Place, Subtle Winning" },
   { id: "ticker", name: "Ticker" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-4-auto", name: "Multi-Spin Text" },
