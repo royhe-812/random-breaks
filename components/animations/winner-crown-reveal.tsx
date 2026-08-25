@@ -23,14 +23,18 @@ interface WinnerCrownRevealProps {
    the left/right margins of a ~440px frame and never cross the middle, and every
    floater must FINISH before the 2700ms onComplete that starts the randomizer:
    max here is 0.9 + 1.65 = 2.55s. Text is sized down from the takeover's
-   text-6xl — at that scale two words span the frame and stop reading as ambient. */
+   text-6xl — at that scale two words span the frame and stop reading as ambient.
+
+   `size` is a px font-size rather than a Tailwind class: the scale here is tuned
+   by percentage, and Tailwind's steps can't express those values (a +30% pass
+   turns 24 into 31 and 30 into 39, neither of which is a step). */
 const FLOATERS = [
-  { side: "left", kind: "text", lane: 12, delay: 0, duration: 1.75, drift: 22, rise: 0.56, tilt: -7, size: "text-3xl", crown: 44 },
-  { side: "right", kind: "crown", lane: 18, delay: 0.22, duration: 1.8, drift: -18, rise: 0.62, tilt: 9, size: "text-2xl", crown: 42 },
-  { side: "left", kind: "crown", lane: 30, delay: 0.44, duration: 1.7, drift: 15, rise: 0.5, tilt: -5, size: "text-2xl", crown: 34 },
-  { side: "right", kind: "text", lane: 10, delay: 0.6, duration: 1.85, drift: -24, rise: 0.64, tilt: 6, size: "text-3xl", crown: 44 },
-  { side: "left", kind: "text", lane: 26, delay: 0.78, duration: 1.7, drift: 14, rise: 0.52, tilt: -9, size: "text-2xl", crown: 34 },
-  { side: "right", kind: "text", lane: 24, delay: 0.9, duration: 1.65, drift: -16, rise: 0.58, tilt: 7, size: "text-2xl", crown: 38 },
+  { side: "left", kind: "text", lane: 6, delay: 0, duration: 1.75, drift: 16, rise: 0.56, tilt: -7, size: 39, crown: 57 },
+  { side: "right", kind: "crown", lane: 18, delay: 0.22, duration: 1.8, drift: -18, rise: 0.62, tilt: 9, size: 31, crown: 55 },
+  { side: "left", kind: "crown", lane: 30, delay: 0.44, duration: 1.7, drift: 15, rise: 0.5, tilt: -5, size: 31, crown: 44 },
+  { side: "right", kind: "text", lane: 5, delay: 0.6, duration: 1.85, drift: -17, rise: 0.64, tilt: 6, size: 39, crown: 57 },
+  { side: "left", kind: "text", lane: 26, delay: 0.78, duration: 1.7, drift: 14, rise: 0.52, tilt: -9, size: 31, crown: 44 },
+  { side: "right", kind: "text", lane: 24, delay: 0.9, duration: 1.65, drift: -16, rise: 0.58, tilt: 7, size: 31, crown: 49 },
 ] as const
 
 // Crown + stacked "WINNER" celebration that plays right after a bid is won,
@@ -136,10 +140,10 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
               />
             ) : (
               <span
-                className={`${f.size} font-black italic text-[#4CE160] leading-none tracking-tight whitespace-nowrap`}
+                className="font-black italic text-[#4CE160] leading-none tracking-tight whitespace-nowrap"
                 /* With no scrim behind it, the text needs its own contrast
                    against a bright stream frame. */
-                style={{ textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
+                style={{ fontSize: f.size, textShadow: "0 2px 12px rgba(0,0,0,0.55)" }}
               >
                 WINNER
               </span>
