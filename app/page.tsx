@@ -281,6 +281,37 @@ export default function AnimationShowcase() {
   // True while the randomization card is overlaying the bid box.
   const spinInPlaceShowing = isSpinInPlace(selectedAnimation) && spinInPlaceActive
 
+  /* Height of the bid card, which is exactly the distance the "push" travels.
+     The randomizer starts one bid-card height below its resting place, so its
+     top edge begins flush against the bid card's bottom edge; both then move by
+     the same amount, which keeps that seam together for the whole slide.
+     Measured rather than assumed, because the card's height changes with its
+     content (spots tile, winner state). Holds for multi too: the card is
+     top-anchored in flow and the randomizer lands at y=0 in both modes, so the
+     card's own height is still the gap to close. */
+  const [bidCardHeight, setBidCardHeight] = useState(0)
+  useEffect(() => {
+    const el = auctionCardRef.current
+    if (!el) return
+    const measure = () => setBidCardHeight(el.offsetHeight)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [selectedAnimation])
+
+  /* Only the two roller concepts get the contact-based push; every other
+     concept keeps the original crossfade. Gated on a real measurement so the
+     first play can never animate against a distance of 0. */
+  const isPushRoller = usesRollerCard(selectedAnimation) && bidCardHeight > 0
+
+  /* ONE transition shared by both halves. Contact only holds if the bid card
+     and the randomizer travel the same distance on the same curve — any
+     divergence and it reads as two things sliding past each other rather than
+     one shoving the other. A spring gives it the weight of being shoved; the
+     high damping stops the seam visibly springing apart on the settle. */
+  const pushTransition = { type: "spring" as const, stiffness: 320, damping: 34, mass: 1 }
+
   /* Track the multi card's natural height. It changes mid-run as chips wrap onto
      the row, so a ResizeObserver keeps the reserved space in step rather than
      measuring once on mount. */
@@ -1603,8 +1634,13 @@ case "thumbnails-4":
             The bottom overlay is bottom-anchored (`bottom-4`), so that extra
             height grows the unit UPWARD — the card's chips stay inside the
             rounded card and the spots tile rides up with it, still nested. */}
+        {/* For the push, this wrapper becomes the window the two cards slide
+            through: without clipping, the displaced bid card would just float up
+            over the chat instead of being shoved out of the frame. */}
         <div
-          className="relative transition-[min-height] duration-300 ease-out"
+          className={`relative transition-[min-height] duration-300 ease-out ${
+            isPushRoller ? "overflow-hidden" : ""
+          }`}
           style={rollerCardHeight ? { minHeight: rollerCardHeight } : undefined}
         >
 
@@ -1613,16 +1649,28 @@ case "thumbnails-4":
           ref={auctionCardRef}
           className="rounded-2xl overflow-hidden"
           initial={false}
-          animate={{
-            opacity: spinInPlaceShowing ? 0 : 1,
-            y: spinInPlaceShowing ? -16 : 0,
-          }}
-          transition={{
-            y: { duration: 0.32, ease: [0.32, 0.72, 0, 1] },
-            // Opacity resolves faster than the travel so the two opaque cards
-            // never sit at ~50/50 and blend into a muddy overlap mid-slide.
-            opacity: { duration: 0.2, ease: "easeOut" },
-          }}
+          animate={
+            isPushRoller
+              ? /* Shoved up by exactly its own height and clipped by the wrapper.
+                   Stays fully opaque: solid things don't dissolve when something
+                   pushes them out of frame, and the fade was most of why this
+                   read as a crossfade rather than as displacement. */
+                { y: spinInPlaceShowing ? -bidCardHeight : 0, opacity: 1 }
+              : {
+                  opacity: spinInPlaceShowing ? 0 : 1,
+                  y: spinInPlaceShowing ? -16 : 0,
+                }
+          }
+          transition={
+            isPushRoller
+              ? pushTransition
+              : {
+                  y: { duration: 0.32, ease: [0.32, 0.72, 0, 1] },
+                  // Opacity resolves faster than the travel so the two opaque cards
+                  // never sit at ~50/50 and blend into a muddy overlap mid-slide.
+                  opacity: { duration: 0.2, ease: "easeOut" },
+                }
+          }
           style={{ pointerEvents: spinInPlaceShowing ? "none" : "auto" }}
         >
           {/* Incentive Tile — spots row (Figma). The card's overflow-hidden
@@ -1791,25 +1839,49 @@ case "thumbnails-4":
           </div>
         </motion.div>
 
-        {/* Randomization card — overlays the bid box at identical size */}
+        {/* Randomization card — overlays the bid box at identical size.
+            The push slide lives on this PERSISTENT carrier rather than on the
+            randomizer's own mount/exit. Driving it from AnimatePresence looked
+            right going up but tore on the way back: the exit ran ~250ms ahead of
+            the bid card's return and opened a ~125px gap at the seam. A carrier
+            that is always mounted retargets in the SAME commit as the bid card,
+            so the two cannot drift in either direction.
+            Single keeps `inset-0` so it matches the bid box footprint exactly.
+            Multi is bottom-anchored with auto height instead, so it can grow past
+            the bid box to fit the chips row — the wrapper reserves that height
+            via the measurement above. */}
+        <motion.div
+          className={`absolute ${isMultiRoller ? "inset-x-0 bottom-0" : "inset-0"}`}
+          initial={false}
+          /* Parked one bid-card height below its resting place, so its top edge
+             sits flush against the bid card's bottom edge. */
+          animate={{ y: isPushRoller && !spinInPlaceShowing ? bidCardHeight : 0 }}
+          transition={pushTransition}
+          /* Inert while parked below the fold, so an empty overlay can never
+             swallow taps meant for the bid card underneath. */
+          style={{ pointerEvents: spinInPlaceShowing ? "auto" : "none" }}
+        >
         <AnimatePresence>
           {spinInPlaceShowing && (
             <motion.div
               key="spin-in-place"
-              /* Single keeps `inset-0` so it matches the bid box footprint
-                 exactly. Multi is bottom-anchored with auto height instead, so
-                 it can grow past the bid box to fit the chips row — the wrapper
-                 reserves that height via the measurement above. */
-              className={`absolute flex flex-col ${
-                isMultiRoller ? "inset-x-0 bottom-0" : "inset-0"
-              }`}
-              initial={{ opacity: 0, y: 16 }}
+              className={`relative flex flex-col ${isMultiRoller ? "" : "h-full"}`}
+              /* Push: no fade and no travel of its own — the carrier does all the
+                 moving. The exit exists only to keep this mounted while the
+                 carrier slides back down; 0.99 is visually identical to 1 but is
+                 a real change, so Framer waits for it instead of unmounting on
+                 the spot and leaving the carrier to retract empty. */
+              initial={isPushRoller ? { opacity: 1 } : { opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 16 }}
-              transition={{
-                y: { duration: 0.32, ease: [0.32, 0.72, 0, 1] },
-                opacity: { duration: 0.2, ease: "easeOut" },
-              }}
+              exit={isPushRoller ? { opacity: 0.99 } : { opacity: 0, y: 16 }}
+              transition={
+                isPushRoller
+                  ? { duration: 0.5 }
+                  : {
+                      y: { duration: 0.32, ease: [0.32, 0.72, 0, 1] },
+                      opacity: { duration: 0.2, ease: "easeOut" },
+                    }
+              }
             >
               {/* Roller uses the tighter 12px padding and #212121 fill dialled in
                   via the testing zone; plain Spin In Place keeps 16px / #191919. */}
@@ -1885,6 +1957,7 @@ case "thumbnails-4":
             </motion.div>
           )}
         </AnimatePresence>
+        </motion.div>
         </div>
       </div>
 
