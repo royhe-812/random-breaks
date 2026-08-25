@@ -49,7 +49,7 @@ import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { TestingZone } from "@/components/testing-zone"
 import { MultiSpinTestingZone } from "@/components/multi-spin-testing-zone"
 
-type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 // Both manual concepts share the same behavior (extra 4th manual chip, chat
 // wording, item-card label); they only differ in how the chip is marked:
@@ -69,15 +69,25 @@ const isSingleSpin = (a: AnimationType) =>
 // swaps the randomization card's visual treatment for a picker-wheel drum.
 // "Ticker" is the same deal as Roller: identical flow, and only the
 // randomization treatment differs (one name cutting instantly in place).
+// The roller FAMILY: every concept built on the picker-wheel drum. Listing them
+// in one place (rather than repeating the ids across each predicate below) means
+// a new roller variant is registered once — the failure mode this avoids is a
+// variant that satisfies some gates but not others, which reads as a broken
+// animation rather than a missing registration.
+// "Roller, Subtle Winning" is currently an exact duplicate of "Spin In Place
+// (Roller)"; it exists as its own id so the winning moment can be softened on it
+// without disturbing the original.
+const isRollerConcept = (a: AnimationType) =>
+  a === "spin-in-place-roller" || a === "spin-in-place-roller-subtle"
+
 const isSpinInPlace = (a: AnimationType) =>
-  a === "spin-in-place" || a === "spin-in-place-roller" || a === "ticker"
+  a === "spin-in-place" || isRollerConcept(a) || a === "ticker"
 
 // Concepts that draw the randomization card as the roller drum: tighter 12px
 // padding, #212121 fill, spots row inside the card (so the bid box drops its own
 // SpotsProgress), and the Single/Multi drum toggle. Ticker shares all of that
 // card chrome — it only swaps the drum itself for the instant-cut ticker.
-const usesRollerCard = (a: AnimationType) =>
-  a === "spin-in-place-roller" || a === "ticker"
+const usesRollerCard = (a: AnimationType) => isRollerConcept(a) || a === "ticker"
 
 /** The instant-cut ticker treatment, in place of the 3D drum. */
 const usesTicker = (a: AnimationType) => a === "ticker"
@@ -85,6 +95,7 @@ const usesTicker = (a: AnimationType) => a === "ticker"
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "single-spin-populate", name: "Single Spin" },
   { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
+  { id: "spin-in-place-roller-subtle", name: "Roller, Subtle Winning" },
   { id: "ticker", name: "Ticker" },
   // Temporarily hidden from the concepts list (kept for potential future use):
   // { id: "multi-spin-4-auto", name: "Multi-Spin Text" },
@@ -816,6 +827,12 @@ export default function AnimationShowcase() {
       case "spin-in-place":
         return <CardFlipReveal key={key} {...props} />
       case "spin-in-place-roller":
+        return <CardFlipReveal key={key} {...props} />
+      /* Required even though this concept is a duplicate: the switch is
+         non-exhaustive by construction, so a missing case silently falls to
+         `default: return null` while `isRevealing` still flips — the backdrop
+         dims and the winner header renders with no reveal underneath. */
+      case "spin-in-place-roller-subtle":
         return <CardFlipReveal key={key} {...props} />
       /* Ticker only swaps the drum for the instant-cut treatment, so it takes the
          same winning reveal as the roller it shares its card chrome with. Without
