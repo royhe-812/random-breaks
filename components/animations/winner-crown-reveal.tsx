@@ -45,11 +45,15 @@ const TAKEOVER_EXIT = {
   bgDuration: 0.3,
 } as const
 
-/* Per-crown idle wiggle. Each crown gets its own amplitude, period and offset so
-   the two rock independently instead of in lockstep. */
-const TAKEOVER_CROWNS = [
-  { side: "left", w: 27, pos: { left: "1%", top: "4%" }, rot: -12, delay: 0.5, wiggle: 5, wigglePeriod: 1.7 },
-  { side: "right", w: 26, pos: { right: "1%", bottom: "4%" }, rot: 12, delay: 0.62, wiggle: -6, wigglePeriod: 2.1 },
+/* One crown and one flame, in opposite corners. Each gets its own wiggle
+   amplitude, period and offset so the two rock independently rather than in
+   lockstep — and the flame's shorter period reads as a flicker next to the
+   crown's slower rock. The flame is a touch narrower because its artwork is
+   taller than wide, so matching widths would make it the visually heavier of
+   the two. */
+const TAKEOVER_ART = [
+  { kind: "crown", w: 27, pos: { left: "1%", top: "4%" }, rot: -12, delay: 0.5, wiggle: 5, wigglePeriod: 1.7 },
+  { kind: "flame", w: 23, pos: { right: "1%", bottom: "4%" }, rot: 12, delay: 0.62, wiggle: -6, wigglePeriod: 1.35 },
 ] as const
 
 function WinnerWordmark({ width }: { width: number }) {
@@ -86,7 +90,7 @@ function WinnerWordmark({ width }: { width: number }) {
 
    Every floater must FINISH before the 2700ms onComplete that starts the
    randomizer, so `delay + duration` is the real budget: the last entry is
-   1.05 + 1.45 = 2.5s. Denser passes buy room by SHORTENING later floaters
+   1.1 + 1.4 = 2.5s. Denser passes buy room by SHORTENING later floaters
    rather than by stacking more delay — pushing the tail past ~2.55s gets it cut
    off mid-rise instead of fading out.
 
@@ -95,22 +99,70 @@ function WinnerWordmark({ width }: { width: number }) {
 
    `size` is a px font-size rather than a Tailwind class: the scale here is tuned
    by percentage, and Tailwind's steps can't express those values (a +30% pass
-   turns 24 into 31 and 30 into 39, neither of which is a step). */
+   turns 24 into 31 and 30 into 39, neither of which is a step).
+
+   Kinds run text → crown → flame on a strict repeating cycle, which is what
+   keeps the three EVEN at 5 each (15 total) and also stops two of the same asset
+   surfacing back to back. Adding or removing floaters means moving in whole
+   groups of three, or the counts stop matching.
+
+   Every entry carries BOTH `size` and `art` even though each kind reads only one
+   of them: these are inferred as a `const` union, and omitting a field from some
+   members makes it unreadable on the union as a whole. */
 const FLOATERS = [
-  { side: "left", kind: "text", lane: 6, delay: 0, duration: 1.75, drift: 16, rise: 0.56, tilt: -7, size: 39, crown: 57 },
-  { side: "right", kind: "crown", lane: 18, delay: 0.14, duration: 1.8, drift: -18, rise: 0.62, tilt: 9, size: 31, crown: 55 },
-  { side: "left", kind: "crown", lane: 30, delay: 0.28, duration: 1.7, drift: 15, rise: 0.5, tilt: -5, size: 31, crown: 44 },
-  { side: "right", kind: "text", lane: 5, delay: 0.4, duration: 1.85, drift: -17, rise: 0.64, tilt: 6, size: 39, crown: 57 },
-  { side: "left", kind: "text", lane: 26, delay: 0.52, duration: 1.7, drift: 14, rise: 0.52, tilt: -9, size: 31, crown: 44 },
-  { side: "right", kind: "crown", lane: 46, delay: 0.6, duration: 1.72, drift: -14, rise: 0.58, tilt: 8, size: 31, crown: 40 },
-  { side: "left", kind: "crown", lane: 54, delay: 0.68, duration: 1.68, drift: 13, rise: 0.46, tilt: -6, size: 31, crown: 38 },
-  { side: "right", kind: "text", lane: 24, delay: 0.76, duration: 1.65, drift: -16, rise: 0.58, tilt: 7, size: 31, crown: 49 },
-  { side: "left", kind: "text", lane: 14, delay: 0.84, duration: 1.62, drift: 12, rise: 0.66, tilt: -4, size: 34, crown: 50 },
-  { side: "right", kind: "crown", lane: 8, delay: 0.9, duration: 1.6, drift: -12, rise: 0.54, tilt: 10, size: 31, crown: 48 },
-  { side: "left", kind: "crown", lane: 40, delay: 0.95, duration: 1.55, drift: 11, rise: 0.6, tilt: -8, size: 31, crown: 34 },
-  { side: "right", kind: "text", lane: 38, delay: 1, duration: 1.5, drift: -13, rise: 0.48, tilt: 5, size: 27, crown: 42 },
-  { side: "left", kind: "text", lane: 48, delay: 1.05, duration: 1.45, drift: 10, rise: 0.44, tilt: -5, size: 25, crown: 36 },
+  { side: "left", kind: "text", lane: 6, delay: 0, duration: 1.75, drift: 16, rise: 0.56, tilt: -7, size: 39, art: 57 },
+  { side: "right", kind: "crown", lane: 18, delay: 0.12, duration: 1.8, drift: -18, rise: 0.62, tilt: 9, size: 31, art: 55 },
+  { side: "left", kind: "flame", lane: 30, delay: 0.24, duration: 1.72, drift: 15, rise: 0.5, tilt: -5, size: 31, art: 46 },
+  { side: "right", kind: "text", lane: 5, delay: 0.36, duration: 1.85, drift: -17, rise: 0.64, tilt: 6, size: 39, art: 57 },
+  { side: "left", kind: "crown", lane: 26, delay: 0.46, duration: 1.7, drift: 14, rise: 0.52, tilt: -9, size: 31, art: 44 },
+  { side: "right", kind: "flame", lane: 46, delay: 0.56, duration: 1.72, drift: -14, rise: 0.58, tilt: 8, size: 31, art: 42 },
+  { side: "left", kind: "text", lane: 14, delay: 0.64, duration: 1.68, drift: 12, rise: 0.66, tilt: -4, size: 34, art: 50 },
+  { side: "right", kind: "crown", lane: 8, delay: 0.72, duration: 1.65, drift: -12, rise: 0.54, tilt: 10, size: 31, art: 48 },
+  { side: "left", kind: "flame", lane: 54, delay: 0.78, duration: 1.62, drift: 13, rise: 0.46, tilt: -6, size: 31, art: 36 },
+  { side: "right", kind: "text", lane: 24, delay: 0.84, duration: 1.6, drift: -16, rise: 0.58, tilt: 7, size: 31, art: 49 },
+  { side: "left", kind: "crown", lane: 40, delay: 0.9, duration: 1.55, drift: 11, rise: 0.6, tilt: -8, size: 31, art: 34 },
+  { side: "right", kind: "flame", lane: 32, delay: 0.95, duration: 1.55, drift: -13, rise: 0.5, tilt: 5, size: 27, art: 40 },
+  { side: "left", kind: "text", lane: 48, delay: 1, duration: 1.5, drift: 10, rise: 0.44, tilt: -5, size: 25, art: 36 },
+  { side: "right", kind: "crown", lane: 52, delay: 1.05, duration: 1.45, drift: -11, rise: 0.48, tilt: 9, size: 27, art: 32 },
+  { side: "left", kind: "flame", lane: 20, delay: 1.1, duration: 1.4, drift: 12, rise: 0.42, tilt: -7, size: 27, art: 38 },
 ] as const
+
+/* The two image assets, shared by both variants. Intrinsic sizes differ — the
+   crown is square, the flame is slightly taller than wide — so each carries its
+   own, and every consumer sets WIDTH with `height: auto`. Hardcoding a square
+   box would squash the flame.
+
+   The flame is an SVG wrapping a raster image at a `pattern` transform that
+   crops it; keeping it as the supplied .svg preserves that framing for free.
+   next/image passes it through untouched because the project sets
+   `images.unoptimized`, so no `dangerouslyAllowSVG` is needed. */
+const ART = {
+  crown: { src: "/images/crown.png", w: 240, h: 240 },
+  flame: { src: "/images/flames.svg", w: 228, h: 250 },
+} as const
+
+function CelebrationArt({
+  kind,
+  width,
+  shadow,
+}: {
+  kind: "crown" | "flame"
+  /* A number for the floaters (fixed px) or "100%" for the takeover, where the
+     wrapper is sized as a percentage of the bid box. */
+  width: number | string
+  shadow: string
+}) {
+  const art = ART[kind]
+  return (
+    <Image
+      src={art.src}
+      alt=""
+      width={art.w}
+      height={art.h}
+      style={{ width, height: "auto", filter: `drop-shadow(${shadow})` }}
+    />
+  )
+}
 
 // Crown + stacked "WINNER" celebration that plays right after a bid is won,
 // before the randomizer runs. No team is shown here (none is decided yet).
@@ -211,17 +263,11 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
               rotate: { duration: f.duration, delay: f.delay, times: [0, 0.5, 1] },
             }}
           >
-            {f.kind === "crown" ? (
-              <Image
-                src="/images/crown.png"
-                alt=""
-                width={f.crown}
-                height={f.crown}
-                style={{
-                  width: f.crown,
-                  height: "auto",
-                  filter: "drop-shadow(0 2px 10px rgba(0,0,0,0.5))",
-                }}
+            {f.kind !== "text" ? (
+              <CelebrationArt
+                kind={f.kind}
+                width={f.art}
+                shadow="0 2px 10px rgba(0,0,0,0.5)"
               />
             ) : (
               <span
@@ -327,12 +373,12 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
                 ))}
               </div>
 
-              {/* Crowns flank the stack — upper-left and lower-right, sized and
-                  placed as percentages of the box so they hold their composition
-                  whether the box is in single or multi height. */}
-              {TAKEOVER_CROWNS.map((c) => (
+              {/* Crown and flame flank the stack — upper-left and lower-right,
+                  sized and placed as percentages of the box so they hold their
+                  composition whether the box is in single or multi height. */}
+              {TAKEOVER_ART.map((c) => (
                 <motion.div
-                  key={c.side}
+                  key={c.kind}
                   className="absolute"
                   style={{ ...c.pos, width: `${c.w}%` }}
                   /* Variants rather than a shared `transition` prop: the
@@ -377,7 +423,8 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
                       driving both from one element would have the looping wiggle
                       fight the entrance settle for the same property. Rocking
                       about the base (rather than the centre) reads as a crown
-                      tipping side to side instead of spinning. */}
+                      tipping side to side — and as a flame licking upward —
+                      instead of either of them spinning. */}
                   <motion.div
                     style={{ transformOrigin: "50% 85%" }}
                     animate={{ rotate: [0, c.wiggle, 0, -c.wiggle * 0.7, 0] }}
@@ -385,21 +432,15 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
                       duration: c.wigglePeriod,
                       repeat: Infinity,
                       ease: "easeInOut",
-                      /* Begins after the entrance has settled, so the crown
-                         lands first and only then starts rocking. */
+                      /* Begins after the entrance has settled, so each piece
+                         lands first and only then starts moving. */
                       delay: c.delay + 0.45,
                     }}
                   >
-                    <Image
-                      src="/images/crown.png"
-                      alt=""
-                      width={240}
-                      height={240}
-                      style={{
-                        width: "100%",
-                        height: "auto",
-                        filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.55))",
-                      }}
+                    <CelebrationArt
+                      kind={c.kind}
+                      width="100%"
+                      shadow="0 4px 16px rgba(0,0,0,0.55)"
                     />
                   </motion.div>
                 </motion.div>
