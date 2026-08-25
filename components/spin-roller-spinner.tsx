@@ -424,12 +424,18 @@ export function SpinRollerSpinner({
   }
 
   return (
-    // Outer card — matches the dark rounded bid box card shape exactly.
-    // Height hugs the content: there's no footer left to anchor to the bottom,
-    // so h-full/justify-between/minHeight would only add dead space.
-    <div className="w-full flex flex-col gap-0">
+    /* Outer card — matches the dark rounded bid box card shape exactly.
+       `h-full` so the content can divide whatever height the card is given: in
+       single mode the card is `flex-1` inside a fixed-height overlay, so hugging
+       the content left the drum sitting ~20px high with a band of dead card
+       below it. Where the parent is auto-height instead (multi, and the shared
+       transition stage), `h-full` resolves against an indefinite height and
+       behaves as auto, so those keep hugging exactly as before. */
+    <div className="w-full h-full flex flex-col">
 
-      <div className="flex flex-col gap-2">
+      {/* Header + divider stay pinned to the top — `shrink-0` so they are never
+          compressed to make room for the drum in a short card. */}
+      <div className="shrink-0 flex flex-col gap-2">
         {/* Single line naming who this draw is for. This replaced a two-line
             stack (the break + box title, then a trophy line with the handle):
             the break title is already on the bid box card this overlays, so
@@ -451,7 +457,14 @@ export function SpinRollerSpinner({
             here instead of being pinned to 320px and mismatching the card.
             Height 0 + a 1px top border keeps it a true hairline. */}
         <hr className="w-full m-0 border-0" style={{ height: 0, borderTop: `1px solid ${DIVIDER}` }} />
+      </div>
 
+      {/* Centres the drum in whatever height is left under the header rather
+          than letting it sit directly beneath the divider. `min-h-0` is what
+          lets this actually shrink inside the column — without it the flex item
+          keeps its content floor and can push past the card. The drum keeps its
+          own fixed height, so this only ever moves it, never resizes it. */}
+      <div className="flex-1 min-h-0 flex items-center justify-center">
         {/* ── Roller drum ── */}
         <div
           className="relative w-full overflow-hidden rounded-md"
