@@ -25,18 +25,25 @@ interface WinnerCrownRevealProps {
    max here is 0.9 + 1.65 = 2.55s. Text is sized down from the takeover's
    text-6xl — at that scale two words span the frame and stop reading as ambient. */
 const FLOATERS = [
-  { side: "left", kind: "text", lane: 8, delay: 0, duration: 1.75, drift: 20, rise: 0.54, size: "text-xl", crown: 30 },
-  { side: "right", kind: "crown", lane: 16, delay: 0.22, duration: 1.8, drift: -16, rise: 0.6, size: "text-lg", crown: 26 },
-  { side: "left", kind: "crown", lane: 26, delay: 0.44, duration: 1.7, drift: 14, rise: 0.48, size: "text-lg", crown: 22 },
-  { side: "right", kind: "text", lane: 6, delay: 0.6, duration: 1.85, drift: -22, rise: 0.62, size: "text-2xl", crown: 30 },
-  { side: "left", kind: "text", lane: 20, delay: 0.78, duration: 1.7, drift: 12, rise: 0.5, size: "text-lg", crown: 22 },
-  { side: "right", kind: "text", lane: 22, delay: 0.9, duration: 1.65, drift: -14, rise: 0.56, size: "text-xl", crown: 26 },
+  { side: "left", kind: "text", lane: 12, delay: 0, duration: 1.75, drift: 22, rise: 0.56, tilt: -7, size: "text-3xl", crown: 44 },
+  { side: "right", kind: "crown", lane: 18, delay: 0.22, duration: 1.8, drift: -18, rise: 0.62, tilt: 9, size: "text-2xl", crown: 42 },
+  { side: "left", kind: "crown", lane: 30, delay: 0.44, duration: 1.7, drift: 15, rise: 0.5, tilt: -5, size: "text-2xl", crown: 34 },
+  { side: "right", kind: "text", lane: 10, delay: 0.6, duration: 1.85, drift: -24, rise: 0.64, tilt: 6, size: "text-3xl", crown: 44 },
+  { side: "left", kind: "text", lane: 26, delay: 0.78, duration: 1.7, drift: 14, rise: 0.52, tilt: -9, size: "text-2xl", crown: 34 },
+  { side: "right", kind: "text", lane: 24, delay: 0.9, duration: 1.65, drift: -16, rise: 0.58, tilt: 7, size: "text-2xl", crown: 38 },
 ] as const
 
 // Crown + stacked "WINNER" celebration that plays right after a bid is won,
 // before the randomizer runs. No team is shown here (none is decided yet).
 export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default" }: WinnerCrownRevealProps) {
   const [phase, setPhase] = useState<"idle" | "show" | "out">("idle")
+  /* Height of the device frame, measured from the overlay itself. The subtle
+     variant's rise is a fraction of it, expressed in PIXELS: Framer Motion
+     silently fails on container units (a `cqh` value stopped the whole
+     animation, opacity included), and a percentage transform would resolve
+     against each floater's own height rather than the frame's. Pixels are also
+     scale-safe, since the frame's scale-to-fit transform scales them with it. */
+  const [frameH, setFrameH] = useState<number | null>(null)
 
   useEffect(() => {
     if (isRevealing) {
@@ -74,31 +81,34 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
          the device — invisible on a real phone, but wrong in this prototype. */
       <div
         className="absolute inset-0 z-50 overflow-hidden pointer-events-none"
-        /* Establishes the container that the floaters' `cqh` travel resolves
-           against, i.e. the device frame this overlay fills. */
-        style={{ containerType: "size" }}
+        /* Measured on attach. Floaters are withheld until the height is known
+           (one frame) so none of them animates against a stale guess. */
+        ref={(el) => {
+          if (el && frameH === null) setFrameH(el.offsetHeight)
+        }}
       >
-        {FLOATERS.map((f, i) => (
+        {frameH !== null &&
+          FLOATERS.map((f, i) => (
           <motion.div
             key={i}
-            /* Parked just below the frame's bottom edge, then translated upward
-               with a transform. Distances are `cqh` (percent of the device
-               frame, made a container below) rather than `vh`, so the travel
-               tracks the phone rather than the desktop viewport, and rather than
-               a percentage transform, which would resolve against the element's
-               own height instead of the frame's. */
+            /* Parked at the frame's bottom edge, then translated upward. */
             className="absolute bottom-0"
             style={f.side === "left" ? { left: f.lane } : { right: f.lane }}
             initial={{ y: 0, x: 0, opacity: 0, scale: 0.9 }}
             animate={{
               /* Rise from the bottom edge to above the vertical middle. Each
                  floater ends on its own line so they don't all stop in a row. */
-              y: [0, `-${f.rise * 100}cqh`],
+              y: [0, -frameH * f.rise],
               /* Slight inward lean, with a small mid-flight wobble so the drift
                  reads as buoyant rather than as a straight linear slide. */
               x: [0, f.drift * 0.35, f.drift * 0.7, f.drift],
-              opacity: [0, 1, 1, 0],
+              /* Peaks below full opacity: these pass over chat and the bid
+                 controls, and at 1.0 they read as UI rather than as an overlay. */
+              opacity: [0, 0.92, 0.82, 0],
               scale: [0.9, 1, 1, 1.02],
+              /* Settles upright from a slight tilt, which sells the drift as
+                 buoyant rather than as a straight mechanical slide. */
+              rotate: [f.tilt, f.tilt * 0.4, 0],
             }}
             transition={{
               duration: f.duration,
@@ -109,6 +119,7 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
               opacity: { duration: f.duration, delay: f.delay, times: [0, 0.16, 0.6, 1] },
               x: { duration: f.duration, delay: f.delay, times: [0, 0.35, 0.7, 1] },
               scale: { duration: f.duration, delay: f.delay, times: [0, 0.16, 0.6, 1] },
+              rotate: { duration: f.duration, delay: f.delay, times: [0, 0.5, 1] },
             }}
           >
             {f.kind === "crown" ? (
