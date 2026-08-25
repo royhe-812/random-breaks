@@ -2055,7 +2055,15 @@ case "thumbnails-4":
             takeover past the bottom of the box it's meant to be taking over.
             Last child so it stacks above the card. */}
         {celebrationVariant === "takeover" && bidCardHeight > 0 && (
-          <div className="absolute inset-x-0 top-0" style={{ height: bidCardHeight }}>
+          /* `pointer-events-none` is load-bearing: this wrapper is mounted
+             whenever Takeover is SELECTED, not just while it plays, and an empty
+             transparent div still swallows hits. Without it, it covered the bid
+             card and blocked slide-to-bid entirely. The celebration itself needs
+             no pointer input, so nothing inside re-enables them. */
+          <div
+            className="absolute inset-x-0 top-0 pointer-events-none"
+            style={{ height: bidCardHeight }}
+          >
             <WinnerCrownReveal
               variant="takeover"
               isRevealing={showWinnerCrown}
