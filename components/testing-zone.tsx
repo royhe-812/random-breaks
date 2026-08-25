@@ -11,6 +11,7 @@ import { SpinTickerSpinner } from "@/components/spin-ticker-spinner"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { BreakSpotsBar } from "@/components/break-spots-bar"
 import { SharedTransitionStage } from "@/components/shared-transition-stage"
+import { LiveViewerIndicator } from "@/components/live-viewer-indicator"
 import { useDialKit, DialRoot } from "dialkit"
 import "dialkit/styles.css"
 
@@ -310,8 +311,6 @@ const RAIL_ICONS = [
   { src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/polls-TLiAJGRZLHuSvOrQ9KyfrufvDyhfjC.png", label: "Polls" },
   { src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/more-7JAmofygtcnGhXf8oMlQuYxSkAZxTC.png", label: "More" },
 ]
-const LIVE_AVATAR =
-  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Stream%20navigation%20avatar-kd9nUvhPaYGQGCKYioJLK4vLokIQ87.png"
 const STREAM_CHAT = [
   { user: "boxbreaker", message: "Love these random breaks" },
   { user: "firstroundpick", message: "Mosaic hits different" },
@@ -488,7 +487,7 @@ export function TestingZone() {
       </header>
 
       <div className="flex flex-col lg:flex-row flex-1 min-h-0">
-        {/* ─── Controls ─────────────────────���───────��───────────────────── */}
+        {/* ─── Controls ───��─────────────────���───────��───────────────────── */}
         <div className="lg:w-80 lg:flex-shrink-0 border-b lg:border-b-0 lg:border-r border-white/10 p-6 overflow-y-auto">
           {/* Variant */}
           <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-3">Variant</p>
@@ -628,10 +627,7 @@ export function TestingZone() {
               {/* Right action rail */}
               <div className="absolute top-4 right-4">
                 <div className="bg-black/40 backdrop-blur rounded-3xl px-2 py-3 flex flex-col items-center gap-2">
-                  <div className="flex flex-col items-center">
-                    <img src={LIVE_AVATAR} alt="Live" className="w-10 h-10" />
-                    <span className="text-white text-xs font-medium mt-1">299</span>
-                  </div>
+              <LiveViewerIndicator count={299} />
                   {RAIL_ICONS.map(icon => (
                     <div key={icon.label} className="flex flex-col items-center">
                       <div className="w-10 h-10 flex items-center justify-center">

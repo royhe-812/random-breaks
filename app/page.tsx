@@ -44,6 +44,7 @@ import { ThumbnailsInlineReveal } from "@/components/animations/thumbnails-inlin
 import { ThumbnailsInitialsReveal } from "@/components/animations/thumbnails-initials-reveal"
 import { ThumbnailsTextReveal } from "@/components/animations/thumbnails-text-reveal"
 import { InStreamExperience } from "@/components/in-stream-experience"
+import { LiveViewerIndicator } from "@/components/live-viewer-indicator"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { TestingZone } from "@/components/testing-zone"
@@ -1343,15 +1344,8 @@ case "thumbnails-4":
         {/* Right side action buttons with viewer count */}
         <div className="absolute top-4 right-4">
           <div className="bg-black/40 backdrop-blur rounded-3xl px-2 py-3 flex flex-col items-center gap-2">
-            {/* Live stream icon with viewer count */}
-            <div className="flex flex-col items-center">
-              <img 
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Stream%20navigation%20avatar-kd9nUvhPaYGQGCKYioJLK4vLokIQ87.png" 
-                alt="Live" 
-                className="w-10 h-10"
-              />
-              <span className="text-white text-xs font-medium mt-1">{viewerCount}</span>
-            </div>
+            {/* Live indicator + viewer count (Figma node 25300:8726) */}
+            <LiveViewerIndicator count={viewerCount} />
             {/* Items */}
             <div className="flex flex-col items-center">
               <div className="w-10 h-10 flex items-center justify-center">

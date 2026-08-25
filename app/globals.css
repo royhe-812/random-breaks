@@ -130,3 +130,41 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Live-indicator halo breath for the stream's viewer count (see
+   components/live-viewer-indicator.tsx). Defined here rather than in a
+   styled-jsx block on the component: a `<style jsx global>` stamps a generated
+   class onto every element of its host, which desyncs server/client markup in
+   the App Router and causes a hydration mismatch.
+
+   One full cycle is 1.5s. Only the two translucent halos move — the solid 6px
+   core stays put so the dot never looks like it is jittering — and the scale
+   delta is held to 0.12 with peak opacity 0.3, so this reads as a slow breath
+   rather than a blinking alert. */
+@keyframes live-dot-halo {
+  0%,
+  100% {
+    transform: scale(0.88);
+    opacity: 0.2;
+  }
+  35% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+}
+
+.live-dot-halo {
+  animation: live-dot-halo 1.5s ease-in-out infinite;
+}
+
+/* The inner halo trails the outer one slightly so the two rings read as a
+   single expanding breath, not one thick ring changing opacity. */
+.live-dot-halo--inner {
+  animation-delay: 0.12s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot-halo {
+    animation: none;
+  }
+}

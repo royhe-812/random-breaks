@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { ChevronDown, ChevronRight, ChevronsRight, Heart, Star } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
 import { SpotsProgress } from "@/components/spots-progress"
+import { LiveViewerIndicator } from "@/components/live-viewer-indicator"
 
 const chatMessages = [
   { user: "johnpleys", message: "Gotta try to hit this one! Love Mosaic", color: "text-white/60" },
@@ -294,10 +295,7 @@ export function InStreamExperience() {
         {/* Right side action buttons */}
         <div className="absolute top-4 right-4">
           <div className="bg-black/40 backdrop-blur rounded-3xl px-2 py-3 flex flex-col items-center gap-2">
-            <div className="flex flex-col items-center">
-              <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Stream%20navigation%20avatar-kd9nUvhPaYGQGCKYioJLK4vLokIQ87.png" alt="Live" className="w-10 h-10" />
-              <span className="text-white text-xs font-medium mt-1">{viewerCount}</span>
-            </div>
+            <LiveViewerIndicator count={viewerCount} />
             <div className="flex flex-col items-center">
               <div className="w-10 h-10 flex items-center justify-center">
                 <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/items-lRJIiXEXUI5vZJg8YwpehK7c6cPcIp.png" alt="Items" className="w-6 h-6" />
