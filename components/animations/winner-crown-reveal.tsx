@@ -31,6 +31,27 @@ const WORDMARK_H = 23
    "sized the same as you have now" rather than rescaling for the lower count. */
 const WORDMARK_W_RATIO = 0.777
 
+/* Takeover exit, staged so the CONTENT clears before the background does.
+   Everything has to fit inside the window between the `out` flip and the fixed
+   2700ms onComplete that unmounts this and starts the randomizer — the unmount
+   is a hard cutoff, so an overrun would snap the scrim off rather than fade it.
+   Budget from TAKEOVER_OUT_AT (1900ms): 0.34 content + 0.38 delay + 0.3 scrim
+   = 720ms, landing at ~2620ms with room to spare. */
+const TAKEOVER_OUT_AT = 1900
+const TAKEOVER_EXIT = {
+  content: 0.34,
+  /* Starts only once the wordmarks and crowns are fully gone. */
+  bgDelay: 0.38,
+  bgDuration: 0.3,
+} as const
+
+/* Per-crown idle wiggle. Each crown gets its own amplitude, period and offset so
+   the two rock independently instead of in lockstep. */
+const TAKEOVER_CROWNS = [
+  { side: "left", w: 27, pos: { left: "1%", top: "4%" }, rot: -12, delay: 0.5, wiggle: 5, wigglePeriod: 1.7 },
+  { side: "right", w: 26, pos: { right: "1%", bottom: "4%" }, rot: 12, delay: 0.62, wiggle: -6, wigglePeriod: 2.1 },
+] as const
+
 function WinnerWordmark({ width }: { width: number }) {
   return (
     <svg
@@ -95,8 +116,13 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
   useEffect(() => {
     if (isRevealing) {
       setPhase("show")
-      // Hold the celebration, then trigger the parallax exit.
-      const outTimer = setTimeout(() => setPhase("out"), 2000)
+      /* Hold the celebration, then trigger the exit. Takeover leaves slightly
+         earlier because its exit runs in two stages (content, then background)
+         and still has to finish before the 2700ms handoff below. */
+      const outTimer = setTimeout(
+        () => setPhase("out"),
+        variant === "takeover" ? TAKEOVER_OUT_AT : 2000,
+      )
       // After the exit animation completes, hand control back to the caller.
       const doneTimer = setTimeout(() => {
         setPhase("idle")
@@ -219,11 +245,18 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
         {/* Scrim. Deliberately not fully opaque: the bid box's own content stays
             faintly visible underneath, which is what makes this read as the box
             being taken OVER rather than swapped for a different card. */}
+        {/* Both background layers hold at full strength while the content exits,
+            then fade on a delay — so the blur is the LAST thing to clear and the
+            box resolves back into view after the celebration has left. */}
         <motion.div
           className="absolute inset-0 bg-black/70 backdrop-blur-[12px]"
           initial={{ opacity: 0 }}
           animate={{ opacity: phase === "show" ? 1 : 0 }}
-          transition={{ duration: phase === "show" ? 0.25 : 0.4 }}
+          transition={
+            phase === "show"
+              ? { duration: 0.25 }
+              : { duration: TAKEOVER_EXIT.bgDuration, delay: TAKEOVER_EXIT.bgDelay }
+          }
         />
         <motion.div
           className="absolute inset-0"
@@ -231,8 +264,18 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
             background:
               "radial-gradient(circle at center, rgba(76,225,96,0.18) 0%, rgba(76,225,96,0.06) 45%, transparent 72%)",
           }}
-          animate={{ scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          /* The pulse previously had no exit at all and simply vanished on
+             unmount; it now leaves with the scrim as one background layer. */
+          animate={
+            phase === "show"
+              ? { scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }
+              : { opacity: 0, scale: 1 }
+          }
+          transition={
+            phase === "show"
+              ? { duration: 2, repeat: Infinity }
+              : { duration: TAKEOVER_EXIT.bgDuration, delay: TAKEOVER_EXIT.bgDelay }
+          }
         />
 
         <AnimatePresence>
@@ -256,7 +299,11 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
                       delay: i * 0.07,
                       duration: 0.42,
                       ease: [0.34, 1.56, 0.64, 1],
-                      exit: { duration: 0.5, delay: 0, ease: [0.4, 0, 0.2, 1] },
+                      exit: {
+                        duration: TAKEOVER_EXIT.content,
+                        delay: 0,
+                        ease: [0.4, 0, 0.2, 1],
+                      },
                     }}
                   >
                     <WinnerWordmark width={markW} />
@@ -267,36 +314,78 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
               {/* Crowns flank the stack — upper-left and lower-right, sized and
                   placed as percentages of the box so they hold their composition
                   whether the box is in single or multi height. */}
-              {([
-                { side: "left", w: 27, pos: { left: "1%", top: "4%" }, rot: -12, delay: 0.5 },
-                { side: "right", w: 26, pos: { right: "1%", bottom: "4%" }, rot: 12, delay: 0.62 },
-              ] as const).map((c) => (
+              {TAKEOVER_CROWNS.map((c) => (
                 <motion.div
                   key={c.side}
                   className="absolute"
                   style={{ ...c.pos, width: `${c.w}%` }}
-                  initial={{ opacity: 0, scale: 0.3, y: boxH * 0.3, rotate: c.rot }}
-                  animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
-                  exit={{ opacity: 0, scale: 0.4, y: boxH * 0.8, rotate: c.rot }}
-                  transition={{
-                    opacity: { delay: c.delay, duration: 0.3 },
-                    scale: { delay: c.delay, type: "spring", stiffness: 220, damping: 14 },
-                    y: { delay: c.delay, duration: 0.45 },
-                    rotate: { delay: c.delay, duration: 0.5 },
-                    exit: { duration: 0.45, ease: [0.4, 0, 0.2, 1] },
+                  /* Variants rather than a shared `transition` prop: the
+                     entrance needs a per-property stagger (`c.delay`), but
+                     per-property delays also apply on the way OUT and override
+                     the generic `exit` key — which held the crowns on screen
+                     until after the scrim had already cleared. Putting each
+                     transition inside its own variant keeps the entrance delay
+                     from leaking into the exit. */
+                  variants={{
+                    hidden: { opacity: 0, scale: 0.3, y: boxH * 0.3, rotate: c.rot },
+                    visible: {
+                      opacity: 1,
+                      scale: 1,
+                      y: 0,
+                      rotate: 0,
+                      transition: {
+                        opacity: { delay: c.delay, duration: 0.3 },
+                        scale: { delay: c.delay, type: "spring", stiffness: 220, damping: 14 },
+                        y: { delay: c.delay, duration: 0.45 },
+                        rotate: { delay: c.delay, duration: 0.5 },
+                      },
+                    },
+                    out: {
+                      opacity: 0,
+                      scale: 0.4,
+                      y: boxH * 0.8,
+                      rotate: c.rot,
+                      transition: {
+                        duration: TAKEOVER_EXIT.content,
+                        delay: 0,
+                        ease: [0.4, 0, 0.2, 1],
+                      },
+                    },
                   }}
+                  initial="hidden"
+                  animate="visible"
+                  exit="out"
                 >
-                  <Image
-                    src="/images/crown.png"
-                    alt=""
-                    width={240}
-                    height={240}
-                    style={{
-                      width: "100%",
-                      height: "auto",
-                      filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.55))",
+                  {/* The wiggle lives on a NESTED element on purpose: the parent
+                      already animates `rotate` for the entrance and exit, and
+                      driving both from one element would have the looping wiggle
+                      fight the entrance settle for the same property. Rocking
+                      about the base (rather than the centre) reads as a crown
+                      tipping side to side instead of spinning. */}
+                  <motion.div
+                    style={{ transformOrigin: "50% 85%" }}
+                    animate={{ rotate: [0, c.wiggle, 0, -c.wiggle * 0.7, 0] }}
+                    transition={{
+                      duration: c.wigglePeriod,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      /* Begins after the entrance has settled, so the crown
+                         lands first and only then starts rocking. */
+                      delay: c.delay + 0.45,
                     }}
-                  />
+                  >
+                    <Image
+                      src="/images/crown.png"
+                      alt=""
+                      width={240}
+                      height={240}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.55))",
+                      }}
+                    />
+                  </motion.div>
                 </motion.div>
               ))}
             </motion.div>
