@@ -12,7 +12,11 @@ interface SpinRollerSpinnerProps {
   onLanded: (team: Team) => void
   /** Winning bidder's username, shown bold under the title row. */
   winnerName?: string
-  /** Break number shown in the subtitle, kept in sync with the bid box card. */
+  /**
+   * No longer rendered — the header is now just "Randomizing for @handle".
+   * Kept because several call sites (page, lab, testing zone) still pass it,
+   * and it belongs to the shared spinner prop shape.
+   */
   breakNumber?: number
   /** Spots still available — kept in sync with the bid box card. */
   availableSpots?: number
@@ -245,7 +249,6 @@ export function SpinRollerSpinner({
   isSpinning,
   onLanded,
   winnerName = "Adam007",
-  breakNumber = 15,
   availableSpots = 15,
   totalSpots = 32,
   onViewSpots,
@@ -427,21 +430,17 @@ export function SpinRollerSpinner({
     <div className="w-full flex flex-col gap-0">
 
       <div className="flex flex-col gap-2">
-        {/* Auction card title row — mirrors the bid box card in the live stream:
-            the break + box title truncated to one line. The trailing chevron was
-            removed; the spots bar above the card now carries the "View all"
-            affordance that opens the break spots sheet. */}
+        {/* Single line naming who this draw is for. This replaced a two-line
+            stack (the break + box title, then a trophy line with the handle):
+            the break title is already on the bid box card this overlays, so
+            repeating it here spent the card's most prominent line on something
+            the viewer just read. */}
         <div className="flex items-center justify-between gap-3">
-          {/* Title + winner stack — 8px gap */}
-          <div className="flex-1 min-w-0 flex flex-col gap-2 text-white">
+          <div className="flex-1 min-w-0 text-white">
             <p className="truncate text-sm leading-tight">
-              <span className="font-normal">
-                {`Random Break #${breakNumber}`}
-                {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
-              </span>
-            </p>
-            <p className="truncate text-sm leading-tight font-bold">
-              <span aria-hidden="true">{"🏆"}</span> {winnerName}
+              {"Randomizing for "}
+              {/* Bold on the handle only, so the name is what carries the line. */}
+              <span className="font-bold">{`@${winnerName}`}</span>
             </p>
           </div>
         </div>

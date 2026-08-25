@@ -33,7 +33,10 @@ interface SpinRollerMultiSpinnerProps {
    * the run — the same person placed the winning bid for every spot.
    */
   winnerName?: string
-  /** Break number shown in the title row, kept in sync with the bid box card. */
+  /**
+   * No longer rendered — the header is now just "Randomizing for @handle".
+   * Kept because call sites still pass it as part of the shared prop shape.
+   */
   breakNumber?: number
   /**
    * Forces the FINAL spin to land on a specific team index. Earlier spins stay
@@ -224,7 +227,6 @@ export function SpinRollerMultiSpinner({
   onLanded,
   onAllLanded,
   winnerName = "Adam007",
-  breakNumber = 15,
   forceTeamIndex = null,
   spinDuration = 4000,
   startSpeed = 0.09,
@@ -462,27 +464,23 @@ export function SpinRollerMultiSpinner({
 
   return (
     <div className="w-full flex flex-col gap-2">
-      {/* Title row — mirrors the bid box card: break + box title truncated to
-          one line, with the winner currently being drawn beneath it. `min-w-0`
-          is what lets the title actually truncate inside the flex column. */}
-      <div className="min-w-0 flex flex-col gap-2 text-white">
-        <p className="truncate text-sm leading-tight">
-          <span className="font-normal">
-            {`Random Break #${breakNumber}`}
-            {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
-          </span>
-        </p>
-        {/* Whose spot is being drawn. Chips below hold the full history. */}
+      {/* Single line naming who this draw is for, matching single mode. The
+          break + box title that used to sit above it is already on the bid box
+          card this overlays. `min-w-0` is what lets it truncate in the flex
+          column. The animated swap stays: in multi the line is keyed to the
+          active buyer, so it re-enters if the name ever changes between spots. */}
+      <div className="min-w-0 text-white">
         <AnimatePresence mode="wait">
           <motion.p
             key={activeWinner}
-            className="truncate text-sm leading-tight font-bold"
+            className="truncate text-sm leading-tight"
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.2 }}
           >
-            <span aria-hidden="true">{"🏆"}</span> {activeWinner}
+            {"Randomizing for "}
+            <span className="font-bold">{`@${activeWinner}`}</span>
           </motion.p>
         </AnimatePresence>
       </div>
