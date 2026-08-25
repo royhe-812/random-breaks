@@ -313,6 +313,24 @@ export default function AnimationShowcase() {
      high damping stops the seam visibly springing apart on the settle. */
   const pushTransition = { type: "spring" as const, stiffness: 320, damping: 34, mass: 1 }
 
+  /* True once the push has finished travelling and the drum is at rest.
+     Distinct from `spinInPlaceSettled`, which means the drum has LANDED on a
+     winner — this is about arrival, that one is about the outcome.
+     The drum must not spin while it is still sliding: two motions at once read
+     as one glitch, and it hides the entrance. */
+  const [pushArrived, setPushArrived] = useState(false)
+
+  /* Re-arm whenever the randomizer leaves. Done as an effect on the derived
+     `spinInPlaceShowing` rather than at each `setSpinInPlaceActive(false)` call
+     site — there are four of them, and missing one would leave the next run
+     pre-armed and spinning during its slide. */
+  useEffect(() => {
+    if (!spinInPlaceShowing) setPushArrived(false)
+  }, [spinInPlaceShowing])
+
+  /* Non-push concepts spin the moment they mount, exactly as before. */
+  const spinnerRunning = isPushRoller ? spinInPlaceActive && pushArrived : spinInPlaceActive
+
   /* Track the multi card's natural height. It changes mid-run as chips wrap onto
      the row, so a ResizeObserver keeps the reserved space in step rather than
      measuring once on mount. */
@@ -1858,6 +1876,13 @@ case "thumbnails-4":
              sits flush against the bid card's bottom edge. */
           animate={{ y: isPushRoller && !spinInPlaceShowing ? bidCardHeight : 0 }}
           transition={pushTransition}
+          /* Fires at the end of BOTH the entrance and the retract, so it has to
+             check direction: only an arrival at rest releases the spin. The
+             spring is what makes this necessary — its true settle time isn't a
+             duration we could have hardcoded a timeout against. */
+          onAnimationComplete={() => {
+            if (spinInPlaceShowing) setPushArrived(true)
+          }}
           /* Inert while parked below the fold, so an empty overlay can never
              swallow taps meant for the bid card underneath. */
           style={{ pointerEvents: spinInPlaceShowing ? "auto" : "none" }}
@@ -1925,7 +1950,7 @@ case "thumbnails-4":
                    spot, so the reveal must hang off `onAllLanded` instead —
                    using onLanded here would cut the run short after spot 1. */
                 <SpinRollerMultiSpinner
-                  isSpinning={spinInPlaceActive}
+                  isSpinning={spinnerRunning}
                   onAllLanded={(landed) => {
                     const final = landed[landed.length - 1]
                     if (final) handleSpinInPlaceLanded(final.team)
@@ -1935,7 +1960,7 @@ case "thumbnails-4":
                 />
               ) : usesRollerCard(selectedAnimation) ? (
                 <SpinRollerSpinner
-                  isSpinning={spinInPlaceActive}
+                  isSpinning={spinnerRunning}
                   onLanded={handleSpinInPlaceLanded}
                   winnerName="Adam007"
                   breakNumber={displayBreakNumber}
