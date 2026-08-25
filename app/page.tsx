@@ -301,9 +301,10 @@ export default function AnimationShowcase() {
   }, [selectedAnimation])
 
   /* Only the two roller concepts get the contact-based push; every other
-     concept keeps the original crossfade. Gated on a real measurement so the
+     concept — including Ticker, which shares the roller CARD but is its own
+     concept — keeps the original crossfade. Gated on a real measurement so the
      first play can never animate against a distance of 0. */
-  const isPushRoller = usesRollerCard(selectedAnimation) && bidCardHeight > 0
+  const isPushRoller = isRollerConcept(selectedAnimation) && bidCardHeight > 0
 
   /* ONE transition shared by both halves. Contact only holds if the bid card
      and the randomizer travel the same distance on the same curve — any
