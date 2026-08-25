@@ -268,6 +268,13 @@ export default function AnimationShowcase() {
    * Prototype-side control, toggled from the panel beside the device frame.
    */
   const [rollerMode, setRollerMode] = useState<"single" | "multi">("single")
+  /**
+   * "Subtle Winning" concept only: which celebration treatment plays on a win.
+   * "floating" is the ambient floaters over the stream; "takeover" scopes the
+   * old full-screen treatment to the bid box. Prototype-side control, toggled
+   * from the panel beside the device frame.
+   */
+  const [subtleWinStyle, setSubtleWinStyle] = useState<"floating" | "takeover">("floating")
   const auctionCardRef = useRef<HTMLDivElement>(null)
   /**
    * Multi roller only: the randomization card is taller than the bid box because
@@ -330,6 +337,18 @@ export default function AnimationShowcase() {
 
   /* Non-push concepts spin the moment they mount, exactly as before. */
   const spinnerRunning = isPushRoller ? spinInPlaceActive && pushArrived : spinInPlaceActive
+
+  /* Which win celebration plays. Only the Subtle Winning concept has a choice;
+     every other concept keeps the original full-screen treatment. The two subtle
+     treatments mount in DIFFERENT places — floaters at the device frame (they
+     size their rise off it), the takeover inside the bid box (it fills its
+     parent) — so this drives two mutually exclusive render sites below. */
+  const isSubtleConcept = selectedAnimation === "spin-in-place-roller-subtle"
+  const celebrationVariant: "default" | "subtle" | "takeover" = isSubtleConcept
+    ? subtleWinStyle === "takeover"
+      ? "takeover"
+      : "subtle"
+    : "default"
 
   /* Track the multi card's natural height. It changes mid-run as chips wrap onto
      the row, so a ResizeObserver keeps the reserved space in step rather than
@@ -1127,6 +1146,51 @@ case "thumbnails-4":
           {spinInPlaceShowing && (
             <span className="w-28 text-[10px] leading-tight text-white/40">
               Locked while spinning
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Subtle Winning celebration control. Same placement rules as the roller
+          panel above, stacked on the LEFT so the two never overlap when the
+          Subtle concept (which is itself a roller) shows both at once. */}
+      {isSubtleConcept && (
+        <div
+          role="group"
+          aria-label="Subtle winning style"
+          className="hidden lg:flex fixed left-6 top-1/2 -translate-y-1/2 z-[110] flex-col gap-2 rounded-2xl border border-white/10 bg-zinc-900/95 backdrop-blur p-3 shadow-2xl"
+        >
+          <span className="text-[11px] font-medium uppercase tracking-wide text-white/50">
+            Winning style
+          </span>
+          {([
+            { id: "floating", label: "Floating", hint: "Ambient risers" },
+            { id: "takeover", label: "Takeover", hint: "Fills bid box" },
+          ] as const).map((style) => (
+            <button
+              key={style.id}
+              onClick={() => setSubtleWinStyle(style.id)}
+              /* Locked while the celebration is on screen: the two treatments
+                 mount at different DOM sites, so swapping mid-play would unmount
+                 the running one and lose the onComplete that starts the
+                 randomizer, stranding the flow. */
+              disabled={showWinnerCrown}
+              aria-pressed={subtleWinStyle === style.id}
+              className={`flex w-28 flex-col items-start rounded-xl px-3 py-2 text-left transition-all ${
+                showWinnerCrown
+                  ? "cursor-not-allowed bg-zinc-800/50 text-white/30"
+                  : subtleWinStyle === style.id
+                  ? "bg-zinc-800 text-white ring-2 ring-inset ring-yellow-400"
+                  : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
+              }`}
+            >
+              <span className="text-xs font-medium">{style.label}</span>
+              <span className="text-[10px] text-white/40">{style.hint}</span>
+            </button>
+          ))}
+          {showWinnerCrown && (
+            <span className="w-28 text-[10px] leading-tight text-white/40">
+              Locked while playing
             </span>
           )}
         </div>
@@ -1984,6 +2048,24 @@ case "thumbnails-4":
           )}
         </AnimatePresence>
         </motion.div>
+
+        {/* In-box win takeover. Sized to the BID CARD rather than to this
+            wrapper: in multi mode the wrapper is taller (it reserves the
+            randomization card's height), and filling that would float the
+            takeover past the bottom of the box it's meant to be taking over.
+            Last child so it stacks above the card. */}
+        {celebrationVariant === "takeover" && bidCardHeight > 0 && (
+          <div className="absolute inset-x-0 top-0" style={{ height: bidCardHeight }}>
+            <WinnerCrownReveal
+              variant="takeover"
+              isRevealing={showWinnerCrown}
+              onComplete={() => {
+                setShowWinnerCrown(false)
+                startConceptReveal()
+              }}
+            />
+          </div>
+        )}
         </div>
       </div>
 
@@ -1994,14 +2076,19 @@ case "thumbnails-4":
           sizes its rise off this parent, so nesting it any deeper (e.g. inside the
           bid-box container) silently halves the travel and bunches the floaters
           over the bottom controls. */}
-      <WinnerCrownReveal
-        variant={selectedAnimation === "spin-in-place-roller-subtle" ? "subtle" : "default"}
-        isRevealing={showWinnerCrown}
-        onComplete={() => {
-          setShowWinnerCrown(false)
-          startConceptReveal()
-        }}
-      />
+      {/* The takeover treatment renders in-box instead (see the bid-box wrapper),
+          so this instance stands down for it — only ever ONE is mounted, which
+          keeps `onComplete` firing exactly once. */}
+      {celebrationVariant !== "takeover" && (
+        <WinnerCrownReveal
+          variant={celebrationVariant}
+          isRevealing={showWinnerCrown}
+          onComplete={() => {
+            setShowWinnerCrown(false)
+            startConceptReveal()
+          }}
+        />
+      )}
 
       {/* Animation Style Picker - Above Live UI */}
       <motion.div

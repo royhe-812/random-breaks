@@ -7,9 +7,18 @@ import Image from "next/image"
 interface WinnerCrownRevealProps {
   isRevealing: boolean
   onComplete: () => void
-  /** "subtle" swaps the full-screen takeover for ambient floaters. See FLOATERS. */
-  variant?: "default" | "subtle"
+  /**
+   * "subtle"   — ambient floaters over the stream (see FLOATERS).
+   * "takeover" — the full-screen treatment scoped to the bid box. Must be
+   *              rendered INSIDE the bid-box wrapper, since it fills its parent.
+   */
+  variant?: "default" | "subtle" | "takeover"
 }
+
+/* Stacked "WINNER" lines in the in-box takeover, per the Figma frame. Six is
+   from the design, and it's also what fills a ~215px box without the type
+   getting too small to read. */
+const TAKEOVER_LINES = 6
 
 /* Ambient floaters for the "subtle" variant, modelled on the tap-a-heart effect
    in live streams: a few elements rise out of the bottom corners, drift gently
@@ -48,6 +57,11 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
      against each floater's own height rather than the frame's. Pixels are also
      scale-safe, since the frame's scale-to-fit transform scales them with it. */
   const [frameH, setFrameH] = useState<number | null>(null)
+  /* Height of the bid box, for the takeover variant. The type has to be sized
+     off the actual box rather than hardcoded: the box grows in multi mode, and a
+     fixed font-size would either overflow it or leave it half empty. Same
+     withhold-until-measured guard as above. */
+  const [boxH, setBoxH] = useState<number | null>(null)
 
   useEffect(() => {
     if (isRevealing) {
@@ -150,6 +164,112 @@ export function WinnerCrownReveal({ isRevealing, onComplete, variant = "default"
             )}
           </motion.div>
         ))}
+      </div>
+    )
+  }
+
+  /* Takeover: the full-screen treatment confined to the bid box. `absolute
+     inset-0` fills whatever it's mounted in, so the caller controls the
+     footprint — it must be a child of the bid-box wrapper, not the device frame.
+     Rounded + clipped so the crowns and the dropping text can't spill past the
+     card's corners. */
+  if (variant === "takeover") {
+    const lineH = boxH ? (boxH * 0.9) / TAKEOVER_LINES : 0
+    return (
+      <div
+        className="absolute inset-0 z-40 overflow-hidden rounded-2xl pointer-events-none"
+        ref={(el) => {
+          if (el && boxH === null) setBoxH(el.offsetHeight)
+        }}
+      >
+        {/* Scrim. Deliberately not fully opaque: the bid box's own content stays
+            faintly visible underneath, which is what makes this read as the box
+            being taken OVER rather than swapped for a different card. */}
+        <motion.div
+          className="absolute inset-0 bg-black/70 backdrop-blur-[2px]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: phase === "show" ? 1 : 0 }}
+          transition={{ duration: phase === "show" ? 0.25 : 0.4 }}
+        />
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(76,225,96,0.18) 0%, rgba(76,225,96,0.06) 45%, transparent 72%)",
+          }}
+          animate={{ scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+
+        <AnimatePresence>
+          {phase === "show" && boxH !== null && (
+            <motion.div key="box-takeover" className="absolute inset-0">
+              {/* Stacked lines, each fading slightly further back — the same
+                  depth cue as the full-screen version, and they rise in on a
+                  stagger then drop out together. */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                {[...Array(TAKEOVER_LINES)].map((_, i) => (
+                  <motion.span
+                    key={i}
+                    className="font-black text-[#4CE160] tracking-tight whitespace-nowrap"
+                    style={{
+                      fontSize: lineH / 0.78,
+                      lineHeight: `${lineH}px`,
+                      opacity: 1 - i * 0.1,
+                    }}
+                    initial={{ opacity: 0, y: lineH * 1.6, scale: 0.72 }}
+                    animate={{ opacity: 1 - i * 0.1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: boxH * 0.75 + i * 14, scale: 0.72 }}
+                    transition={{
+                      delay: i * 0.07,
+                      duration: 0.42,
+                      ease: [0.34, 1.56, 0.64, 1],
+                      exit: { duration: 0.5, delay: 0, ease: [0.4, 0, 0.2, 1] },
+                    }}
+                  >
+                    WINNER
+                  </motion.span>
+                ))}
+              </div>
+
+              {/* Crowns flank the stack — upper-left and lower-right, sized and
+                  placed as percentages of the box so they hold their composition
+                  whether the box is in single or multi height. */}
+              {([
+                { side: "left", w: 27, pos: { left: "1%", top: "4%" }, rot: -12, delay: 0.5 },
+                { side: "right", w: 26, pos: { right: "1%", bottom: "4%" }, rot: 12, delay: 0.62 },
+              ] as const).map((c) => (
+                <motion.div
+                  key={c.side}
+                  className="absolute"
+                  style={{ ...c.pos, width: `${c.w}%` }}
+                  initial={{ opacity: 0, scale: 0.3, y: boxH * 0.3, rotate: c.rot }}
+                  animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
+                  exit={{ opacity: 0, scale: 0.4, y: boxH * 0.8, rotate: c.rot }}
+                  transition={{
+                    opacity: { delay: c.delay, duration: 0.3 },
+                    scale: { delay: c.delay, type: "spring", stiffness: 220, damping: 14 },
+                    y: { delay: c.delay, duration: 0.45 },
+                    rotate: { delay: c.delay, duration: 0.5 },
+                    exit: { duration: 0.45, ease: [0.4, 0, 0.2, 1] },
+                  }}
+                >
+                  <Image
+                    src="/images/crown.png"
+                    alt=""
+                    width={240}
+                    height={240}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.55))",
+                    }}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     )
   }
