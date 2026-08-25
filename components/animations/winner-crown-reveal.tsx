@@ -78,22 +78,38 @@ function WinnerWordmark({ width }: { width: number }) {
    exist to be compared side by side, and randomised sizes/lanes would mean no
    two viewings of the same concept are the same animation.
 
-   `lane` is the inset from that floater's own edge. Kept small so elements hug
-   the left/right margins of a ~440px frame and never cross the middle, and every
-   floater must FINISH before the 2700ms onComplete that starts the randomizer:
-   max here is 0.9 + 1.65 = 2.55s. Text is sized down from the takeover's
-   text-6xl — at that scale two words span the frame and stop reading as ambient.
+   `lane` is the inset from that floater's own edge. Bounded so elements hug the
+   left/right margins of a ~440px frame and never cross the middle — the widest
+   lane is paired with the smallest `size`, since a lane is only safe in
+   combination with the width of what sits in it (lane 48 at size 25 spans to
+   ~141px; lane 48 at size 39 would reach past centre).
+
+   Every floater must FINISH before the 2700ms onComplete that starts the
+   randomizer, so `delay + duration` is the real budget: the last entry is
+   1.05 + 1.45 = 2.5s. Denser passes buy room by SHORTENING later floaters
+   rather than by stacking more delay — pushing the tail past ~2.55s gets it cut
+   off mid-rise instead of fading out.
+
+   Text is sized down from the takeover's text-6xl — at that scale two words span
+   the frame and stop reading as ambient.
 
    `size` is a px font-size rather than a Tailwind class: the scale here is tuned
    by percentage, and Tailwind's steps can't express those values (a +30% pass
    turns 24 into 31 and 30 into 39, neither of which is a step). */
 const FLOATERS = [
   { side: "left", kind: "text", lane: 6, delay: 0, duration: 1.75, drift: 16, rise: 0.56, tilt: -7, size: 39, crown: 57 },
-  { side: "right", kind: "crown", lane: 18, delay: 0.22, duration: 1.8, drift: -18, rise: 0.62, tilt: 9, size: 31, crown: 55 },
-  { side: "left", kind: "crown", lane: 30, delay: 0.44, duration: 1.7, drift: 15, rise: 0.5, tilt: -5, size: 31, crown: 44 },
-  { side: "right", kind: "text", lane: 5, delay: 0.6, duration: 1.85, drift: -17, rise: 0.64, tilt: 6, size: 39, crown: 57 },
-  { side: "left", kind: "text", lane: 26, delay: 0.78, duration: 1.7, drift: 14, rise: 0.52, tilt: -9, size: 31, crown: 44 },
-  { side: "right", kind: "text", lane: 24, delay: 0.9, duration: 1.65, drift: -16, rise: 0.58, tilt: 7, size: 31, crown: 49 },
+  { side: "right", kind: "crown", lane: 18, delay: 0.14, duration: 1.8, drift: -18, rise: 0.62, tilt: 9, size: 31, crown: 55 },
+  { side: "left", kind: "crown", lane: 30, delay: 0.28, duration: 1.7, drift: 15, rise: 0.5, tilt: -5, size: 31, crown: 44 },
+  { side: "right", kind: "text", lane: 5, delay: 0.4, duration: 1.85, drift: -17, rise: 0.64, tilt: 6, size: 39, crown: 57 },
+  { side: "left", kind: "text", lane: 26, delay: 0.52, duration: 1.7, drift: 14, rise: 0.52, tilt: -9, size: 31, crown: 44 },
+  { side: "right", kind: "crown", lane: 46, delay: 0.6, duration: 1.72, drift: -14, rise: 0.58, tilt: 8, size: 31, crown: 40 },
+  { side: "left", kind: "crown", lane: 54, delay: 0.68, duration: 1.68, drift: 13, rise: 0.46, tilt: -6, size: 31, crown: 38 },
+  { side: "right", kind: "text", lane: 24, delay: 0.76, duration: 1.65, drift: -16, rise: 0.58, tilt: 7, size: 31, crown: 49 },
+  { side: "left", kind: "text", lane: 14, delay: 0.84, duration: 1.62, drift: 12, rise: 0.66, tilt: -4, size: 34, crown: 50 },
+  { side: "right", kind: "crown", lane: 8, delay: 0.9, duration: 1.6, drift: -12, rise: 0.54, tilt: 10, size: 31, crown: 48 },
+  { side: "left", kind: "crown", lane: 40, delay: 0.95, duration: 1.55, drift: 11, rise: 0.6, tilt: -8, size: 31, crown: 34 },
+  { side: "right", kind: "text", lane: 38, delay: 1, duration: 1.5, drift: -13, rise: 0.48, tilt: 5, size: 27, crown: 42 },
+  { side: "left", kind: "text", lane: 48, delay: 1.05, duration: 1.45, drift: 10, rise: 0.44, tilt: -5, size: 25, crown: 36 },
 ] as const
 
 // Crown + stacked "WINNER" celebration that plays right after a bid is won,
