@@ -277,7 +277,7 @@ export function InStreamExperience() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
       
       {/* eBay Live Header */}
-      <div className="absolute top-12 left-0 right-0 z-20 p-4">
+      <div className="absolute top-12 left-0 right-0 z-20 p-4 pt-[27px]">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <button className="w-8 h-8 flex items-center justify-center">
