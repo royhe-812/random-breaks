@@ -14,11 +14,12 @@ interface SwipeToBidProps {
 
 type ButtonState = "idle" | "confirmed" | "winning" | "soldout"
 
-/* Bid CTA palette. The two bid-taking states (idle + confirmed) are blue; the
-   `winning` state deliberately stays green because it reads as a success state
-   alongside the green "… is winning" text on the bid card, and `soldout` keeps
-   its own grey. Both values are literal brand hex rather than theme tokens, so
-   they're named once here instead of being repeated across the states. */
+/* Bid CTA palette. Every live state of this button — idle, confirmed and
+   winning — is blue; only `soldout` keeps its own grey, since it's a disabled
+   state rather than a bid state. Note that green is still the success colour
+   elsewhere on the bid card (the "… is winning" text), so the button no longer
+   colour-matches that copy. Values are literal brand hex rather than theme
+   tokens, so they're named once here instead of repeated across the states. */
 const BID_BLUE = "#4D93FC"
 
 /* All ink on the blue pill is this one hue at three strengths, which preserves
@@ -101,8 +102,8 @@ export function SwipeToBid({ amount, onBidConfirmed, onReset, isWinning = false,
         className="relative h-14 rounded-full p-1.5"
         style={{ border: "1px solid rgba(255, 255, 255, 0.3)" }}
       >
-        <div className="h-full w-full rounded-full bg-green-400 flex items-center justify-center">
-          <span className="text-black font-semibold text-sm">Winning</span>
+        <div className="h-full w-full rounded-full flex items-center justify-center" style={{ backgroundColor: BID_BLUE }}>
+          <span className="font-semibold text-sm" style={{ color: BID_INK }}>Winning</span>
         </div>
       </div>
     )
