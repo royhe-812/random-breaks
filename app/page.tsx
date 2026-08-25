@@ -371,7 +371,15 @@ export default function AnimationShowcase() {
   // works through sold-out breaks (32 → 31 → 30 …).
   const soldOut = selectedAnimation === "single-spin-later"
   const displayBreakNumber = soldOut ? spinLaterBreakNumber : breakNumber
-  const [visibleMessages, setVisibleMessages] = useState(chatMessages.slice(0, 3))
+  /* Each row carries a stable `id`. The key used to be built from the array
+     INDEX, but the ticker shifts the window (`slice(1)` + push) so every row's
+     index changed on every tick — React saw 3 removals + 3 insertions instead of
+     a 1-in/1-out, and `popLayout` rendered the outgoing copies on top of the
+     incoming ones. That was the visible chat ghosting/duplication. */
+  const [visibleMessages, setVisibleMessages] = useState(() =>
+    chatMessages.slice(0, 3).map((m, i) => ({ ...m, id: i })),
+  )
+  const chatUidRef = useRef(chatMessages.length)
   const [viewerCount, setViewerCount] = useState(240)
   const [winnerTeam, setWinnerTeam] = useState<Team | null>(null)
   const [showWinner, setShowWinner] = useState(false)
@@ -412,7 +420,10 @@ export default function AnimationShowcase() {
       if (chatPausedRef.current) return
       setVisibleMessages(prev => {
         const newMessages = [...prev.slice(1)]
-        newMessages.push(chatMessages[messageIndexRef.current % chatMessages.length])
+        newMessages.push({
+          ...chatMessages[messageIndexRef.current % chatMessages.length],
+          id: chatUidRef.current++,
+        })
         messageIndexRef.current++
         return newMessages
       })
@@ -803,7 +814,7 @@ export default function AnimationShowcase() {
     chatPausedRef.current = true
     setVisibleMessages(prev => [
       ...prev.slice(1),
-      { user: "Adam007", message, color: "text-[#4CE160]" },
+      { user: "Adam007", message, color: "text-[#4CE160]", id: chatUidRef.current++ },
     ])
 
     // Manual concept: this kicks off the FIRST of two sequential moments — the
@@ -878,6 +889,7 @@ export default function AnimationShowcase() {
       setMultiPendingSpot(null)
       pendingSpotRef.current = null
       setIsRevealing(false)
+      setReactionMessages([]) // Same stale-reaction carryover as the bid path
     }
 
     chatPausedRef.current = true
@@ -1389,9 +1401,9 @@ case "thumbnails-4":
         {/* Chat Messages - extend full width, leaving room for the right nav (~56px) plus a 24px gap */}
         <div className="space-y-1.5 pr-20">
           <AnimatePresence mode="popLayout">
-            {visibleMessages.map((msg, index) => (
+            {visibleMessages.map((msg) => (
               <motion.div
-                key={`${msg.user}-${msg.message}-${index}`}
+                key={msg.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
@@ -1879,6 +1891,12 @@ case "thumbnails-4":
                   setSpotAssigned(false) // Reset item card title to "Random Break" for the new round
                   setBidBoxReactivated(false) // Starting a fresh round, so drop the reactivated state
                   setShowWinner(false)
+                  // Drop the PREVIOUS round's reactions. They render in a block
+                  // pinned below the announcement, so leaving them meant a new
+                  // "assigned <team>" line appeared ABOVE two older messages
+                  // still congratulating the last winner — the new announcement
+                  // was no longer the latest item in the chat.
+                  setReactionMessages([])
                   chatPausedRef.current = true // Pause chat immediately when bid is placed
 
                   // Play the crown "WINNER" celebration first; the randomizer
