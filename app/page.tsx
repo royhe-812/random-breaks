@@ -609,13 +609,17 @@ export default function AnimationShowcase() {
         setKey((prev) => prev + 1)
         setTimeout(() => {
           setShowWinner(true)
-          // The spot for this break is now assigned, so hand the bid box back to
-          // its active state: `hasWon` false restores the Max bid button, the
-          // live countdown and the "is winning" row, while `bidBoxReactivated`
-          // resets the title to "Random Break #15" and re-arms slide-to-bid.
-          setHasWon(false)
-          setSpotAssigned(false)
-          setBidBoxReactivated(true)
+          /* The auction is over, so the bid box stays in its concluded state:
+             "Adam007 won", 00:00, a disabled Max bid and a latched "Sold out"
+             slider. This block used to re-arm it for a fresh round here
+             (`setHasWon(false)` + `setBidBoxReactivated(true)`), which flipped
+             the CTA back to a live blue "Bid $30" about 14s after the win —
+             above a row that had reverted to "Jessica991 is winning" with a
+             running 00:10. Note `bidBoxReactivated` also feeds the slider's
+             `key`, so setting it here remounted SwipeToBid and dropped its
+             internal latched "soldout" even where `disabled` would have held it.
+             `spotAssigned` stays true so the item title keeps the won team.
+             Replaying is still one tap: "Sold out" fires the slider's onReset. */
         }, 380)
         return
       }
