@@ -74,9 +74,10 @@ const isSingleSpin = (a: AnimationType) =>
 // a new roller variant is registered once — the failure mode this avoids is a
 // variant that satisfies some gates but not others, which reads as a broken
 // animation rather than a missing registration.
-// "Spin In Place, Subtle Winning" is currently an exact duplicate of "Spin In
-// Place (Roller)"; it exists as its own id so the winning moment can be softened
-// on it without disturbing the original.
+// "Spin In Place, Subtle Winning" shares the Roller's entire flow and drum; the
+// ONLY difference is the win celebration, which renders as ambient corner
+// floaters instead of the full-screen crown takeover (WinnerCrownReveal
+// variant="subtle").
 const isRollerConcept = (a: AnimationType) =>
   a === "spin-in-place-roller" || a === "spin-in-place-roller-subtle"
 
@@ -1887,6 +1888,22 @@ case "thumbnails-4":
         </div>
       </div>
 
+      {/* Crown "WINNER" celebration - plays right after a bid win, before the
+          randomizer. One shared instance across every concept, so the treatment is
+          switched by prop rather than by forking the component.
+          Mounted as a direct child of the 440x956 DEVICE FRAME. The subtle variant
+          sizes its rise off this parent, so nesting it any deeper (e.g. inside the
+          bid-box container) silently halves the travel and bunches the floaters
+          over the bottom controls. */}
+      <WinnerCrownReveal
+        variant={selectedAnimation === "spin-in-place-roller-subtle" ? "subtle" : "default"}
+        isRevealing={showWinnerCrown}
+        onComplete={() => {
+          setShowWinnerCrown(false)
+          startConceptReveal()
+        }}
+      />
+
       {/* Animation Style Picker - Above Live UI */}
       <motion.div
         className="absolute -top-0 left-0 right-0 z-50 bg-zinc-900/95 backdrop-blur border-b border-white/10 px-4 py-2 safe-top"
@@ -1930,15 +1947,6 @@ case "thumbnails-4":
           </button>
         </div>
       </motion.div>
-
-      {/* Crown "WINNER" celebration - plays right after a bid win, before the randomizer */}
-      <WinnerCrownReveal
-        isRevealing={showWinnerCrown}
-        onComplete={() => {
-          setShowWinnerCrown(false)
-          startConceptReveal()
-        }}
-      />
 
       {/* Reveal Animation Overlay */}
       <AnimatePresence>
