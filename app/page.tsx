@@ -45,6 +45,7 @@ import { ThumbnailsInitialsReveal } from "@/components/animations/thumbnails-ini
 import { ThumbnailsTextReveal } from "@/components/animations/thumbnails-text-reveal"
 import { InStreamExperience } from "@/components/in-stream-experience"
 import { LiveViewerIndicator } from "@/components/live-viewer-indicator"
+import { IPhoneStatusBar } from "@/components/iphone-status-bar"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { TestingZone } from "@/components/testing-zone"
@@ -124,6 +125,77 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "thumbnails-3", name: "Board single-spin" },
   // { id: "thumbnails-4", name: "Text" },
 ]
+
+/**
+ * The prototype-version switcher. Rendered twice from one definition so the
+ * button list can't drift between the two placements:
+ *
+ *  - "vertical" is the primary rail, fixed to the right edge OUTSIDE the device
+ *    frame. Previously this lived inside the frame as a top bar, where it
+ *    covered the stream's own header and read as part of the prototype.
+ *  - "horizontal" is the in-frame fallback shown only below `lg`, where there
+ *    isn't room beside the phone. Without it the concept could not be changed
+ *    at all on a narrow viewport.
+ *
+ * Note the scroll container uses `no-scrollbar`; the old markup used
+ * `scrollbar-hide`, which is not defined anywhere in this project and so was
+ * silently doing nothing.
+ */
+function ConceptPicker({
+  selected,
+  onSelect,
+  onSpinnerZone,
+  onMultiSpinZone,
+  orientation,
+}: {
+  selected: AnimationType
+  onSelect: (id: AnimationType) => void
+  onSpinnerZone: () => void
+  onMultiSpinZone: () => void
+  orientation: "vertical" | "horizontal"
+}) {
+  const vertical = orientation === "vertical"
+
+  const pill = (active: boolean, disabled?: boolean) =>
+    `flex-shrink-0 rounded-full text-xs font-medium transition-all ${
+      vertical ? "w-full px-3 py-2 text-left" : "px-3 py-1.5"
+    } ${
+      disabled
+        ? "bg-zinc-800/50 text-white/30 cursor-not-allowed"
+        : active
+        ? "bg-zinc-800 text-white ring-2 ring-inset ring-yellow-400"
+        : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
+    }`
+
+  return (
+    <div className={vertical ? "flex flex-col gap-2" : "flex gap-2 overflow-x-auto pb-1 no-scrollbar"}>
+      {animations.map((animation) => (
+        <button
+          key={animation.id}
+          onClick={() => !animation.disabled && onSelect(animation.id)}
+          disabled={animation.disabled}
+          aria-pressed={selected === animation.id}
+          className={pill(selected === animation.id, animation.disabled)}
+        >
+          {animation.name}
+        </button>
+      ))}
+
+      {/* Separates the concepts from the two standalone test harnesses. */}
+      <div
+        className={vertical ? "my-1 h-px w-full bg-white/15" : "flex-shrink-0 self-center w-px h-5 bg-white/20 mx-1"}
+        aria-hidden="true"
+      />
+
+      <button onClick={onSpinnerZone} className={pill(false)}>
+        Spinner Testing Zone
+      </button>
+      <button onClick={onMultiSpinZone} className={pill(false)}>
+        Multi Spin Testing Zone
+      </button>
+    </div>
+  )
+}
 
 // Buyer's "claim this spot" comment templates. Picked deterministically per team
 // name so the autofilled draft and the message posted to chat always match.
@@ -1124,15 +1196,20 @@ case "thumbnails-4":
 
   return (
     <div className="w-full min-h-screen bg-zinc-950 flex items-center justify-center p-0 sm:p-4">
-      {/* Roller spin-mode control. Lives OUTSIDE the device frame (which is
-          overflow-hidden and would clip it) and is `fixed`, so it never nudges
-          the centred phone. Hidden under lg, where there's no room beside the
+      {/* Secondary controls, stacked on the LEFT. Both live OUTSIDE the device
+          frame (which is overflow-hidden and would clip them) and are `fixed`,
+          so they never nudge the centred phone. They share one flex column
+          because the Subtle concept is itself a roller and shows both at once —
+          when each carried its own `top-1/2 -translate-y-1/2` they would have
+          stacked on top of each other now that the right edge is taken by the
+          version rail. Hidden under lg, where there's no room beside the
           frame without covering the prototype. */}
+      <div className="hidden lg:flex fixed left-6 top-1/2 -translate-y-1/2 z-[110] flex-col gap-3">
       {usesRollerCard(selectedAnimation) && (
         <div
           role="group"
           aria-label={usesTicker(selectedAnimation) ? "Ticker spin mode" : "Roller spin mode"}
-          className="hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-[110] flex-col gap-2 rounded-2xl border border-white/10 bg-zinc-900/95 backdrop-blur p-3 shadow-2xl"
+          className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-zinc-900/95 backdrop-blur p-3 shadow-2xl"
         >
           <span className="text-[11px] font-medium uppercase tracking-wide text-white/50">
             {usesTicker(selectedAnimation) ? "Ticker spin" : "Roller spin"}
@@ -1168,14 +1245,12 @@ case "thumbnails-4":
         </div>
       )}
 
-      {/* Subtle Winning celebration control. Same placement rules as the roller
-          panel above, stacked on the LEFT so the two never overlap when the
-          Subtle concept (which is itself a roller) shows both at once. */}
+      {/* Subtle Winning celebration control, second in the left stack. */}
       {isSubtleConcept && (
         <div
           role="group"
           aria-label="Subtle winning style"
-          className="hidden lg:flex fixed left-6 top-1/2 -translate-y-1/2 z-[110] flex-col gap-2 rounded-2xl border border-white/10 bg-zinc-900/95 backdrop-blur p-3 shadow-2xl"
+          className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-zinc-900/95 backdrop-blur p-3 shadow-2xl"
         >
           <span className="text-[11px] font-medium uppercase tracking-wide text-white/50">
             Winning style
@@ -1212,10 +1287,48 @@ case "thumbnails-4":
           )}
         </div>
       )}
+      </div>
 
-      {/* Device frame sized to an iPhone 17 Pro Max (440 x 956 CSS px). It scales
+      {/* Prototype-version rail, fixed to the RIGHT edge outside the device
+          frame. This is the primary switcher; the copy inside the frame is a
+          below-lg fallback. `max-h` + scroll keeps it usable on short viewports
+          as concepts are added, rather than overflowing off-screen. */}
+      <div
+        role="group"
+        aria-label="Prototype version"
+        className="hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-[110] w-52 max-h-[calc(100vh-3rem)] overflow-y-auto no-scrollbar flex-col gap-2 rounded-2xl border border-white/10 bg-zinc-900/95 backdrop-blur p-3 shadow-2xl"
+      >
+        <span className="text-[11px] font-medium uppercase tracking-wide text-white/50">
+          Prototype version
+        </span>
+        <ConceptPicker
+          orientation="vertical"
+          selected={selectedAnimation}
+          onSelect={setSelectedAnimation}
+          onSpinnerZone={() => setShowTestingZone(true)}
+          onMultiSpinZone={() => setShowMultiSpinTestingZone(true)}
+        />
+      </div>
+
+      {/* Device bezel — the titanium band around the screen. Only drawn at `sm`
+          and up: below that the prototype runs edge-to-edge as a real phone
+          screen would, so a fake bezel there would just eat viewport.
+          Deliberately NOT overflow-hidden, so the side buttons can sit proud of
+          the frame; the screen child below does its own clipping. */}
+      <div className="relative w-full max-w-[440px] sm:w-[464px] sm:max-w-none sm:rounded-[3.3rem] sm:bg-[#0f0f11] sm:p-3 sm:ring-1 sm:ring-inset sm:ring-white/10 sm:shadow-[0_30px_90px_rgba(0,0,0,0.75)]">
+        {/* Side buttons. Decorative hardware, hidden from assistive tech. */}
+        <div aria-hidden="true" className="hidden sm:block absolute -left-[3px] top-[112px] h-8 w-[3px] rounded-l-sm bg-zinc-800" />
+        <div aria-hidden="true" className="hidden sm:block absolute -left-[3px] top-[168px] h-14 w-[3px] rounded-l-sm bg-zinc-800" />
+        <div aria-hidden="true" className="hidden sm:block absolute -left-[3px] top-[240px] h-14 w-[3px] rounded-l-sm bg-zinc-800" />
+        <div aria-hidden="true" className="hidden sm:block absolute -right-[3px] top-[196px] h-20 w-[3px] rounded-r-sm bg-zinc-800" />
+
+      {/* Screen, sized to an iPhone 17 Pro Max (440 x 956 CSS px). It scales
           down to fit smaller viewports while preserving the phone's aspect ratio. */}
-      <div className="relative w-full max-w-[440px] h-screen sm:h-auto sm:aspect-[440/956] sm:max-h-[956px] overflow-hidden bg-black shadow-2xl sm:rounded-[3rem]">
+      <div className="relative w-full h-screen sm:h-auto sm:aspect-[440/956] sm:max-h-[956px] overflow-hidden bg-black shadow-2xl rounded-none sm:rounded-[2.6rem]">
+      {/* iOS hardware chrome: Dynamic Island + clock/cellular/Wi-Fi/battery.
+          At z-[60] it sits above every in-frame surface (which top out at z-50),
+          because it stands in for the physical display cutout. */}
+      <IPhoneStatusBar />
       {/* Background Video */}
       <video
         autoPlay
@@ -1343,7 +1456,7 @@ case "thumbnails-4":
         
         {/* Right side action buttons with viewer count */}
         <div className="absolute top-4 right-4">
-          <div className="bg-black/40 backdrop-blur rounded-3xl px-2 py-3 flex flex-col items-center gap-2">
+          <div className="bg-black/40 backdrop-blur rounded-3xl px-2 py-3 flex flex-col items-center gap-2 mt-2">
             {/* Live indicator + viewer count (Figma node 25300:8726) */}
             <LiveViewerIndicator count={viewerCount} />
             {/* Items */}
@@ -2114,48 +2227,24 @@ case "thumbnails-4":
         />
       )}
 
-      {/* Animation Style Picker - Above Live UI */}
+      {/* Prototype-version picker, narrow-viewport fallback only. The primary
+          copy of this control is the rail fixed outside the device frame; this
+          one only appears below `lg`, where there is no room beside the phone.
+          It sits at z-50 so it stays above the stream UI but below the device
+          chrome (z-[60]), which represents physical hardware. */}
       <motion.div
-        className="absolute -top-0 left-0 right-0 z-50 bg-zinc-900/95 backdrop-blur border-b border-white/10 px-4 py-2 safe-top"
+        className="lg:hidden absolute top-[54px] left-0 right-0 z-50 bg-zinc-900/95 backdrop-blur border-b border-white/10 px-4 py-2"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
       >
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {animations.map((animation) => (
-            <Fragment key={animation.id}>
-              <button
-                onClick={() => !animation.disabled && setSelectedAnimation(animation.id)}
-                disabled={animation.disabled}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  animation.disabled
-                    ? "bg-zinc-800/50 text-white/30 cursor-not-allowed"
-                    : selectedAnimation === animation.id
-                    ? "bg-zinc-800 text-white ring-2 ring-inset ring-yellow-400"
-                    : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
-                }`}
-              >
-                {animation.name}
-              </button>
-              {animation.id === "thumbnails-2" && (
-                <div className="flex-shrink-0 self-center w-px h-5 bg-white/20 mx-1" aria-hidden="true" />
-              )}
-            </Fragment>
-          ))}
-          <div className="flex-shrink-0 self-center w-px h-5 bg-white/20 mx-1" aria-hidden="true" />
-          <button
-            onClick={() => setShowTestingZone(true)}
-            className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white/70 hover:bg-zinc-700"
-          >
-            Spinner Testing Zone
-          </button>
-          <button
-            onClick={() => setShowMultiSpinTestingZone(true)}
-            className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white/70 hover:bg-zinc-700"
-          >
-            Multi Spin Testing Zone
-          </button>
-        </div>
+        <ConceptPicker
+          orientation="horizontal"
+          selected={selectedAnimation}
+          onSelect={setSelectedAnimation}
+          onSpinnerZone={() => setShowTestingZone(true)}
+          onMultiSpinZone={() => setShowMultiSpinTestingZone(true)}
+        />
       </motion.div>
 
       {/* Reveal Animation Overlay */}
@@ -2222,6 +2311,7 @@ case "thumbnails-4":
         onKeyTap={handleKeyboardKeyTap}
         onReturn={handleKeyboardReturn}
       />
+      </div>
       </div>
     </div>
   )
