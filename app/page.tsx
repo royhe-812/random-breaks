@@ -1454,8 +1454,12 @@ case "thumbnails-4":
           
         </div>
         
-        {/* Right side action buttons with viewer count */}
-        <div className="absolute top-4 right-4">
+  {/* Right side action buttons with viewer count. Below `lg` the in-frame
+      version picker overlays the stream (y≈54–98), so the rail is pushed clear
+      of it — otherwise the bar's opaque background hides the live dot and
+      clips the viewer count. At `lg` the picker moves outside the frame and
+      the rail returns to its normal inset. */}
+  <div className="absolute top-[106px] lg:top-4 right-4">
           <div className="bg-black/40 backdrop-blur rounded-3xl px-2 py-3 flex flex-col items-center gap-2 mt-2">
             {/* Live indicator + viewer count (Figma node 25300:8726) */}
             <LiveViewerIndicator count={viewerCount} />
