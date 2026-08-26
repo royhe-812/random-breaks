@@ -294,7 +294,7 @@ export function InStreamExperience() {
         
         {/* Right side action buttons */}
         <div className="absolute top-4 right-4">
-          <div className="bg-black/40 backdrop-blur rounded-3xl px-2 py-3 flex flex-col items-center gap-2">
+          <div className="bg-black/40 backdrop-blur rounded-full px-2 py-3 flex flex-col items-center gap-2">
             <LiveViewerIndicator count={viewerCount} />
             <div className="flex flex-col items-center">
               <div className="w-10 h-10 flex items-center justify-center">
