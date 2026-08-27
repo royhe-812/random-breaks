@@ -222,7 +222,15 @@ function buildSchedule(treatment: TreatmentId, n: number, winner: number): Frame
  * #1: the same component shows 2 big named tiles or 32 dense abbreviations
  * without any per-treatment special casing.
  */
+/** Widest a single tile is allowed to get, in px, at small set sizes. */
+const TILE_MAX = 150
+
 function gridFor(n: number): { cols: number; label: "full" | "name" | "abbrev" } {
+  // A single option needs its own case. Without it `gridFor(1)` fell into the
+  // `n <= 4` branch and returned 2 columns, so the last survivor of an
+  // elimination run sat in column 1 — visibly off-centre, as though the layout
+  // had broken rather than resolved.
+  if (n <= 1) return { cols: 1, label: "full" }
   if (n <= 4) return { cols: 2, label: "full" }
   if (n <= 6) return { cols: 2, label: "name" }
   if (n <= 9) return { cols: 3, label: "name" }
@@ -309,6 +317,20 @@ function FocusSlot({
 }) {
   const team = pool[frame.focus] ?? pool[0]
   const resolved = phase === "resolved"
+
+  // At rest the slot must not name a team. Showing `pool[0]` here read as
+  // "the Bills are already picked" while the header still said "Ready to pick" —
+  // the slot claimed a result the randomizer hadn't produced.
+  if (phase === "idle") {
+    return (
+      <div
+        className="flex items-center justify-center rounded-2xl border border-dashed border-white/15 bg-white/[0.02]"
+        style={{ height: FOCUS_ITEM_H }}
+      >
+        <span className="text-[15px] text-white/30">No team picked yet</span>
+      </div>
+    )
+  }
 
   if (treatment === "cycle") {
     const absolute = frame.absolute ?? frame.focus
@@ -404,8 +426,15 @@ function SetView({
 
   return (
     <div
-      className="grid w-full gap-2"
-      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+      className="mx-auto grid w-full gap-2"
+      style={{
+        gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+        // Cap the track width so small sets don't inflate. With a plain
+        // `w-full` grid, one surviving tile stretched to the full 360px and
+        // read as a full-bleed slab rather than a selected option. Above ~3
+        // columns this is wider than the phone, so `w-full` still governs.
+        maxWidth: cols * TILE_MAX + (cols - 1) * 8,
+      }}
     >
       <AnimatePresence initial={false}>
         {visible.map((idx) => (
