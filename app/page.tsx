@@ -46,6 +46,7 @@ import { ThumbnailsTextReveal } from "@/components/animations/thumbnails-text-re
 import { InStreamExperience } from "@/components/in-stream-experience"
 import { LiveViewerIndicator } from "@/components/live-viewer-indicator"
 import { IPhoneStatusBar } from "@/components/iphone-status-bar"
+import { SpinnerExplorationsZone } from "@/components/spinner-explorations-zone"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { TestingZone } from "@/components/testing-zone"
@@ -146,12 +147,14 @@ function ConceptPicker({
   onSelect,
   onSpinnerZone,
   onMultiSpinZone,
+  onExplorationsZone,
   orientation,
 }: {
   selected: AnimationType
   onSelect: (id: AnimationType) => void
   onSpinnerZone: () => void
   onMultiSpinZone: () => void
+  onExplorationsZone: () => void
   orientation: "vertical" | "horizontal"
 }) {
   const vertical = orientation === "vertical"
@@ -193,7 +196,84 @@ function ConceptPicker({
       <button onClick={onMultiSpinZone} className={pill(false)}>
         Multi Spin Testing Zone
       </button>
+      <button onClick={onExplorationsZone} className={pill(false)}>
+        Spinner Explorations
+      </button>
     </div>
+  )
+}
+
+/** The full-screen testing zones, in tab order. */
+const ZONES = [
+  { id: "spinner", name: "Spinner Testing Zone" },
+  { id: "multi-spin", name: "Multi Spin Testing Zone" },
+  { id: "explorations", name: "Spinner Explorations" },
+] as const
+
+type ZoneId = (typeof ZONES)[number]["id"]
+
+/**
+ * The tab bar pinned above a full-screen testing zone.
+ *
+ * This markup used to be duplicated once per zone, which meant adding a third
+ * zone would have meant a third copy — and the two existing copies had already
+ * drifted apart. Both also used `scrollbar-hide`, which is not defined anywhere
+ * in this project; `no-scrollbar` is the class that actually exists.
+ */
+function ZoneTabBar({
+  activeZone,
+  onExit,
+  onZone,
+}: {
+  activeZone: ZoneId
+  /** Leave the zones entirely and show a concept in the device frame. */
+  onExit: (id: AnimationType) => void
+  onZone: (zone: ZoneId) => void
+}) {
+  return (
+    <motion.div
+      className="fixed top-0 left-0 right-0 z-[100] bg-zinc-900/95 backdrop-blur border-b border-white/10 px-4 py-2 safe-top"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+        {animations.map((animation) => (
+          <button
+            key={animation.id}
+            onClick={() => onExit(animation.id)}
+            disabled={animation.disabled}
+            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              animation.disabled
+                ? "bg-zinc-800/50 text-white/30 cursor-not-allowed"
+                : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
+            }`}
+          >
+            {animation.name}
+          </button>
+        ))}
+
+        <div className="flex-shrink-0 self-center w-px h-5 bg-white/20 mx-1" aria-hidden="true" />
+
+        {ZONES.map((zone) => {
+          const active = zone.id === activeZone
+          return (
+            <button
+              key={zone.id}
+              onClick={() => !active && onZone(zone.id)}
+              aria-current={active ? "page" : undefined}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                active
+                  ? "bg-zinc-800 text-white ring-2 ring-inset ring-yellow-400"
+                  : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
+              }`}
+            >
+              {zone.name}
+            </button>
+          )
+        })}
+      </div>
+    </motion.div>
   )
 }
 
@@ -301,6 +381,7 @@ export default function AnimationShowcase() {
   const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("single-spin-populate")
   const [showTestingZone, setShowTestingZone] = useState(false)
   const [showMultiSpinTestingZone, setShowMultiSpinTestingZone] = useState(false)
+  const [showSpinnerExplorations, setShowSpinnerExplorations] = useState(false)
   const [isRevealing, setIsRevealing] = useState(false)
   const [isSpinnerRevealing, setIsSpinnerRevealing] = useState(false) // For TeamSpinner cycling
   const [isSpinnerPending, setIsSpinnerPending] = useState(false) // Post-reveal "pending assignment" in TeamSpinner
@@ -1056,87 +1137,36 @@ case "thumbnails-4":
     }
   }
 
-  // If Testing Zone is active, render it with the tab bar on top
-  if (showTestingZone) {
-    return (
-      <>
-        <motion.div
-          className="fixed top-0 left-0 right-0 z-[100] bg-zinc-900/95 backdrop-blur border-b border-white/10 px-4 py-2 safe-top"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            {animations.map((animation) => (
-              <Fragment key={animation.id}>
-                <button
-                  onClick={() => { setShowTestingZone(false); setSelectedAnimation(animation.id) }}
-                  disabled={animation.disabled}
-                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white/70 hover:bg-zinc-700"
-                >
-                  {animation.name}
-                </button>
-              </Fragment>
-            ))}
-            <div className="flex-shrink-0 self-center w-px h-5 bg-white/20 mx-1" aria-hidden="true" />
-            <button
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white ring-2 ring-inset ring-yellow-400"
-            >
-              Spinner Testing Zone
-            </button>
-            <button
-              onClick={() => { setShowTestingZone(false); setShowMultiSpinTestingZone(true) }}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white/70 hover:bg-zinc-700"
-            >
-              Multi Spin Testing Zone
-            </button>
-          </div>
-        </motion.div>
-        <div className="pt-10">
-          <TestingZone />
-        </div>
-      </>
-    )
-  }
+  // The full-screen testing zones. All three share one tab bar; `goToZone`
+  // clears every flag first so two zones can never be open at once.
+  const activeZone: ZoneId | null = showTestingZone
+    ? "spinner"
+    : showMultiSpinTestingZone
+    ? "multi-spin"
+    : showSpinnerExplorations
+    ? "explorations"
+    : null
 
-  // If the Multi Spin Testing Zone is active, render it with the tab bar on top
-  if (showMultiSpinTestingZone) {
+  if (activeZone) {
+    const goToZone = (zone: ZoneId) => {
+      setShowTestingZone(zone === "spinner")
+      setShowMultiSpinTestingZone(zone === "multi-spin")
+      setShowSpinnerExplorations(zone === "explorations")
+    }
+    const exitZones = (id: AnimationType) => {
+      setShowTestingZone(false)
+      setShowMultiSpinTestingZone(false)
+      setShowSpinnerExplorations(false)
+      setSelectedAnimation(id)
+    }
+
     return (
       <>
-        <motion.div
-          className="fixed top-0 left-0 right-0 z-[100] bg-zinc-900/95 backdrop-blur border-b border-white/10 px-4 py-2 safe-top"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            {animations.map((animation) => (
-              <Fragment key={animation.id}>
-                <button
-                  onClick={() => { setShowMultiSpinTestingZone(false); setSelectedAnimation(animation.id) }}
-                  disabled={animation.disabled}
-                  className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white/70 hover:bg-zinc-700"
-                >
-                  {animation.name}
-                </button>
-              </Fragment>
-            ))}
-            <div className="flex-shrink-0 self-center w-px h-5 bg-white/20 mx-1" aria-hidden="true" />
-            <button
-              onClick={() => { setShowMultiSpinTestingZone(false); setShowTestingZone(true) }}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white/70 hover:bg-zinc-700"
-            >
-              Spinner Testing Zone
-            </button>
-            <button
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white ring-2 ring-inset ring-yellow-400"
-            >
-              Multi Spin Testing Zone
-            </button>
-          </div>
-        </motion.div>
+        <ZoneTabBar activeZone={activeZone} onExit={exitZones} onZone={goToZone} />
         <div className="pt-10">
-          <MultiSpinTestingZone />
+          {activeZone === "spinner" && <TestingZone />}
+          {activeZone === "multi-spin" && <MultiSpinTestingZone />}
+          {activeZone === "explorations" && <SpinnerExplorationsZone />}
         </div>
       </>
     )
@@ -1307,6 +1337,7 @@ case "thumbnails-4":
           onSelect={setSelectedAnimation}
           onSpinnerZone={() => setShowTestingZone(true)}
           onMultiSpinZone={() => setShowMultiSpinTestingZone(true)}
+          onExplorationsZone={() => setShowSpinnerExplorations(true)}
         />
       </div>
 
@@ -2248,6 +2279,7 @@ case "thumbnails-4":
           onSelect={setSelectedAnimation}
           onSpinnerZone={() => setShowTestingZone(true)}
           onMultiSpinZone={() => setShowMultiSpinTestingZone(true)}
+          onExplorationsZone={() => setShowSpinnerExplorations(true)}
         />
       </motion.div>
 
