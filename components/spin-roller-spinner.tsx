@@ -466,9 +466,9 @@ export function SpinRollerSpinner({
             the break title is already on the bid box card this overlays, so
             repeating it here spent the card's most prominent line on something
             the viewer just read. */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0 text-white">
-            <p className="truncate text-sm leading-tight">
+        <div className="flex items-center justify-center gap-3">
+          <div className="min-w-0 text-white">
+            <p className="truncate text-sm leading-tight text-center">
               {"Randomizing for "}
               {/* Bold on the handle only, so the name is what carries the line. */}
               <span className="font-bold">{`@${winnerName}`}</span>
@@ -602,7 +602,7 @@ export function SpinRollerSpinner({
                       subtleLanded && isCentre ? " winner-bump" : ""
                     }`}
                     style={{
-                      fontSize: 14,
+                      fontSize: 16,
                       /* Flips with the fill, not with landing: during the
                          stroke stages the pill is still dark, so the label
                          stays white until the primary is actually behind it. */

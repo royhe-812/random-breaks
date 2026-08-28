@@ -516,11 +516,11 @@ export function SpinRollerMultiSpinner({
           card this overlays. `min-w-0` is what lets it truncate in the flex
           column. The animated swap stays: in multi the line is keyed to the
           active buyer, so it re-enters if the name ever changes between spots. */}
-      <div className="min-w-0 text-white">
+      <div className="min-w-0 text-white text-center">
         <AnimatePresence mode="wait">
           <motion.p
             key={activeWinner}
-            className="truncate text-sm leading-tight"
+            className="truncate text-sm leading-tight text-center"
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
@@ -620,7 +620,7 @@ export function SpinRollerMultiSpinner({
                       settling && isCentre ? " winner-bump" : ""
                     }`}
                     style={{
-                      fontSize: 14,
+                      fontSize: 16,
                       /* Flips with the fill, not with landing: during the stroke
                          stages the pill is still dark, so the label stays white
                          until the team's primary is actually behind it. With the
