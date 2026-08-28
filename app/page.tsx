@@ -2185,7 +2185,7 @@ case "thumbnails-4":
                   }}
                   winnerName="Adam007"
                   breakNumber={displayBreakNumber}
-                  hideSelectionPill={isSubtleConcept}
+                  subtle={isSubtleConcept}
                 />
               ) : usesRollerCard(selectedAnimation) ? (
                 <SpinRollerSpinner
@@ -2196,7 +2196,7 @@ case "thumbnails-4":
                   availableSpots={demoSpots}
                   totalSpots={32}
                   onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
-                  hideSelectionPill={isSubtleConcept}
+                  subtle={isSubtleConcept}
                 />
               ) : (
                 <SpinInPlaceSpinner

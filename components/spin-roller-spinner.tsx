@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { teams, type Team } from "@/components/team-spinner"
 import { RevealPill, useRevealStage, type RevealTuning } from "@/components/pill-reveal"
 import { useRollerMotionBlur } from "@/components/roller-motion-blur"
+import { SpinnerChevrons } from "@/components/spinner-chevrons"
 
 interface SpinRollerSpinnerProps {
   /** True while spinning, false to reset. */
@@ -76,14 +77,15 @@ interface SpinRollerSpinnerProps {
    */
   disableReveal?: boolean
   /**
-   * Removes the centre selection pill entirely — the container behind the rows
-   * that fills with the landed team's colour when the drum stops. Distinct from
-   * `disableReveal`, which keeps the idle grey pill and only suppresses its
-   * stroke/fill. Set by the Subtle Winning concept, which marks the landing
-   * without any coloured container. With nothing coloured behind it the centre
-   * label stays white, so it never lands as unreadable colour on the bare card.
+   * Turns on the Subtle Winning treatment (Figma 1593-51897) for single spin:
+   *  - no centre selection pill (distinct from `disableReveal`, which keeps the
+   *    idle grey pill and only suppresses its stroke/fill),
+   *  - blue chevrons that flank the name, pulse while spinning, then fly inward
+   *    and fade out on landing,
+   *  - on landing the losing rows fade out so only the winner remains, held.
+   * With nothing coloured behind it the centre label always stays white.
    */
-  hideSelectionPill?: boolean
+  subtle?: boolean
   /**
    * Attached to the centre (winning) row's name span, so a parent can measure it
    * as the origin of a shared-element flight. Only the resting centre row carries
@@ -274,7 +276,7 @@ export function SpinRollerSpinner({
   motionBlurMax = 10,
   reveal,
   disableReveal = false,
-  hideSelectionPill = false,
+  subtle = false,
   centreRowRef,
   hideCentreLabel = false,
   collapseCentre = false,
@@ -415,6 +417,19 @@ export function SpinRollerSpinner({
      would be unreadable. */
   const landedTextColor = landedTeam ? readableOn(landedTeam.color) : "#ffffff"
 
+  /* Subtle landing: the drum has come to rest (the flash, or the recorded
+     pick). Losing rows fade out and only the winner is held. */
+  const subtleLanded = subtle && (justLanded || landedIndex !== null)
+  /* Chevron choreography (subtle only): pulse while the drum moves, fly inward
+     and fade the instant it lands, parked and invisible when not spinning. */
+  const chevronState: "hidden" | "spinning" | "gone" = !subtle
+    ? "hidden"
+    : !isSpinning
+      ? "hidden"
+      : subtleLanded
+        ? "gone"
+        : "spinning"
+
   /* Build the visible window of rows. Indices wrap with a modulo so the drum
      is endless, while `delta` stays fractional to keep motion perfectly smooth
      between rows. */
@@ -501,7 +516,7 @@ export function SpinRollerSpinner({
               framing whichever name is now centred. Omitted entirely for the
               Subtle Winning concept, which marks the landing without this
               coloured container. */}
-          {!hideSelectionPill && (
+          {!subtle && (
             <RevealPill
               team={landedTeam}
               stage={revealStage}
@@ -511,6 +526,9 @@ export function SpinRollerSpinner({
               {...reveal}
             />
           )}
+
+          {/* Blue chevrons framing the centre name (subtle only). */}
+          {subtle && <SpinnerChevrons state={chevronState} />}
 
           {/* Rows, positioned on the surface of the drum */}
           <div
@@ -557,14 +575,24 @@ export function SpinRollerSpinner({
                     top: "50%",
                     marginTop: -ITEM_H / 2,
                     transform: `rotateX(${-angle}deg) translateZ(${RADIUS}px)`,
-                    /* Only transitioned while collapsing, so the per-frame spin
-                       transforms are never smeared by an interpolation. */
-                    transition: collapseCentre
-                      ? "transform 340ms cubic-bezier(0.22,0.61,0.36,1), opacity 340ms ease"
-                      : undefined,
-                    // Rows tip away from the viewer, so they dim and lose
-                    // contrast the further they are from centre.
-                    opacity: vacated ? 0 : 1 - fade * 0.82,
+                    /* Only transitioned while collapsing or during the subtle
+                       fade-to-winner, so the per-frame spin transforms are never
+                       smeared by an interpolation. */
+                    transition: subtleLanded
+                      ? "opacity 350ms ease"
+                      : collapseCentre
+                        ? "transform 340ms cubic-bezier(0.22,0.61,0.36,1), opacity 340ms ease"
+                        : undefined,
+                    /* Subtle landing keeps only the winner (centre) row; every
+                       other row fades out. Otherwise rows tip away from the
+                       viewer and dim with distance. */
+                    opacity: subtleLanded
+                      ? isCentre
+                        ? 1
+                        : 0
+                      : vacated
+                        ? 0
+                        : 1 - fade * 0.82,
                     backfaceVisibility: "hidden",
                   }}
                 >
@@ -577,7 +605,7 @@ export function SpinRollerSpinner({
                          stroke stages the pill is still dark, so the label
                          stays white until the primary is actually behind it. */
                       color: isVisualCentre
-                        ? isCentre && revealStage === 2 && !hideSelectionPill
+                        ? isCentre && revealStage === 2 && !subtle
                           ? landedTextColor
                           : "#ffffff"
                         : "#8f8f8f",

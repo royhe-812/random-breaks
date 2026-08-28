@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { teams, type Team } from "@/components/team-spinner"
 import { RevealPill, useRevealStage, readableOn, type RevealTuning } from "@/components/pill-reveal"
 import { useRollerMotionBlur } from "@/components/roller-motion-blur"
+import { SpinnerChevrons } from "@/components/spinner-chevrons"
 
 /* ── Roller, multi ──
    Same 3D drum as SpinRollerSpinner, but it runs one spin per spot instead of
@@ -69,13 +70,16 @@ interface SpinRollerMultiSpinnerProps {
    */
   reveal?: RevealTuning
   /**
-   * Removes the centre selection pill — the container that sits behind the rows
-   * and fills with the landed team's colour when the drum stops. Set by the
-   * Subtle Winning concept, which marks the win without that loud coloured
-   * container. With no pill behind it, the centre label stays white so it can
-   * never land as unreadable coloured text on the bare card.
+   * Turns on the whole Subtle Winning treatment (Figma 1593-51897):
+   *  - no centre selection pill (nothing fills with the team's colour on stop),
+   *  - blue chevrons that flank the name, pulse while spinning, then fly inward
+   *    and fade out on landing,
+   *  - on landing the losing rows fade out so only the winner is left,
+   *  - the winner then fades out at centre while the pick crossfades into the
+   *    picked-spots row below, which is styled as solid dark Figma pills.
+   * With no pill behind it the centre label always stays white.
    */
-  hideSelectionPill?: boolean
+  subtle?: boolean
 }
 
 /* ── Cylinder geometry ──
@@ -244,7 +248,7 @@ export function SpinRollerMultiSpinner({
   motionBlur = 1,
   motionBlurMax = 10,
   reveal,
-  hideSelectionPill = false,
+  subtle = false,
   }: SpinRollerMultiSpinnerProps) {
   /* Convert the px pitch into the angular step the rows sit on. RADIUS stays
      fixed so the centre row's perspective magnification never shifts as the
@@ -263,6 +267,16 @@ export function SpinRollerMultiSpinner({
    *  re-arms the reveal — otherwise the same team landing twice in a row would
    *  not re-trigger it. */
   const [landedIndex, setLandedIndex] = useState<number | null>(null)
+  /**
+   * Where the current spot is in the Subtle Winning choreography:
+   *  - `spinning`  — drum in motion, chevrons pulsing, all rows visible.
+   *  - `picked`    — drum stopped: losing rows fade out, winner held alone,
+   *                  chevrons fly inward and fade.
+   *  - `clearing`  — winner fades out at centre while the pick crossfades into
+   *                  the spots row below, just before the next spin (or the end).
+   * Ignored entirely when `subtle` is false — the plain roller never reads it.
+   */
+  const [stage, setStage] = useState<"spinning" | "picked" | "clearing">("spinning")
 
   const audioRef = useRef<AudioContext | null>(null)
   /** Drum position the previous spin came to rest on, so the next spin
@@ -307,6 +321,7 @@ export function SpinRollerMultiSpinner({
     setResults([])
     setAllDone(false)
     setLandedIndex(null)
+    setStage("spinning")
     restPosRef.current = 0
     takenRef.current = []
   }, [isSpinning])
@@ -357,6 +372,8 @@ export function SpinRollerMultiSpinner({
        every pick gets the full stroke-then-fill reveal from a clean slate. The
        finished pick is already recorded as a chip below, so nothing is lost. */
     setLandedIndex(null)
+    /* Rows + chevrons fade back in for the new spin (subtle only). */
+    setStage("spinning")
 
     let lastTick = Math.floor(start)
     const t0 = performance.now()
@@ -387,10 +404,14 @@ export function SpinRollerMultiSpinner({
          pick to be recorded at SETTLE_MS — the reveal is what makes the landing
          readable, so it should overlap the settle rather than follow it. */
       setLandedIndex(target)
+      /* Drum stopped: losing rows fade out, the winner is held alone, and the
+         chevrons fly inward and fade. `picked` holds for SETTLE_MS so the win
+         reads before anything moves. */
+      setStage("picked")
 
-      /* Still wait out SETTLE_MS before recording the pick: it holds the landed
-         row under the pill long enough to read. This is spin pacing, not a
-         celebration, so it stays even though the land animation is gone. */
+      /* After the hold, cross into `clearing`: record the pick (which fades the
+         pill into the spots row) at the same moment the winner fades out at
+         centre, then either finish or re-spin for the next spot. */
       settleTimer = setTimeout(() => {
         if (cancelled) return
         takenRef.current = [...takenRef.current, target]
@@ -399,12 +420,13 @@ export function SpinRollerMultiSpinner({
         const landedTeam = teams[target]
         setResults((prev) => [...prev, { spot, team: landedTeam }])
         onLandedRef.current?.(landedTeam)
+        setStage("clearing")
 
         if (spinNo + 1 >= SPOTS.length) {
           setAllDone(true)
           return
         }
-        // Hold the landed team so it reads, then re-spin for the next spot.
+        // Hold through the crossfade, then re-spin for the next spot.
         nextTimer = setTimeout(() => {
           if (cancelled) return
           setSpinNo((s) => s + 1)
@@ -448,6 +470,15 @@ export function SpinRollerMultiSpinner({
   /* One buyer wins all spots, so the trophy line always shows the same name. */
   const activeWinner = winnerName
 
+  /* Chevron choreography (subtle only): pulse while the drum is moving, then
+     fly inward and fade the instant it stops (`picked`/`clearing`). Parked and
+     invisible before the first spin and after the run ends. */
+  const chevronState: "hidden" | "spinning" | "gone" = !subtle
+    ? "hidden"
+    : isSpinning && stage === "spinning"
+      ? "spinning"
+      : "gone"
+
   /* Build the visible window of rows. Indices wrap with a modulo so the drum is
      endless, while `delta` stays fractional to keep motion smooth between rows.
      The window size is derived from the live pitch: at a tight pitch more rows
@@ -463,13 +494,20 @@ export function SpinRollerMultiSpinner({
     rows.push({ slot, idx, delta: slot - pos, team: teams[idx] })
   }
 
-  const chipClass =
-    "inline-flex h-4 shrink-0 whitespace-nowrap items-center rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
-  const chipStyle = {
-    backgroundColor: "transparent",
-    color: "#ffffff",
-    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.6)",
-  }
+  /* Picked-spot pills. Subtle uses the Figma treatment — a solid dark pill
+     (#363636, the same one-step-up-from-card surface the removed centre pill
+     used) with plain white 12px text. The plain roller keeps its original
+     transparent outlined uppercase chip. */
+  const chipClass = subtle
+    ? "inline-flex h-6 shrink-0 whitespace-nowrap items-center rounded-full px-3 text-xs leading-none font-semibold"
+    : "inline-flex h-4 shrink-0 whitespace-nowrap items-center rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
+  const chipStyle = subtle
+    ? { backgroundColor: PILL_IDLE, color: "#ffffff" }
+    : {
+        backgroundColor: "transparent",
+        color: "#ffffff",
+        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.6)",
+      }
 
   return (
     <div className="w-full flex flex-col gap-2">
@@ -526,7 +564,7 @@ export function SpinRollerMultiSpinner({
               next spin. The chip row below still carries the running tally.
               Omitted entirely for the Subtle Winning concept, which marks the
               landing without this coloured container. */}
-          {!hideSelectionPill && (
+          {!subtle && (
             <RevealPill
               team={landedTeam}
               stage={revealStage}
@@ -536,6 +574,9 @@ export function SpinRollerMultiSpinner({
               {...reveal}
             />
           )}
+
+          {/* Blue chevrons framing the centre name (subtle only). */}
+          {subtle && <SpinnerChevrons state={chevronState} />}
 
           {/* Rows, positioned on the surface of the drum */}
           <div className="absolute inset-0" style={{ transformStyle: "preserve-3d" }}>
@@ -547,6 +588,18 @@ export function SpinRollerMultiSpinner({
                  dimming profile looks the same at any pitch. */
               const fade = Math.min(1, Math.abs(angle) / (2.1 * DEFAULT_STEP_DEG))
               const isCentre = Math.abs(delta) < 0.5
+              /* Subtle landing: once the drum has stopped, losing rows fade out
+                 so only the winner is left; the winner then fades out too during
+                 `clearing`. A CSS opacity transition carries the fade so it never
+                 smears the per-frame spin transforms (which run untransitioned). */
+              const settling = subtle && stage !== "spinning"
+              const rowOpacity = settling
+                ? isCentre
+                  ? stage === "clearing"
+                    ? 0
+                    : 1
+                  : 0
+                : 1 - fade * 0.82
               return (
                 <div
                   key={`${slot}-${idx}`}
@@ -557,7 +610,8 @@ export function SpinRollerMultiSpinner({
                     marginTop: -ITEM_H / 2,
                     transform: `rotateX(${-angle}deg) translateZ(${RADIUS}px)`,
                     // Rows tip away from the viewer, so they dim with distance.
-                    opacity: 1 - fade * 0.82,
+                    opacity: rowOpacity,
+                    transition: settling ? "opacity 350ms ease" : undefined,
                     backfaceVisibility: "hidden",
                   }}
                 >
@@ -572,7 +626,7 @@ export function SpinRollerMultiSpinner({
                          and `landedTextColor` is a contrast-on-team colour that
                          would be unreadable on the bare card — so keep it white. */
                       color: isCentre
-                        ? revealStage === 2 && !hideSelectionPill
+                        ? revealStage === 2 && !subtle
                           ? landedTextColor
                           : "#ffffff"
                         : "#8f8f8f",
@@ -610,7 +664,7 @@ export function SpinRollerMultiSpinner({
             only the chips themselves animate in. Once every spot is in, the row
             becomes a back-and-forth marquee so longer team names stay readable
             in the narrow card. */}
-        <div className="flex items-center" style={{ minHeight: CHIP_ROW_H }}>
+        <div className="flex items-center" style={{ minHeight: subtle ? 24 : CHIP_ROW_H }}>
           {allDone ? (
             <BackAndForthMarquee trackClassName="flex gap-2">
               {results.map(({ spot, team }) => (
