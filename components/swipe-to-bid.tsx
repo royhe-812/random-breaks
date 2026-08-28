@@ -45,27 +45,31 @@ export function SwipeToBid({ amount, onBidConfirmed, onReset, isWinning = false,
   const checkmarkX = useTransform(x, [0, swipeThreshold], [-30, 12])
   const checkmarkOpacity = useTransform(x, [0, 30, swipeThreshold], [0, 0.5, 1])
 
+  const runConfirm = () => {
+    setButtonState("confirmed")
+    animate(x, swipeThreshold, { duration: 0.2 })
+
+    // After 1 second, transition to winning
+    setTimeout(() => {
+      setButtonState("winning")
+
+      // After 1 second on winning, transition to sold out
+      setTimeout(() => {
+        setButtonState("soldout")
+
+        // After sold out is shown, trigger the randomizer
+        setTimeout(() => {
+          onBidConfirmed()
+        }, 300)
+      }, 1000)
+    }, 1000)
+  }
+
   const handleDragEnd = () => {
     const currentX = x.get()
-    
+
     if (currentX >= swipeThreshold * 0.8) {
-      setButtonState("confirmed")
-      animate(x, swipeThreshold, { duration: 0.2 })
-      
-      // After 1 second, transition to winning
-      setTimeout(() => {
-        setButtonState("winning")
-        
-        // After 1 second on winning, transition to sold out
-        setTimeout(() => {
-          setButtonState("soldout")
-          
-          // After sold out is shown, trigger the randomizer
-          setTimeout(() => {
-            onBidConfirmed()
-          }, 300)
-        }, 1000)
-      }, 1000)
+      runConfirm()
     } else {
       animate(x, 0, { type: "spring", stiffness: 500, damping: 30 })
     }
