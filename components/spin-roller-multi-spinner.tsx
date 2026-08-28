@@ -68,6 +68,14 @@ interface SpinRollerMultiSpinnerProps {
    * pop and glow. Applies to every spot in the run. See pill-reveal.tsx.
    */
   reveal?: RevealTuning
+  /**
+   * Removes the centre selection pill — the container that sits behind the rows
+   * and fills with the landed team's colour when the drum stops. Set by the
+   * Subtle Winning concept, which marks the win without that loud coloured
+   * container. With no pill behind it, the centre label stays white so it can
+   * never land as unreadable coloured text on the bare card.
+   */
+  hideSelectionPill?: boolean
 }
 
 /* ── Cylinder geometry ──
@@ -236,6 +244,7 @@ export function SpinRollerMultiSpinner({
   motionBlur = 1,
   motionBlurMax = 10,
   reveal,
+  hideSelectionPill = false,
   }: SpinRollerMultiSpinnerProps) {
   /* Convert the px pitch into the angular step the rows sit on. RADIUS stays
      fixed so the centre row's perspective magnification never shifts as the
@@ -514,15 +523,19 @@ export function SpinRollerMultiSpinner({
           {/* Centre selection pill, sitting behind the rows. Each spot now gets
               the same staged reveal as single-spin — stroke in the team's
               secondary, then the primary fills — resetting to idle before the
-              next spin. The chip row below still carries the running tally. */}
-          <RevealPill
-            team={landedTeam}
-            stage={revealStage}
-            width={PILL_W}
+              next spin. The chip row below still carries the running tally.
+              Omitted entirely for the Subtle Winning concept, which marks the
+              landing without this coloured container. */}
+          {!hideSelectionPill && (
+            <RevealPill
+              team={landedTeam}
+              stage={revealStage}
+              width={PILL_W}
               height={ITEM_H - 4}
               idleColor={PILL_IDLE}
               {...reveal}
             />
+          )}
 
           {/* Rows, positioned on the surface of the drum */}
           <div className="absolute inset-0" style={{ transformStyle: "preserve-3d" }}>
@@ -554,9 +567,12 @@ export function SpinRollerMultiSpinner({
                       fontSize: 14,
                       /* Flips with the fill, not with landing: during the stroke
                          stages the pill is still dark, so the label stays white
-                         until the team's primary is actually behind it. */
+                         until the team's primary is actually behind it. With the
+                         pill removed there is nothing coloured behind the label,
+                         and `landedTextColor` is a contrast-on-team colour that
+                         would be unreadable on the bare card — so keep it white. */
                       color: isCentre
-                        ? revealStage === 2
+                        ? revealStage === 2 && !hideSelectionPill
                           ? landedTextColor
                           : "#ffffff"
                         : "#8f8f8f",

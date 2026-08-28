@@ -76,6 +76,15 @@ interface SpinRollerSpinnerProps {
    */
   disableReveal?: boolean
   /**
+   * Removes the centre selection pill entirely — the container behind the rows
+   * that fills with the landed team's colour when the drum stops. Distinct from
+   * `disableReveal`, which keeps the idle grey pill and only suppresses its
+   * stroke/fill. Set by the Subtle Winning concept, which marks the landing
+   * without any coloured container. With nothing coloured behind it the centre
+   * label stays white, so it never lands as unreadable colour on the bare card.
+   */
+  hideSelectionPill?: boolean
+  /**
    * Attached to the centre (winning) row's name span, so a parent can measure it
    * as the origin of a shared-element flight. Only the resting centre row carries
    * it, so it is stable once the drum has landed.
@@ -265,6 +274,7 @@ export function SpinRollerSpinner({
   motionBlurMax = 10,
   reveal,
   disableReveal = false,
+  hideSelectionPill = false,
   centreRowRef,
   hideCentreLabel = false,
   collapseCentre = false,
@@ -488,15 +498,19 @@ export function SpinRollerSpinner({
               the fill at the end of that sequence. It stays put through the
               collapse — it is the drum's selection container, not part of the
               removed row, so the rows close ranks *underneath* it and it keeps
-              framing whichever name is now centred. */}
-          <RevealPill
-            team={landedTeam}
-            stage={revealStage}
-            width={PILL_W}
-            height={ITEM_H - 4}
-            idleColor={PILL_IDLE}
-            {...reveal}
-          />
+              framing whichever name is now centred. Omitted entirely for the
+              Subtle Winning concept, which marks the landing without this
+              coloured container. */}
+          {!hideSelectionPill && (
+            <RevealPill
+              team={landedTeam}
+              stage={revealStage}
+              width={PILL_W}
+              height={ITEM_H - 4}
+              idleColor={PILL_IDLE}
+              {...reveal}
+            />
+          )}
 
           {/* Rows, positioned on the surface of the drum */}
           <div
@@ -563,7 +577,7 @@ export function SpinRollerSpinner({
                          stroke stages the pill is still dark, so the label
                          stays white until the primary is actually behind it. */
                       color: isVisualCentre
-                        ? isCentre && revealStage === 2
+                        ? isCentre && revealStage === 2 && !hideSelectionPill
                           ? landedTextColor
                           : "#ffffff"
                         : "#8f8f8f",
