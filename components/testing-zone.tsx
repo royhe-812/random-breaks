@@ -487,7 +487,7 @@ export function TestingZone() {
       </header>
 
       <div className="flex flex-col lg:flex-row flex-1 min-h-0">
-        {/* ─── Controls ───��─────────────────���──��────��───────────────────── */}
+        {/* ─── Controls ───��─────────────────���──���────��───────────────────── */}
         <div className="lg:w-80 lg:flex-shrink-0 border-b lg:border-b-0 lg:border-r border-white/10 p-6 overflow-y-auto">
           {/* Variant */}
           <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-3">Variant</p>

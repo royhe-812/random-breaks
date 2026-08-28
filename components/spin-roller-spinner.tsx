@@ -598,7 +598,9 @@ export function SpinRollerSpinner({
                 >
                   <span
                     ref={isCentre ? centreRowRef : undefined}
-                    className="truncate font-semibold leading-none"
+                    className={`truncate font-semibold leading-none${
+                      subtleLanded && isCentre ? " winner-bump" : ""
+                    }`}
                     style={{
                       fontSize: 14,
                       /* Flips with the fill, not with landing: during the
@@ -614,7 +616,8 @@ export function SpinRollerSpinner({
                       visibility: isCentre && hideCentreLabel ? "hidden" : "visible",
                       /* Vertical-only smear, scaled to the drum's live speed.
                          Applied to the span rather than the row so it cannot
-                         flatten the parent's preserve-3d and kill the curve. */
+                         flatten the parent's preserve-3d and kill the curve.
+                         Winner emphasis is the `.winner-bump` class above. */
                       ...blurProps.style,
                     }}
                   >

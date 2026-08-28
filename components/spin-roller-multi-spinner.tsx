@@ -616,7 +616,9 @@ export function SpinRollerMultiSpinner({
                   }}
                 >
                   <span
-                    className="truncate font-semibold leading-none"
+                    className={`truncate font-semibold leading-none${
+                      settling && isCentre ? " winner-bump" : ""
+                    }`}
                     style={{
                       fontSize: 14,
                       /* Flips with the fill, not with landing: during the stroke
@@ -632,7 +634,8 @@ export function SpinRollerMultiSpinner({
                         : "#8f8f8f",
                       /* Vertical-only smear, scaled to the drum's live speed.
                          Applied to the span rather than the row so it cannot
-                         flatten the parent's preserve-3d and kill the curve. */
+                         flatten the parent's preserve-3d and kill the curve.
+                         Winner emphasis is the `.winner-bump` class above. */
                       ...blurProps.style,
                     }}
                   >
