@@ -421,6 +421,16 @@ export function SharedTransitionStage({
     setDismissed(true)
   }, [phase, dismissed])
 
+  /* Auto-dismiss the team-selected celebration 2.5s after the reveal lands, so
+     the stage returns itself to the bid box without needing a scrim tap. The
+     cleanup clears the timer if the viewer taps to dismiss first or a respin
+     pulls the phase back out of `reveal`. */
+  useEffect(() => {
+    if (phase !== "reveal" || dismissed) return
+    const t = setTimeout(() => setDismissed(true), 2500)
+    return () => clearTimeout(t)
+  }, [phase, dismissed])
+
   // Row un-dims on dismiss; the overlay children stay phase-gated so they fade
   // out together via the wrapper rather than popping out one by one.
   const claimed = (phase === "reveal" || phase === "picking") && !dismissed
