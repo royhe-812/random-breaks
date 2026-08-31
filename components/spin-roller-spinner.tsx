@@ -342,9 +342,13 @@ export function SpinRollerSpinner({
     // Spin through 3 full drum revolutions, then however many extra rows are
     // needed to come to rest exactly on `target`.
     const distance = n * 3 + (((target - start) % n) + n) % n
+    // The Subtle Winning concept cuts the post-landing hold so the winning
+    // treatment shows almost immediately once the drum stops; the plain roller
+    // keeps the longer flash.
+    const settleMs = subtle ? 300 : SETTLE_MS
     // `spinDuration` is the TOTAL time the spin takes, so the drum motion gets
-    // whatever is left after the fixed post-landing settle flash.
-    const duration = Math.max(300, spinDuration - SETTLE_MS)
+    // whatever is left after the post-landing settle flash.
+    const duration = Math.max(300, spinDuration - settleMs)
     // Built once per spin, not per frame — the table is 480 samples.
     const ease = buildSpinEase(startSpeed, rampUp, stopEase)
 
@@ -381,7 +385,7 @@ export function SpinRollerSpinner({
         setJustLanded(false)
         setLandedIndex(target)
         onLandedRef.current(teams[target])
-      }, SETTLE_MS)
+      }, settleMs)
     }
     raf = requestAnimationFrame(frame)
 
@@ -390,7 +394,7 @@ export function SpinRollerSpinner({
       cancelAnimationFrame(raf)
       if (settleTimer) clearTimeout(settleTimer)
     }
-  }, [isSpinning, playTick, forceTeamIndex, spinDuration, startSpeed, rampUp, stopEase])
+  }, [isSpinning, playTick, forceTeamIndex, spinDuration, startSpeed, rampUp, stopEase, subtle])
 
   const centre = Math.round(pos)
 
