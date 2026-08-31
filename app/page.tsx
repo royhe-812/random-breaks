@@ -679,6 +679,11 @@ export default function AnimationShowcase() {
     setWinnerTeam(team)
     setSpotAssigned(true)
     setSpinInPlaceSettled(true)
+    // Beat between the drum resting on the winner and the full-screen "won"
+    // takeover. The Subtle Winning concept cuts this hold so the takeover
+    // follows the drum almost immediately; the other roller concepts keep the
+    // longer beat that lets the settled green winner read in the drum first.
+    const revealDelay = selectedAnimation === "spin-in-place-roller-subtle" ? 650 : 2200
     setTimeout(() => {
       // Play the full-screen card reveal. The randomization card deliberately
       // stays mounted (showing the settled winner in green) underneath it —
@@ -686,8 +691,8 @@ export default function AnimationShowcase() {
       // team animation has finished.
       setIsRevealing(true)
       setKey((prev) => prev + 1)
-    }, 2200)
-  }, [])
+    }, revealDelay)
+  }, [selectedAnimation])
 
   const handleSpinComplete = useCallback((team: Team) => {
     setSelectedTeam(team)
