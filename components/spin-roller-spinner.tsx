@@ -466,9 +466,9 @@ export function SpinRollerSpinner({
             the break title is already on the bid box card this overlays, so
             repeating it here spent the card's most prominent line on something
             the viewer just read. */}
-        <div className="flex items-center justify-center gap-3">
+        <div className={`flex items-center gap-3 ${subtle ? "justify-start" : "justify-center"}`}>
           <div className="min-w-0 text-white">
-            <p className="truncate text-sm leading-tight text-center">
+            <p className={`truncate text-sm leading-tight ${subtle ? "text-left" : "text-center"}`}>
               {"Randomizing for "}
               {/* Bold on the handle only, so the name is what carries the line. */}
               <span className="font-bold">{`@${winnerName}`}</span>

@@ -516,11 +516,11 @@ export function SpinRollerMultiSpinner({
           card this overlays. `min-w-0` is what lets it truncate in the flex
           column. The animated swap stays: in multi the line is keyed to the
           active buyer, so it re-enters if the name ever changes between spots. */}
-      <div className="min-w-0 text-white text-center">
+      <div className={`min-w-0 text-white ${subtle ? "text-left" : "text-center"}`}>
         <AnimatePresence mode="wait">
           <motion.p
             key={activeWinner}
-            className="truncate text-sm leading-tight text-center"
+            className={`truncate text-sm leading-tight ${subtle ? "text-left" : "text-center"}`}
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
