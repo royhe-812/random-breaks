@@ -143,8 +143,10 @@ const EDGE_ON_DEG = 72
  *  first render so the panel never changes height as picks land. */
 const CHIP_ROW_H = 16
 
-/** Hold time on the winning row after the drum stops, before recording it. */
+/** Reserved tail of the spin used to size the spin motion (see `duration`). */
 const SETTLE_MS = 800
+/** How long the winning spot name stays held at centre before it clears. */
+const PICK_HOLD_MS = 1000
 /** Pause between one spot landing and the drum re-spinning for the next. */
 const INTER_SPIN_MS = 1200
 
@@ -363,8 +365,8 @@ export function SpinRollerMultiSpinner({
          readable, so it should overlap the settle rather than follow it. */
       setLandedIndex(target)
       /* Drum stopped: losing rows fade out, the winner is held alone, and the
-         chevrons fly inward and fade. `picked` holds for SETTLE_MS so the win
-         reads before anything moves. */
+         chevrons fly inward and fade. `picked` holds for PICK_HOLD_MS so the
+         winning spot name reads before anything moves. */
       setStage("picked")
 
       /* After the hold, cross into `clearing`: record the pick (which fades the
@@ -389,7 +391,7 @@ export function SpinRollerMultiSpinner({
           if (cancelled) return
           setSpinNo((s) => s + 1)
         }, INTER_SPIN_MS)
-      }, SETTLE_MS)
+      }, PICK_HOLD_MS)
     }
     raf = requestAnimationFrame(frame)
 
