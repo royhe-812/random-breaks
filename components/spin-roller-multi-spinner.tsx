@@ -491,7 +491,11 @@ export function SpinRollerMultiSpinner({
       }
 
   return (
-    <div className="w-full flex flex-col gap-2">
+    // gap-1 (not gap-2) between the winner line, hairline and drum so that,
+    // before the first pick, the multi card is the same height as the single
+    // variant (whose header sits tighter). The picked-spots section below is
+    // absent until a pick lands, so the pre-spin height matches exactly.
+    <div className="w-full flex flex-col gap-1">
       {/* Single line naming who this draw is for, matching single mode. The
           break + box title that used to sit above it is already on the bid box
           card this overlays. `min-w-0` is what lets it truncate in the flex
@@ -527,8 +531,11 @@ export function SpinRollerMultiSpinner({
           Unstyled wrapper. It used to carry the lighter panel fill, but the drum
           now sits flush on the card; this survives purely to group the drum with
           the divider and chips, since the drum itself must stay fixed-height +
-          overflow-hidden to clip its 3D rows and would crop nested content. */}
-      <div className="w-full flex flex-col gap-1">
+          overflow-hidden to clip its 3D rows and would crop nested content.
+          No parent gap: the picked-spots section carries its own top spacing so
+          it can collapse to zero height before the first pick (keeping multi the
+          same height as the single variant) and animate open when a pick lands. */}
+      <div className="w-full flex flex-col">
         {/* ── Roller drum ── */}
         <div
           className="relative w-full overflow-hidden rounded-md"
@@ -661,47 +668,60 @@ export function SpinRollerMultiSpinner({
           />
         </div>
 
-        {/* Hairline above the previously-spun spots. Only shown once at least
-            one spot is in, so an empty chips row has no floating line. Bleeds
-            out by the card's 12px padding so it touches the left/right edges,
-            matching the header hairline. */}
-        {results.length > 0 && (
-          <hr
-            className="m-0 border-0"
-            style={{ height: 0, borderTop: `1px solid ${DIVIDER}`, marginLeft: -12, marginRight: -12, width: "calc(100% + 24px)" }}
-          />
-        )}
+        {/* Picked-spots section — the hairline + the chips row. It is entirely
+            absent until the first spot lands, so before any spin the multi card
+            is exactly as tall as the single variant (header + hairline + drum).
+            When the first pick lands, the whole section animates its height open
+            in step with the pills fading in; on reset it collapses back. The
+            section carries its own top spacing (mt-1 on the hairline) since the
+            parent no longer applies a gap. */}
+        <AnimatePresence initial={false}>
+          {results.length > 0 && (
+            <motion.div
+              key="picked-section"
+              className="flex flex-col gap-1 overflow-hidden"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            >
+              {/* Hairline above the previously-spun spots, bled out by the card's
+                  12px padding so it touches the left/right edges, matching the
+                  header hairline. */}
+              <hr
+                className="m-0 border-0 mt-1"
+                style={{ height: 0, borderTop: `1px solid ${DIVIDER}`, marginLeft: -12, marginRight: -12, width: "calc(100% + 24px)" }}
+              />
 
-        {/* Picked teams, as chips — one per landed spot, kept until reset. The
-            row is always mounted with a reserved height so the panel is its
-            final size before the first spin and never jumps as picks land;
-            only the chips themselves animate in. The chips live in a
-            horizontal-scroll strip (no marquee) so longer team names stay
-            readable in the narrow card — the row is the same whether picks are
-            still landing or all spots are in. */}
-        <div className="flex items-center" style={{ minHeight: subtle ? 24 : CHIP_ROW_H }}>
-          <div
-            className="flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden mt-1"
-            style={{ WebkitOverflowScrolling: "touch" }}
-          >
-            <AnimatePresence initial={false}>
-              {results.map(({ spot, team }) => (
-                <motion.span
-                  key={spot}
-                  layout
-                  initial={{ opacity: 0, scale: 0.8, y: 6 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                  className={chipClass}
-                  style={chipStyle}
+              {/* Picked teams, as chips — one per landed spot, kept until reset,
+                  in a horizontal-scroll strip (no marquee) so longer team names
+                  stay readable in the narrow card. */}
+              <div className="flex items-center" style={{ minHeight: subtle ? 24 : CHIP_ROW_H }}>
+                <div
+                  className="flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden mt-1"
+                  style={{ WebkitOverflowScrolling: "touch" }}
                 >
-                  {spotLabel(teams.findIndex((t) => t.name === team.name), longNames)}
-                </motion.span>
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
+                  <AnimatePresence initial={false}>
+                    {results.map(({ spot, team }) => (
+                      <motion.span
+                        key={spot}
+                        layout
+                        initial={{ opacity: 0, scale: 0.8, y: 6 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                        className={chipClass}
+                        style={chipStyle}
+                      >
+                        {spotLabel(teams.findIndex((t) => t.name === team.name), longNames)}
+                      </motion.span>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
