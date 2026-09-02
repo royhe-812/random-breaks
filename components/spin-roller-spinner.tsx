@@ -508,12 +508,15 @@ export function SpinRollerSpinner({
           </div>
         </div>
 
-        {/* Hairline between the winner line and the drum. Figma measures it at
-            320px, but that is just the card's inner width at that frame size —
-            `align-self: stretch` means "fill the parent", so it stays w-full
-            here instead of being pinned to 320px and mismatching the card.
-            Height 0 + a 1px top border keeps it a true hairline. */}
-        <hr className="w-full m-0 border-0" style={{ height: 0, borderTop: `1px solid ${DIVIDER}` }} />
+        {/* Hairline between the winner line and the drum. It bleeds out by the
+            card's 12px padding (the roller card uses p-3) so the line spans the
+            full card width and touches the left/right edges instead of stopping
+            at the padded content box. Height 0 + a 1px top border = a true
+            hairline. */}
+        <hr
+          className="m-0 border-0"
+          style={{ height: 0, borderTop: `1px solid ${DIVIDER}`, marginLeft: -12, marginRight: -12, width: "calc(100% + 24px)" }}
+        />
       </div>
 
       {/* Centres the drum in whatever height is left under the header rather

@@ -513,12 +513,15 @@ export function SpinRollerMultiSpinner({
         </AnimatePresence>
       </div>
 
-      {/* Hairline between the winner line and the drum. Figma measures it at
-          320px, but that is just the card's inner width at that frame size —
-          `align-self: stretch` means "fill the parent", so it stays w-full here
-          instead of being pinned to 320px and mismatching the card. Height 0 +
-          a 1px top border keeps it a true hairline. */}
-      <hr className="w-full m-0 border-0" style={{ height: 0, borderTop: `1px solid ${DIVIDER}` }} />
+      {/* Hairline between the winner line and the drum. It bleeds out by the
+          card's 12px padding (both roller cards use p-3) so the line spans the
+          full card width and touches the left/right edges instead of stopping
+          at the padded content box. Height 0 + a 1px top border = a true
+          hairline. */}
+      <hr
+        className="m-0 border-0"
+        style={{ height: 0, borderTop: `1px solid ${DIVIDER}`, marginLeft: -12, marginRight: -12, width: "calc(100% + 24px)" }}
+      />
 
       {/* ── Roller group: drum + picked-team chips ──
           Unstyled wrapper. It used to carry the lighter panel fill, but the drum
@@ -657,6 +660,17 @@ export function SpinRollerMultiSpinner({
             style={{ height: ITEM_H, background: scrim("to top") }}
           />
         </div>
+
+        {/* Hairline above the previously-spun spots. Only shown once at least
+            one spot is in, so an empty chips row has no floating line. Bleeds
+            out by the card's 12px padding so it touches the left/right edges,
+            matching the header hairline. */}
+        {results.length > 0 && (
+          <hr
+            className="m-0 border-0"
+            style={{ height: 0, borderTop: `1px solid ${DIVIDER}`, marginLeft: -12, marginRight: -12, width: "calc(100% + 24px)" }}
+          />
+        )}
 
         {/* Picked teams, as chips — one per landed spot, kept until reset. The
             row is always mounted with a reserved height so the panel is its
