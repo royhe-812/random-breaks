@@ -352,16 +352,16 @@ export function TestingZone() {
   const { overshootRows, anticipationMs, bumpPeak, bumpSettle, bumpMs } = useDialKit("New spinner", {
     // Anticipation: how far PAST the winner the drum rolls before springing
     // back onto it, in rows. 0 removes the overshoot for a direct stop.
-    overshootRows: [0.5, 0, 1.5, 0.05] as [number, number, number, number],
+    overshootRows: [0.15, 0, 1.5, 0.05] as [number, number, number, number],
     // Spring-back time from the overshoot onto the winner, in ms — the length
     // of the anticipation settle before the name highlight plays.
-    anticipationMs: [460, 0, 1200, 10] as [number, number, number, number],
+    anticipationMs: [700, 0, 1200, 10] as [number, number, number, number],
     // Highlight: peak scale of the winning name's bump (1 = no growth).
     bumpPeak: [1.34, 1, 1.8, 0.02] as [number, number, number, number],
     // Scale the highlight settles back to after the peak overshoot.
-    bumpSettle: [1.18, 1, 1.6, 0.02] as [number, number, number, number],
+    bumpSettle: [1.2, 1, 1.6, 0.02] as [number, number, number, number],
     // Duration of the highlight bump, in ms.
-    bumpMs: [460, 120, 1200, 10] as [number, number, number, number],
+    bumpMs: [590, 120, 1200, 10] as [number, number, number, number],
   })
 
   /* Roller row spacing, in px centre-to-centre between team names. Tuned to 26,
