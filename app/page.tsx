@@ -46,11 +46,9 @@ import { ThumbnailsTextReveal } from "@/components/animations/thumbnails-text-re
 import { InStreamExperience } from "@/components/in-stream-experience"
 import { LiveViewerIndicator } from "@/components/live-viewer-indicator"
 import { IPhoneStatusBar } from "@/components/iphone-status-bar"
-import { SpinnerExplorationsZone } from "@/components/spinner-explorations-zone"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { TestingZone } from "@/components/testing-zone"
-import { MultiSpinTestingZone } from "@/components/multi-spin-testing-zone"
 
 type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
@@ -97,8 +95,12 @@ const usesRollerCard = (a: AnimationType) => isRollerConcept(a) || a === "ticker
 const usesTicker = (a: AnimationType) => a === "ticker"
 
 const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
-  { id: "single-spin-populate", name: "Single Spin" },
-  { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
+  // Removed from the prototype. The AnimationType members and their branches are
+  // intentionally left in place: "single-spin-populate" still backs isSingleSpin()
+  // and "spin-in-place-roller" still backs isRollerConcept(), which the remaining
+  // concepts below rely on.
+  // { id: "single-spin-populate", name: "Single Spin" },
+  // { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
   { id: "spin-in-place-roller-subtle", name: "Spin In Place, Subtle Winning" },
   { id: "ticker", name: "Ticker" },
   // Temporarily hidden from the concepts list (kept for potential future use):
@@ -146,15 +148,11 @@ function ConceptPicker({
   selected,
   onSelect,
   onSpinnerZone,
-  onMultiSpinZone,
-  onExplorationsZone,
   orientation,
 }: {
   selected: AnimationType
   onSelect: (id: AnimationType) => void
   onSpinnerZone: () => void
-  onMultiSpinZone: () => void
-  onExplorationsZone: () => void
   orientation: "vertical" | "horizontal"
 }) {
   const vertical = orientation === "vertical"
@@ -193,12 +191,6 @@ function ConceptPicker({
       <button onClick={onSpinnerZone} className={pill(false)}>
         Spinner Testing Zone
       </button>
-      <button onClick={onMultiSpinZone} className={pill(false)}>
-        Multi Spin Testing Zone
-      </button>
-      <button onClick={onExplorationsZone} className={pill(false)}>
-        Spinner Explorations
-      </button>
     </div>
   )
 }
@@ -206,8 +198,7 @@ function ConceptPicker({
 /** The full-screen testing zones, in tab order. */
 const ZONES = [
   { id: "spinner", name: "Spinner Testing Zone" },
-  { id: "multi-spin", name: "Multi Spin Testing Zone" },
-  { id: "explorations", name: "Spinner Explorations" },
+  // Multi Spin Testing Zone and Spinner Explorations were removed from the prototype.
 ] as const
 
 type ZoneId = (typeof ZONES)[number]["id"]
@@ -378,10 +369,8 @@ const MANUAL_FORCED_TEAMS: [Team, Team, Team] = [
 const MANUAL_EXTRA_TEAM: Team = { name: "Cowboys", city: "Dallas", abbrev: "DAL", color: "#003594", secondary: "#869397" }
 
 export default function AnimationShowcase() {
-  const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("single-spin-populate")
+  const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("spin-in-place-roller-subtle")
   const [showTestingZone, setShowTestingZone] = useState(false)
-  const [showMultiSpinTestingZone, setShowMultiSpinTestingZone] = useState(false)
-  const [showSpinnerExplorations, setShowSpinnerExplorations] = useState(false)
   const [isRevealing, setIsRevealing] = useState(false)
   const [isSpinnerRevealing, setIsSpinnerRevealing] = useState(false) // For TeamSpinner cycling
   const [isSpinnerPending, setIsSpinnerPending] = useState(false) // Post-reveal "pending assignment" in TeamSpinner
@@ -428,7 +417,7 @@ export default function AnimationShowcase() {
    * old full-screen treatment to the bid box. Prototype-side control, toggled
    * from the panel beside the device frame.
    */
-  const [subtleWinStyle, setSubtleWinStyle] = useState<"floating" | "takeover">("floating")
+  const [subtleWinStyle, setSubtleWinStyle] = useState<"floating" | "takeover">("takeover")
   const auctionCardRef = useRef<HTMLDivElement>(null)
   /**
    * Multi roller only: the randomization card is taller than the bid box because
@@ -1144,24 +1133,14 @@ case "thumbnails-4":
 
   // The full-screen testing zones. All three share one tab bar; `goToZone`
   // clears every flag first so two zones can never be open at once.
-  const activeZone: ZoneId | null = showTestingZone
-    ? "spinner"
-    : showMultiSpinTestingZone
-    ? "multi-spin"
-    : showSpinnerExplorations
-    ? "explorations"
-    : null
+  const activeZone: ZoneId | null = showTestingZone ? "spinner" : null
 
   if (activeZone) {
     const goToZone = (zone: ZoneId) => {
       setShowTestingZone(zone === "spinner")
-      setShowMultiSpinTestingZone(zone === "multi-spin")
-      setShowSpinnerExplorations(zone === "explorations")
     }
     const exitZones = (id: AnimationType) => {
       setShowTestingZone(false)
-      setShowMultiSpinTestingZone(false)
-      setShowSpinnerExplorations(false)
       setSelectedAnimation(id)
     }
 
@@ -1170,8 +1149,6 @@ case "thumbnails-4":
         <ZoneTabBar activeZone={activeZone} onExit={exitZones} onZone={goToZone} />
         <div className="pt-10">
           {activeZone === "spinner" && <TestingZone />}
-          {activeZone === "multi-spin" && <MultiSpinTestingZone />}
-          {activeZone === "explorations" && <SpinnerExplorationsZone />}
         </div>
       </>
     )
@@ -1215,12 +1192,6 @@ case "thumbnails-4":
               className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white/70 hover:bg-zinc-700"
             >
               Spinner Testing Zone
-            </button>
-            <button
-              onClick={() => setShowMultiSpinTestingZone(true)}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-white/70 hover:bg-zinc-700"
-            >
-              Multi Spin Testing Zone
             </button>
           </div>
         </motion.div>
@@ -1291,7 +1262,7 @@ case "thumbnails-4":
             Winning style
           </span>
           {([
-            { id: "floating", label: "Floating", hint: "Ambient risers" },
+            // "Floating" (ambient risers) was removed from the prototype.
             { id: "takeover", label: "Takeover", hint: "Fills bid box" },
           ] as const).map((style) => (
             <button
@@ -1341,8 +1312,6 @@ case "thumbnails-4":
           selected={selectedAnimation}
           onSelect={setSelectedAnimation}
           onSpinnerZone={() => setShowTestingZone(true)}
-          onMultiSpinZone={() => setShowMultiSpinTestingZone(true)}
-          onExplorationsZone={() => setShowSpinnerExplorations(true)}
         />
       </div>
 
@@ -1952,7 +1921,7 @@ case "thumbnails-4":
                     <span className="text-white font-semibold text-sm whitespace-nowrap">
                       {(showWinner || spotAssigned) && winnerTeam
                         ? `Random Break #${breakNumber} - ${winnerTeam.city} ${winnerTeam.name}`
-                        : `Random Break #${breakNumber}`} ��� 2025 Panini Luminance Football Hobby PYT Box Break #903
+                        : `Random Break #${breakNumber}`} ����� 2025 Panini Luminance Football Hobby PYT Box Break #903
                     </span>
                   </BackAndForthMarquee>
                 </div>
@@ -2294,8 +2263,6 @@ case "thumbnails-4":
           selected={selectedAnimation}
           onSelect={setSelectedAnimation}
           onSpinnerZone={() => setShowTestingZone(true)}
-          onMultiSpinZone={() => setShowMultiSpinTestingZone(true)}
-          onExplorationsZone={() => setShowSpinnerExplorations(true)}
         />
       </motion.div>
 
