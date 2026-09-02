@@ -714,24 +714,32 @@ export function SpinRollerMultiSpinner({
           {results.length > 0 && (
             <motion.div
               key="picked-section"
+              /* The whole section is bled out by the card's 12px padding so its
+                 hairline reaches the left/right edges. The bleed lives on THIS
+                 wrapper (not the hairline) because the wrapper needs
+                 `overflow-hidden` for the height animation, which would
+                 otherwise clip a negative-margin bleed on a child. The chips row
+                 below adds `px-3` back so the chips keep their original inset. */
               className="flex flex-col gap-1 overflow-hidden"
+              style={{ marginLeft: -12, marginRight: -12, width: "calc(100% + 24px)" }}
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             >
-              {/* Hairline above the previously-spun spots, bled out by the card's
-                  12px padding so it touches the left/right edges, matching the
-                  header hairline. */}
+              {/* Hairline above the previously-spun spots. Spans the full
+                  (already bled-out) wrapper so it touches the card's left/right
+                  edges, matching the header hairline. */}
               <hr
-                className="m-0 border-0 mt-1"
-                style={{ height: 0, borderTop: `1px solid ${DIVIDER}`, marginLeft: -12, marginRight: -12, width: "calc(100% + 24px)" }}
+                className="w-full m-0 border-0 mt-1"
+                style={{ height: 0, borderTop: `1px solid ${DIVIDER}` }}
               />
 
               {/* Picked teams, as chips — one per landed spot, kept until reset,
                   in a horizontal-scroll strip (no marquee) so longer team names
-                  stay readable in the narrow card. */}
-              <div className="flex items-center" style={{ minHeight: subtle ? 24 : CHIP_ROW_H }}>
+                  stay readable in the narrow card. `px-3` restores the 12px
+                  inset the wrapper's full-bleed removed. */}
+              <div className="flex items-center px-3" style={{ minHeight: subtle ? 24 : CHIP_ROW_H }}>
                 <div
                   className="flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden mt-1"
                   style={{ WebkitOverflowScrolling: "touch" }}
