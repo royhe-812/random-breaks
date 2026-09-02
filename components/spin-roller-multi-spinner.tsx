@@ -322,10 +322,21 @@ export function SpinRollerMultiSpinner({
     const startIdx = ((Math.round(start) % n) + n) % n
     // Three full revolutions, then however many extra rows land on `target`.
     const distance = n * 3 + ((((target - startIdx) % n) + n) % n)
+    // Anticipation tail (NEW SPINNER / subtle only): the drum rolls a little
+    // PAST the winner, then springs back onto it, so the stop reads as a
+    // settle instead of a hard cut before the name treatment plays. The plain
+    // roller-multi keeps its snappy stop (OVERSHOOT/anticipation = 0).
+    const anticipationMs = subtle ? 460 : 0
+    const OVERSHOOT_ROWS = subtle ? 0.5 : 0
     // `spinDuration` is the total per spin, so drum motion gets what's left
-    // after the fixed post-landing settle flash.
-    const duration = Math.max(300, spinDuration - SETTLE_MS)
+    // after the anticipation settle and the fixed post-landing settle flash.
+    const spinMs = Math.max(300, spinDuration - SETTLE_MS - anticipationMs)
     const ease = buildSpinEase(startSpeed, rampUp, stopEase)
+
+    // Damped spring that returns the overshoot to the winner with one soft
+    // counter-bounce. s: 0 -> 1 across the anticipation window; returns the
+    // remaining overshoot as a fraction of OVERSHOOT_ROWS (1 -> ~0).
+    const settleBack = (s: number) => Math.exp(-5 * s) * Math.cos(Math.PI * 1.15 * s)
 
     setPos(start)
     /* Drop the previous spot's pill back to idle before this spin starts, so
@@ -340,18 +351,28 @@ export function SpinRollerMultiSpinner({
 
     const frame = (now: number) => {
       if (cancelled) return
-      const t = Math.min(1, (now - t0) / duration)
-      const p = start + distance * ease(t)
-      setPos(p)
+      const elapsed = now - t0
 
-      // Tick once per row that clicks past the centre line.
-      const rowsPassed = Math.floor(p)
-      if (rowsPassed !== lastTick) {
-        lastTick = rowsPassed
-        playTick()
+      // Phase 1 — the spin, easing to just PAST the winner by OVERSHOOT_ROWS.
+      if (elapsed < spinMs) {
+        const t = elapsed / spinMs
+        const p = start + (distance + OVERSHOOT_ROWS) * ease(t)
+        setPos(p)
+
+        // Tick once per row that clicks past the centre line.
+        const rowsPassed = Math.floor(p)
+        if (rowsPassed !== lastTick) {
+          lastTick = rowsPassed
+          playTick()
+        }
+        raf = requestAnimationFrame(frame)
+        return
       }
 
-      if (t < 1) {
+      // Phase 2 — settle: spring the overshoot back onto the exact winner row.
+      if (OVERSHOOT_ROWS > 0 && elapsed < spinMs + anticipationMs) {
+        const s = (elapsed - spinMs) / anticipationMs
+        setPos(start + distance + OVERSHOOT_ROWS * settleBack(s))
         raf = requestAnimationFrame(frame)
         return
       }
