@@ -623,7 +623,7 @@ export function SpinRollerMultiSpinner({
                   }}
                 >
                   <span
-                    className={`${subtle ? "font-light" : "font-semibold"} ${
+                    className={`${subtle ? "font-normal" : "font-semibold"} ${
                       longNames ? "whitespace-normal text-center leading-tight" : "truncate leading-none"
                     }${settling && isCentre ? " winner-bump" : ""}`}
                     style={{

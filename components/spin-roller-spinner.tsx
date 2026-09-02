@@ -609,7 +609,7 @@ export function SpinRollerSpinner({
                 >
                   <span
                     ref={isCentre ? centreRowRef : undefined}
-                    className={`${subtle ? "font-light" : "font-semibold"} ${
+                    className={`${subtle ? "font-normal" : "font-semibold"} ${
                       longNames ? "whitespace-normal text-center leading-tight" : "truncate leading-none"
                     }${subtleLanded && isCentre ? " winner-bump" : ""}`}
                     style={{
