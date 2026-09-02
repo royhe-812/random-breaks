@@ -681,7 +681,7 @@ export function SpinRollerMultiSpinner({
             still landing or all spots are in. */}
         <div className="flex items-center" style={{ minHeight: subtle ? 24 : CHIP_ROW_H }}>
           <div
-            className="flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            className="flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden mt-1"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
             <AnimatePresence initial={false}>
