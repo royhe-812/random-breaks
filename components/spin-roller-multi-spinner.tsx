@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { teams, spotLabel, type Team } from "@/components/team-spinner"
 import { RevealPill, useRevealStage, readableOn, type RevealTuning } from "@/components/pill-reveal"
@@ -189,55 +189,6 @@ function buildSpinEase(startSpeed: number, rampFraction: number, stopEase: numbe
     const i = Math.floor(x)
     return cumulative[i] + (cumulative[i + 1] - cumulative[i]) * (x - i)
   }
-}
-
-/**
- * Marquee that only scrolls when its content overflows, easing right-to-left,
- * pausing, then back — matching the chips row in the other multi variants.
- */
-function BackAndForthMarquee({
-  children,
-  className,
-  trackClassName,
-  duration = 14,
-}: {
-  children: ReactNode
-  className?: string
-  trackClassName?: string
-  duration?: number
-}) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const trackRef = useRef<HTMLDivElement>(null)
-  const [overflow, setOverflow] = useState(0)
-
-  useEffect(() => {
-    const measure = () => {
-      const c = containerRef.current
-      const t = trackRef.current
-      if (!c || !t) return
-      setOverflow(Math.max(0, t.scrollWidth - c.clientWidth))
-    }
-    measure()
-    window.addEventListener("resize", measure)
-    return () => window.removeEventListener("resize", measure)
-  }, [children])
-
-  return (
-    <div ref={containerRef} className={`overflow-hidden ${className ?? ""}`}>
-      <motion.div
-        ref={trackRef}
-        className={`w-max ${trackClassName ?? ""}`}
-        animate={overflow > 0 ? { x: [0, -overflow, -overflow, 0, 0] } : { x: 0 }}
-        transition={
-          overflow > 0
-            ? { duration, times: [0, 0.4, 0.5, 0.9, 1], repeat: Infinity, ease: "linear" }
-            : undefined
-        }
-      >
-        {children}
-      </motion.div>
-    </div>
-  )
 }
 
 export function SpinRollerMultiSpinner({
@@ -687,41 +638,32 @@ export function SpinRollerMultiSpinner({
         {/* Picked teams, as chips — one per landed spot, kept until reset. The
             row is always mounted with a reserved height so the panel is its
             final size before the first spin and never jumps as picks land;
-            only the chips themselves animate in. Once every spot is in, the row
-            becomes a back-and-forth marquee so longer team names stay readable
-            in the narrow card. */}
+            only the chips themselves animate in. The chips live in a
+            horizontal-scroll strip (no marquee) so longer team names stay
+            readable in the narrow card — the row is the same whether picks are
+            still landing or all spots are in. */}
         <div className="flex items-center" style={{ minHeight: subtle ? 24 : CHIP_ROW_H }}>
-          {allDone ? (
-            <BackAndForthMarquee trackClassName="flex gap-2">
+          <div
+            className="flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            <AnimatePresence initial={false}>
               {results.map(({ spot, team }) => (
-                <span key={spot} className={chipClass} style={chipStyle}>
+                <motion.span
+                  key={spot}
+                  layout
+                  initial={{ opacity: 0, scale: 0.8, y: 6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className={chipClass}
+                  style={chipStyle}
+                >
                   {spotLabel(teams.findIndex((t) => t.name === team.name), longNames)}
-                </span>
+                </motion.span>
               ))}
-            </BackAndForthMarquee>
-          ) : (
-            <div
-              className="flex gap-2 overflow-x-auto flex-nowrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-              style={{ WebkitOverflowScrolling: "touch" }}
-            >
-              <AnimatePresence initial={false}>
-                {results.map(({ spot, team }) => (
-                  <motion.span
-                    key={spot}
-                    layout
-                    initial={{ opacity: 0, scale: 0.8, y: 6 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
-                    className={chipClass}
-                    style={chipStyle}
-                  >
-                    {spotLabel(teams.findIndex((t) => t.name === team.name), longNames)}
-                  </motion.span>
-                ))}
-              </AnimatePresence>
-            </div>
-          )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>
