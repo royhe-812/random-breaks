@@ -1365,8 +1365,17 @@ case "thumbnails-4":
           At z-[60] it sits above every in-frame surface (which top out at z-50),
           because it stands in for the physical display cutout. */}
       <IPhoneStatusBar />
-      {/* Background Video */}
+      {/* Background Video. The `muted` JSX attribute alone is unreliable (React
+          can apply it after the browser has already started playing with audio),
+          so the ref forces `muted` + `volume = 0` imperatively to guarantee the
+          card-opening clip never plays sound. */}
       <video
+        ref={(el) => {
+          if (el) {
+            el.muted = true
+            el.volume = 0
+          }
+        }}
         autoPlay
         loop
         muted

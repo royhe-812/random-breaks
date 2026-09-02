@@ -624,8 +624,18 @@ export function TestingZone() {
                device frame uses, so vertical spacing reads true. */
             style={{ width: 390, height: 848, boxShadow: "0 30px 80px rgba(0,0,0,0.6)" }}
           >
-            {/* Live stream video — the real backdrop from the production stream */}
+            {/* Live stream video — the real backdrop from the production stream.
+                The `muted` JSX attribute alone is unreliable (React can apply it
+                after the browser has already started playing with audio), so the
+                ref forces `muted` + `volume = 0` imperatively to guarantee the
+                card-opening clip never plays sound. */}
             <video
+              ref={(el) => {
+                if (el) {
+                  el.muted = true
+                  el.volume = 0
+                }
+              }}
               autoPlay
               loop
               muted
