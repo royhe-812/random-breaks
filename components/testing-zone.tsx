@@ -290,13 +290,7 @@ const VARIANTS = [
   { id: "new-spinner", label: "NEW SPINNER" },
   { id: "roller", label: "Roller" },
   { id: "roller-multi", label: "Roller, Multi" },
-  { id: "ticker", label: "Ticker" },
-  { id: "ticker-multi", label: "Ticker, Multi" },
-  { id: "in-place", label: "Spin In Place" },
   { id: "shared", label: "Shared Transition" },
-  { id: "single", label: "Single Spin" },
-  { id: "multi3", label: "Multi (3)" },
-  { id: "multi2", label: "Multi (2)" },
 ] as const
 
 type VariantId = (typeof VARIANTS)[number]["id"]
