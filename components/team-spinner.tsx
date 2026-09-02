@@ -29,10 +29,10 @@ const teams = [
 /**
  * Label for a randomizer "spot".
  *  - short: the single team the slot represents ("Kansas City Chiefs").
- *  - long:  a spot that bundles 2–3 teams, joined by commas ("Chiefs, Eagles,
- *    Cowboys") — the shape used by random-team breaks where one spot wins
- *    several teams (see Figma 1620-57653, e.g. "Kawhi Leonard, Paul George,
- *    Damian Lillard").
+ *  - long:  a spot that bundles 2–3 teams as full "City Team" names joined by
+ *    commas ("Kansas City Chiefs, Philadelphia Eagles, Dallas Cowboys") — the
+ *    shape used by random-team breaks where one spot wins several teams (see
+ *    Figma 1620-57653).
  * Derived deterministically from the index so a given slot always reads the
  * same across re-renders and across the drum + picked-chip surfaces. 3-team
  * bundles land every third slot, 2-team bundles otherwise.
@@ -45,7 +45,10 @@ export function spotLabel(index: number, longNames = false): string {
     return `${t.city} ${t.name}`
   }
   const count = index % 3 === 0 ? 3 : 2
-  return Array.from({ length: count }, (_, k) => wrap(index + k).name).join(", ")
+  return Array.from({ length: count }, (_, k) => {
+    const t = wrap(index + k)
+    return `${t.city} ${t.name}`
+  }).join(", ")
 }
 
 // Types

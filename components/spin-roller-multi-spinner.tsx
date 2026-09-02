@@ -624,14 +624,25 @@ export function SpinRollerMultiSpinner({
                 >
                   <span
                     className={`${subtle ? "font-normal" : "font-semibold"} ${
-                      longNames ? "whitespace-normal text-center leading-tight" : "truncate leading-none"
+                      /* Long names stay a single truncated line while spinning
+                         (and on every non-winning row); only the landed winner
+                         expands to the full multi-line name. */
+                      longNames && settling && isCentre
+                        ? "whitespace-normal text-center leading-tight"
+                        : "truncate leading-none"
                     }${settling && isCentre ? " winner-bump" : ""}`}
                     style={{
-                      // NEW SPINNER (subtle) uses a lighter 14px label.
-                      fontSize: subtle ? 14 : 16,
-                      /* Long spot names bundle 2–3 teams and wrap to two lines;
-                         cap the width so they wrap inside the drum. */
-                      maxWidth: longNames ? 260 : undefined,
+                      // NEW SPINNER (subtle) uses a lighter 14px label. The
+                      // expanded winner drops to 12px so 2–3 full team names fit
+                      // without growing the drum row.
+                      fontSize: longNames && settling && isCentre ? 12 : subtle ? 14 : 16,
+                      /* Long spot names bundle 2–3 full "City Team" names; cap
+                         the width so they truncate/wrap inside the drum. Kept
+                         well under the drum's clip width because rows sit at
+                         translateZ and perspective magnifies the label ~1.5x —
+                         a wider cap pushes the ellipsis/wrapped lines off the
+                         visible edges. */
+                      maxWidth: longNames ? 200 : undefined,
                       /* Flips with the fill, not with landing: during the stroke
                          stages the pill is still dark, so the label stays white
                          until the team's primary is actually behind it. With the
