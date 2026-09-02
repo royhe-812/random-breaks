@@ -628,9 +628,9 @@ export function SpinRollerSpinner({
                          because rows sit at translateZ and perspective magnifies
                          the label ~1.5x — a wider cap pushes the truncation
                          ellipsis (and wrapped lines) off the visible edges.
-                         Spinning rows use a 10%-narrower cap (180) than the
-                         expanded landed winner (200). */
-                      maxWidth: longNames ? (subtleLanded && isCentre ? 200 : 180) : undefined,
+                         Spinning rows use a narrower cap (153) than the
+                         expanded landed winner (170). */
+                      maxWidth: longNames ? (subtleLanded && isCentre ? 170 : 153) : undefined,
                       /* Flips with the fill, not with landing: during the
                          stroke stages the pill is still dark, so the label
                          stays white until the primary is actually behind it. */
