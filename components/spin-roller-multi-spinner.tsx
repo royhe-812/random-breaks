@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { teams, type Team } from "@/components/team-spinner"
+import { teams, spotLabel, type Team } from "@/components/team-spinner"
 import { RevealPill, useRevealStage, readableOn, type RevealTuning } from "@/components/pill-reveal"
 import { useRollerMotionBlur } from "@/components/roller-motion-blur"
 import { SpinnerChevrons } from "@/components/spinner-chevrons"
@@ -80,6 +80,12 @@ interface SpinRollerMultiSpinnerProps {
    * With no pill behind it the centre label always stays white.
    */
   subtle?: boolean
+  /**
+   * Render drum rows and picked chips as "long" spot names — bundles of 2–3
+   * team names joined by commas (see spotLabel) — instead of "City Name".
+   * Long drum labels wrap to two lines and centre, matching Figma 1620-57653.
+   */
+  longNames?: boolean
 }
 
 /* ── Cylinder geometry ──
@@ -249,6 +255,7 @@ export function SpinRollerMultiSpinner({
   motionBlurMax = 10,
   reveal,
   subtle = false,
+  longNames = false,
   }: SpinRollerMultiSpinnerProps) {
   /* Convert the px pitch into the angular step the rows sit on. RADIUS stays
      fixed so the centre row's perspective magnification never shifts as the
@@ -616,11 +623,14 @@ export function SpinRollerMultiSpinner({
                   }}
                 >
                   <span
-                    className={`truncate font-semibold leading-none${
-                      settling && isCentre ? " winner-bump" : ""
-                    }`}
+                    className={`font-semibold ${
+                      longNames ? "whitespace-normal text-center leading-tight" : "truncate leading-none"
+                    }${settling && isCentre ? " winner-bump" : ""}`}
                     style={{
                       fontSize: 16,
+                      /* Long spot names bundle 2–3 teams and wrap to two lines;
+                         cap the width so they wrap inside the drum. */
+                      maxWidth: longNames ? 260 : undefined,
                       /* Flips with the fill, not with landing: during the stroke
                          stages the pill is still dark, so the label stays white
                          until the team's primary is actually behind it. With the
@@ -639,7 +649,7 @@ export function SpinRollerMultiSpinner({
                       ...blurProps.style,
                     }}
                   >
-                    {team.city} {team.name}
+                    {spotLabel(idx, longNames)}
                   </span>
                 </div>
               )
@@ -672,7 +682,7 @@ export function SpinRollerMultiSpinner({
             <BackAndForthMarquee trackClassName="flex gap-2">
               {results.map(({ spot, team }) => (
                 <span key={spot} className={chipClass} style={chipStyle}>
-                  {team.city} {team.name}
+                  {spotLabel(teams.findIndex((t) => t.name === team.name), longNames)}
                 </span>
               ))}
             </BackAndForthMarquee>
@@ -693,7 +703,7 @@ export function SpinRollerMultiSpinner({
                     className={chipClass}
                     style={chipStyle}
                   >
-                    {team.city} {team.name}
+                    {spotLabel(teams.findIndex((t) => t.name === team.name), longNames)}
                   </motion.span>
                 ))}
               </AnimatePresence>

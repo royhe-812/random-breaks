@@ -316,6 +316,10 @@ export function TestingZone() {
   const [variant, setVariant] = useState<VariantId>("roller")
   // null = let the spinner pick at random, otherwise force this outcome.
   const [forcedTeam, setForcedTeam] = useState<Team | null>(null)
+  /* NEW SPINNER options: long/short spot names and single/multi spin. Scoped to
+     the "new-spinner" variant only. */
+  const [newSpinnerLong, setNewSpinnerLong] = useState(false)
+  const [newSpinnerMulti, setNewSpinnerMulti] = useState(false)
   const [spinKey, setSpinKey] = useState(0)
   const [isSpinning, setIsSpinning] = useState(false)
   const [result, setResult] = useState<Team | null>(null)
@@ -502,6 +506,47 @@ export function TestingZone() {
               </button>
             ))}
           </div>
+
+          {/* NEW SPINNER options — spot-name length and spin count. Only shown
+              for the "new-spinner" variant; changing either resets the run so
+              the drum remounts with the new config. */}
+          {variant === "new-spinner" && (
+            <div className="mb-6">
+              <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-3">NEW SPINNER options</p>
+              <p className="text-white/50 text-[11px] mb-1.5">Spot names</p>
+              <div className="flex gap-2 mb-3">
+                {([["Short", false], ["Long", true]] as const).map(([label, val]) => (
+                  <button
+                    key={label}
+                    onClick={() => { setNewSpinnerLong(val); handleReset() }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      newSpinnerLong === val
+                        ? "bg-white text-zinc-900"
+                        : "bg-white/10 text-white/60 hover:bg-white/15 hover:text-white"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-white/50 text-[11px] mb-1.5">Spin count</p>
+              <div className="flex gap-2">
+                {([["Single", false], ["Multi", true]] as const).map(([label, val]) => (
+                  <button
+                    key={label}
+                    onClick={() => { setNewSpinnerMulti(val); handleReset() }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                      newSpinnerMulti === val
+                        ? "bg-white text-zinc-900"
+                        : "bg-white/10 text-white/60 hover:bg-white/15 hover:text-white"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Spin / status */}
           <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-3">Playback</p>
@@ -698,7 +743,27 @@ export function TestingZone() {
                   onViewSpots={() => setIsBreakSpotsOpen(true)}
                 />
                 <div className="relative bg-[#212121] rounded-2xl p-3">
-                  {variant === "new-spinner" || variant === "roller" ? (
+                  {variant === "new-spinner" && newSpinnerMulti ? (
+                    /* NEW SPINNER, multi-spin: the subtle roller-multi drum with
+                       the dark picked-spot chips below, per Figma 1620-57653. */
+                    <SpinRollerMultiSpinner
+                      key={`new-spinner-multi-${spinKey}`}
+                      isSpinning={isSpinning}
+                      onLanded={setResult}
+                      breakNumber={15}
+                      forceTeamIndex={forcedIndex}
+                      spinDuration={spinDurationMs}
+                      startSpeed={startSpeed}
+                      rampUp={rampUp}
+                      stopEase={stopEase}
+                      rowPitch={rowPitch}
+                      motionBlur={motionBlur}
+                      motionBlurMax={motionBlurMax}
+                      reveal={reveal}
+                      subtle
+                      longNames={newSpinnerLong}
+                    />
+                  ) : variant === "new-spinner" || variant === "roller" ? (
                     /* "NEW SPINNER" is the Subtle Winning randomizer: the same
                        roller drum as "Roller" but with `subtle` on, which turns
                        on the inward chevrons, fade-to-winner, dark picked pills
@@ -723,6 +788,7 @@ export function TestingZone() {
                     motionBlurMax={motionBlurMax}
                     reveal={reveal}
                     subtle={variant === "new-spinner"}
+                    longNames={variant === "new-spinner" && newSpinnerLong}
                   />
                 ) : variant === "ticker" || variant === "ticker-multi" ? (
                     /* One component covers both modes, so the key includes the

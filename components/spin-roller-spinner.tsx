@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { teams, type Team } from "@/components/team-spinner"
+import { teams, spotLabel, type Team } from "@/components/team-spinner"
 import { RevealPill, useRevealStage, type RevealTuning } from "@/components/pill-reveal"
 import { useRollerMotionBlur } from "@/components/roller-motion-blur"
 import { SpinnerChevrons } from "@/components/spinner-chevrons"
@@ -86,6 +86,12 @@ interface SpinRollerSpinnerProps {
    * With nothing coloured behind it the centre label always stays white.
    */
   subtle?: boolean
+  /**
+   * Render each row as a "long" spot name — a bundle of 2–3 team names joined by
+   * commas (see spotLabel) — instead of the single "City Name". Long labels are
+   * allowed to wrap to two lines and centre, matching Figma 1620-57653.
+   */
+  longNames?: boolean
   /**
    * Attached to the centre (winning) row's name span, so a parent can measure it
    * as the origin of a shared-element flight. Only the resting centre row carries
@@ -277,6 +283,7 @@ export function SpinRollerSpinner({
   reveal,
   disableReveal = false,
   subtle = false,
+  longNames = false,
   centreRowRef,
   hideCentreLabel = false,
   collapseCentre = false,
@@ -602,11 +609,15 @@ export function SpinRollerSpinner({
                 >
                   <span
                     ref={isCentre ? centreRowRef : undefined}
-                    className={`truncate font-semibold leading-none${
-                      subtleLanded && isCentre ? " winner-bump" : ""
-                    }`}
+                    className={`font-semibold ${
+                      longNames ? "whitespace-normal text-center leading-tight" : "truncate leading-none"
+                    }${subtleLanded && isCentre ? " winner-bump" : ""}`}
                     style={{
                       fontSize: 16,
+                      /* Long spot names bundle 2–3 teams and wrap to two lines;
+                         cap the width so they wrap inside the drum instead of
+                         widening it. */
+                      maxWidth: longNames ? 260 : undefined,
                       /* Flips with the fill, not with landing: during the
                          stroke stages the pill is still dark, so the label
                          stays white until the primary is actually behind it. */
@@ -625,7 +636,7 @@ export function SpinRollerSpinner({
                       ...blurProps.style,
                     }}
                   >
-                    {team.city} {team.name}
+                    {spotLabel(idx, longNames)}
                   </span>
                 </div>
               )
