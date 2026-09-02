@@ -623,11 +623,12 @@ export function SpinRollerMultiSpinner({
                   }}
                 >
                   <span
-                    className={`font-semibold ${
+                    className={`${subtle ? "font-light" : "font-semibold"} ${
                       longNames ? "whitespace-normal text-center leading-tight" : "truncate leading-none"
                     }${settling && isCentre ? " winner-bump" : ""}`}
                     style={{
-                      fontSize: 16,
+                      // NEW SPINNER (subtle) uses a lighter 14px label.
+                      fontSize: subtle ? 14 : 16,
                       /* Long spot names bundle 2–3 teams and wrap to two lines;
                          cap the width so they wrap inside the drum. */
                       maxWidth: longNames ? 260 : undefined,
