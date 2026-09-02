@@ -4,10 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { RotateCcw, ChevronDown, Heart } from "lucide-react"
 import { teams, type Team } from "@/components/team-spinner"
-import { SpinInPlaceSpinner } from "@/components/spin-in-place-spinner"
 import { SpinRollerSpinner } from "@/components/spin-roller-spinner"
 import { SpinRollerMultiSpinner } from "@/components/spin-roller-multi-spinner"
-import { SpinTickerSpinner } from "@/components/spin-ticker-spinner"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { BreakSpotsBar } from "@/components/break-spots-bar"
 import { SharedTransitionStage } from "@/components/shared-transition-stage"
@@ -446,10 +444,7 @@ export function TestingZone() {
   const isRealVariant =
     variant === "new-spinner" ||
     variant === "roller" ||
-    variant === "roller-multi" ||
-    variant === "ticker" ||
-    variant === "ticker-multi" ||
-    variant === "in-place"
+    variant === "roller-multi"
 
   const handleSpin = () => {
     setResult(null)
@@ -487,7 +482,7 @@ export function TestingZone() {
       </header>
 
       <div className="flex flex-col lg:flex-row flex-1 min-h-0">
-        {/* ─── Controls ───��─────────────────���──�����────��───────────────────── */}
+        {/* ─── Controls ───��─���───────────────���──�����────��───────────────────── */}
         <div className="lg:w-80 lg:flex-shrink-0 border-b lg:border-b-0 lg:border-r border-white/10 p-6 overflow-y-auto">
           {/* Variant */}
           <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-3">Variant</p>
@@ -790,25 +785,9 @@ export function TestingZone() {
                     subtle={variant === "new-spinner"}
                     longNames={variant === "new-spinner" && newSpinnerLong}
                   />
-                ) : variant === "ticker" || variant === "ticker-multi" ? (
-                    /* One component covers both modes, so the key includes the
-                       mode — otherwise toggling Single↔Multi would reuse the
-                       mounted instance and keep the previous run's spot list. */
-                    <SpinTickerSpinner
-                      key={`${variant}-${spinKey}`}
-                      isSpinning={isSpinning}
-                      mode={variant === "ticker-multi" ? "multi" : "single"}
-                      onLanded={setResult}
-                      winnerName="Adam007"
-                      breakNumber={15}
-                      forceTeamIndex={forcedIndex}
-                      spinDuration={spinDurationMs}
-                      startSpeed={startSpeed}
-                      rampUp={rampUp}
-                      stopEase={stopEase}
-                      reveal={reveal}
-                    />
-                  ) : variant === "roller-multi" ? (
+                  ) : (
+                    /* Only remaining real variant is roller-multi (new-spinner
+                       and roller are handled above). */
                     <SpinRollerMultiSpinner
                       key={`roller-multi-${spinKey}`}
                       isSpinning={isSpinning}
@@ -823,22 +802,6 @@ export function TestingZone() {
                       motionBlur={motionBlur}
                       motionBlurMax={motionBlurMax}
                       reveal={reveal}
-                    />
-                  ) : (
-                    <SpinInPlaceSpinner
-                      key={`in-place-${spinKey}`}
-                      isSpinning={isSpinning}
-                      onLanded={setResult}
-                      winnerName="Adam007"
-                      breakNumber={15}
-                      availableSpots={15}
-                      totalSpots={32}
-                      onViewSpots={() => setIsBreakSpotsOpen(true)}
-                      forceTeamIndex={forcedIndex}
-                      spinDuration={spinDurationMs}
-                      startSpeed={startSpeed}
-                      rampUp={rampUp}
-                      stopEase={stopEase}
                     />
                   )}
                 </div>
