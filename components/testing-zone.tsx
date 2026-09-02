@@ -287,6 +287,7 @@ function MiniSpinner({ label, forcedTeam, spinKey, variant }: MiniSpinnerProps) 
 /** Variants that can be driven inside the phone frame. The first two are the
  *  real production components; the rest reuse the local MiniSpinner. */
 const VARIANTS = [
+  { id: "new-spinner", label: "NEW SPINNER" },
   { id: "roller", label: "Roller" },
   { id: "roller-multi", label: "Roller, Multi" },
   { id: "ticker", label: "Ticker" },
@@ -445,6 +446,7 @@ export function TestingZone() {
 
   const forcedIndex = forcedTeam ? teams.findIndex(t => t.name === forcedTeam.name) : null
   const isRealVariant =
+    variant === "new-spinner" ||
     variant === "roller" ||
     variant === "roller-multi" ||
     variant === "ticker" ||
@@ -487,7 +489,7 @@ export function TestingZone() {
       </header>
 
       <div className="flex flex-col lg:flex-row flex-1 min-h-0">
-        {/* ─── Controls ───��─────────────────���──����────��───────────────────── */}
+        {/* ─── Controls ───��─────────────────���──�����────��───────────────────── */}
         <div className="lg:w-80 lg:flex-shrink-0 border-b lg:border-b-0 lg:border-r border-white/10 p-6 overflow-y-auto">
           {/* Variant */}
           <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-3">Variant</p>
@@ -702,9 +704,14 @@ export function TestingZone() {
                   onViewSpots={() => setIsBreakSpotsOpen(true)}
                 />
                 <div className="relative bg-[#212121] rounded-2xl p-3">
-                  {variant === "roller" ? (
+                  {variant === "new-spinner" || variant === "roller" ? (
+                    /* "NEW SPINNER" is the Subtle Winning randomizer: the same
+                       roller drum as "Roller" but with `subtle` on, which turns
+                       on the inward chevrons, fade-to-winner, dark picked pills
+                       and shorter settle used by the prototype's Subtle Winning
+                       concept. */
                     <SpinRollerSpinner
-                      key={`roller-${spinKey}`}
+                      key={`${variant}-${spinKey}`}
                       isSpinning={isSpinning}
                       onLanded={setResult}
                       winnerName="Adam007"
@@ -721,6 +728,7 @@ export function TestingZone() {
                     motionBlur={motionBlur}
                     motionBlurMax={motionBlurMax}
                     reveal={reveal}
+                    subtle={variant === "new-spinner"}
                   />
                 ) : variant === "ticker" || variant === "ticker-multi" ? (
                     /* One component covers both modes, so the key includes the
