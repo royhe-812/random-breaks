@@ -343,6 +343,27 @@ export function TestingZone() {
     stopEase: [3, 0.3, 8, 0.1] as [number, number, number, number],
   })
 
+  /* ── New spinner ──
+     Landing feel specific to the NEW SPINNER (Subtle Winning) variant: the
+     anticipation tail as the drum stops, and the winning-spot highlight. Spin
+     duration and the acceleration/deceleration curve are the shared "Spin"
+     dials above; these cover only what's unique to the new spinner. Ignored by
+     the plain Roller variants. */
+  const { overshootRows, anticipationMs, bumpPeak, bumpSettle, bumpMs } = useDialKit("New spinner", {
+    // Anticipation: how far PAST the winner the drum rolls before springing
+    // back onto it, in rows. 0 removes the overshoot for a direct stop.
+    overshootRows: [0.5, 0, 1.5, 0.05] as [number, number, number, number],
+    // Spring-back time from the overshoot onto the winner, in ms — the length
+    // of the anticipation settle before the name highlight plays.
+    anticipationMs: [460, 0, 1200, 10] as [number, number, number, number],
+    // Highlight: peak scale of the winning name's bump (1 = no growth).
+    bumpPeak: [1.34, 1, 1.8, 0.02] as [number, number, number, number],
+    // Scale the highlight settles back to after the peak overshoot.
+    bumpSettle: [1.18, 1, 1.6, 0.02] as [number, number, number, number],
+    // Duration of the highlight bump, in ms.
+    bumpMs: [460, 120, 1200, 10] as [number, number, number, number],
+  })
+
   /* Roller row spacing, in px centre-to-centre between team names. Tuned to 26,
      tighter than the drum's native 34, which pulls the neighbour rows closer to
      the centre pill. Lower tightens the names further, higher spreads them
@@ -391,6 +412,14 @@ export function TestingZone() {
   const reveal = useMemo(
     () => ({ drawMs, drawEase, lapTurns, headLen, holdMs, fillMs, strokeWidth, popScale, glow }),
     [drawMs, drawEase, lapTurns, headLen, holdMs, fillMs, strokeWidth, popScale, glow],
+  )
+
+  /* NEW SPINNER landing feel, bundled so both new-spinner instances take a
+     single `highlight` prop. Memoised on the dial values so a fresh object each
+     render can't restart the spinner's motion effect mid-flight. */
+  const highlight = useMemo(
+    () => ({ overshootRows, anticipationMs, bumpPeak, bumpSettle, bumpMs }),
+    [overshootRows, anticipationMs, bumpPeak, bumpSettle, bumpMs],
   )
 
   /* ── Shared transition ──
@@ -765,6 +794,7 @@ export function TestingZone() {
                       motionBlur={motionBlur}
                       motionBlurMax={motionBlurMax}
                       reveal={reveal}
+                      highlight={highlight}
                       subtle
                       longNames={newSpinnerLong}
                     />
@@ -792,6 +822,7 @@ export function TestingZone() {
                     motionBlur={motionBlur}
                     motionBlurMax={motionBlurMax}
                     reveal={reveal}
+                    highlight={highlight}
                     subtle={variant === "new-spinner"}
                     longNames={variant === "new-spinner" && newSpinnerLong}
                   />

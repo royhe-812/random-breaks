@@ -6,6 +6,32 @@ import { RevealPill, useRevealStage, type RevealTuning } from "@/components/pill
 import { useRollerMotionBlur } from "@/components/roller-motion-blur"
 import { SpinnerChevrons } from "@/components/spinner-chevrons"
 
+/**
+ * NEW SPINNER landing-feel tuning. All five fields drive the subtle variant's
+ * winning-spot highlight and anticipation tail; see the `highlight` prop.
+ */
+export interface SpinnerHighlightTuning {
+  /** Peak scale of the winner-bump highlight (1 = no growth). */
+  bumpPeak: number
+  /** Resting scale the highlight settles to after the peak. */
+  bumpSettle: number
+  /** Duration of the winner-bump highlight, in ms. */
+  bumpMs: number
+  /** How far past the winner the drum overshoots, in rows (0 = no overshoot). */
+  overshootRows: number
+  /** Spring-back time from the overshoot onto the winner, in ms. */
+  anticipationMs: number
+}
+
+/** Tuned defaults — the values the NEW SPINNER shipped with before the dials. */
+export const DEFAULT_HIGHLIGHT: SpinnerHighlightTuning = {
+  bumpPeak: 1.34,
+  bumpSettle: 1.18,
+  bumpMs: 460,
+  overshootRows: 0.5,
+  anticipationMs: 460,
+}
+
 interface SpinRollerSpinnerProps {
   /** True while spinning, false to reset. */
   isSpinning: boolean
@@ -86,6 +112,17 @@ interface SpinRollerSpinnerProps {
    * With nothing coloured behind it the centre label always stays white.
    */
   subtle?: boolean
+  /**
+   * NEW SPINNER (subtle) tuning for the landing feel — exposed so the testing
+   * zone can dial it live. Ignored entirely when `subtle` is false.
+   *  - `bumpPeak` / `bumpSettle` / `bumpMs`: the winning-spot highlight, i.e. the
+   *    `.winner-bump` scale animation (peak scale, resting scale, duration ms).
+   *    Wired through as CSS variables the keyframes read.
+   *  - `overshootRows` / `anticipationMs`: the anticipation tail — how far past
+   *    the winner the drum rolls, and the spring-back time onto it.
+   * Any omitted field falls back to the tuned default (see DEFAULT_HIGHLIGHT).
+   */
+  highlight?: Partial<SpinnerHighlightTuning>
   /**
    * Render each row as a "long" spot name — a bundle of 2–3 team names joined by
    * commas (see spotLabel) — instead of the single "City Name". Long labels are
@@ -283,11 +320,22 @@ export function SpinRollerSpinner({
   reveal,
   disableReveal = false,
   subtle = false,
+  highlight,
   longNames = false,
   centreRowRef,
   hideCentreLabel = false,
   collapseCentre = false,
 }: SpinRollerSpinnerProps) {
+  /* NEW SPINNER landing feel, merged over the tuned defaults so any field the
+     caller omits keeps its shipped value. Primitives are pulled out so the spin
+     effect can depend on the two that affect its motion. */
+  const {
+    bumpPeak,
+    bumpSettle,
+    bumpMs,
+    overshootRows,
+    anticipationMs: highlightAnticipationMs,
+  } = { ...DEFAULT_HIGHLIGHT, ...highlight }
   /* Convert the px pitch into the angular step the rows are laid out on.
      RADIUS is deliberately left fixed so the centre row's distance from the
      camera — and therefore its perspective magnification — never shifts as the
@@ -355,10 +403,11 @@ export function SpinRollerSpinner({
     const settleMs = subtle ? 300 : SETTLE_MS
     // Anticipation tail (NEW SPINNER / subtle only): the drum rolls a little
     // PAST the winner, then springs back onto it, so the stop reads as a
-    // settle instead of a hard cut before the name treatment plays. The plain
-    // roller keeps its snappy stop (OVERSHOOT/anticipation = 0).
-    const anticipationMs = subtle ? 460 : 0
-    const OVERSHOOT_ROWS = subtle ? 0.5 : 0
+    // settle instead of a hard cut before the name treatment plays. Both the
+    // overshoot distance and the spring-back time are dial-tunable via the
+    // `highlight` prop. The plain roller keeps its snappy stop (both 0).
+    const anticipationMs = subtle ? highlightAnticipationMs : 0
+    const OVERSHOOT_ROWS = subtle ? overshootRows : 0
     // `spinDuration` is the TOTAL time the spin takes, so the drum motion gets
     // whatever is left after the anticipation settle and post-landing flash.
     const spinMs = Math.max(300, spinDuration - settleMs - anticipationMs)
@@ -422,7 +471,7 @@ export function SpinRollerSpinner({
       cancelAnimationFrame(raf)
       if (settleTimer) clearTimeout(settleTimer)
     }
-  }, [isSpinning, playTick, forceTeamIndex, spinDuration, startSpeed, rampUp, stopEase, subtle])
+  }, [isSpinning, playTick, forceTeamIndex, spinDuration, startSpeed, rampUp, stopEase, subtle, overshootRows, highlightAnticipationMs])
 
   const centre = Math.round(pos)
 
@@ -487,8 +536,24 @@ export function SpinRollerSpinner({
        the content left the drum sitting ~20px high with a band of dead card
        below it. Where the parent is auto-height instead (multi, and the shared
        transition stage), `h-full` resolves against an indefinite height and
-       behaves as auto, so those keep hugging exactly as before. */
-    <div className="w-full h-full flex flex-col">
+       behaves as auto, so those keep hugging exactly as before.
+
+       The `--winner-bump-*` vars drive the landed winner's highlight keyframes
+       (see globals.css). Set only in subtle mode and cascaded down to the
+       centre row's span; the plain roller leaves them unset and gets the CSS
+       fallbacks. */
+    <div
+      className="w-full h-full flex flex-col"
+      style={
+        subtle
+          ? ({
+              "--winner-bump-peak": bumpPeak,
+              "--winner-bump-settle": bumpSettle,
+              "--winner-bump-ms": `${bumpMs}ms`,
+            } as React.CSSProperties)
+          : undefined
+      }
+    >
 
       {/* Header + divider stay pinned to the top — `shrink-0` so they are never
           compressed to make room for the drum in a short card. */}

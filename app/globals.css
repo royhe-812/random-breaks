@@ -168,22 +168,26 @@
    rather than snapping back to the row size. transform-origin is centre so the
    name grows in place. Applied only to the landed centre name in the Subtle
    Winning roller. */
+/* Peak/settle scales and duration are read from CSS variables so the NEW
+   SPINNER's dial kit can tune the winning-spot highlight live. The fallbacks
+   are the original hardcoded values, so anything that doesn't set the vars is
+   unchanged. */
 @keyframes winner-bump {
   0% {
     transform: scale(1);
   }
   55% {
-    transform: scale(1.34);
+    transform: scale(var(--winner-bump-peak, 1.34));
   }
   100% {
-    transform: scale(1.18);
+    transform: scale(var(--winner-bump-settle, 1.18));
   }
 }
 
 /* Referenced as a class (not just an inline animation string) so Tailwind v4 /
    Lightning CSS keeps the keyframe instead of dead-code-eliminating it. */
 .winner-bump {
-  animation: winner-bump 460ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: winner-bump var(--winner-bump-ms, 460ms) cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

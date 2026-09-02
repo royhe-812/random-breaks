@@ -6,6 +6,7 @@ import { teams, spotLabel, type Team } from "@/components/team-spinner"
 import { RevealPill, useRevealStage, readableOn, type RevealTuning } from "@/components/pill-reveal"
 import { useRollerMotionBlur } from "@/components/roller-motion-blur"
 import { SpinnerChevrons } from "@/components/spinner-chevrons"
+import { DEFAULT_HIGHLIGHT, type SpinnerHighlightTuning } from "@/components/spin-roller-spinner"
 
 /* ── Roller, multi ──
    Same 3D drum as SpinRollerSpinner, but it runs one spin per spot instead of
@@ -80,6 +81,14 @@ interface SpinRollerMultiSpinnerProps {
    * With no pill behind it the centre label always stays white.
    */
   subtle?: boolean
+  /**
+   * NEW SPINNER (subtle) landing-feel tuning — the winning-spot highlight
+   * (`bumpPeak`/`bumpSettle`/`bumpMs`) and the anticipation tail
+   * (`overshootRows`/`anticipationMs`), applied to every spot in the run.
+   * Shared shape with the single roller; see SpinnerHighlightTuning. Ignored
+   * when `subtle` is false; any omitted field falls back to DEFAULT_HIGHLIGHT.
+   */
+  highlight?: Partial<SpinnerHighlightTuning>
   /**
    * Render drum rows and picked chips as "long" spot names — bundles of 2–3
    * team names joined by commas (see spotLabel) — instead of "City Name".
@@ -208,8 +217,19 @@ export function SpinRollerMultiSpinner({
   motionBlurMax = 10,
   reveal,
   subtle = false,
+  highlight,
   longNames = false,
   }: SpinRollerMultiSpinnerProps) {
+  /* NEW SPINNER landing feel, merged over the tuned defaults so an omitted
+     field keeps its shipped value. The two anticipation primitives are pulled
+     out because the per-spin effect depends on them. */
+  const {
+    bumpPeak,
+    bumpSettle,
+    bumpMs,
+    overshootRows,
+    anticipationMs: highlightAnticipationMs,
+  } = { ...DEFAULT_HIGHLIGHT, ...highlight }
   /* Convert the px pitch into the angular step the rows sit on. RADIUS stays
      fixed so the centre row's perspective magnification never shifts as the
      pitch changes; only its neighbours spread out or close in. */
@@ -324,10 +344,11 @@ export function SpinRollerMultiSpinner({
     const distance = n * 3 + ((((target - startIdx) % n) + n) % n)
     // Anticipation tail (NEW SPINNER / subtle only): the drum rolls a little
     // PAST the winner, then springs back onto it, so the stop reads as a
-    // settle instead of a hard cut before the name treatment plays. The plain
-    // roller-multi keeps its snappy stop (OVERSHOOT/anticipation = 0).
-    const anticipationMs = subtle ? 460 : 0
-    const OVERSHOOT_ROWS = subtle ? 0.5 : 0
+    // settle instead of a hard cut before the name treatment plays. Both the
+    // overshoot distance and the spring-back time are dial-tunable via the
+    // `highlight` prop. The plain roller-multi keeps its snappy stop (both 0).
+    const anticipationMs = subtle ? highlightAnticipationMs : 0
+    const OVERSHOOT_ROWS = subtle ? overshootRows : 0
     // `spinDuration` is the total per spin, so drum motion gets what's left
     // after the anticipation settle and the fixed post-landing settle flash.
     const spinMs = Math.max(300, spinDuration - SETTLE_MS - anticipationMs)
@@ -422,7 +443,7 @@ export function SpinRollerMultiSpinner({
       if (settleTimer) clearTimeout(settleTimer)
       if (nextTimer) clearTimeout(nextTimer)
     }
-  }, [isSpinning, spinNo, playTick, forceTeamIndex, spinDuration, startSpeed, rampUp, stopEase])
+  }, [isSpinning, spinNo, playTick, forceTeamIndex, spinDuration, startSpeed, rampUp, stopEase, subtle, overshootRows, highlightAnticipationMs])
 
   // Report the full set once, after the last spot has been recorded.
   useEffect(() => {
@@ -495,7 +516,21 @@ export function SpinRollerMultiSpinner({
     // before the first pick, the multi card is the same height as the single
     // variant (whose header sits tighter). The picked-spots section below is
     // absent until a pick lands, so the pre-spin height matches exactly.
-    <div className="w-full flex flex-col gap-1">
+    // The `--winner-bump-*` vars drive each landed spot's highlight keyframes
+    // (see globals.css); set only in subtle mode, unset otherwise for the CSS
+    // fallbacks.
+    <div
+      className="w-full flex flex-col gap-1"
+      style={
+        subtle
+          ? ({
+              "--winner-bump-peak": bumpPeak,
+              "--winner-bump-settle": bumpSettle,
+              "--winner-bump-ms": `${bumpMs}ms`,
+            } as React.CSSProperties)
+          : undefined
+      }
+    >
       {/* Single line naming who this draw is for, matching single mode. The
           break + box title that used to sit above it is already on the bid box
           card this overlays. `min-w-0` is what lets it truncate in the flex
