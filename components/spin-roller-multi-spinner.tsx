@@ -459,7 +459,7 @@ export function SpinRollerMultiSpinner({
      used) with plain white 12px text. The plain roller keeps its original
      transparent outlined uppercase chip. */
   const chipClass = subtle
-    ? "inline-flex h-6 shrink-0 whitespace-nowrap items-center rounded-full px-3 text-xs leading-none font-semibold"
+    ? "inline-flex h-6 shrink-0 whitespace-nowrap items-center rounded-full px-3 text-xs leading-none font-normal"
     : "inline-flex h-4 shrink-0 whitespace-nowrap items-center rounded-full px-3 text-[10px] leading-none font-bold uppercase tracking-wide"
   const chipStyle = subtle
     ? { backgroundColor: PILL_IDLE, color: "#ffffff" }
