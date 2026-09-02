@@ -58,23 +58,5 @@ function SpotsRing({ available, total, size = 16 }: { available: number; total: 
  * invalid HTML.
  */
 export function BreakSpotsBar({ availableSpots = 15, totalSpots = 32, onViewSpots }: BreakSpotsBarProps) {
-  return (
-    <button
-      type="button"
-      onClick={onViewSpots}
-      aria-label={`${availableSpots} of ${totalSpots} spots available. View all spots.`}
-      className="-mb-4 flex h-13 w-full items-start justify-between gap-2 rounded-t-2xl bg-[#363636] px-3 pt-2.5 text-left transition-opacity hover:opacity-90"
-    >
-      {/* Counter — 4px between ring and label */}
-      <span className="flex min-w-0 items-center gap-1">
-        <SpotsRing available={availableSpots} total={totalSpots} />
-        <span className="truncate text-sm leading-4 text-[#f7f7f7]">
-          {availableSpots}/{totalSpots} spots available
-        </span>
-      </span>
-
-      {/* Text-only CTA — the frame drops the chevron and underlines the label */}
-      <span className="flex-shrink-0 text-sm leading-4 text-[#4d93fc] underline">View all</span>
-    </button>
-  )
+  return null
 }
