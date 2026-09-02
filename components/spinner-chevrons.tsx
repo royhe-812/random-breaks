@@ -41,7 +41,7 @@ export function SpinnerChevrons({ state }: { state: "hidden" | "spinning" | "gon
     <>
       <motion.div
         className="pointer-events-none absolute top-1/2 z-10 -translate-y-1/2"
-        style={{ left: "10%", color: CHEVRON_BLUE }}
+        style={{ left: "8.5%", color: CHEVRON_BLUE }}
         variants={leftVariants}
         initial="hidden"
         animate={state}
@@ -50,7 +50,7 @@ export function SpinnerChevrons({ state }: { state: "hidden" | "spinning" | "gon
       </motion.div>
       <motion.div
         className="pointer-events-none absolute top-1/2 z-10 -translate-y-1/2"
-        style={{ right: "10%", color: CHEVRON_BLUE }}
+        style={{ right: "8.5%", color: CHEVRON_BLUE }}
         variants={rightVariants}
         initial="hidden"
         animate={state}
