@@ -107,8 +107,8 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // concepts below rely on.
   // { id: "single-spin-populate", name: "Single Spin" },
   // { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
-  { id: "spin-in-place-roller-subtle", name: "randomizing" },
-  { id: "buyback", name: "Buyback" },
+  { id: "spin-in-place-roller-subtle", name: "Randomizing" },
+  { id: "buyback", name: "Buy back" },
   { id: "consignments", name: "Consignments" },
   { id: "grading", name: "Grading" },
   { id: "vaulting", name: "Vaulting" },
