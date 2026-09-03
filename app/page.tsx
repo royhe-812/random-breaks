@@ -372,6 +372,24 @@ const chatMessages = [
 
 // Buyback version: no bidding, so the chat is pure hype reacting to insane NFL
 // card pulls coming out of the break.
+type BuybackOfferStatus = "available" | "reviewing" | "accepted" | "declined"
+
+const BUYBACK_OFFER = {
+  card: {
+    title: "Rookie Gold Refractor /10",
+    player: "Jayden Daniels",
+    set: "2024 Prizm Football",
+    grade: "Ungraded",
+    image: "/images/buyback-card.png",
+  },
+  marketValue: 425,
+  instantCredit: 380,
+  expiresIn: "14:32",
+} as const
+
+const formatDollars = (value: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value)
+
 const buybackChatMessages = [
   { user: "gridironpulls", message: "NO WAY that's a Mahomes gold /10!!", color: "text-yellow-400" },
   { user: "hobbyheat", message: "That Caleb Williams RPA is a GRAIL", color: "text-white/60" },
@@ -415,6 +433,8 @@ export default function AnimationShowcase() {
   const [spinnerLastWinner, setSpinnerLastWinner] = useState<{ username: string; team: string } | null>(null) // TeamSpinner: dynamic last winner
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
   const [breakSpotsToRules, setBreakSpotsToRules] = useState(false) // When opening the sheet, jump straight to Break Rules
+  const [buybackOfferStatus, setBuybackOfferStatus] = useState<BuybackOfferStatus>("available")
+  const buybackDifference = BUYBACK_OFFER.marketValue - BUYBACK_OFFER.instantCredit
   const [showMarquee, setShowMarquee] = useState(false) // Toggle (under the seller name) for the promo marquee; off by default on both multi spin concepts
   const [showPinnedMessage, setShowPinnedMessage] = useState(false) // Toggle for the seller's pinned message above the comment input
   // Demo: tapping the spots arc cycles the available count through the color tiers
@@ -509,6 +529,10 @@ export default function AnimationShowcase() {
   useEffect(() => {
     if (!spinInPlaceShowing) setPushArrived(false)
   }, [spinInPlaceShowing])
+
+  useEffect(() => {
+    setBuybackOfferStatus("available")
+  }, [selectedAnimation])
 
   /* Non-push concepts spin the moment they mount, exactly as before. */
   const spinnerRunning = isPushRoller ? spinInPlaceActive && pushArrived : spinInPlaceActive
@@ -1903,6 +1927,67 @@ case "thumbnails-4":
         {/* For the push, this wrapper becomes the window the two cards slide
             through: without clipping, the displaced bid card would just float up
             over the chat instead of being shoved out of the frame. */}
+        {selectedAnimation === "buyback" && (
+          <AnimatePresence mode="wait">
+            {buybackOfferStatus === "available" || buybackOfferStatus === "reviewing" ? (
+              <motion.section
+                key="buyback-offer"
+                aria-label="Seller buyback offer"
+                className="overflow-hidden rounded-2xl bg-black/80 text-white shadow-2xl backdrop-blur"
+                initial={{ opacity: 0, y: 28 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 16 }}
+                transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
+              >
+                <div className="flex min-h-44 gap-3 p-4">
+                  <img
+                    src={BUYBACK_OFFER.card.image}
+                    alt={`${BUYBACK_OFFER.card.player} ${BUYBACK_OFFER.card.title} card`}
+                    className="h-28 w-20 flex-shrink-0 rounded-lg object-cover"
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <p className="text-xs font-bold uppercase tracking-wide text-green-400">Buyback offer</p>
+                    <h2 className="mt-1 text-pretty text-base font-bold leading-5">The seller wants to buy your card</h2>
+                    <p className="mt-1 truncate text-sm text-white/70">{BUYBACK_OFFER.card.player} · {BUYBACK_OFFER.card.title}</p>
+                    <div className="mt-auto flex items-end justify-between gap-3 pt-3">
+                      <div>
+                        <p className="text-xs text-white/60">Get instantly</p>
+                        <p className="text-xl font-bold">{formatDollars(BUYBACK_OFFER.instantCredit)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setBuybackOfferStatus("reviewing")}
+                        className="min-h-11 rounded-full bg-blue-600 px-5 text-sm font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      >
+                        Review offer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-t border-white/15 px-4 py-2 text-xs text-white/60">Expires in {BUYBACK_OFFER.expiresIn}</div>
+              </motion.section>
+            ) : (
+              <motion.section
+                key={buybackOfferStatus}
+                aria-live="polite"
+                className="flex min-h-44 flex-col justify-center rounded-2xl bg-black/80 p-5 text-white shadow-2xl backdrop-blur"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <p className="text-xs font-bold uppercase tracking-wide text-white/60">Buyback offer</p>
+                <h2 className="mt-2 text-xl font-bold">
+                  {buybackOfferStatus === "accepted" ? `${formatDollars(BUYBACK_OFFER.instantCredit)} credited` : "Offer declined"}
+                </h2>
+                <p className="mt-1 text-sm text-white/70">
+                  {buybackOfferStatus === "accepted"
+                    ? "The card is going back to the seller. Your credit is ready to use."
+                    : "You’ll keep the card from your break."}
+                </p>
+              </motion.section>
+            )}
+          </AnimatePresence>
+        )}
+
         {/* The entire bid box + randomizer + win-celebration unit. Hidden for
             "Buyback", which keeps only the chat and comment input above. */}
         {!isBuyback(selectedAnimation) && (
@@ -2361,6 +2446,119 @@ case "thumbnails-4":
         )}
       </AnimatePresence>
       
+      <AnimatePresence>
+        {selectedAnimation === "buyback" && buybackOfferStatus === "reviewing" && (
+          <motion.div
+            className="absolute inset-0 z-50 flex items-end bg-black/55"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setBuybackOfferStatus("available")
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="buyback-offer-title"
+              className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl bg-white text-black shadow-2xl"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 360, damping: 38 }}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => setBuybackOfferStatus("available")}
+                  className="min-h-11 rounded-full px-2 text-sm font-semibold text-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+                >
+                  Back
+                </button>
+                <p className="text-sm font-bold">Review buyback offer</p>
+                <button
+                  type="button"
+                  aria-label="Close offer review"
+                  onClick={() => setBuybackOfferStatus("available")}
+                  className="flex min-h-11 min-w-11 items-center justify-end text-2xl leading-none text-black"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-5 p-5 pb-8">
+                <div className="flex gap-4">
+                  <img
+                    src={BUYBACK_OFFER.card.image}
+                    alt={`${BUYBACK_OFFER.card.player} ${BUYBACK_OFFER.card.title} card`}
+                    className="h-36 w-24 flex-shrink-0 rounded-xl object-cover shadow-md"
+                  />
+                  <div className="min-w-0 pt-1">
+                    <p className="text-xs font-bold uppercase tracking-wide text-black/55">Your card</p>
+                    <h2 id="buyback-offer-title" className="mt-1 text-balance text-xl font-bold leading-6">{BUYBACK_OFFER.card.player}</h2>
+                    <p className="mt-1 text-sm font-semibold">{BUYBACK_OFFER.card.title}</p>
+                    <p className="mt-2 text-sm text-black/60">{BUYBACK_OFFER.card.set}</p>
+                    <p className="text-sm text-black/60">{BUYBACK_OFFER.card.grade}</p>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl border border-black/15">
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Estimated market value</p>
+                      <p className="mt-0.5 text-xs text-black/55">Based on recent comparable sales</p>
+                    </div>
+                    <p className="text-lg font-bold">{formatDollars(BUYBACK_OFFER.marketValue)}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 bg-green-50 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Instant credit you get</p>
+                      <p className="mt-0.5 text-xs text-black/55">Added to your account immediately</p>
+                    </div>
+                    <p className="text-xl font-bold text-green-700">{formatDollars(BUYBACK_OFFER.instantCredit)}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Difference from market value</p>
+                      <p className="mt-0.5 text-xs text-black/55">Market value minus instant credit</p>
+                    </div>
+                    <p className="text-lg font-bold">−{formatDollars(buybackDifference)}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-zinc-100 p-4">
+                  <div>
+                    <p className="text-sm font-semibold">Offer expires in</p>
+                    <p className="text-xs text-black/55">After this time, the seller’s offer closes</p>
+                  </div>
+                  <p className="font-mono text-xl font-bold tabular-nums">{BUYBACK_OFFER.expiresIn}</p>
+                </div>
+
+                <p className="text-xs leading-5 text-black/55">Market value is an estimate, not a guaranteed resale price. Accepting transfers the card back to the seller for the instant credit shown.</p>
+
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setBuybackOfferStatus("accepted")}
+                    className="min-h-12 rounded-full bg-blue-600 px-6 text-base font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  >
+                    Accept {formatDollars(BUYBACK_OFFER.instantCredit)} offer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBuybackOfferStatus("declined")}
+                    className="min-h-12 rounded-full border border-black px-6 text-base font-bold text-black transition-colors hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                  >
+                    Decline offer
+                  </button>
+                </div>
+              </div>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Break Spots Sheet */}
       <BreakSpotsSheet 
         isOpen={isBreakSpotsOpen} 
