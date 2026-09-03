@@ -101,7 +101,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // concepts below rely on.
   // { id: "single-spin-populate", name: "Single Spin" },
   // { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
-  { id: "spin-in-place-roller-subtle", name: "Spin In Place, Subtle Winning" },
+  { id: "spin-in-place-roller-subtle", name: "randomizing" },
   // "Ticker" removed from the prototype. The "ticker" AnimationType member and its
   // branches (usesTicker/usesRollerCard, the drum render) are intentionally left in
   // place — they're harmless while nothing in the list selects "ticker".
