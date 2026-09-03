@@ -50,7 +50,7 @@ import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { TestingZone } from "@/components/testing-zone"
 
-type AnimationType = "card-flip" | "buyback" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "buyback" | "consignments" | "grading" | "vaulting" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 // Both manual concepts share the same behavior (extra 4th manual chip, chat
 // wording, item-card label); they only differ in how the chip is marked:
@@ -59,9 +59,11 @@ type AnimationType = "card-flip" | "buyback" | "single-spin-populate" | "single-
 const isManualConcept = (a: AnimationType) =>
   a === "multi-spin-5-manual" || a === "multi-spin-5-manual-icon"
 
-// "Buyback": same live stream + chat UI, but with no bidding box, spinner, or
-// randomizer at all — only the chat and comment input remain.
-const isBuyback = (a: AnimationType) => a === "buyback"
+// "Buyback" and its siblings (Consignments, Grading, Vaulting): same live stream
+// + chat UI, but with no bidding box, spinner, or randomizer at all — only the
+// chat and comment input remain. They differ only by their rail label.
+const isBuyback = (a: AnimationType) =>
+  a === "buyback" || a === "consignments" || a === "grading" || a === "vaulting"
 
 // "Spin Later" is a duplicate of "Single Spin"; the only differences are that all
 // spots are sold (0/32 available), the item card reads "Random Break #32", and the
@@ -107,6 +109,9 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
   { id: "spin-in-place-roller-subtle", name: "randomizing" },
   { id: "buyback", name: "Buyback" },
+  { id: "consignments", name: "Consignments" },
+  { id: "grading", name: "Grading" },
+  { id: "vaulting", name: "Vaulting" },
   // "Ticker" removed from the prototype. The "ticker" AnimationType member and its
   // branches (usesTicker/usesRollerCard, the drum render) are intentionally left in
   // place — they're harmless while nothing in the list selects "ticker".
