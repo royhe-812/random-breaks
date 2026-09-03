@@ -50,7 +50,7 @@ import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { TestingZone } from "@/components/testing-zone"
 
-type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "buyback" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 // Both manual concepts share the same behavior (extra 4th manual chip, chat
 // wording, item-card label); they only differ in how the chip is marked:
@@ -58,6 +58,10 @@ type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" 
 // uses a hand/pointer icon.
 const isManualConcept = (a: AnimationType) =>
   a === "multi-spin-5-manual" || a === "multi-spin-5-manual-icon"
+
+// "Buyback": same live stream + chat UI, but with no bidding box, spinner, or
+// randomizer at all — only the chat and comment input remain.
+const isBuyback = (a: AnimationType) => a === "buyback"
 
 // "Spin Later" is a duplicate of "Single Spin"; the only differences are that all
 // spots are sold (0/32 available), the item card reads "Random Break #32", and the
@@ -102,6 +106,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "single-spin-populate", name: "Single Spin" },
   // { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
   { id: "spin-in-place-roller-subtle", name: "randomizing" },
+  { id: "buyback", name: "Buyback" },
   // "Ticker" removed from the prototype. The "ticker" AnimationType member and its
   // branches (usesTicker/usesRollerCard, the drum render) are intentionally left in
   // place — they're harmless while nothing in the list selects "ticker".
@@ -1684,7 +1689,7 @@ case "thumbnails-4":
         {/* Team Spinner with Spots Available - shown for most concepts. For slot-machine (Team Picker),
             battle, and carousel it stays in its idle/zero state (thumbnail) since those concepts
             handle their own cycling + reveal full screen (isSpinnerRevealing is never set for them). */}
-        {selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "single-spin-later" && !isSpinInPlace(selectedAnimation) && selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && (
+        {selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "single-spin-later" && !isSpinInPlace(selectedAnimation) && selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && !isBuyback(selectedAnimation) && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
@@ -1863,6 +1868,9 @@ case "thumbnails-4":
         {/* For the push, this wrapper becomes the window the two cards slide
             through: without clipping, the displaced bid card would just float up
             over the chat instead of being shoved out of the frame. */}
+        {/* The entire bid box + randomizer + win-celebration unit. Hidden for
+            "Buyback", which keeps only the chat and comment input above. */}
+        {!isBuyback(selectedAnimation) && (
         <div
           className={`relative transition-[min-height] duration-300 ease-out ${
             isPushRoller ? "overflow-hidden" : ""
@@ -2226,6 +2234,7 @@ case "thumbnails-4":
           </div>
         )}
         </div>
+        )}
       </div>
 
       {/* Crown "WINNER" celebration - plays right after a bid win, before the
