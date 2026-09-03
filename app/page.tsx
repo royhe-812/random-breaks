@@ -365,6 +365,26 @@ const chatMessages = [
   { user: "cardfiend", message: "What's the case hit?", color: "text-white" },
 ]
 
+// Buyback version: no bidding, so the chat is pure hype reacting to insane NFL
+// card pulls coming out of the break.
+const buybackChatMessages = [
+  { user: "gridironpulls", message: "NO WAY that's a Mahomes gold /10!!", color: "text-yellow-400" },
+  { user: "hobbyheat", message: "That Caleb Williams RPA is a GRAIL", color: "text-white/60" },
+  { user: "casehitkyle", message: "CASE HIT!! Jefferson Downtown 🔥", color: "text-green-400" },
+  { user: "rookiervc", message: "Bijan Kaboom just hit, insane pull", color: "text-blue-400" },
+  { user: "autohunter", message: "Stroud on-card auto /25 are you kidding", color: "text-purple-400" },
+  { user: "sundaybreaks", message: "Burrow Color Blast is a WALL", color: "text-orange-400" },
+  { user: "chasethechase", message: "that Prizm Black 1/1 just changed his life", color: "text-red-400" },
+  { user: "wembyofnfl", message: "MARVIN HARRISON JR SILVER omg", color: "text-cyan-400" },
+  { user: "slabgod", message: "PSA 10 lock for sure on that one", color: "text-pink-400" },
+  { user: "flippincards", message: "the Kelce Kaboom is comping $400+ rn", color: "text-white" },
+  { user: "pullpartyy", message: "Nabers Silver Prizm let's gooo", color: "text-green-400" },
+  { user: "endzonebreaks", message: "Lamar Downtown would end the whole box", color: "text-blue-400" },
+  { user: "waxwarrior", message: "that numbered patch is nasty clean", color: "text-yellow-400" },
+  { user: "cardsbyleo", message: "Penix rookie auto sneaky hit", color: "text-purple-400" },
+  { user: "midnightpulls", message: "best break of the night no debate", color: "text-white/60" },
+]
+
 // Fixed teams for the Multi-Spin (Manual) scenario: Patriots (spot 1),
 // Bengals (spot 2), Lions (spot 3). The buyer then requests Lions + Cowboys
 // (the extra manual team not in the list).
@@ -526,10 +546,13 @@ export default function AnimationShowcase() {
      index changed on every tick — React saw 3 removals + 3 insertions instead of
      a 1-in/1-out, and `popLayout` rendered the outgoing copies on top of the
      incoming ones. That was the visible chat ghosting/duplication. */
+  // Buyback swaps the chat corpus for NFL-card-pull hype; every other version
+  // keeps the original messages.
+  const activeChatMessages = isBuyback(selectedAnimation) ? buybackChatMessages : chatMessages
   const [visibleMessages, setVisibleMessages] = useState(() =>
-    chatMessages.slice(0, 3).map((m, i) => ({ ...m, id: i })),
+    activeChatMessages.slice(0, 3).map((m, i) => ({ ...m, id: i })),
   )
-  const chatUidRef = useRef(chatMessages.length)
+  const chatUidRef = useRef(activeChatMessages.length)
   const [viewerCount, setViewerCount] = useState(240)
   const [winnerTeam, setWinnerTeam] = useState<Team | null>(null)
   const [showWinner, setShowWinner] = useState(false)
@@ -571,7 +594,7 @@ export default function AnimationShowcase() {
       setVisibleMessages(prev => {
         const newMessages = [...prev.slice(1)]
         newMessages.push({
-          ...chatMessages[messageIndexRef.current % chatMessages.length],
+          ...activeChatMessages[messageIndexRef.current % activeChatMessages.length],
           id: chatUidRef.current++,
         })
         messageIndexRef.current++
@@ -579,7 +602,14 @@ export default function AnimationShowcase() {
       })
     }, 2500)
     return () => clearInterval(interval)
-  }, [])
+  }, [activeChatMessages])
+
+  // When the prototype version changes, reseed the live chat from the corpus
+  // that version uses (buyback -> NFL pull hype, everything else -> default).
+  useEffect(() => {
+    messageIndexRef.current = 3
+    setVisibleMessages(activeChatMessages.slice(0, 3).map((m, i) => ({ ...m, id: chatUidRef.current++ })))
+  }, [activeChatMessages])
 
   // Fluctuate viewer count realistically
   useEffect(() => {
