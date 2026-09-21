@@ -443,119 +443,6 @@ export function TradesV1() {
               </AnimatePresence>
             </div>
 
-            {/* ── Persistent incoming trade banner — expanded only ── */}
-            <AnimatePresence mode="wait">
-              {showBanner && !bannerCollapsed && currentTrade && (
-                <motion.div
-                  layoutId="trade-banner"
-                  key="banner-expanded"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2, type: "spring", damping: 22, stiffness: 320 }}
-                  className="rounded-2xl bg-black/55 backdrop-blur-sm ring-1 ring-white/12 overflow-hidden pointer-events-auto"
-                >
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={currentTrade.id}
-                      initial={{ opacity: 0, x: 12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -12 }}
-                      transition={{ duration: 0.15 }}
-                    >
-                      {/* Header row */}
-                      <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
-                        {tradeCount > 1 && (
-                          <button
-                            type="button"
-                            onClick={goToPrev}
-                            disabled={safeIdx === 0}
-                            className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center disabled:opacity-25 hover:bg-white/20 transition-colors flex-shrink-0"
-                          >
-                            <ChevronLeft className="w-3 h-3 text-white" />
-                          </button>
-                        )}
-                        <span className={`w-6 h-6 rounded-full ${currentTrade.fromColor} flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0`}>
-                          {currentTrade.from[0].toUpperCase()}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[8px] font-semibold uppercase tracking-widest text-white/40 leading-none mb-0.5">Trade offer</p>
-                          <p className="text-[12px] font-semibold text-white truncate leading-tight">@{currentTrade.from}</p>
-                        </div>
-                        {tradeCount > 1 && (
-                          <>
-                            <span className="text-white/35 text-[10px] font-medium flex-shrink-0">{safeIdx + 1}/{tradeCount}</span>
-                            <button
-                              type="button"
-                              onClick={goToNext}
-                              disabled={safeIdx === tradeCount - 1}
-                              className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center disabled:opacity-25 hover:bg-white/20 transition-colors flex-shrink-0"
-                            >
-                              <ChevronRight className="w-3 h-3 text-white" />
-                            </button>
-                          </>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => setBannerCollapsed(true)}
-                          className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors flex-shrink-0"
-                        >
-                          <Minus className="w-2.5 h-2.5 text-white/50" />
-                        </button>
-                      </div>
-
-                      {/* Trade columns */}
-                      <div className="flex items-start gap-2 px-3 py-2 border-t border-b border-white/8">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[8px] font-semibold uppercase tracking-widest text-white/35 mb-1.5">They give</p>
-                          <div className="flex flex-wrap gap-1">
-                            {currentTrade.theyGive.map(team => (
-                              <span key={team} className="inline-flex items-center rounded-md bg-white/12 px-2 py-1 text-[10px] font-medium text-white/85 leading-none">
-                                {team}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex-shrink-0 pt-4">
-                          <ArrowLeftRight className="w-3 h-3 text-[#4CE160]" />
-                        </div>
-                        <div className="flex-1 min-w-0 text-right">
-                          <p className="text-[8px] font-semibold uppercase tracking-widest text-[#4CE160]/55 mb-1.5">You give</p>
-                          <div className="flex flex-wrap gap-1 justify-end">
-                            {currentTrade.theyWant.map(team => (
-                              <span key={team} className="inline-flex items-center rounded-md bg-[#4CE160]/18 px-2 py-1 text-[10px] font-medium text-[#4CE160] leading-none">
-                                {team}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-2 px-3 pt-2 pb-2.5">
-                        <button
-                          type="button"
-                          onClick={() => dismissTrade(currentTrade.id, false)}
-                          className="flex items-center justify-center gap-1 rounded-full bg-white/8 px-3.5 py-2 text-[11px] font-semibold text-white/50 hover:bg-white/15 transition-colors"
-                        >
-                          <X className="w-2.5 h-2.5" />
-                          Decline
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => dismissTrade(currentTrade.id, true)}
-                          className="flex-1 flex items-center justify-center gap-1 rounded-full bg-[#4CE160] px-3 py-2 text-[11px] font-semibold text-black hover:bg-[#43c955] transition-colors"
-                        >
-                          <Check className="w-2.5 h-2.5" strokeWidth={3} />
-                          Accept trade
-                        </button>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             {/* ── Comment input with /trade command ── */}
             <div className="relative w-full pointer-events-auto">
               <AnimatePresence>
@@ -680,7 +567,122 @@ export function TradesV1() {
               </div>
             </div>
 
-            {/* Auction card */}
+            {/* ── Item card slot: an expanded incoming Trade offer takes over the
+                item card area (where the auction title/price live) while the
+                buyer reviews it; the auction card returns once it's dismissed. ── */}
+            <AnimatePresence mode="wait">
+              {showBanner && !bannerCollapsed && currentTrade && (
+                <motion.div
+                  layoutId="trade-banner"
+                  key="banner-expanded"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2, type: "spring", damping: 22, stiffness: 320 }}
+                  className="rounded-2xl bg-black/55 backdrop-blur-sm ring-1 ring-white/12 overflow-hidden pointer-events-auto"
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentTrade.id}
+                      initial={{ opacity: 0, x: 12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -12 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      {/* Header row */}
+                      <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
+                        {tradeCount > 1 && (
+                          <button
+                            type="button"
+                            onClick={goToPrev}
+                            disabled={safeIdx === 0}
+                            className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center disabled:opacity-25 hover:bg-white/20 transition-colors flex-shrink-0"
+                          >
+                            <ChevronLeft className="w-3 h-3 text-white" />
+                          </button>
+                        )}
+                        <span className={`w-6 h-6 rounded-full ${currentTrade.fromColor} flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0`}>
+                          {currentTrade.from[0].toUpperCase()}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[8px] font-semibold uppercase tracking-widest text-white/40 leading-none mb-0.5">Trade offer</p>
+                          <p className="text-[12px] font-semibold text-white truncate leading-tight">@{currentTrade.from}</p>
+                        </div>
+                        {tradeCount > 1 && (
+                          <>
+                            <span className="text-white/35 text-[10px] font-medium flex-shrink-0">{safeIdx + 1}/{tradeCount}</span>
+                            <button
+                              type="button"
+                              onClick={goToNext}
+                              disabled={safeIdx === tradeCount - 1}
+                              className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center disabled:opacity-25 hover:bg-white/20 transition-colors flex-shrink-0"
+                            >
+                              <ChevronRight className="w-3 h-3 text-white" />
+                            </button>
+                          </>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setBannerCollapsed(true)}
+                          className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors flex-shrink-0"
+                        >
+                          <Minus className="w-2.5 h-2.5 text-white/50" />
+                        </button>
+                      </div>
+
+                      {/* Trade columns */}
+                      <div className="flex items-start gap-2 px-3 py-2 border-t border-b border-white/8">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[8px] font-semibold uppercase tracking-widest text-white/35 mb-1.5">They give</p>
+                          <div className="flex flex-wrap gap-1">
+                            {currentTrade.theyGive.map(team => (
+                              <span key={team} className="inline-flex items-center rounded-md bg-white/12 px-2 py-1 text-[10px] font-medium text-white/85 leading-none">
+                                {team}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0 pt-4">
+                          <ArrowLeftRight className="w-3 h-3 text-[#4CE160]" />
+                        </div>
+                        <div className="flex-1 min-w-0 text-right">
+                          <p className="text-[8px] font-semibold uppercase tracking-widest text-[#4CE160]/55 mb-1.5">You give</p>
+                          <div className="flex flex-wrap gap-1 justify-end">
+                            {currentTrade.theyWant.map(team => (
+                              <span key={team} className="inline-flex items-center rounded-md bg-[#4CE160]/18 px-2 py-1 text-[10px] font-medium text-[#4CE160] leading-none">
+                                {team}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 px-3 pt-2 pb-2.5">
+                        <button
+                          type="button"
+                          onClick={() => dismissTrade(currentTrade.id, false)}
+                          className="flex items-center justify-center gap-1 rounded-full bg-white/8 px-3.5 py-2 text-[11px] font-semibold text-white/50 hover:bg-white/15 transition-colors"
+                        >
+                          <X className="w-2.5 h-2.5" />
+                          Decline
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => dismissTrade(currentTrade.id, true)}
+                          className="flex-1 flex items-center justify-center gap-1 rounded-full bg-[#4CE160] px-3 py-2 text-[11px] font-semibold text-black hover:bg-[#43c955] transition-colors"
+                        >
+                          <Check className="w-2.5 h-2.5" strokeWidth={3} />
+                          Accept trade
+                        </button>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {!(showBanner && !bannerCollapsed && currentTrade) && (
             <div className="bg-black/40 backdrop-blur rounded-2xl p-4 pointer-events-auto">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0 pr-2">
@@ -717,6 +719,7 @@ export function TradesV1() {
                 </button>
               </div>
             </div>
+            )}
           </div>
           </LayoutGroup>
 
