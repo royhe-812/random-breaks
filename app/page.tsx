@@ -392,6 +392,31 @@ const BUYBACK_OFFER = {
 const formatDollars = (value: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value)
 
+// Consignments version: works like Buyback, but instead of buying the card
+// outright the seller offers to LIST and sell it on your behalf. The offer you
+// review is the proposed listing terms: the sale format (auction or Buy It
+// Now), the price (sale price for BIN, starting bid for auction), the seller's
+// commission once it sells, and how long the consignment runs.
+type ConsignmentOfferStatus = "available" | "reviewing" | "accepted" | "declined"
+
+const CONSIGNMENT_OFFER = {
+  card: {
+    title: "Rookie Gold Refractor /10",
+    player: "Jayden Daniels",
+    set: "2024 Prizm Football",
+    grade: "Ungraded",
+    image: "/images/buyback-card.png",
+  },
+  // Which listing format the seller is proposing. Flip to "Auction" to review
+  // the auction terms (starting bid) instead of the Buy It Now sale price.
+  format: "Buy It Now" as "Buy It Now" | "Auction",
+  salePrice: 480, // used when format is "Buy It Now"
+  startingBid: 250, // used when format is "Auction"
+  commissionPercent: 15,
+  duration: "30 days",
+  expiresIn: "14:32",
+} as const
+
 // Trades version: another collector in the stream offers to trade one of their
 // cards (plus cash to balance) for the card you just pulled. Same chat-only
 // shell as Buyback, but the review sheet compares both cards side by side.
@@ -464,6 +489,13 @@ export default function AnimationShowcase() {
   const [breakSpotsToRules, setBreakSpotsToRules] = useState(false) // When opening the sheet, jump straight to Break Rules
   const [buybackOfferStatus, setBuybackOfferStatus] = useState<BuybackOfferStatus>("available")
   const buybackDifference = BUYBACK_OFFER.marketValue - BUYBACK_OFFER.instantCredit
+  const [consignmentOfferStatus, setConsignmentOfferStatus] = useState<ConsignmentOfferStatus>("available")
+  // The price the terms are quoted against: sale price (BIN) or starting bid (auction).
+  const consignmentIsAuction = CONSIGNMENT_OFFER.format === "Auction"
+  const consignmentListPrice = consignmentIsAuction ? CONSIGNMENT_OFFER.startingBid : CONSIGNMENT_OFFER.salePrice
+  // Commission the seller keeps once it sells, and what you net after it, off the sale price.
+  const consignmentCommissionAmount = Math.round((CONSIGNMENT_OFFER.salePrice * CONSIGNMENT_OFFER.commissionPercent) / 100)
+  const consignmentNetToYou = CONSIGNMENT_OFFER.salePrice - consignmentCommissionAmount
   const [tradeOfferStatus, setTradeOfferStatus] = useState<TradeOfferStatus>("available")
   // What you receive (their card + cash) vs. what you give (your card).
   const tradeReceivedValue = TRADE_OFFER.theirCard.marketValue + TRADE_OFFER.cashToYou
@@ -566,6 +598,7 @@ export default function AnimationShowcase() {
   useEffect(() => {
     setBuybackOfferStatus("available")
     setTradeOfferStatus("available")
+    setConsignmentOfferStatus("available")
   }, [selectedAnimation])
 
   /* Non-push concepts spin the moment they mount, exactly as before. */
@@ -2035,6 +2068,67 @@ case "thumbnails-4":
           </AnimatePresence>
         )}
 
+        {selectedAnimation === "consignments" && (
+          <AnimatePresence mode="wait">
+            {consignmentOfferStatus === "available" || consignmentOfferStatus === "reviewing" ? (
+              <motion.section
+                key="consignment-offer"
+                aria-label="Seller consignment offer"
+                className="overflow-hidden rounded-2xl bg-black/80 text-white shadow-2xl backdrop-blur"
+                initial={{ opacity: 0, y: 28 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 16 }}
+                transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
+              >
+                <div className="flex min-h-44 gap-3 p-4">
+                  <img
+                    src={CONSIGNMENT_OFFER.card.image}
+                    alt={`${CONSIGNMENT_OFFER.card.player} ${CONSIGNMENT_OFFER.card.title} card`}
+                    className="h-28 w-20 flex-shrink-0 rounded-lg object-cover"
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <p className="text-xs font-bold uppercase tracking-wide text-green-400">Consignment offer</p>
+                    <h2 className="mt-1 text-pretty text-base font-bold leading-5">The seller wants to list and sell your card</h2>
+                    <p className="mt-1 truncate text-sm text-white/70">{CONSIGNMENT_OFFER.card.player} · {CONSIGNMENT_OFFER.card.title}</p>
+                    <div className="mt-auto flex items-end justify-between gap-3 pt-3">
+                      <div>
+                        <p className="text-xs text-white/60">{consignmentIsAuction ? "Auction start" : "List for"}</p>
+                        <p className="text-xl font-bold">{formatDollars(consignmentListPrice)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setConsignmentOfferStatus("reviewing")}
+                        className="min-h-11 rounded-full bg-blue-600 px-5 text-sm font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      >
+                        Review offer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-t border-white/15 px-4 py-2 text-xs text-white/60">Expires in {CONSIGNMENT_OFFER.expiresIn}</div>
+              </motion.section>
+            ) : (
+              <motion.section
+                key={consignmentOfferStatus}
+                aria-live="polite"
+                className="flex min-h-44 flex-col justify-center rounded-2xl bg-black/80 p-5 text-white shadow-2xl backdrop-blur"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <p className="text-xs font-bold uppercase tracking-wide text-white/60">Consignment offer</p>
+                <h2 className="mt-2 text-xl font-bold">
+                  {consignmentOfferStatus === "accepted" ? "Card consigned" : "Offer declined"}
+                </h2>
+                <p className="mt-1 text-sm text-white/70">
+                  {consignmentOfferStatus === "accepted"
+                    ? `The seller is listing it as ${CONSIGNMENT_OFFER.format} for ${formatDollars(consignmentListPrice)}. You’ll get paid when it sells.`
+                    : "You’ll keep the card from your break."}
+                </p>
+              </motion.section>
+            )}
+          </AnimatePresence>
+        )}
+
         {selectedAnimation === "trades" && (
           <AnimatePresence mode="wait">
             {tradeOfferStatus === "available" || tradeOfferStatus === "reviewing" ? (
@@ -2663,6 +2757,150 @@ case "thumbnails-4":
                   <button
                     type="button"
                     onClick={() => setBuybackOfferStatus("declined")}
+                    className="min-h-12 rounded-full border border-black px-6 text-base font-bold text-black transition-colors hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                  >
+                    Decline offer
+                  </button>
+                </div>
+              </div>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedAnimation === "consignments" && consignmentOfferStatus === "reviewing" && (
+          <motion.div
+            className="absolute inset-0 z-50 flex items-end bg-black/55"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setConsignmentOfferStatus("available")
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="consignment-offer-title"
+              className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl bg-white text-black shadow-2xl"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 360, damping: 38 }}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => setConsignmentOfferStatus("available")}
+                  className="min-h-11 rounded-full px-2 text-sm font-semibold text-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+                >
+                  Back
+                </button>
+                <p className="text-sm font-bold">Review consignment offer</p>
+                <button
+                  type="button"
+                  aria-label="Close offer review"
+                  onClick={() => setConsignmentOfferStatus("available")}
+                  className="flex min-h-11 min-w-11 items-center justify-end text-2xl leading-none text-black"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-5 p-5 pb-8">
+                <div className="flex gap-4">
+                  <img
+                    src={CONSIGNMENT_OFFER.card.image}
+                    alt={`${CONSIGNMENT_OFFER.card.player} ${CONSIGNMENT_OFFER.card.title} card`}
+                    className="h-36 w-24 flex-shrink-0 rounded-xl object-cover shadow-md"
+                  />
+                  <div className="min-w-0 pt-1">
+                    <p className="text-xs font-bold uppercase tracking-wide text-black/55">Your card</p>
+                    <h2 id="consignment-offer-title" className="mt-1 text-balance text-xl font-bold leading-6">{CONSIGNMENT_OFFER.card.player}</h2>
+                    <p className="mt-1 text-sm font-semibold">{CONSIGNMENT_OFFER.card.title}</p>
+                    <p className="mt-2 text-sm text-black/60">{CONSIGNMENT_OFFER.card.set}</p>
+                    <p className="text-sm text-black/60">{CONSIGNMENT_OFFER.card.grade}</p>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl border border-black/15">
+                  {/* 1. Sale format */}
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Sale format</p>
+                      <p className="mt-0.5 text-xs text-black/55">How the seller will list your card</p>
+                    </div>
+                    <p className="text-lg font-bold">{CONSIGNMENT_OFFER.format}</p>
+                  </div>
+                  {/* 2. Sale price (BIN) or starting bid (auction) */}
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">{consignmentIsAuction ? "Starting bid" : "Sale price"}</p>
+                      <p className="mt-0.5 text-xs text-black/55">
+                        {consignmentIsAuction ? "Where bidding opens" : "The Buy It Now price"}
+                      </p>
+                    </div>
+                    <p className="text-lg font-bold">{formatDollars(consignmentListPrice)}</p>
+                  </div>
+                  {/* 3. Seller commission */}
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Seller commission</p>
+                      <p className="mt-0.5 text-xs text-black/55">
+                        {consignmentIsAuction
+                          ? "Paid to the seller from the final sale price"
+                          : `Paid to the seller when it sells · ${formatDollars(consignmentCommissionAmount)}`}
+                      </p>
+                    </div>
+                    <p className="text-lg font-bold">{CONSIGNMENT_OFFER.commissionPercent}%</p>
+                  </div>
+                  {/* 4. Duration of consignment */}
+                  <div className="flex items-center justify-between gap-4 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Consignment duration</p>
+                      <p className="mt-0.5 text-xs text-black/55">How long the card stays listed</p>
+                    </div>
+                    <p className="text-lg font-bold">{CONSIGNMENT_OFFER.duration}</p>
+                  </div>
+                </div>
+
+                {!consignmentIsAuction && (
+                  <div className="flex items-center justify-between gap-4 rounded-2xl border border-green-200 bg-green-50 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">You receive if it sells</p>
+                      <p className="mt-0.5 text-xs text-black/55">Sale price minus seller commission</p>
+                    </div>
+                    <p className="text-xl font-bold text-green-700">{formatDollars(consignmentNetToYou)}</p>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-zinc-100 p-4">
+                  <div>
+                    <p className="text-sm font-semibold">Offer expires in</p>
+                    <p className="text-xs text-black/55">After this time, the seller’s offer closes</p>
+                  </div>
+                  <p className="font-mono text-xl font-bold tabular-nums">{CONSIGNMENT_OFFER.expiresIn}</p>
+                </div>
+
+                <p className="text-xs leading-5 text-black/55">
+                  {consignmentIsAuction
+                    ? "The starting bid is where the auction opens, not a guaranteed sale price. Accepting hands the card to the seller to list on your behalf; the commission comes out of the final sale price when it sells."
+                    : "Accepting hands the card to the seller to list on your behalf. You get paid only if it sells, after the seller’s commission is deducted."}
+                </p>
+
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setConsignmentOfferStatus("accepted")}
+                    className="min-h-12 rounded-full bg-blue-600 px-6 text-base font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  >
+                    Consign this card
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConsignmentOfferStatus("declined")}
                     className="min-h-12 rounded-full border border-black px-6 text-base font-bold text-black transition-colors hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
                   >
                     Decline offer
