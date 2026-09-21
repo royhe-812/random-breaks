@@ -1721,6 +1721,52 @@ case "thumbnails-4":
         </div>
       </div>
 
+      {/* Minimized offer pill — floats on the right beneath the side panel,
+          same position as the Trades collapsed pill. Tapping it restores the
+          full offer card in the bottom stack. */}
+      <AnimatePresence>
+        {selectedAnimation === "buyback" &&
+          (buybackOfferStatus === "available" || buybackOfferStatus === "reviewing") &&
+          buybackMinimized && (
+            <motion.button
+              key="buyback-pill"
+              type="button"
+              onClick={() => setBuybackMinimized(false)}
+              aria-label="Restore buyback offer"
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              transition={{ duration: 0.2, type: "spring", damping: 22, stiffness: 320 }}
+              className="absolute right-4 top-[430px] z-[18] flex flex-col items-center gap-1.5 rounded-2xl bg-black/70 px-2.5 py-3 ring-1 ring-green-400/50 backdrop-blur-xl"
+              style={{ width: 48 }}
+            >
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
+              <RotateCcw className="h-3.5 w-3.5 text-green-400" />
+              <span className="text-[10px] font-bold leading-none text-green-400">Offer</span>
+            </motion.button>
+          )}
+        {selectedAnimation === "consignments" &&
+          (consignmentOfferStatus === "available" || consignmentOfferStatus === "reviewing") &&
+          consignmentMinimized && (
+            <motion.button
+              key="consignment-pill"
+              type="button"
+              onClick={() => setConsignmentMinimized(false)}
+              aria-label="Restore consignment offer"
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              transition={{ duration: 0.2, type: "spring", damping: 22, stiffness: 320 }}
+              className="absolute right-4 top-[430px] z-[18] flex flex-col items-center gap-1.5 rounded-2xl bg-black/70 px-2.5 py-3 ring-1 ring-green-400/50 backdrop-blur-xl"
+              style={{ width: 48 }}
+            >
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
+              <Tag className="h-3.5 w-3.5 text-green-400" />
+              <span className="text-[10px] font-bold leading-none text-green-400">Offer</span>
+            </motion.button>
+          )}
+      </AnimatePresence>
+
       {/* Bottom UI Stack - Chat, Comment, Spinner, Auction Card */}
       <div className="absolute left-4 right-4 bottom-4 z-20 flex flex-col gap-2">
         {/* Chat Messages - extend full width, leaving room for the right nav (~56px) plus a 24px gap */}
@@ -2160,24 +2206,7 @@ case "thumbnails-4":
             over the chat instead of being shoved out of the frame. */}
         {selectedAnimation === "buyback" && (
           <AnimatePresence mode="wait">
-            {(buybackOfferStatus === "available" || buybackOfferStatus === "reviewing") && buybackMinimized ? (
-              <motion.button
-                key="buyback-pill"
-                type="button"
-                onClick={() => setBuybackMinimized(false)}
-                aria-label="Restore buyback offer"
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
-                transition={{ duration: 0.2, type: "spring", damping: 22, stiffness: 320 }}
-                className="flex flex-col items-center gap-1.5 self-end rounded-2xl bg-black/70 px-2.5 py-3 ring-1 ring-green-400/50 backdrop-blur-xl"
-                style={{ width: 48 }}
-              >
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
-                <RotateCcw className="h-3.5 w-3.5 text-green-400" />
-                <span className="text-[10px] font-bold leading-none text-green-400">Offer</span>
-              </motion.button>
-            ) : buybackOfferStatus === "available" || buybackOfferStatus === "reviewing" ? (
+            {(buybackOfferStatus === "available" || buybackOfferStatus === "reviewing") && !buybackMinimized ? (
               <motion.section
                 key="buyback-offer"
                 aria-label="Seller buyback offer"
@@ -2222,7 +2251,7 @@ case "thumbnails-4":
                 </div>
                 <div className="border-t border-white/15 px-4 py-2 text-xs text-white/60">Expires in {BUYBACK_OFFER.expiresIn}</div>
               </motion.section>
-            ) : (
+            ) : buybackOfferStatus === "accepted" || buybackOfferStatus === "declined" ? (
               <motion.section
                 key={buybackOfferStatus}
                 aria-live="polite"
@@ -2240,30 +2269,13 @@ case "thumbnails-4":
                     : "You’ll keep the card from your break."}
                 </p>
               </motion.section>
-            )}
+            ) : null}
           </AnimatePresence>
         )}
 
         {selectedAnimation === "consignments" && (
           <AnimatePresence mode="wait">
-            {(consignmentOfferStatus === "available" || consignmentOfferStatus === "reviewing") && consignmentMinimized ? (
-              <motion.button
-                key="consignment-pill"
-                type="button"
-                onClick={() => setConsignmentMinimized(false)}
-                aria-label="Restore consignment offer"
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
-                transition={{ duration: 0.2, type: "spring", damping: 22, stiffness: 320 }}
-                className="flex flex-col items-center gap-1.5 self-end rounded-2xl bg-black/70 px-2.5 py-3 ring-1 ring-green-400/50 backdrop-blur-xl"
-                style={{ width: 48 }}
-              >
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
-                <Tag className="h-3.5 w-3.5 text-green-400" />
-                <span className="text-[10px] font-bold leading-none text-green-400">Offer</span>
-              </motion.button>
-            ) : consignmentOfferStatus === "available" || consignmentOfferStatus === "reviewing" ? (
+            {(consignmentOfferStatus === "available" || consignmentOfferStatus === "reviewing") && !consignmentMinimized ? (
               <motion.section
                 key="consignment-offer"
                 aria-label="Seller consignment offer"
@@ -2308,7 +2320,7 @@ case "thumbnails-4":
                 </div>
                 <div className="border-t border-white/15 px-4 py-2 text-xs text-white/60">Expires in {CONSIGNMENT_OFFER.expiresIn}</div>
               </motion.section>
-            ) : (
+            ) : consignmentOfferStatus === "accepted" || consignmentOfferStatus === "declined" ? (
               <motion.section
                 key={consignmentOfferStatus}
                 aria-live="polite"
@@ -2326,7 +2338,7 @@ case "thumbnails-4":
                     : "You’ll keep the card from your break."}
                 </p>
               </motion.section>
-            )}
+            ) : null}
           </AnimatePresence>
         )}
 
