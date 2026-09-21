@@ -5,7 +5,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from "react"
 
 // External libraries
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, ChevronRight, Heart, Star, Pin } from "lucide-react"
+import { ChevronDown, ChevronRight, Heart, Star, Pin, Award, ShieldCheck, Clock, X } from "lucide-react"
 
 // Internal components
 import { TeamSpinner, type Team, teams } from "@/components/team-spinner"
@@ -65,6 +65,10 @@ const isManualConcept = (a: AnimationType) =>
 // chat and comment input remain. They differ only by their rail label.
 const isBuyback = (a: AnimationType) =>
   a === "buyback" || a === "trades" || a === "consignments" || a === "grading" || a === "vaulting"
+
+// Grading + Vaulting share one user-driven "/request" command that offers both
+// services, so either concept lands the buyer on the same command flow.
+const isRequestConcept = (a: AnimationType) => a === "grading" || a === "vaulting"
 
 // "Spin Later" is a duplicate of "Single Spin"; the only differences are that all
 // spots are sold (0/32 available), the item card reads "Random Break #32", and the
@@ -417,6 +421,38 @@ const CONSIGNMENT_OFFER = {
   expiresIn: "14:32",
 } as const
 
+// Grading + Vaulting are user-driven, not seller-pushed: the buyer types
+// "/request" in chat to open a menu offering PSA Grading and Vaulting as two
+// separate services. Grading shows an estimated price + turnaround; Vaulting
+// shows vault details + cost information.
+const REQUEST_CARD = {
+  player: "Jayden Daniels",
+  title: "Rookie Gold Refractor /10",
+  set: "2024 Prizm Football",
+  image: "/images/buyback-card.png",
+} as const
+
+const GRADING_INFO = {
+  service: "PSA Grading",
+  tier: "PSA Regular",
+  estimatedPrice: 25, // per card, incl. shipping to PSA
+  estimatedGradedValue: "$520 – $900", // estimated value once graded
+  turnaround: "45 business days",
+} as const
+
+const VAULTING_INFO = {
+  facility: "eBay Vault · New Castle, DE",
+  insuredValue: 480,
+  monthlyCost: 0, // free ongoing storage
+  costLabel: "Free",
+  intakeFee: 0,
+  benefits: [
+    "Climate-controlled, fully insured storage",
+    "Ships to any buyer in 1 business day when it sells",
+    "List instantly from the vault — no re-shipping",
+  ],
+} as const
+
 // Trades version: another collector in the stream offers to trade one of their
 // cards (plus cash to balance) for the card you just pulled. Same chat-only
 // shell as Buyback, but the review sheet compares both cards side by side.
@@ -496,6 +532,11 @@ export default function AnimationShowcase() {
   // Commission the seller keeps once it sells, and what you net after it, off the sale price.
   const consignmentCommissionAmount = Math.round((CONSIGNMENT_OFFER.salePrice * CONSIGNMENT_OFFER.commissionPercent) / 100)
   const consignmentNetToYou = CONSIGNMENT_OFFER.salePrice - consignmentCommissionAmount
+  // Grading / Vaulting "/request" command state.
+  const [requestCommandActive, setRequestCommandActive] = useState(false) // buyer "typed" /request
+  const [requestMenuOpen, setRequestMenuOpen] = useState(false) // service picker showing
+  const [requestSheet, setRequestSheet] = useState<"grading" | "vaulting" | null>(null) // open review sheet
+  const [requestStatus, setRequestStatus] = useState<"idle" | "grading-sent" | "vaulting-sent">("idle")
   const [tradeOfferStatus, setTradeOfferStatus] = useState<TradeOfferStatus>("available")
   // What you receive (their card + cash) vs. what you give (your card).
   const tradeReceivedValue = TRADE_OFFER.theirCard.marketValue + TRADE_OFFER.cashToYou
@@ -599,6 +640,10 @@ export default function AnimationShowcase() {
     setBuybackOfferStatus("available")
     setTradeOfferStatus("available")
     setConsignmentOfferStatus("available")
+    setRequestCommandActive(false)
+    setRequestMenuOpen(false)
+    setRequestSheet(null)
+    setRequestStatus("idle")
   }, [selectedAnimation])
 
   /* Non-push concepts spin the moment they mount, exactly as before. */
@@ -1758,6 +1803,107 @@ case "thumbnails-4":
             mock keyboard. The pre-written request only populates after the buyer
             taps a key, and tapping again (Send) posts it into chat. */}
         {(() => {
+          // Grading + Vaulting: a user-driven "/request" command that opens a
+          // service picker (PSA Grading / Vaulting), each leading to its own
+          // review sheet. This replaces the generic comment input for these two.
+          if (isRequestConcept(selectedAnimation)) {
+            const confirmation =
+              requestStatus === "grading-sent"
+                ? `Grading requested — ${GRADING_INFO.tier} · est. ${GRADING_INFO.turnaround}`
+                : requestStatus === "vaulting-sent"
+                  ? `Sent to the vault — ${VAULTING_INFO.facility}`
+                  : null
+            return (
+              <div className="flex flex-col gap-2">
+                {confirmation && (
+                  <motion.div
+                    key={requestStatus}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 rounded-2xl bg-[#4CE160]/15 px-4 py-3 ring-1 ring-[#4CE160]/50 backdrop-blur pointer-events-auto"
+                  >
+                    <ShieldCheck className="h-4 w-4 flex-shrink-0 text-[#4CE160]" />
+                    <span className="text-sm font-medium text-white">{confirmation}</span>
+                  </motion.div>
+                )}
+
+                {/* Service picker popover, sitting above the command input */}
+                <AnimatePresence>
+                  {requestMenuOpen && (
+                    <motion.div
+                      key="request-menu"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+                      className="overflow-hidden rounded-2xl bg-black/80 ring-1 ring-white/12 backdrop-blur pointer-events-auto"
+                      role="menu"
+                      aria-label="Request a service"
+                    >
+                      <div className="flex items-center justify-between px-4 pt-3 pb-1">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/45">Request a service</p>
+                        <button
+                          type="button"
+                          aria-label="Close menu"
+                          onClick={() => { setRequestMenuOpen(false); setRequestCommandActive(false) }}
+                          className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-white/60 hover:bg-white/20"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => { setRequestSheet("grading"); setRequestMenuOpen(false) }}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/10"
+                      >
+                        <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/20">
+                          <Award className="h-4.5 w-4.5 text-blue-300" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-white">PSA Grading</span>
+                          <span className="block truncate text-xs text-white/55">Get your card professionally graded</span>
+                        </span>
+                        <ChevronRight className="h-4 w-4 flex-shrink-0 text-white/35" />
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => { setRequestSheet("vaulting"); setRequestMenuOpen(false) }}
+                        className="flex w-full items-center gap-3 border-t border-white/8 px-4 py-3 text-left transition-colors hover:bg-white/10"
+                      >
+                        <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/20">
+                          <ShieldCheck className="h-4.5 w-4.5 text-amber-300" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-white">Vaulting</span>
+                          <span className="block truncate text-xs text-white/55">Store your card in the eBay Vault</span>
+                        </span>
+                        <ChevronRight className="h-4 w-4 flex-shrink-0 text-white/35" />
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Command input */}
+                <button
+                  type="button"
+                  onClick={() => { setRequestCommandActive(true); setRequestMenuOpen(true) }}
+                  className={`flex w-full items-center gap-2 rounded-full bg-black/40 px-4 py-3 text-left backdrop-blur transition-shadow pointer-events-auto ${requestMenuOpen ? "ring-1 ring-[#4CE160]/60" : ""}`}
+                >
+                  {requestCommandActive ? (
+                    <span className="flex-1 text-sm font-medium">
+                      <span className="text-[#4CE160]">/request</span>
+                    </span>
+                  ) : (
+                    <span className="flex-1 text-sm text-white/50">Type <span className="text-white/70">/request</span> to grade or vault…</span>
+                  )}
+                  <Heart className="h-5 w-5 fill-red-500 text-red-500" />
+                </button>
+              </div>
+            )
+          }
+
           const hasDraft = revealPendingSeller && !!requestDraft && !commentRequested
           const draftText = requestDraft
             ? isManualConcept(selectedAnimation) && manualExtraTeam
@@ -2906,6 +3052,239 @@ case "thumbnails-4":
                     Decline offer
                   </button>
                 </div>
+              </div>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Grading review sheet: estimated price + turnaround time */}
+      <AnimatePresence>
+        {requestSheet === "grading" && (
+          <motion.div
+            className="absolute inset-0 z-50 flex items-end bg-black/55"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setRequestSheet(null)
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="grading-title"
+              className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl bg-white text-black shadow-2xl"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 360, damping: 38 }}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => setRequestSheet(null)}
+                  className="min-h-11 rounded-full px-2 text-sm font-semibold text-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+                >
+                  Back
+                </button>
+                <p className="text-sm font-bold">PSA Grading</p>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onClick={() => setRequestSheet(null)}
+                  className="flex min-h-11 min-w-11 items-center justify-end text-2xl leading-none text-black"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-5 p-5 pb-8">
+                <div className="flex gap-4">
+                  <img
+                    src={REQUEST_CARD.image}
+                    alt={`${REQUEST_CARD.player} ${REQUEST_CARD.title} card`}
+                    className="h-36 w-24 flex-shrink-0 rounded-xl object-cover shadow-md"
+                  />
+                  <div className="min-w-0 pt-1">
+                    <p className="text-xs font-bold uppercase tracking-wide text-black/55">Grading request</p>
+                    <h2 id="grading-title" className="mt-1 text-balance text-xl font-bold leading-6">{REQUEST_CARD.player}</h2>
+                    <p className="mt-1 text-sm font-semibold">{REQUEST_CARD.title}</p>
+                    <p className="mt-2 text-sm text-black/60">{REQUEST_CARD.set}</p>
+                    <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                      <Award className="h-3.5 w-3.5" />
+                      {GRADING_INFO.tier}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl border border-black/15">
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Estimated price</p>
+                      <p className="mt-0.5 text-xs text-black/55">Grading fee incl. shipping to PSA</p>
+                    </div>
+                    <p className="text-lg font-bold">{formatDollars(GRADING_INFO.estimatedPrice)}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-black/45" />
+                      <div>
+                        <p className="text-sm font-semibold">Turnaround time</p>
+                        <p className="mt-0.5 text-xs text-black/55">From when PSA receives the card</p>
+                      </div>
+                    </div>
+                    <p className="text-lg font-bold">{GRADING_INFO.turnaround}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Estimated graded value</p>
+                      <p className="mt-0.5 text-xs text-black/55">Range once graded — not guaranteed</p>
+                    </div>
+                    <p className="text-lg font-bold text-green-700">{GRADING_INFO.estimatedGradedValue}</p>
+                  </div>
+                </div>
+
+                <p className="text-xs leading-5 text-black/55">
+                  Estimated values are based on recent comparable sales and depend on the final grade. Requesting sends your card to PSA through eBay; grading fees are charged when it ships.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => { setRequestStatus("grading-sent"); setRequestSheet(null); setRequestCommandActive(false); setRequestMenuOpen(false) }}
+                  className="min-h-12 rounded-full bg-blue-600 px-6 text-base font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  Request grading · {formatDollars(GRADING_INFO.estimatedPrice)}
+                </button>
+              </div>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Vaulting review sheet: vault information + cost information */}
+      <AnimatePresence>
+        {requestSheet === "vaulting" && (
+          <motion.div
+            className="absolute inset-0 z-50 flex items-end bg-black/55"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setRequestSheet(null)
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="vaulting-title"
+              className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl bg-white text-black shadow-2xl"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 360, damping: 38 }}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => setRequestSheet(null)}
+                  className="min-h-11 rounded-full px-2 text-sm font-semibold text-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+                >
+                  Back
+                </button>
+                <p className="text-sm font-bold">Vaulting</p>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onClick={() => setRequestSheet(null)}
+                  className="flex min-h-11 min-w-11 items-center justify-end text-2xl leading-none text-black"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-5 p-5 pb-8">
+                <div className="flex gap-4">
+                  <img
+                    src={REQUEST_CARD.image}
+                    alt={`${REQUEST_CARD.player} ${REQUEST_CARD.title} card`}
+                    className="h-36 w-24 flex-shrink-0 rounded-xl object-cover shadow-md"
+                  />
+                  <div className="min-w-0 pt-1">
+                    <p className="text-xs font-bold uppercase tracking-wide text-black/55">Vault request</p>
+                    <h2 id="vaulting-title" className="mt-1 text-balance text-xl font-bold leading-6">{REQUEST_CARD.player}</h2>
+                    <p className="mt-1 text-sm font-semibold">{REQUEST_CARD.title}</p>
+                    <p className="mt-2 text-sm text-black/60">{REQUEST_CARD.set}</p>
+                  </div>
+                </div>
+
+                {/* Vault information */}
+                <div>
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wide text-black/55">Vault information</p>
+                  <div className="overflow-hidden rounded-2xl border border-black/15">
+                    <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4 text-amber-500" />
+                        <p className="text-sm font-semibold">Facility</p>
+                      </div>
+                      <p className="text-right text-sm font-bold">{VAULTING_INFO.facility}</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 p-4">
+                      <p className="text-sm font-semibold">Insured value</p>
+                      <p className="text-lg font-bold">{formatDollars(VAULTING_INFO.insuredValue)}</p>
+                    </div>
+                  </div>
+                  <ul className="mt-3 flex flex-col gap-2">
+                    {VAULTING_INFO.benefits.map((benefit) => (
+                      <li key={benefit} className="flex items-start gap-2 text-sm text-black/70">
+                        <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Cost information */}
+                <div>
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wide text-black/55">Cost information</p>
+                  <div className="overflow-hidden rounded-2xl border border-black/15">
+                    <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                      <div>
+                        <p className="text-sm font-semibold">Storage</p>
+                        <p className="mt-0.5 text-xs text-black/55">Ongoing monthly cost</p>
+                      </div>
+                      <p className="text-lg font-bold text-green-700">{VAULTING_INFO.costLabel}</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                      <div>
+                        <p className="text-sm font-semibold">Intake fee</p>
+                        <p className="mt-0.5 text-xs text-black/55">One-time, to vault this card</p>
+                      </div>
+                      <p className="text-lg font-bold">{VAULTING_INFO.intakeFee === 0 ? "Free" : formatDollars(VAULTING_INFO.intakeFee)}</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 p-4">
+                      <div>
+                        <p className="text-sm font-semibold">Selling fees</p>
+                        <p className="mt-0.5 text-xs text-black/55">Only charged if you sell from the vault</p>
+                      </div>
+                      <p className="text-sm font-bold">Standard rate</p>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-xs leading-5 text-black/55">
+                  Vaulting keeps your card secure and insured so you can sell instantly without shipping it yourself. You can request it back or list it any time.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => { setRequestStatus("vaulting-sent"); setRequestSheet(null); setRequestCommandActive(false); setRequestMenuOpen(false) }}
+                  className="min-h-12 rounded-full bg-blue-600 px-6 text-base font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  Send to vault · {VAULTING_INFO.costLabel} storage
+                </button>
               </div>
             </motion.section>
           </motion.div>
