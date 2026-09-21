@@ -5,7 +5,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from "react"
 
 // External libraries
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, ChevronRight, Heart, Star, Pin, Award, ShieldCheck, Clock, X } from "lucide-react"
+import { ChevronDown, ChevronRight, Heart, Star, Pin, Award, ShieldCheck, Clock, X, Minus, Tag, RotateCcw } from "lucide-react"
 
 // Internal components
 import { TeamSpinner, type Team, teams } from "@/components/team-spinner"
@@ -525,6 +525,9 @@ export default function AnimationShowcase() {
   const [breakSpotsToRules, setBreakSpotsToRules] = useState(false) // When opening the sheet, jump straight to Break Rules
   const [buybackOfferStatus, setBuybackOfferStatus] = useState<BuybackOfferStatus>("available")
   const buybackDifference = BUYBACK_OFFER.marketValue - BUYBACK_OFFER.instantCredit
+  // Offer pop-ups can be minimized to a small floating pill (like Trades).
+  const [buybackMinimized, setBuybackMinimized] = useState(false)
+  const [consignmentMinimized, setConsignmentMinimized] = useState(false)
   const [consignmentOfferStatus, setConsignmentOfferStatus] = useState<ConsignmentOfferStatus>("available")
   // The price the terms are quoted against: sale price (BIN) or starting bid (auction).
   const consignmentIsAuction = CONSIGNMENT_OFFER.format === "Auction"
@@ -640,6 +643,8 @@ export default function AnimationShowcase() {
     setBuybackOfferStatus("available")
     setTradeOfferStatus("available")
     setConsignmentOfferStatus("available")
+    setBuybackMinimized(false)
+    setConsignmentMinimized(false)
     setRequestCommandActive(false)
     setRequestMenuOpen(false)
     setRequestSheet(null)
@@ -2155,23 +2160,48 @@ case "thumbnails-4":
             over the chat instead of being shoved out of the frame. */}
         {selectedAnimation === "buyback" && (
           <AnimatePresence mode="wait">
-            {buybackOfferStatus === "available" || buybackOfferStatus === "reviewing" ? (
+            {(buybackOfferStatus === "available" || buybackOfferStatus === "reviewing") && buybackMinimized ? (
+              <motion.button
+                key="buyback-pill"
+                type="button"
+                onClick={() => setBuybackMinimized(false)}
+                aria-label="Restore buyback offer"
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85 }}
+                transition={{ duration: 0.2, type: "spring", damping: 22, stiffness: 320 }}
+                className="flex flex-col items-center gap-1.5 self-end rounded-2xl bg-black/70 px-2.5 py-3 ring-1 ring-green-400/50 backdrop-blur-xl"
+                style={{ width: 48 }}
+              >
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
+                <RotateCcw className="h-3.5 w-3.5 text-green-400" />
+                <span className="text-[10px] font-bold leading-none text-green-400">Offer</span>
+              </motion.button>
+            ) : buybackOfferStatus === "available" || buybackOfferStatus === "reviewing" ? (
               <motion.section
                 key="buyback-offer"
                 aria-label="Seller buyback offer"
-                className="overflow-hidden rounded-2xl bg-black/80 text-white shadow-2xl backdrop-blur"
+                className="relative overflow-hidden rounded-2xl bg-black/80 text-white shadow-2xl backdrop-blur"
                 initial={{ opacity: 0, y: 28 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 16 }}
                 transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
               >
+                <button
+                  type="button"
+                  onClick={() => setBuybackMinimized(true)}
+                  aria-label="Minimize offer"
+                  className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/60 transition-colors hover:bg-white/20"
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
                 <div className="flex min-h-44 gap-3 p-4">
                   <img
                     src={BUYBACK_OFFER.card.image}
                     alt={`${BUYBACK_OFFER.card.player} ${BUYBACK_OFFER.card.title} card`}
                     className="h-28 w-20 flex-shrink-0 rounded-lg object-cover"
                   />
-                  <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="flex min-w-0 flex-1 flex-col pr-7">
                     <p className="text-xs font-bold uppercase tracking-wide text-green-400">Buyback offer</p>
                     <h2 className="mt-1 text-pretty text-base font-bold leading-5">The seller wants to buy your card</h2>
                     <p className="mt-1 truncate text-sm text-white/70">{BUYBACK_OFFER.card.player} · {BUYBACK_OFFER.card.title}</p>
@@ -2216,23 +2246,48 @@ case "thumbnails-4":
 
         {selectedAnimation === "consignments" && (
           <AnimatePresence mode="wait">
-            {consignmentOfferStatus === "available" || consignmentOfferStatus === "reviewing" ? (
+            {(consignmentOfferStatus === "available" || consignmentOfferStatus === "reviewing") && consignmentMinimized ? (
+              <motion.button
+                key="consignment-pill"
+                type="button"
+                onClick={() => setConsignmentMinimized(false)}
+                aria-label="Restore consignment offer"
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85 }}
+                transition={{ duration: 0.2, type: "spring", damping: 22, stiffness: 320 }}
+                className="flex flex-col items-center gap-1.5 self-end rounded-2xl bg-black/70 px-2.5 py-3 ring-1 ring-green-400/50 backdrop-blur-xl"
+                style={{ width: 48 }}
+              >
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
+                <Tag className="h-3.5 w-3.5 text-green-400" />
+                <span className="text-[10px] font-bold leading-none text-green-400">Offer</span>
+              </motion.button>
+            ) : consignmentOfferStatus === "available" || consignmentOfferStatus === "reviewing" ? (
               <motion.section
                 key="consignment-offer"
                 aria-label="Seller consignment offer"
-                className="overflow-hidden rounded-2xl bg-black/80 text-white shadow-2xl backdrop-blur"
+                className="relative overflow-hidden rounded-2xl bg-black/80 text-white shadow-2xl backdrop-blur"
                 initial={{ opacity: 0, y: 28 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 16 }}
                 transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
               >
+                <button
+                  type="button"
+                  onClick={() => setConsignmentMinimized(true)}
+                  aria-label="Minimize offer"
+                  className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/60 transition-colors hover:bg-white/20"
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
                 <div className="flex min-h-44 gap-3 p-4">
                   <img
                     src={CONSIGNMENT_OFFER.card.image}
                     alt={`${CONSIGNMENT_OFFER.card.player} ${CONSIGNMENT_OFFER.card.title} card`}
                     className="h-28 w-20 flex-shrink-0 rounded-lg object-cover"
                   />
-                  <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="flex min-w-0 flex-1 flex-col pr-7">
                     <p className="text-xs font-bold uppercase tracking-wide text-green-400">Consignment offer</p>
                     <h2 className="mt-1 text-pretty text-base font-bold leading-5">The seller wants to list and sell your card</h2>
                     <p className="mt-1 truncate text-sm text-white/70">{CONSIGNMENT_OFFER.card.player} · {CONSIGNMENT_OFFER.card.title}</p>
