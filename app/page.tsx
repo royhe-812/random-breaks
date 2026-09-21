@@ -50,7 +50,7 @@ import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { TestingZone } from "@/components/testing-zone"
 
-type AnimationType = "card-flip" | "buyback" | "consignments" | "grading" | "vaulting" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "buyback" | "trades" | "consignments" | "grading" | "vaulting" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 // Both manual concepts share the same behavior (extra 4th manual chip, chat
 // wording, item-card label); they only differ in how the chip is marked:
@@ -63,7 +63,7 @@ const isManualConcept = (a: AnimationType) =>
 // + chat UI, but with no bidding box, spinner, or randomizer at all — only the
 // chat and comment input remain. They differ only by their rail label.
 const isBuyback = (a: AnimationType) =>
-  a === "buyback" || a === "consignments" || a === "grading" || a === "vaulting"
+  a === "buyback" || a === "trades" || a === "consignments" || a === "grading" || a === "vaulting"
 
 // "Spin Later" is a duplicate of "Single Spin"; the only differences are that all
 // spots are sold (0/32 available), the item card reads "Random Break #32", and the
@@ -109,6 +109,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
   { id: "spin-in-place-roller-subtle", name: "Randomizing" },
   { id: "buyback", name: "Buy back" },
+  { id: "trades", name: "Trades" },
   { id: "consignments", name: "Consignments" },
   { id: "grading", name: "Grading" },
   { id: "vaulting", name: "Vaulting" },
@@ -390,6 +391,33 @@ const BUYBACK_OFFER = {
 const formatDollars = (value: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value)
 
+// Trades version: another collector in the stream offers to trade one of their
+// cards (plus cash to balance) for the card you just pulled. Same chat-only
+// shell as Buyback, but the review sheet compares both cards side by side.
+type TradeOfferStatus = "available" | "reviewing" | "accepted" | "declined"
+
+const TRADE_OFFER = {
+  from: "hobbyheat",
+  yourCard: {
+    title: "Rookie Gold Refractor /10",
+    player: "Jayden Daniels",
+    set: "2024 Prizm Football",
+    grade: "Ungraded",
+    image: "/images/buyback-card.png",
+    marketValue: 425,
+  },
+  theirCard: {
+    title: "Silver Prizm Refractor /25",
+    player: "Justin Jefferson",
+    set: "2024 Prizm Football",
+    grade: "PSA 9",
+    image: "/images/trade-card.png",
+    marketValue: 410,
+  },
+  // Cash the other collector adds to your side to balance the trade.
+  cashToYou: 60,
+} as const
+
 const buybackChatMessages = [
   { user: "gridironpulls", message: "NO WAY that's a Mahomes gold /10!!", color: "text-yellow-400" },
   { user: "hobbyheat", message: "That Caleb Williams RPA is a GRAIL", color: "text-white/60" },
@@ -435,6 +463,10 @@ export default function AnimationShowcase() {
   const [breakSpotsToRules, setBreakSpotsToRules] = useState(false) // When opening the sheet, jump straight to Break Rules
   const [buybackOfferStatus, setBuybackOfferStatus] = useState<BuybackOfferStatus>("available")
   const buybackDifference = BUYBACK_OFFER.marketValue - BUYBACK_OFFER.instantCredit
+  const [tradeOfferStatus, setTradeOfferStatus] = useState<TradeOfferStatus>("available")
+  // What you receive (their card + cash) vs. what you give (your card).
+  const tradeReceivedValue = TRADE_OFFER.theirCard.marketValue + TRADE_OFFER.cashToYou
+  const tradeNetDifference = tradeReceivedValue - TRADE_OFFER.yourCard.marketValue
   const [showMarquee, setShowMarquee] = useState(false) // Toggle (under the seller name) for the promo marquee; off by default on both multi spin concepts
   const [showPinnedMessage, setShowPinnedMessage] = useState(false) // Toggle for the seller's pinned message above the comment input
   // Demo: tapping the spots arc cycles the available count through the color tiers
@@ -532,6 +564,7 @@ export default function AnimationShowcase() {
 
   useEffect(() => {
     setBuybackOfferStatus("available")
+    setTradeOfferStatus("available")
   }, [selectedAnimation])
 
   /* Non-push concepts spin the moment they mount, exactly as before. */
@@ -1988,6 +2021,74 @@ case "thumbnails-4":
           </AnimatePresence>
         )}
 
+        {selectedAnimation === "trades" && (
+          <AnimatePresence mode="wait">
+            {tradeOfferStatus === "available" || tradeOfferStatus === "reviewing" ? (
+              <motion.section
+                key="trade-offer"
+                aria-label="Collector trade offer"
+                className="overflow-hidden rounded-2xl bg-black/80 text-white shadow-2xl backdrop-blur"
+                initial={{ opacity: 0, y: 28 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 16 }}
+                transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
+              >
+                <div className="flex min-h-44 gap-3 p-4">
+                  <div className="relative flex-shrink-0">
+                    <img
+                      src={TRADE_OFFER.theirCard.image}
+                      alt={`${TRADE_OFFER.theirCard.player} ${TRADE_OFFER.theirCard.title} card`}
+                      className="h-28 w-20 rounded-lg object-cover"
+                    />
+                    <img
+                      src={TRADE_OFFER.yourCard.image}
+                      alt={`${TRADE_OFFER.yourCard.player} ${TRADE_OFFER.yourCard.title} card`}
+                      className="absolute -bottom-1 -right-2 h-16 w-11 rounded-md border-2 border-black object-cover"
+                    />
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <p className="text-xs font-bold uppercase tracking-wide text-purple-300">Trade offer</p>
+                    <h2 className="mt-1 text-pretty text-base font-bold leading-5">{TRADE_OFFER.from} wants to trade for your card</h2>
+                    <p className="mt-1 truncate text-sm text-white/70">{TRADE_OFFER.theirCard.player} · {TRADE_OFFER.theirCard.title}</p>
+                    <div className="mt-auto flex items-end justify-between gap-3 pt-3">
+                      <div>
+                        <p className="text-xs text-white/60">Their card + cash</p>
+                        <p className="text-xl font-bold">{formatDollars(tradeReceivedValue)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setTradeOfferStatus("reviewing")}
+                        className="min-h-11 rounded-full bg-blue-600 px-5 text-sm font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      >
+                        Review offer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-t border-white/15 px-4 py-2 text-xs text-white/60">Expires in {BUYBACK_OFFER.expiresIn}</div>
+              </motion.section>
+            ) : (
+              <motion.section
+                key={tradeOfferStatus}
+                aria-live="polite"
+                className="flex min-h-44 flex-col justify-center rounded-2xl bg-black/80 p-5 text-white shadow-2xl backdrop-blur"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <p className="text-xs font-bold uppercase tracking-wide text-white/60">Trade offer</p>
+                <h2 className="mt-2 text-xl font-bold">
+                  {tradeOfferStatus === "accepted" ? "Trade accepted" : "Trade declined"}
+                </h2>
+                <p className="mt-1 text-sm text-white/70">
+                  {tradeOfferStatus === "accepted"
+                    ? `You’ll receive ${TRADE_OFFER.theirCard.player} plus ${formatDollars(TRADE_OFFER.cashToYou)}. Your card ships to ${TRADE_OFFER.from}.`
+                    : "You’ll keep the card from your break."}
+                </p>
+              </motion.section>
+            )}
+          </AnimatePresence>
+        )}
+
         {/* The entire bid box + randomizer + win-celebration unit. Hidden for
             "Buyback", which keeps only the chat and comment input above. */}
         {!isBuyback(selectedAnimation) && (
@@ -2548,6 +2649,145 @@ case "thumbnails-4":
                   <button
                     type="button"
                     onClick={() => setBuybackOfferStatus("declined")}
+                    className="min-h-12 rounded-full border border-black px-6 text-base font-bold text-black transition-colors hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                  >
+                    Decline offer
+                  </button>
+                </div>
+              </div>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedAnimation === "trades" && tradeOfferStatus === "reviewing" && (
+          <motion.div
+            className="absolute inset-0 z-50 flex items-end bg-black/55"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setTradeOfferStatus("available")
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="trade-offer-title"
+              className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl bg-white text-black shadow-2xl"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 360, damping: 38 }}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => setTradeOfferStatus("available")}
+                  className="min-h-11 rounded-full px-2 text-sm font-semibold text-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+                >
+                  Back
+                </button>
+                <p className="text-sm font-bold">Review trade offer</p>
+                <button
+                  type="button"
+                  aria-label="Close offer review"
+                  onClick={() => setTradeOfferStatus("available")}
+                  className="flex min-h-11 min-w-11 items-center justify-end text-2xl leading-none text-black"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-5 p-5 pb-8">
+                <p id="trade-offer-title" className="text-balance text-lg font-bold leading-6">
+                  {TRADE_OFFER.from} wants to trade with you
+                </p>
+
+                <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-3">
+                  <div className="flex flex-col rounded-2xl border border-black/15 p-3">
+                    <p className="text-xs font-bold uppercase tracking-wide text-black/55">You give</p>
+                    <img
+                      src={TRADE_OFFER.yourCard.image}
+                      alt={`${TRADE_OFFER.yourCard.player} ${TRADE_OFFER.yourCard.title} card`}
+                      className="mt-2 aspect-[2/3] w-full rounded-lg object-cover shadow-sm"
+                    />
+                    <p className="mt-2 text-sm font-bold leading-5">{TRADE_OFFER.yourCard.player}</p>
+                    <p className="text-xs text-black/60">{TRADE_OFFER.yourCard.title}</p>
+                    <p className="mt-1 text-xs text-black/55">{TRADE_OFFER.yourCard.grade}</p>
+                    <p className="mt-auto pt-2 text-sm font-bold">{formatDollars(TRADE_OFFER.yourCard.marketValue)}</p>
+                  </div>
+
+                  <div className="flex items-center text-black/40" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M7 4 3 8l4 4" />
+                      <path d="M3 8h14" />
+                      <path d="m17 20 4-4-4-4" />
+                      <path d="M21 16H7" />
+                    </svg>
+                  </div>
+
+                  <div className="flex flex-col rounded-2xl border border-blue-200 bg-blue-50/60 p-3">
+                    <p className="text-xs font-bold uppercase tracking-wide text-blue-700">You get</p>
+                    <img
+                      src={TRADE_OFFER.theirCard.image}
+                      alt={`${TRADE_OFFER.theirCard.player} ${TRADE_OFFER.theirCard.title} card`}
+                      className="mt-2 aspect-[2/3] w-full rounded-lg object-cover shadow-sm"
+                    />
+                    <p className="mt-2 text-sm font-bold leading-5">{TRADE_OFFER.theirCard.player}</p>
+                    <p className="text-xs text-black/60">{TRADE_OFFER.theirCard.title}</p>
+                    <p className="mt-1 text-xs text-black/55">{TRADE_OFFER.theirCard.grade}</p>
+                    <p className="mt-auto pt-2 text-sm font-bold">{formatDollars(TRADE_OFFER.theirCard.marketValue)}</p>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl border border-black/15">
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Their card market value</p>
+                      <p className="mt-0.5 text-xs text-black/55">Based on recent comparable sales</p>
+                    </div>
+                    <p className="text-lg font-bold">{formatDollars(TRADE_OFFER.theirCard.marketValue)}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 bg-green-50 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Cash credited to you</p>
+                      <p className="mt-0.5 text-xs text-black/55">Added to your account to balance the trade</p>
+                    </div>
+                    <p className="text-xl font-bold text-green-700">+{formatDollars(TRADE_OFFER.cashToYou)}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Net difference in your favor</p>
+                      <p className="mt-0.5 text-xs text-black/55">What you get minus your card’s value</p>
+                    </div>
+                    <p className="text-lg font-bold text-green-700">+{formatDollars(tradeNetDifference)}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-zinc-100 p-4">
+                  <div>
+                    <p className="text-sm font-semibold">Offer expires in</p>
+                    <p className="text-xs text-black/55">After this time, the trade offer closes</p>
+                  </div>
+                  <p className="font-mono text-xl font-bold tabular-nums">{BUYBACK_OFFER.expiresIn}</p>
+                </div>
+
+                <p className="text-xs leading-5 text-black/55">Market values are estimates, not guaranteed resale prices. Accepting sends your card to {TRADE_OFFER.from} and transfers their card plus {formatDollars(TRADE_OFFER.cashToYou)} to you.</p>
+
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setTradeOfferStatus("accepted")}
+                    className="min-h-12 rounded-full bg-blue-600 px-6 text-base font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  >
+                    Accept trade
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTradeOfferStatus("declined")}
                     className="min-h-12 rounded-full border border-black px-6 text-base font-bold text-black transition-colors hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
                   >
                     Decline offer
