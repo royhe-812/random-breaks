@@ -116,8 +116,12 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "buyback", name: "Buy back" },
   { id: "trades", name: "Trades" },
   { id: "consignments", name: "Consignments" },
-  { id: "grading", name: "Grading" },
-  { id: "vaulting", name: "Vaulting" },
+  { id: "grading", name: "Grading and Vaulting" },
+  // "Vaulting" removed as a standalone concept — the "Grading and Vaulting"
+  // concept above already offers both services through the /request menu. The
+  // "vaulting" AnimationType member and its branches are intentionally left in
+  // place (harmless while nothing in the list selects it).
+  // { id: "vaulting", name: "Vaulting" },
   // "Ticker" removed from the prototype. The "ticker" AnimationType member and its
   // branches (usesTicker/usesRollerCard, the drum render) are intentionally left in
   // place — they're harmless while nothing in the list selects "ticker".
