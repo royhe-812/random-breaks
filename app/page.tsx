@@ -44,6 +44,7 @@ import { ThumbnailsInlineReveal } from "@/components/animations/thumbnails-inlin
 import { ThumbnailsInitialsReveal } from "@/components/animations/thumbnails-initials-reveal"
 import { ThumbnailsTextReveal } from "@/components/animations/thumbnails-text-reveal"
 import { InStreamExperience } from "@/components/in-stream-experience"
+import { TradesV1 } from "@/components/trades-v1"
 import { LiveViewerIndicator } from "@/components/live-viewer-indicator"
 import { IPhoneStatusBar } from "@/components/iphone-status-bar"
 import { SwipeToBid } from "@/components/swipe-to-bid"
@@ -1299,6 +1300,12 @@ case "thumbnails-4":
     )
   }
 
+  // Read into a boolean so the JSX branch below does not narrow the
+  // `selectedAnimation` union inside its else branch (which would make the
+  // other, still-mounted `selectedAnimation === "trades"` guards look like
+  // dead comparisons to the type checker).
+  const isTradesConcept: boolean = selectedAnimation === "trades"
+
   return (
     <div className="w-full min-h-screen bg-zinc-950 flex items-center justify-center p-0 sm:p-4">
       {/* Secondary controls, stacked on the LEFT. Both live OUTSIDE the device
@@ -1419,6 +1426,13 @@ case "thumbnails-4":
           screen would, so a fake bezel there would just eat viewport.
           Deliberately NOT overflow-hidden, so the side buttons can sit proud of
           the frame; the screen child below does its own clipping. */}
+      {/* The "Trades" concept is the self-contained V1 In-Chat Trades
+          experience (its own iPhone frame, /trade command, incoming-trade
+          banner, and team-selection drawer), so it takes over the whole device
+          slot instead of rendering inside the shared 440px stream shell. */}
+      {isTradesConcept ? (
+        <TradesV1 />
+      ) : (
       <div className="relative w-full max-w-[440px] sm:w-[464px] sm:max-w-none sm:rounded-[3.3rem] sm:bg-[#0f0f11] sm:p-3 sm:ring-1 sm:ring-inset sm:ring-white/10 sm:shadow-[0_30px_90px_rgba(0,0,0,0.75)]">
         {/* Side buttons. Decorative hardware, hidden from assistive tech. */}
         <div aria-hidden="true" className="hidden sm:block absolute -left-[3px] top-[112px] h-8 w-[3px] rounded-l-sm bg-zinc-800" />
@@ -2816,6 +2830,7 @@ case "thumbnails-4":
       />
       </div>
       </div>
+      )}
     </div>
   )
 }
