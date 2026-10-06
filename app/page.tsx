@@ -51,7 +51,7 @@ import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { TestingZone } from "@/components/testing-zone"
 
-type AnimationType = "card-flip" | "buyback" | "trades" | "consignments" | "grading" | "vaulting" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "buyback" | "trades" | "consignments" | "grading" | "vaulting" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "future-state" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 // Both manual concepts share the same behavior (extra 4th manual chip, chat
 // wording, item-card label); they only differ in how the chip is marked:
@@ -91,7 +91,13 @@ const isSingleSpin = (a: AnimationType) =>
 // floaters instead of the full-screen crown takeover (WinnerCrownReveal
 // variant="subtle").
 const isRollerConcept = (a: AnimationType) =>
-  a === "spin-in-place-roller" || a === "spin-in-place-roller-subtle"
+  a === "spin-in-place-roller" || a === "spin-in-place-roller-subtle" || a === "future-state"
+
+// "Future state" starts as an exact clone of Randomizing (subtle winning) so it
+// can diverge from there without touching the current-state concept. Gate on
+// this rather than the raw id wherever Randomizing-specific behaviour applies.
+const isSubtleWinConcept = (a: AnimationType) =>
+  a === "spin-in-place-roller-subtle" || a === "future-state"
 
 const isSpinInPlace = (a: AnimationType) =>
   a === "spin-in-place" || isRollerConcept(a) || a === "ticker"
@@ -113,6 +119,7 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "single-spin-populate", name: "Single Spin" },
   // { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
   { id: "spin-in-place-roller-subtle", name: "Randomizing" },
+  { id: "future-state", name: "Future state" },
   { id: "buyback", name: "Buy back" },
   { id: "trades", name: "Trades" },
   { id: "consignments", name: "Consignments" },
@@ -663,7 +670,7 @@ export default function AnimationShowcase() {
      treatments mount in DIFFERENT places — floaters at the device frame (they
      size their rise off it), the takeover inside the bid box (it fills its
      parent) — so this drives two mutually exclusive render sites below. */
-  const isSubtleConcept = selectedAnimation === "spin-in-place-roller-subtle"
+  const isSubtleConcept = isSubtleWinConcept(selectedAnimation)
   const celebrationVariant: "default" | "subtle" | "takeover" = isSubtleConcept
     ? subtleWinStyle === "takeover"
       ? "takeover"
@@ -859,7 +866,7 @@ export default function AnimationShowcase() {
     // takeover. The Subtle Winning concept cuts this hold so the takeover
     // follows the drum almost immediately; the other roller concepts keep the
     // longer beat that lets the settled green winner read in the drum first.
-    const revealDelay = selectedAnimation === "spin-in-place-roller-subtle" ? 650 : 2200
+    const revealDelay = isSubtleWinConcept(selectedAnimation) ? 650 : 2200
     setTimeout(() => {
       // Play the full-screen card reveal. The randomization card deliberately
       // stays mounted (showing the settled winner in green) underneath it —
@@ -1254,6 +1261,7 @@ export default function AnimationShowcase() {
          `default: return null` while `isRevealing` still flips — the backdrop
          dims and the winner header renders with no reveal underneath. */
       case "spin-in-place-roller-subtle":
+      case "future-state":
         return <CardFlipReveal key={key} {...props} />
       /* Ticker only swaps the drum for the instant-cut treatment, so it takes the
          same winning reveal as the roller it shares its card chrome with. Without
