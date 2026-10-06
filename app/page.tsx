@@ -41,6 +41,7 @@ import { CarouselReveal } from "@/components/animations/carousel-reveal"
 import { GiftReveal } from "@/components/animations/gift-reveal"
 import { ThumbnailsReveal } from "@/components/animations/thumbnails-reveal"
 import { ThumbnailsInlineReveal } from "@/components/animations/thumbnails-inline-reveal"
+import { BoardReveal } from "@/components/animations/board-reveal"
 import { ThumbnailsInitialsReveal } from "@/components/animations/thumbnails-initials-reveal"
 import { ThumbnailsTextReveal } from "@/components/animations/thumbnails-text-reveal"
 import { InStreamExperience } from "@/components/in-stream-experience"
@@ -52,7 +53,7 @@ import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { LiveSpotsBoard } from "@/components/live-spots-board"
 import { TestingZone } from "@/components/testing-zone"
 
-type AnimationType = "card-flip" | "buyback" | "trades" | "consignments" | "grading" | "vaulting" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "future-state" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "buyback" | "trades" | "consignments" | "grading" | "vaulting" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "future-state" | "future-state-v2" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 // Both manual concepts share the same behavior (extra 4th manual chip, chat
 // wording, item-card label); they only differ in how the chip is marked:
@@ -121,6 +122,8 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
   { id: "spin-in-place-roller-subtle", name: "Randomizing" },
   { id: "future-state", name: "Future state" },
+  // Future State V2 is the "Board" concept from the Live Board chat.
+  { id: "future-state-v2", name: "Future State V2" },
   { id: "buyback", name: "Buy back" },
   { id: "trades", name: "Trades" },
   { id: "consignments", name: "Consignments" },
@@ -534,6 +537,7 @@ export default function AnimationShowcase() {
   const [multiLastWinner, setMultiLastWinner] = useState<{ username: string; team: string } | null>(null) // Multi-Spin: dynamic last winner
   const [spinnerLastWinner, setSpinnerLastWinner] = useState<{ username: string; team: string } | null>(null) // TeamSpinner: dynamic last winner
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
+  const [showBoardCardReveal, setShowBoardCardReveal] = useState(false) // Future State V2: card reveal after the board lands
   const [breakSpotsToRules, setBreakSpotsToRules] = useState(false) // When opening the sheet, jump straight to Break Rules
   const [buybackOfferStatus, setBuybackOfferStatus] = useState<BuybackOfferStatus>("available")
   const buybackDifference = BUYBACK_OFFER.marketValue - BUYBACK_OFFER.instantCredit
@@ -1013,7 +1017,8 @@ export default function AnimationShowcase() {
       selectedAnimation !== "thumbnails" &&
       selectedAnimation !== "thumbnails-2" &&
       selectedAnimation !== "thumbnails-3" &&
-      selectedAnimation !== "thumbnails-4"
+      selectedAnimation !== "thumbnails-4" &&
+      selectedAnimation !== "future-state-v2"
 
     if (usesSpinner) {
       // Close the full-screen reveal overlay and drop the spinner back to its
@@ -1201,7 +1206,7 @@ export default function AnimationShowcase() {
       return
     }
     // For concepts with built-in randomizer, set a random team and trigger reveal after a short delay
-    if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" || selectedAnimation === "thumbnails-4") {
+    if (selectedAnimation === "slot-machine" || selectedAnimation === "battle" || selectedAnimation === "carousel" || selectedAnimation === "pick-card" || selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" || selectedAnimation === "thumbnails-4" || selectedAnimation === "future-state-v2") {
       const randomTeam = teams[Math.floor(Math.random() * teams.length)]
       setSelectedTeam(randomTeam)
       setWinnerTeam(randomTeam)
@@ -1322,6 +1327,8 @@ case "thumbnails-3":
   return null // Thumbnails 3 renders inline with stream UI, not in the reveal area
 case "thumbnails-4":
   return null // Thumbnails 4 renders inline with stream UI, not in the reveal area
+case "future-state-v2":
+  return null // Board renders inline with stream UI, mounted separately
   default:
   return null
     }
@@ -1603,6 +1610,29 @@ case "thumbnails-4":
   />
   )}
   
+  {/* Future State V2 - the "Board" concept: board up top under the seller
+      name, randomizer view portals into the bottom stack, then a card reveal. */}
+  {selectedAnimation === "future-state-v2" && (
+  <BoardReveal
+  isRevealing={isRevealing}
+  onComplete={() => {
+  chatPausedRef.current = false
+  // Reset so the next bid can re-trigger the reveal on the mounted board.
+  setIsRevealing(false)
+  setShowBoardCardReveal(true)
+  }}
+  onTeamSelected={(team) => {
+  setWinnerTeam(team)
+  setSelectedTeam(team)
+  }}
+  availableSpots={demoSpots}
+  onCycleSpots={cycleSpots}
+  onViewSpots={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
+  showMiniSpots
+  preselectGreen
+  />
+  )}
+
   {/* Thumbnails 4 - Inline with stream UI using text only */}
   {selectedAnimation === "thumbnails-4" && (
   <ThumbnailsTextReveal
@@ -2038,7 +2068,7 @@ case "thumbnails-4":
         {/* Team Spinner with Spots Available - shown for most concepts. For slot-machine (Team Picker),
             battle, and carousel it stays in its idle/zero state (thumbnail) since those concepts
             handle their own cycling + reveal full screen (isSpinnerRevealing is never set for them). */}
-        {selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "single-spin-later" && !isSpinInPlace(selectedAnimation) && selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && !isBuyback(selectedAnimation) && (
+        {selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "single-spin-later" && !isSpinInPlace(selectedAnimation) && selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "future-state-v2" && !isBuyback(selectedAnimation) && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
@@ -2432,6 +2462,9 @@ case "thumbnails-4":
           }`}
           style={rollerCardHeight ? { minHeight: rollerCardHeight } : undefined}
         >
+
+        {/* Future State V2 portal target for the Board's randomizer view. */}
+        {selectedAnimation === "future-state-v2" && <div id="board-randomizer-slot" className="mb-2" />}
 
         {/* Auction Card */}
         <motion.div
@@ -2837,7 +2870,7 @@ case "thumbnails-4":
         {isRevealing && (
           <>
             {/* Some animations handle their own overlay, so only render the animation */}
-            {selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" || selectedAnimation === "thumbnails-4" ? (
+            {selectedAnimation === "thumbnails" || selectedAnimation === "thumbnails-2" || selectedAnimation === "thumbnails-3" || selectedAnimation === "thumbnails-4" || selectedAnimation === "future-state-v2" ? (
               renderAnimation()
             ) : (
               <>
@@ -3510,10 +3543,54 @@ case "thumbnails-4":
         )}
       </AnimatePresence>
 
+      {/* Future State V2: full-screen card reveal after the board lands. */}
+      <AnimatePresence>
+        {showBoardCardReveal && (
+          <>
+            <motion.div
+              className="absolute inset-0 bg-black/70 backdrop-blur-sm z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            />
+            <motion.div
+              className="absolute inset-0 flex flex-col items-center justify-center z-50"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.3 }}
+            >
+              <motion.div
+                className="mb-6 text-center"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-white font-bold text-xl">Adam007</span>
+                  <span className="text-white/70 text-xl">Won!</span>
+                </div>
+                <p className="text-white/50 text-sm mt-1">Your spot is revealed!</p>
+              </motion.div>
+              <CardFlipReveal
+                key={`board-card-${key}`}
+                isRevealing={showBoardCardReveal}
+                team={winnerTeam}
+                onComplete={() => {
+                  setShowBoardCardReveal(false)
+                  setShowWinner(true)
+                }}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Future state: "View spots" opens the Live Board instead of the list
           sheet. The Break Rules link still uses the sheet's rules screen. */}
       <LiveSpotsBoard
-        isOpen={isBreakSpotsOpen && selectedAnimation === "future-state" && !breakSpotsToRules}
+        isOpen={isBreakSpotsOpen && (selectedAnimation === "future-state" || selectedAnimation === "future-state-v2") && !breakSpotsToRules}
         onClose={() => setIsBreakSpotsOpen(false)}
         spotsAvailable={demoSpots}
         spotsTotal={32}
@@ -3521,7 +3598,7 @@ case "thumbnails-4":
 
       {/* Break Spots Sheet */}
       <BreakSpotsSheet 
-        isOpen={isBreakSpotsOpen && !(selectedAnimation === "future-state" && !breakSpotsToRules)} 
+        isOpen={isBreakSpotsOpen && !((selectedAnimation === "future-state" || selectedAnimation === "future-state-v2") && !breakSpotsToRules)} 
         onClose={() => setIsBreakSpotsOpen(false)}
         spotsAvailable={demoSpots}
         spotsTotal={32}
