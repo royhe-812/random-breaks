@@ -49,6 +49,7 @@ import { LiveViewerIndicator } from "@/components/live-viewer-indicator"
 import { IPhoneStatusBar } from "@/components/iphone-status-bar"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
+import { LiveSpotsBoard } from "@/components/live-spots-board"
 import { TestingZone } from "@/components/testing-zone"
 
 type AnimationType = "card-flip" | "buyback" | "trades" | "consignments" | "grading" | "vaulting" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "future-state" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
@@ -3509,9 +3510,18 @@ case "thumbnails-4":
         )}
       </AnimatePresence>
 
+      {/* Future state: "View spots" opens the Live Board instead of the list
+          sheet. The Break Rules link still uses the sheet's rules screen. */}
+      <LiveSpotsBoard
+        isOpen={isBreakSpotsOpen && selectedAnimation === "future-state" && !breakSpotsToRules}
+        onClose={() => setIsBreakSpotsOpen(false)}
+        spotsAvailable={demoSpots}
+        spotsTotal={32}
+      />
+
       {/* Break Spots Sheet */}
       <BreakSpotsSheet 
-        isOpen={isBreakSpotsOpen} 
+        isOpen={isBreakSpotsOpen && !(selectedAnimation === "future-state" && !breakSpotsToRules)} 
         onClose={() => setIsBreakSpotsOpen(false)}
         spotsAvailable={demoSpots}
         spotsTotal={32}
