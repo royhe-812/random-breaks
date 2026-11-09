@@ -50,10 +50,11 @@ import { LiveViewerIndicator } from "@/components/live-viewer-indicator"
 import { IPhoneStatusBar } from "@/components/iphone-status-bar"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
+import { ItemLineupSheet } from "@/components/item-lineup-sheet"
 import { LiveSpotsBoard } from "@/components/live-spots-board"
 import { TestingZone } from "@/components/testing-zone"
 
-type AnimationType = "card-flip" | "buyback" | "trades" | "consignments" | "grading" | "vaulting" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "future-state" | "future-state-v2" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "buyback" | "trades" | "consignments" | "grading" | "vaulting" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "future-state" | "future-state-v2" | "item-lineup" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 // Both manual concepts share the same behavior (extra 4th manual chip, chat
 // wording, item-card label); they only differ in how the chip is marked:
@@ -93,13 +94,15 @@ const isSingleSpin = (a: AnimationType) =>
 // floaters instead of the full-screen crown takeover (WinnerCrownReveal
 // variant="subtle").
 const isRollerConcept = (a: AnimationType) =>
-  a === "spin-in-place-roller" || a === "spin-in-place-roller-subtle" || a === "future-state"
+  a === "spin-in-place-roller" || a === "spin-in-place-roller-subtle" || a === "future-state" || a === "item-lineup"
 
+// "Item line up" is also a Randomizing clone: same flow and subtle winning, with
+// only the Break Spots sheet swapped for ItemLineupSheet.
 // "Future state" starts as an exact clone of Randomizing (subtle winning) so it
 // can diverge from there without touching the current-state concept. Gate on
 // this rather than the raw id wherever Randomizing-specific behaviour applies.
 const isSubtleWinConcept = (a: AnimationType) =>
-  a === "spin-in-place-roller-subtle" || a === "future-state"
+  a === "spin-in-place-roller-subtle" || a === "future-state" || a === "item-lineup"
 
 const isSpinInPlace = (a: AnimationType) =>
   a === "spin-in-place" || isRollerConcept(a) || a === "ticker"
@@ -124,6 +127,8 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   { id: "future-state", name: "Future state" },
   // Future State V2 is the "Board" concept from the Live Board chat.
   { id: "future-state-v2", name: "Future State V2" },
+  // Randomizing clone with a redesigned Break Spots sheet (icon search, status/format filters, Break Details tab).
+  { id: "item-lineup", name: "Item line up" },
   { id: "buyback", name: "Buy back" },
   { id: "trades", name: "Trades" },
   { id: "consignments", name: "Consignments" },
@@ -1268,6 +1273,7 @@ export default function AnimationShowcase() {
          dims and the winner header renders with no reveal underneath. */
       case "spin-in-place-roller-subtle":
       case "future-state":
+      case "item-lineup":
         return <CardFlipReveal key={key} {...props} />
       /* Ticker only swaps the drum for the instant-cut treatment, so it takes the
          same winning reveal as the roller it shares its card chrome with. Without
@@ -3598,11 +3604,21 @@ case "future-state-v2":
 
       {/* Break Spots Sheet */}
       <BreakSpotsSheet 
-        isOpen={isBreakSpotsOpen && !((selectedAnimation === "future-state" || selectedAnimation === "future-state-v2") && !breakSpotsToRules)} 
+        isOpen={isBreakSpotsOpen && selectedAnimation !== "item-lineup" && !((selectedAnimation === "future-state" || selectedAnimation === "future-state-v2") && !breakSpotsToRules)} 
         onClose={() => setIsBreakSpotsOpen(false)}
         spotsAvailable={demoSpots}
         spotsTotal={32}
         openToRules={breakSpotsToRules}
+      />
+
+      {/* Item line up: redesigned sheet (icon search, status/format filters,
+          Break Details tab in place of Break Rules). */}
+      <ItemLineupSheet
+        isOpen={isBreakSpotsOpen && selectedAnimation === "item-lineup"}
+        onClose={() => setIsBreakSpotsOpen(false)}
+        spotsAvailable={demoSpots}
+        spotsTotal={32}
+        openToDetails={breakSpotsToRules}
       />
 
       {/* Mock keyboard - slides up when the buyer taps the comment input */}
