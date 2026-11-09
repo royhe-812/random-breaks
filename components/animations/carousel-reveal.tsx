@@ -49,14 +49,14 @@ const RevealGlow = ({ isActive, teamColor }: { isActive: boolean; teamColor: str
 )
 
 const teams = [
-  { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
-  { name: "Eagles", city: "Philadelphia", abbrev: "PHI", color: "#004C54", secondary: "#A5ACAF" },
-  { name: "Cowboys", city: "Dallas", abbrev: "DAL", color: "#003594", secondary: "#869397" },
-  { name: "Patriots", city: "New England", abbrev: "NE", color: "#002244", secondary: "#C60C30" },
-  { name: "Packers", city: "Green Bay", abbrev: "GB", color: "#203731", secondary: "#FFB612" },
-  { name: "49ers", city: "San Francisco", abbrev: "SF", color: "#AA0000", secondary: "#B3995D" },
-  { name: "Bills", city: "Buffalo", abbrev: "BUF", color: "#00338D", secondary: "#C60C30" },
-  { name: "Dolphins", city: "Miami", abbrev: "MIA", color: "#008E97", secondary: "#FC4C02" },
+  { name: "Submariner", city: "Rolex", abbrev: "SUB", color: "#E31837", secondary: "#FFB81C" },
+  { name: "Speedmaster", city: "Omega", abbrev: "SPD", color: "#004C54", secondary: "#A5ACAF" },
+  { name: "Tank", city: "Cartier", abbrev: "TNK", color: "#003594", secondary: "#869397" },
+  { name: "El Primero", city: "Zenith", abbrev: "ELP", color: "#002244", secondary: "#C60C30" },
+  { name: "Snowflake", city: "Grand Seiko", abbrev: "SNW", color: "#203731", secondary: "#FFB612" },
+  { name: "Nautilus", city: "Patek Philippe", abbrev: "NAU", color: "#AA0000", secondary: "#B3995D" },
+  { name: "Presage", city: "Seiko", abbrev: "PRS", color: "#00338D", secondary: "#C60C30" },
+  { name: "Black Bay", city: "Tudor", abbrev: "BBY", color: "#008E97", secondary: "#FC4C02" },
 ]
 
 interface CarouselRevealProps {

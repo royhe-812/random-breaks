@@ -62,7 +62,7 @@ const isManualConcept = (a: AnimationType) =>
   a === "multi-spin-5-manual" || a === "multi-spin-5-manual-icon"
 
 // "Spin Later" is a duplicate of "Single Spin"; the only differences are that all
-// spots are sold (0/32 available), the item card reads "Random Break #32", and the
+// spots are sold (0/32 available), the item card reads "Surprise set #32", and the
 // card is marked sold out. Everything else behaves identically to Single Spin.
 const isSingleSpin = (a: AnimationType) =>
   a === "single-spin-populate" || a === "single-spin-later"
@@ -354,32 +354,32 @@ function WinnerAnnouncement({
 }
 
 const chatMessages = [
-  { user: "johnpleys", message: "Gotta try to hit this one! Love Mosaic", color: "text-white/60" },
+  { user: "johnpleys", message: "Gotta try to hit this one! Love a surprise set", color: "text-white/60" },
   { user: "Chloepulls11", message: "These are so hot, get your bids in!", color: "text-yellow-400" },
   { user: "chrisjames", message: "So sick", color: "text-white" },
   { user: "cardking99", message: "GL everyone!", color: "text-blue-400" },
-  { user: "packripperz", message: "Who got the Burrow last break?", color: "text-purple-400" },
-  { user: "sportsfan22", message: "Need that Stroud auto", color: "text-green-400" },
-  { user: "rookie_hunter", message: "Herbert please!", color: "text-orange-400" },
+  { user: "packripperz", message: "Who got the Nautilus last set?", color: "text-purple-400" },
+  { user: "sportsfan22", message: "Need that Royal Oak", color: "text-green-400" },
+  { user: "rookie_hunter", message: "Datejust please!", color: "text-orange-400" },
   { user: "bigpulls", message: "Let's gooo", color: "text-pink-400" },
-  { user: "cardcollector", message: "Anyone hit a case hit yet?", color: "text-cyan-400" },
-  { user: "mikibreaks", message: "Just got the Cowboys, hyped!", color: "text-blue-400" },
-  { user: "nfl_cards", message: "Mahomes would be insane", color: "text-red-400" },
-  { user: "boxbreaker", message: "Love these random breaks", color: "text-yellow-400" },
-  { user: "pullemall", message: "Chiefs or Eagles plz", color: "text-green-400" },
-  { user: "firstroundpick", message: "Mosaic hits different", color: "text-purple-400" },
-  { user: "cardfiend", message: "What's the case hit?", color: "text-white" },
+  { user: "cardcollector", message: "Anyone hit a grail watch yet?", color: "text-cyan-400" },
+  { user: "mikibreaks", message: "Just got the Cartier Tank, hyped!", color: "text-blue-400" },
+  { user: "watch_cards", message: "A Daytona would be insane", color: "text-red-400" },
+  { user: "boxbreaker", message: "Love these surprise sets", color: "text-yellow-400" },
+  { user: "pullemall", message: "Submariner or Speedmaster plz", color: "text-green-400" },
+  { user: "firstroundpick", message: "Surprise sets hit different", color: "text-purple-400" },
+  { user: "cardfiend", message: "What's the grail piece?", color: "text-white" },
 ]
 
-// Fixed teams for the Multi-Spin (Manual) scenario: Patriots (spot 1),
-// Bengals (spot 2), Lions (spot 3). The buyer then requests Lions + Cowboys
+// Fixed teams for the Multi-Spin (Manual) scenario: Zenith El Primero (spot 1),
+// Hamilton Khaki Field (spot 2), TAG Heuer Carrera (spot 3). The buyer then requests Carrera + Cartier Tank
 // (the extra manual team not in the list).
 const MANUAL_FORCED_TEAMS: [Team, Team, Team] = [
-  { name: "Patriots", city: "New England", abbrev: "NE", color: "#002244", secondary: "#C60C30" },
-  { name: "Bengals", city: "Cincinnati", abbrev: "CIN", color: "#FB4F14", secondary: "#000000" },
-  { name: "Lions", city: "Detroit", abbrev: "DET", color: "#0076B6", secondary: "#B0B7BC" },
+  { name: "El Primero", city: "Zenith", abbrev: "ELP", color: "#002244", secondary: "#C60C30" },
+  { name: "Khaki Field", city: "Hamilton", abbrev: "KHK", color: "#FB4F14", secondary: "#000000" },
+  { name: "Carrera", city: "TAG Heuer", abbrev: "CRR", color: "#0076B6", secondary: "#B0B7BC" },
 ]
-const MANUAL_EXTRA_TEAM: Team = { name: "Cowboys", city: "Dallas", abbrev: "DAL", color: "#003594", secondary: "#869397" }
+const MANUAL_EXTRA_TEAM: Team = { name: "Tank", city: "Cartier", abbrev: "TNK", color: "#003594", secondary: "#869397" }
 
 export default function AnimationShowcase() {
   const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("spin-in-place-roller-subtle")
@@ -947,9 +947,9 @@ export default function AnimationShowcase() {
     setCommentTyped(false)
     setRevealPendingSeller(true)
     if (isManualConcept(selectedAnimation)) {
-      // Manual concept: the buyer always requests Lions (spot 3) and Cowboys (the
+      // Manual concept: the buyer always requests the Carrera (spot 3) and the Cartier Tank (the
       // extra manual team not in the spun list). Fixed for demo consistency.
-      const lionsSpot = spots.find((s) => s.team.name === "Lions") ?? spots[spots.length - 1]
+      const lionsSpot = spots.find((s) => s.team.name === "Carrera") ?? spots[spots.length - 1]
       setRequestDraft(lionsSpot ?? null)
       setManualExtraTeam(MANUAL_EXTRA_TEAM)
       setManualFirstTeam(null)
@@ -1239,8 +1239,8 @@ case "future-state-v2":
             {usesTicker(selectedAnimation) ? "Ticker spin" : "Roller spin"}
           </span>
           {([
-            { id: "single", label: "Single", hint: "1 spot" },
-            { id: "multi", label: "Multi", hint: "3 spots" },
+            { id: "single", label: "Single", hint: "1 item" },
+            { id: "multi", label: "Multi", hint: "3 items" },
           ] as const).map((mode) => (
             <button
               key={mode.id}
@@ -1356,19 +1356,11 @@ case "future-state-v2":
           can apply it after the browser has already started playing with audio),
           so the ref forces `muted` + `volume = 0` imperatively to guarantee the
           card-opening clip never plays sound. */}
-      <video
-        ref={(el) => {
-          if (el) {
-            el.muted = true
-            el.volume = 0
-          }
-        }}
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/case%20breaks%20video%20-w5usFKatykHZfTOkKiurwdJmYPpFxf.mov"
+      <img
+        src="/images/watches-live-stream.png"
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-cover"
       />
       
       {/* Gradient overlays for readability */}
@@ -1944,15 +1936,15 @@ case "future-state-v2":
         >
           {/* Incentive Tile — spots row (Figma). The card's overflow-hidden
               rounds its top corners; a bottom border divides it from the Buy
-              Box below. The underlined "View spots" CTA opens the spots sheet. */}
+              Box below. The underlined "View items" CTA opens the spots sheet. */}
           <button
             type="button"
             onClick={() => { setBreakSpotsToRules(false); setIsBreakSpotsOpen(true) }}
-            aria-label={`${demoSpots} of 32 spots available. View spots.`}
+            aria-label={`${demoSpots} of 32 items available. View items.`}
             className="flex w-full items-center justify-between gap-2 border-b border-[#363636] bg-black/40 px-4 py-2 text-left backdrop-blur transition-opacity hover:opacity-90"
           >
-            <span className="text-xs leading-4 text-[#f7f7f7]">{demoSpots}/32 spots available</span>
-            <span className="flex-shrink-0 text-xs leading-4 text-[#8f8f8f] underline">View spots</span>
+            <span className="text-xs leading-4 text-[#f7f7f7]">{demoSpots}/32 items available</span>
+            <span className="flex-shrink-0 text-xs leading-4 text-[#8f8f8f] underline">View items</span>
           </button>
 
           <div className="bg-black/40 backdrop-blur px-4 py-2">
@@ -1965,8 +1957,8 @@ case "future-state-v2":
                   <BackAndForthMarquee duration={26} trackClassName="text-sm leading-5">
                     <span className="text-white font-semibold text-sm whitespace-nowrap">
                       {(showWinner || spotAssigned) && winnerTeam
-                        ? `Random Break #${breakNumber} - ${winnerTeam.city} ${winnerTeam.name}`
-                        : `Random Break #${breakNumber}`} ����� 2025 Panini Luminance Football Hobby PYT Box Break #903
+                        ? `Surprise set #${breakNumber} - ${winnerTeam.city} ${winnerTeam.name}`
+                        : `Surprise set #${breakNumber}`} • Luxury Watches Surprise Set
                     </span>
                   </BackAndForthMarquee>
                 </div>
@@ -1975,15 +1967,15 @@ case "future-state-v2":
                   <span className="font-semibold">
                     {(showWinner || spotAssigned) && winnerTeam && !bidBoxReactivated
                       ? isManualConcept(selectedAnimation)
-                        ? `Random Break #${displayBreakNumber} - ${
+                        ? `Surprise set #${displayBreakNumber} - ${
                             [manualFirstTeam, manualSecondTeam]
                               .filter((t): t is Team => Boolean(t))
                               .map((t) => `${t.city} ${t.name}`)
                               .join(", ") || `${winnerTeam.city} ${winnerTeam.name}`
                           }`
-                        : `Random Break #${displayBreakNumber} - ${winnerTeam.city} ${winnerTeam.name}`
-                      : `Random Break #${displayBreakNumber}`}
-                    {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
+                        : `Surprise set #${displayBreakNumber} - ${winnerTeam.city} ${winnerTeam.name}`
+                      : `Surprise set #${displayBreakNumber}`}
+                    {" — Luxury Watches Surprise Set"}
                   </span>
                 </p>
               )}
@@ -1997,7 +1989,7 @@ case "future-state-v2":
                 </div>
               </div>
             </div>
-            {/* Decorative chevron — the "View spots" CTA in the incentive tile
+            {/* Decorative chevron — the "View items" CTA in the incentive tile
                 now opens the sheet, so this is non-interactive per design. */}
             <div
               aria-hidden="true"
@@ -2404,7 +2396,7 @@ case "future-state-v2":
         )}
       </AnimatePresence>
 
-      {/* Future state: "View spots" opens the Live Board instead of the list
+      {/* Future state: "View items" opens the Live Board instead of the list
           sheet. The Break Rules link still uses the sheet's rules screen. */}
       <LiveSpotsBoard
         isOpen={isBreakSpotsOpen && (selectedAnimation === "future-state" || selectedAnimation === "future-state-v2") && !breakSpotsToRules}

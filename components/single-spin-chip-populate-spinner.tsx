@@ -225,8 +225,8 @@ export function SingleSpinChipPopulateSpinner({
                 result.abbrev
               ) : (
                 <img
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png"
-                  alt="Panini Luminance box"
+                  src="/images/watches-surprise-set.png"
+                  alt="Luxury watches surprise set"
                   className="w-full h-full object-cover rounded-lg"
                 />
               )}
@@ -266,7 +266,7 @@ export function SingleSpinChipPopulateSpinner({
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.2 }}
                   >
-                    2025 Panini Luminance Football Hobby PYT Box Break #903
+                    Luxury Watches Surprise Set
                   </motion.span>
                 )}
               </AnimatePresence>

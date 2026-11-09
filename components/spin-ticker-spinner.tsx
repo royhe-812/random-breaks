@@ -438,8 +438,8 @@ export function SpinTickerSpinner({
       <div className="min-w-0 flex flex-col gap-2 text-white">
         <p className="truncate text-sm leading-tight">
           <span className="font-normal">
-            {`Random Break #${breakNumber}`}
-            {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
+            {`Surprise set #${breakNumber}`}
+            {" — Luxury Watches Surprise Set"}
           </span>
         </p>
       </div>

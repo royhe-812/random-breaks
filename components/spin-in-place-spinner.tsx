@@ -269,8 +269,8 @@ export function SpinInPlaceSpinner({
         <div className="flex-1 min-w-0 flex flex-col gap-2 text-white">
           <p className="truncate text-sm leading-tight">
             <span className="font-normal">
-              {`Random Break #${breakNumber}`}
-              {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
+              {`Surprise set #${breakNumber}`}
+              {" — Luxury Watches Surprise Set"}
             </span>
           </p>
           <p className="truncate text-sm leading-tight font-bold">
@@ -280,7 +280,7 @@ export function SpinInPlaceSpinner({
         <button
           type="button"
           onClick={onViewSpots}
-          aria-label="View break spots"
+          aria-label="View items"
           className="flex-shrink-0 hover:opacity-80 transition-opacity"
         >
           <ChevronRight className="w-5 h-5 text-white/40" />

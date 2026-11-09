@@ -48,40 +48,40 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
   )
 }
 
-// All 32 NFL teams
+// 32 watches in the surprise set
 const allTeams = [
-  { city: "Kansas City", name: "Chiefs", abbrev: "KC" },
-  { city: "Philadelphia", name: "Eagles", abbrev: "PHI" },
-  { city: "Dallas", name: "Cowboys", abbrev: "DAL" },
-  { city: "San Francisco", name: "49ers", abbrev: "SF" },
-  { city: "Buffalo", name: "Bills", abbrev: "BUF" },
-  { city: "Miami", name: "Dolphins", abbrev: "MIA" },
-  { city: "Baltimore", name: "Ravens", abbrev: "BAL" },
-  { city: "Detroit", name: "Lions", abbrev: "DET" },
-  { city: "Green Bay", name: "Packers", abbrev: "GB" },
-  { city: "Cincinnati", name: "Bengals", abbrev: "CIN" },
-  { city: "New York", name: "Jets", abbrev: "NYJ" },
-  { city: "Denver", name: "Broncos", abbrev: "DEN" },
-  { city: "Los Angeles", name: "Chargers", abbrev: "LAC" },
-  { city: "Indianapolis", name: "Colts", abbrev: "IND" },
-  { city: "Houston", name: "Texans", abbrev: "HOU" },
-  { city: "Pittsburgh", name: "Steelers", abbrev: "PIT" },
-  { city: "New England", name: "Patriots", abbrev: "NE" },
-  { city: "New York", name: "Giants", abbrev: "NYG" },
-  { city: "Washington", name: "Commanders", abbrev: "WAS" },
-  { city: "Chicago", name: "Bears", abbrev: "CHI" },
-  { city: "Minnesota", name: "Vikings", abbrev: "MIN" },
-  { city: "New Orleans", name: "Saints", abbrev: "NO" },
-  { city: "Atlanta", name: "Falcons", abbrev: "ATL" },
-  { city: "Carolina", name: "Panthers", abbrev: "CAR" },
-  { city: "Tampa Bay", name: "Buccaneers", abbrev: "TB" },
-  { city: "Arizona", name: "Cardinals", abbrev: "ARI" },
-  { city: "Los Angeles", name: "Rams", abbrev: "LAR" },
-  { city: "Seattle", name: "Seahawks", abbrev: "SEA" },
-  { city: "Las Vegas", name: "Raiders", abbrev: "LV" },
-  { city: "Jacksonville", name: "Jaguars", abbrev: "JAX" },
-  { city: "Tennessee", name: "Titans", abbrev: "TEN" },
-  { city: "Cleveland", name: "Browns", abbrev: "CLE" },
+  { city: "Rolex", name: "Submariner", abbrev: "SUB" },
+  { city: "Omega", name: "Speedmaster", abbrev: "SPD" },
+  { city: "Cartier", name: "Tank", abbrev: "TNK" },
+  { city: "Patek Philippe", name: "Nautilus", abbrev: "NAU" },
+  { city: "Seiko", name: "Presage", abbrev: "PRS" },
+  { city: "Tudor", name: "Black Bay", abbrev: "BBY" },
+  { city: "Breitling", name: "Navitimer", abbrev: "NAV" },
+  { city: "TAG Heuer", name: "Carrera", abbrev: "CRR" },
+  { city: "Grand Seiko", name: "Snowflake", abbrev: "SNW" },
+  { city: "Hamilton", name: "Khaki Field", abbrev: "KHK" },
+  { city: "Casio", name: "G-Shock", abbrev: "GSK" },
+  { city: "Longines", name: "Spirit", abbrev: "SPT" },
+  { city: "Citizen", name: "Promaster", abbrev: "PRO" },
+  { city: "Oris", name: "Aquis", abbrev: "AQU" },
+  { city: "Panerai", name: "Luminor", abbrev: "LUM" },
+  { city: "IWC", name: "Pilot", abbrev: "PLT" },
+  { city: "Zenith", name: "El Primero", abbrev: "ELP" },
+  { city: "Audemars Piguet", name: "Royal Oak", abbrev: "ROK" },
+  { city: "Vacheron Constantin", name: "Overseas", abbrev: "OVS" },
+  { city: "Jaeger-LeCoultre", name: "Reverso", abbrev: "REV" },
+  { city: "Hublot", name: "Big Bang", abbrev: "BGB" },
+  { city: "Rolex", name: "Datejust", abbrev: "DTJ" },
+  { city: "Omega", name: "Seamaster", abbrev: "SEA" },
+  { city: "Tudor", name: "Pelagos", abbrev: "PEL" },
+  { city: "Nomos", name: "Tangente", abbrev: "TAN" },
+  { city: "Bell & Ross", name: "BR 03", abbrev: "BR3" },
+  { city: "Rolex", name: "GMT-Master", abbrev: "GMT" },
+  { city: "Seiko", name: "Prospex", abbrev: "PSX" },
+  { city: "Breguet", name: "Marine", abbrev: "MAR" },
+  { city: "Sinn", name: "556", abbrev: "S56" },
+  { city: "Tissot", name: "PRX", abbrev: "PRX" },
+  { city: "Timex", name: "Marlin", abbrev: "MRL" },
 ]
 
 // Buyer names and prices used to decorate sold spots (cycled as needed).
@@ -162,7 +162,7 @@ function BreakSpotsSheet({
                   >
                     <ChevronLeft className="w-6 h-6 text-white" />
                   </button>
-                  <h2 className="text-white font-semibold text-lg">Break Rules</h2>
+                  <h2 className="text-white font-semibold text-lg">Set Rules</h2>
                 </div>
                 
                 {/* How It Works Content */}
@@ -235,7 +235,7 @@ function BreakSpotsSheet({
               >
                 <ChevronLeft className="w-6 h-6 text-white" />
               </button>
-              <h2 className="text-white font-semibold text-lg">Break spots</h2>
+              <h2 className="text-white font-semibold text-lg">Item check list</h2>
             </div>
             
             {/* Search Bar */}
@@ -275,7 +275,7 @@ function BreakSpotsSheet({
                     {/* Product Image */}
                     <div className="w-20 h-20 bg-[#3a3a3a] rounded-xl flex items-center justify-center overflow-hidden">
                       <img 
-                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png"
+                        src="/images/watches-surprise-set.png"
                         alt="Product"
                         className="w-full h-full object-cover"
                       />
@@ -283,17 +283,17 @@ function BreakSpotsSheet({
                     {/* Product Info */}
                     <div className="flex-1">
                       <h3 className="text-white font-medium text-sm mb-2 leading-tight">
-                        16X 2023 Panini Mosaic NFL Blaster PYT RAndom #224
+                        Luxury Watches Surprise Set #15
                       </h3>
                       <div className="flex items-center gap-1.5">
                         <CircularProgress available={spotsAvailable} total={spotsTotal} size={16} />
-                        <span className="text-white/60 text-xs">{spotsAvailable}/{spotsTotal} spots available</span>
+                        <span className="text-white/60 text-xs">{spotsAvailable}/{spotsTotal} items available</span>
                       </div>
                       <button 
                         onClick={() => setShowHowItWorks(true)}
                         className="mt-2 inline-flex items-center rounded-full border border-white/80 px-4 py-1.5 text-white text-sm font-medium hover:bg-white/10 transition-colors"
                       >
-                        Break Rules
+                        Set Rules
                       </button>
                     </div>
                   </div>

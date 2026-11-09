@@ -176,9 +176,9 @@ function RandomizerCard({ data, treatment }: { data: DataMode; treatment: Treatm
     <div className="w-full max-w-[375px] rounded-2xl bg-[#212121] p-4 text-white">
       {/* Title row — mirrors the bid box card. */}
       <p className="truncate text-sm leading-tight">
-        Random Break #15
+        Surprise set #15
         <span className="text-white/60">
-          {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
+          {" — Luxury Watches Surprise Set"}
         </span>
       </p>
 

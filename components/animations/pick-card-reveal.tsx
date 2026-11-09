@@ -6,22 +6,22 @@ import { motion, AnimatePresence } from "framer-motion"
 import { CelebrationElements, HolographicShine } from "./celebration-elements"
 
 const teams = [
-  { name: "Chiefs", city: "Kansas City", abbrev: "KC", color: "#E31837", secondary: "#FFB81C" },
-  { name: "Eagles", city: "Philadelphia", abbrev: "PHI", color: "#004C54", secondary: "#A5ACAF" },
-  { name: "Cowboys", city: "Dallas", abbrev: "DAL", color: "#003594", secondary: "#869397" },
-  { name: "49ers", city: "San Francisco", abbrev: "SF", color: "#AA0000", secondary: "#B3995D" },
-  { name: "Bills", city: "Buffalo", abbrev: "BUF", color: "#00338D", secondary: "#C60C30" },
-  { name: "Dolphins", city: "Miami", abbrev: "MIA", color: "#008E97", secondary: "#FC4C02" },
-  { name: "Ravens", city: "Baltimore", abbrev: "BAL", color: "#241773", secondary: "#9E7C0C" },
-  { name: "Lions", city: "Detroit", abbrev: "DET", color: "#0076B6", secondary: "#B0B7BC" },
-  { name: "Packers", city: "Green Bay", abbrev: "GB", color: "#203731", secondary: "#FFB612" },
-  { name: "Bengals", city: "Cincinnati", abbrev: "CIN", color: "#FB4F14", secondary: "#000000" },
-  { name: "Jets", city: "New York", abbrev: "NYJ", color: "#125740", secondary: "#000000" },
-  { name: "Broncos", city: "Denver", abbrev: "DEN", color: "#FB4F14", secondary: "#002244" },
-  { name: "Chargers", city: "Los Angeles", abbrev: "LAC", color: "#0080C6", secondary: "#FFC20E" },
-  { name: "Colts", city: "Indianapolis", abbrev: "IND", color: "#002C5F", secondary: "#A2AAAD" },
-  { name: "Texans", city: "Houston", abbrev: "HOU", color: "#03202F", secondary: "#A71930" },
-  { name: "Steelers", city: "Pittsburgh", abbrev: "PIT", color: "#FFB612", secondary: "#101820" },
+  { name: "Submariner", city: "Rolex", abbrev: "SUB", color: "#E31837", secondary: "#FFB81C" },
+  { name: "Speedmaster", city: "Omega", abbrev: "SPD", color: "#004C54", secondary: "#A5ACAF" },
+  { name: "Tank", city: "Cartier", abbrev: "TNK", color: "#003594", secondary: "#869397" },
+  { name: "Nautilus", city: "Patek Philippe", abbrev: "NAU", color: "#AA0000", secondary: "#B3995D" },
+  { name: "Presage", city: "Seiko", abbrev: "PRS", color: "#00338D", secondary: "#C60C30" },
+  { name: "Black Bay", city: "Tudor", abbrev: "BBY", color: "#008E97", secondary: "#FC4C02" },
+  { name: "Navitimer", city: "Breitling", abbrev: "NAV", color: "#241773", secondary: "#9E7C0C" },
+  { name: "Carrera", city: "TAG Heuer", abbrev: "CRR", color: "#0076B6", secondary: "#B0B7BC" },
+  { name: "Snowflake", city: "Grand Seiko", abbrev: "SNW", color: "#203731", secondary: "#FFB612" },
+  { name: "Khaki Field", city: "Hamilton", abbrev: "KHK", color: "#FB4F14", secondary: "#000000" },
+  { name: "G-Shock", city: "Casio", abbrev: "GSK", color: "#125740", secondary: "#000000" },
+  { name: "Spirit", city: "Longines", abbrev: "SPT", color: "#FB4F14", secondary: "#002244" },
+  { name: "Promaster", city: "Citizen", abbrev: "PRO", color: "#0080C6", secondary: "#FFC20E" },
+  { name: "Aquis", city: "Oris", abbrev: "AQU", color: "#002C5F", secondary: "#A2AAAD" },
+  { name: "Luminor", city: "Panerai", abbrev: "LUM", color: "#03202F", secondary: "#A71930" },
+  { name: "Pilot", city: "IWC", abbrev: "PLT", color: "#FFB612", secondary: "#101820" },
 ]
 
 interface Team {

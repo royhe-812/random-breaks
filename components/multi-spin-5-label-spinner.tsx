@@ -397,8 +397,8 @@ export function MultiSpin5LabelSpinner({
                 teams[currentIndex].abbrev
               ) : (
                 <img
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png"
-                  alt="Panini Luminance box"
+                  src="/images/watches-surprise-set.png"
+                  alt="Luxury watches surprise set"
                   className="w-full h-full object-cover rounded-lg"
                 />
               )}
@@ -420,7 +420,7 @@ export function MultiSpin5LabelSpinner({
                 ) : (
                   <BackAndForthMarquee key="marquee" duration={26} trackClassName="text-sm leading-5">
                     <span className="text-white font-semibold text-sm whitespace-nowrap">
-                      2025 Panini Luminance Football Hobby PYT Box Break #903
+                      Luxury Watches Surprise Set
                     </span>
                   </BackAndForthMarquee>
                 )}
