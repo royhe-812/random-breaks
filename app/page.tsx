@@ -110,9 +110,11 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "single-spin-populate", name: "Single Spin" },
   // { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
   { id: "spin-in-place-roller-subtle", name: "Randomizing" },
-  { id: "future-state", name: "Future state" },
-  // Future State V2 is the "Board" concept from the Live Board chat.
-  { id: "future-state-v2", name: "Future State V2" },
+  // "Future state" and "Future State V2" removed from the prototype. Their
+  // AnimationType members and branches are intentionally left in place (nothing
+  // in this list selects them), matching the other removed concepts.
+  // { id: "future-state", name: "Future state" },
+  // { id: "future-state-v2", name: "Future State V2" },
   // "Ticker" removed from the prototype. The "ticker" AnimationType member and its
   // branches (usesTicker/usesRollerCard, the drum render) are intentionally left in
   // place — they're harmless while nothing in the list selects "ticker".
@@ -424,7 +426,7 @@ export default function AnimationShowcase() {
    * Roller concept only: whether the card draws one spot or chains three.
    * Prototype-side control, toggled from the panel beside the device frame.
    */
-  const [rollerMode, setRollerMode] = useState<"single" | "multi">("single")
+  const [rollerMode] = useState<"single" | "multi">("single")
   /**
    * "Subtle Winning" concept only: which celebration treatment plays on a win.
    * "floating" is the ambient floaters over the stream; "takeover" scopes the
@@ -1229,45 +1231,8 @@ case "future-state-v2":
           version rail. Hidden under lg, where there's no room beside the
           frame without covering the prototype. */}
       <div className="hidden lg:flex fixed left-6 top-1/2 -translate-y-1/2 z-[110] flex-col gap-3">
-      {usesRollerCard(selectedAnimation) && (
-        <div
-          role="group"
-          aria-label={usesTicker(selectedAnimation) ? "Ticker spin mode" : "Roller spin mode"}
-          className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-zinc-900/95 backdrop-blur p-3 shadow-2xl"
-        >
-          <span className="text-[11px] font-medium uppercase tracking-wide text-white/50">
-            {usesTicker(selectedAnimation) ? "Ticker spin" : "Roller spin"}
-          </span>
-          {([
-            { id: "single", label: "Single", hint: "1 item" },
-            { id: "multi", label: "Multi", hint: "3 items" },
-          ] as const).map((mode) => (
-            <button
-              key={mode.id}
-              onClick={() => setRollerMode(mode.id)}
-              /* Disabled mid-reveal: switching would swap the mounted spinner
-                 while `isSpinning` is still true, restarting the draw. */
-              disabled={spinInPlaceShowing}
-              aria-pressed={rollerMode === mode.id}
-              className={`flex w-28 flex-col items-start rounded-xl px-3 py-2 text-left transition-all ${
-                spinInPlaceShowing
-                  ? "cursor-not-allowed bg-zinc-800/50 text-white/30"
-                  : rollerMode === mode.id
-                  ? "bg-zinc-800 text-white ring-2 ring-inset ring-yellow-400"
-                  : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
-              }`}
-            >
-              <span className="text-xs font-medium">{mode.label}</span>
-              <span className="text-[10px] text-white/40">{mode.hint}</span>
-            </button>
-          ))}
-          {spinInPlaceShowing && (
-            <span className="w-28 text-[10px] leading-tight text-white/40">
-              Locked while spinning
-            </span>
-          )}
-        </div>
-      )}
+      {/* The Roller spin Single/Multi toggle was removed: the roller is always
+          single-spin now. */}
 
       {/* Subtle Winning celebration control, second in the left stack. */}
       {isSubtleConcept && (
