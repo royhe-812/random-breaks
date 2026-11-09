@@ -1,6 +1,6 @@
 "use client"
 
-// Radial progress arc + "available/total spots available" label.
+// Radial progress arc + "available/total items available" label.
 // Mirrors the CircularProgress used inside the spinners so the auction card
 // can show the same indicator beneath its title.
 export function SpotsProgress({
@@ -47,7 +47,7 @@ export function SpotsProgress({
         />
       </svg>
       <span className="text-sm text-white">
-        {available}/{total} spots available
+        {available}/{total} items available
       </span>
     </div>
   )

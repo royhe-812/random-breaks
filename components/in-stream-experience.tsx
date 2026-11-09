@@ -8,21 +8,21 @@ import { SpotsProgress } from "@/components/spots-progress"
 import { LiveViewerIndicator } from "@/components/live-viewer-indicator"
 
 const chatMessages = [
-  { user: "johnpleys", message: "Gotta try to hit this one! Love Mosaic", color: "text-white/60" },
+  { user: "johnpleys", message: "Gotta try to hit this one! Love a surprise set", color: "text-white/60" },
   { user: "Chloepulls11", message: "These are so hot, get your bids in!", color: "text-yellow-400" },
   { user: "chrisjames", message: "So sick", color: "text-white" },
   { user: "cardking99", message: "GL everyone!", color: "text-blue-400" },
-  { user: "packripperz", message: "Who got the Burrow last break?", color: "text-purple-400" },
-  { user: "sportsfan22", message: "Need that Stroud auto", color: "text-green-400" },
-  { user: "rookie_hunter", message: "Herbert please!", color: "text-orange-400" },
+  { user: "packripperz", message: "Who got the Nautilus last set?", color: "text-purple-400" },
+  { user: "sportsfan22", message: "Need that Royal Oak", color: "text-green-400" },
+  { user: "rookie_hunter", message: "Datejust please!", color: "text-orange-400" },
   { user: "bigpulls", message: "Let's gooo", color: "text-pink-400" },
-  { user: "cardcollector", message: "Anyone hit a case hit yet?", color: "text-cyan-400" },
-  { user: "mikibreaks", message: "Just got the Cowboys, hyped!", color: "text-blue-400" },
-  { user: "nfl_cards", message: "Mahomes would be insane", color: "text-red-400" },
-  { user: "boxbreaker", message: "Love these random breaks", color: "text-yellow-400" },
-  { user: "pullemall", message: "Chiefs or Eagles plz", color: "text-green-400" },
-  { user: "firstroundpick", message: "Mosaic hits different", color: "text-purple-400" },
-  { user: "cardfiend", message: "What's the case hit?", color: "text-white" },
+  { user: "cardcollector", message: "Anyone hit a grail watch yet?", color: "text-cyan-400" },
+  { user: "mikibreaks", message: "Just got the Cartier Tank, hyped!", color: "text-blue-400" },
+  { user: "watch_cards", message: "A Daytona would be insane", color: "text-red-400" },
+  { user: "boxbreaker", message: "Love these surprise sets", color: "text-yellow-400" },
+  { user: "pullemall", message: "Submariner or Speedmaster plz", color: "text-green-400" },
+  { user: "firstroundpick", message: "Surprise sets hit different", color: "text-purple-400" },
+  { user: "cardfiend", message: "What's the grail piece?", color: "text-white" },
 ]
 
 // Isolated Team Spinner for In-Stream
@@ -265,13 +265,11 @@ export function InStreamExperience() {
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black">
       {/* Background Video */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ScreenRecording_03-10-2026%2022-12-18_1-XEQSf4595ZNfLCTCuTl1EmyY0whFpa.mov"
+      <img
+        src="/images/watches-live-stream.png"
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-cover"
       />
       
       {/* Gradient overlays */}
@@ -378,7 +376,7 @@ export function InStreamExperience() {
                 <span className="font-semibold text-white">
                   {selectedTeam ? `${selectedTeam.city} ${selectedTeam.name}` : 'Random team'}
                 </span>
-                <span className="text-white/50"> - 16X 2023 Panini Mosaic NFL Blaster</span>
+                <span className="text-white/50"> - Luxury Watches Surprise Set</span>
               </p>
               <div className="mb-1">
                 <SpotsProgress available={16} total={32} size={16} />

@@ -271,8 +271,8 @@ export function MultiSpin2Spinner({
                 teams[currentIndex].abbrev
               ) : (
                 <img
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png"
-                  alt="Panini Luminance box"
+                  src="/images/watches-surprise-set.png"
+                  alt="Luxury watches surprise set"
                   className="w-full h-full object-cover rounded-lg"
                 />
               )}
@@ -302,7 +302,7 @@ export function MultiSpin2Spinner({
                       animate={{ x: ["0%", "-50%"] }}
                       transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                     >
-                      2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp; 2025 Panini Luminance Football Hobby PYT Box Break #903 &nbsp;&nbsp;&nbsp;&nbsp;
+                      Luxury Watches Surprise Set &nbsp;&nbsp;&nbsp;&nbsp; Luxury Watches Surprise Set &nbsp;&nbsp;&nbsp;&nbsp;
                     </motion.div>
                   </div>
                 )}

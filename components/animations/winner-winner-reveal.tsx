@@ -22,12 +22,12 @@ interface WinnerWinnerRevealProps {
 }
 
 const defaultTeams = [
-  { name: "Chiefs", city: "Kansas City", color: "#E31837", secondary: "#FFB81C", abbrev: "KC" },
-  { name: "49ers", city: "San Francisco", color: "#AA0000", secondary: "#B3995D", abbrev: "SF" },
-  { name: "Eagles", city: "Philadelphia", color: "#004C54", secondary: "#A5ACAF", abbrev: "PHI" },
-  { name: "Cowboys", city: "Dallas", color: "#003594", secondary: "#869397", abbrev: "DAL" },
-  { name: "Bills", city: "Buffalo", color: "#00338D", secondary: "#C60C30", abbrev: "BUF" },
-  { name: "Dolphins", city: "Miami", color: "#008E97", secondary: "#FC4C02", abbrev: "MIA" },
+  { name: "Submariner", city: "Rolex", color: "#E31837", secondary: "#FFB81C", abbrev: "SUB" },
+  { name: "Nautilus", city: "Patek Philippe", color: "#AA0000", secondary: "#B3995D", abbrev: "NAU" },
+  { name: "Speedmaster", city: "Omega", color: "#004C54", secondary: "#A5ACAF", abbrev: "SPD" },
+  { name: "Tank", city: "Cartier", color: "#003594", secondary: "#869397", abbrev: "TNK" },
+  { name: "Presage", city: "Seiko", color: "#00338D", secondary: "#C60C30", abbrev: "PRS" },
+  { name: "Black Bay", city: "Tudor", color: "#008E97", secondary: "#FC4C02", abbrev: "BBY" },
 ]
 
 export function WinnerWinnerReveal({ isRevealing, team: propTeam, onComplete, username = "Adam007", onTeamSelected }: WinnerWinnerRevealProps) {

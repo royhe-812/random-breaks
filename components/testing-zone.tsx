@@ -185,7 +185,7 @@ function MiniSpinner({ label, forcedTeam, spinKey, variant }: MiniSpinnerProps) 
     >
       {isSpinning ? currentTeam.abbrev : result ? result.abbrev : (
         <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png"
+          src="/images/watches-surprise-set.png"
           alt="box"
           className="w-full h-full object-cover rounded-lg"
         />
@@ -264,7 +264,7 @@ function MiniSpinner({ label, forcedTeam, spinKey, variant }: MiniSpinnerProps) 
             {titleLine}
             <div className="flex items-center gap-1.5 mt-0.5">
               <CircularProgress available={15} total={32} size={14} />
-              <span className="text-white/50 text-xs">15/32 spots available</span>
+              <span className="text-white/50 text-xs">15/32 items available</span>
             </div>
           </div>
           <span className="text-white/30 text-xs flex-shrink-0">View all &rsaquo;</span>
@@ -296,8 +296,6 @@ type VariantId = (typeof VARIANTS)[number]["id"]
 /* ── Live stream chrome ──
    Same blob assets the production stream in app/page.tsx uses, so the testing
    zone is judged against the identical backdrop rather than a flat panel. */
-const STREAM_VIDEO =
-  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/case%20breaks%20video%20-w5usFKatykHZfTOkKiurwdJmYPpFxf.mov"
 const RAIL_ICONS = [
   { src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/items-lRJIiXEXUI5vZJg8YwpehK7c6cPcIp.png", label: "Items" },
   { src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/wallet-DJozjl9ngzsbQkbB6XZaj8GAvfXwO3.png", label: "Wallet" },
@@ -305,8 +303,8 @@ const RAIL_ICONS = [
   { src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/more-7JAmofygtcnGhXf8oMlQuYxSkAZxTC.png", label: "More" },
 ]
 const STREAM_CHAT = [
-  { user: "boxbreaker", message: "Love these random breaks" },
-  { user: "firstroundpick", message: "Mosaic hits different" },
+  { user: "boxbreaker", message: "Love these surprise sets" },
+  { user: "firstroundpick", message: "Surprise sets hit different" },
   { user: "Chloepulls11", message: "These are so hot, get your bids in!" },
 ]
 
@@ -511,7 +509,7 @@ export function TestingZone() {
       </header>
 
       <div className="flex flex-col lg:flex-row flex-1 min-h-0">
-        {/* ─── Controls ───��─���───────────────���──�����────��───────────────────── */}
+        {/* ─── Controls ───��─���───────────────���──•────��───────────────────── */}
         <div className="lg:w-80 lg:flex-shrink-0 border-b lg:border-b-0 lg:border-r border-white/10 p-6 overflow-y-auto">
           {/* Variant */}
           <p className="text-white/40 text-[10px] uppercase tracking-widest font-semibold mb-3">Variant</p>
@@ -657,21 +655,13 @@ export function TestingZone() {
                 The `muted` JSX attribute alone is unreliable (React can apply it
                 after the browser has already started playing with audio), so the
                 ref forces `muted` + `volume = 0` imperatively to guarantee the
-                card-opening clip never plays sound. */}
-            <video
-              ref={(el) => {
-                if (el) {
-                  el.muted = true
-                  el.volume = 0
-                }
-              }}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="absolute inset-0 w-full h-full object-cover"
-              src={STREAM_VIDEO}
-            />
+                . */}
+            <img
+        src="/images/watches-live-stream.png"
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-cover"
+      />
 
             {/* Readability gradients, matching the production stack */}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />

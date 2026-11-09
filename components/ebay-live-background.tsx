@@ -21,7 +21,7 @@ export function EbayLiveBackground({ children, onTriggerReveal, isRevealing }: E
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Pinned%20AUC%20-%20Random-6g9NlCmU2KzyGJr4iKP6pzhgGPtF9a.png')`,
+            backgroundImage: `url('/images/watches-live-stream.png')`,
             filter: isRevealing ? 'blur(8px) brightness(0.4)' : 'none',
             transition: 'filter 0.5s ease-out',
           }}
@@ -139,7 +139,7 @@ export function EbayLiveBackground({ children, onTriggerReveal, isRevealing }: E
                 <circle cx="16" cy="20" r="5" fill="rgba(255,255,255,0.5)"/>
                 <path d="M8 34c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="rgba(255,255,255,0.5)" strokeWidth="2.5" strokeLinecap="round"/>
               </svg>
-              16/32 spots available
+              16/32 items available
             </span>
             <button className="flex items-center gap-1 text-white text-sm font-medium">
               View all
@@ -152,7 +152,7 @@ export function EbayLiveBackground({ children, onTriggerReveal, isRevealing }: E
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
               <h3 className="text-white font-semibold">
-                Random team - 16X 2023 Panini Mosaic NFL Blaster Random #224
+                Surprise set - Luxury Watches Random #15
               </h3>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-white font-bold text-lg">${bidAmount}.00</span>

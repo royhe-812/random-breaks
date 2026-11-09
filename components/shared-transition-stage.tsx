@@ -490,16 +490,16 @@ export function SharedTransitionStage({
     <div>
       <div className="relative rounded-2xl overflow-hidden">
       {/* Incentive Tile — spots row (Figma). The spot just assigned is claimed,
-          so the counter is down one; the underlined "View spots" CTA opens the
+          so the counter is down one; the underlined "View items" CTA opens the
           spots sheet, and a bottom border divides it from the Buy Box. */}
       <button
         type="button"
         onClick={onViewSpots}
-        aria-label={`${Math.max(0, availableSpots - 1)} of ${totalSpots} spots available. View spots.`}
+        aria-label={`${Math.max(0, availableSpots - 1)} of ${totalSpots} items available. View items.`}
         className="flex w-full items-center justify-between gap-2 border-b border-[#363636] bg-black/40 px-4 py-2 text-left backdrop-blur transition-opacity hover:opacity-90"
       >
-        <span className="text-xs leading-4 text-[#f7f7f7]">{Math.max(0, availableSpots - 1)}/{totalSpots} spots available</span>
-        <span className="flex-shrink-0 text-xs leading-4 text-[#8f8f8f] underline">View spots</span>
+        <span className="text-xs leading-4 text-[#f7f7f7]">{Math.max(0, availableSpots - 1)}/{totalSpots} items available</span>
+        <span className="flex-shrink-0 text-xs leading-4 text-[#8f8f8f] underline">View items</span>
       </button>
 
       <div className="bg-black/40 backdrop-blur px-4 py-2">
@@ -507,8 +507,8 @@ export function SharedTransitionStage({
         <div className="flex-1 min-w-0 pr-2">
           <p className="text-sm text-white mb-0.5 truncate">
             <span className="font-semibold">
-              {`Random Break #${breakNumber}`}
-              {" — 2025 Panini Luminance Football Hobby PYT Box Break #903"}
+              {`Surprise set #${breakNumber}`}
+              {" — Luxury Watches Surprise Set"}
             </span>
           </p>
           <div className="flex flex-col">
@@ -524,7 +524,7 @@ export function SharedTransitionStage({
             </div>
           </div>
         </div>
-        {/* Decorative chevron — the "View spots" CTA above opens the sheet. */}
+        {/* Decorative chevron — the "View items" CTA above opens the sheet. */}
         <div aria-hidden="true" className="flex-shrink-0 mt-1">
           <ChevronRight className="w-5 h-5 text-white/40" />
         </div>

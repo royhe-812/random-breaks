@@ -43,7 +43,7 @@ function SpotsRing({ available, total, size = 16 }: { available: number; total: 
 }
 
 /**
- * Inline contextual "N/M spots available" banner (Figma "Incentive Tile").
+ * Inline contextual "N/M items available" banner (Figma "Incentive Tile").
  *
  * Rather than a standalone box, this nests *behind* the spinner card: the tile is
  * 52px tall with its bottom 16px tucked under the card, leaving 36px visible. The

@@ -4,22 +4,22 @@ import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
 const teams = [
-  { name: "Chiefs", city: "Kansas City", color: "#E31837", abbr: "KC" },
-  { name: "Eagles", city: "Philadelphia", color: "#004C54", abbr: "PHI" },
-  { name: "Cowboys", city: "Dallas", color: "#003594", abbr: "DAL" },
-  { name: "49ers", city: "San Francisco", color: "#AA0000", abbr: "SF" },
-  { name: "Bills", city: "Buffalo", color: "#00338D", abbr: "BUF" },
-  { name: "Dolphins", city: "Miami", color: "#008E97", abbr: "MIA" },
-  { name: "Ravens", city: "Baltimore", color: "#241773", abbr: "BAL" },
-  { name: "Lions", city: "Detroit", color: "#0076B6", abbr: "DET" },
-  { name: "Packers", city: "Green Bay", color: "#203731", abbr: "GB" },
-  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", abbr: "CIN" },
-  { name: "Jets", city: "New York", color: "#125740", abbr: "NYJ" },
-  { name: "Broncos", city: "Denver", color: "#FB4F14", abbr: "DEN" },
-  { name: "Chargers", city: "Los Angeles", color: "#0080C6", abbr: "LAC" },
-  { name: "Colts", city: "Indianapolis", color: "#002C5F", abbr: "IND" },
-  { name: "Texans", city: "Houston", color: "#03202F", abbr: "HOU" },
-  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", abbr: "PIT" },
+  { name: "Submariner", city: "Rolex", color: "#E31837", abbr: "SUB" },
+  { name: "Speedmaster", city: "Omega", color: "#004C54", abbr: "SPD" },
+  { name: "Tank", city: "Cartier", color: "#003594", abbr: "TNK" },
+  { name: "Nautilus", city: "Patek Philippe", color: "#AA0000", abbr: "NAU" },
+  { name: "Presage", city: "Seiko", color: "#00338D", abbr: "PRS" },
+  { name: "Black Bay", city: "Tudor", color: "#008E97", abbr: "BBY" },
+  { name: "Navitimer", city: "Breitling", color: "#241773", abbr: "NAV" },
+  { name: "Carrera", city: "TAG Heuer", color: "#0076B6", abbr: "CRR" },
+  { name: "Snowflake", city: "Grand Seiko", color: "#203731", abbr: "SNW" },
+  { name: "Khaki Field", city: "Hamilton", color: "#FB4F14", abbr: "KHK" },
+  { name: "G-Shock", city: "Casio", color: "#125740", abbr: "GSK" },
+  { name: "Spirit", city: "Longines", color: "#FB4F14", abbr: "SPT" },
+  { name: "Promaster", city: "Citizen", color: "#0080C6", abbr: "PRO" },
+  { name: "Aquis", city: "Oris", color: "#002C5F", abbr: "AQU" },
+  { name: "Luminor", city: "Panerai", color: "#03202F", abbr: "LUM" },
+  { name: "Pilot", city: "IWC", color: "#FFB612", abbr: "PLT" },
 ]
 
 interface Team {

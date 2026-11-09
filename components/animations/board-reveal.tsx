@@ -48,38 +48,38 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
 }
 
 const teams = [
-  { name: "Chiefs", city: "Kansas City", color: "#E31837", abbrev: "KC", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png" },
-  { name: "Eagles", city: "Philadelphia", color: "#004C54", abbrev: "PHI", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png" },
-  { name: "Cowboys", city: "Dallas", color: "#003594", abbrev: "DAL", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/dal.png" },
-  { name: "49ers", city: "San Francisco", color: "#AA0000", abbrev: "SF", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png" },
-  { name: "Bills", city: "Buffalo", color: "#00338D", abbrev: "BUF", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/buf.png" },
-  { name: "Dolphins", city: "Miami", color: "#008E97", abbrev: "MIA", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png" },
-  { name: "Ravens", city: "Baltimore", color: "#241773", abbrev: "BAL", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png" },
-  { name: "Lions", city: "Detroit", color: "#0076B6", abbrev: "DET", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/det.png" },
-  { name: "Packers", city: "Green Bay", color: "#203731", abbrev: "GB", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" },
-  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", abbrev: "CIN", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/cin.png" },
-  { name: "Jets", city: "New York", color: "#125740", abbrev: "NYJ", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png" },
-  { name: "Broncos", city: "Denver", color: "#FB4F14", abbrev: "DEN", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/den.png" },
-  { name: "Chargers", city: "Los Angeles", color: "#0080C6", abbrev: "LAC", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lac.png" },
-  { name: "Colts", city: "Indianapolis", color: "#002C5F", abbrev: "IND", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ind.png" },
-  { name: "Texans", city: "Houston", color: "#03202F", abbrev: "HOU", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/hou.png" },
-  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", abbrev: "PIT", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png" },
-  { name: "Patriots", city: "New England", color: "#002244", abbrev: "NE", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png" },
-  { name: "Giants", city: "New York", color: "#0B2265", abbrev: "NYG", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png" },
-  { name: "Commanders", city: "Washington", color: "#5A1414", abbrev: "WAS", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png" },
-  { name: "Bears", city: "Chicago", color: "#0B162A", abbrev: "CHI", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" },
-  { name: "Vikings", city: "Minnesota", color: "#4F2683", abbrev: "MIN", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/min.png" },
-  { name: "Saints", city: "New Orleans", color: "#D3BC8D", abbrev: "NO", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/no.png" },
-  { name: "Falcons", city: "Atlanta", color: "#A71930", abbrev: "ATL", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/atl.png" },
-  { name: "Panthers", city: "Carolina", color: "#0085CA", abbrev: "CAR", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/car.png" },
-  { name: "Buccaneers", city: "Tampa Bay", color: "#D50A0A", abbrev: "TB", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/tb.png" },
-  { name: "Cardinals", city: "Arizona", color: "#97233F", abbrev: "ARI", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ari.png" },
-  { name: "Rams", city: "Los Angeles", color: "#003594", abbrev: "LAR", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lar.png" },
-  { name: "Seahawks", city: "Seattle", color: "#002244", abbrev: "SEA", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png" },
-  { name: "Raiders", city: "Las Vegas", color: "#000000", abbrev: "LV", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lv.png" },
-  { name: "Jaguars", city: "Jacksonville", color: "#006778", abbrev: "JAX", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/jax.png" },
-  { name: "Titans", city: "Tennessee", color: "#0C2340", abbrev: "TEN", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ten.png" },
-  { name: "Browns", city: "Cleveland", color: "#311D00", abbrev: "CLE", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/cle.png" },
+  { name: "Submariner", city: "Rolex", color: "#E31837", abbrev: "SUB" },
+  { name: "Speedmaster", city: "Omega", color: "#004C54", abbrev: "SPD" },
+  { name: "Tank", city: "Cartier", color: "#003594", abbrev: "TNK" },
+  { name: "Nautilus", city: "Patek Philippe", color: "#AA0000", abbrev: "NAU" },
+  { name: "Presage", city: "Seiko", color: "#00338D", abbrev: "PRS" },
+  { name: "Black Bay", city: "Tudor", color: "#008E97", abbrev: "BBY" },
+  { name: "Navitimer", city: "Breitling", color: "#241773", abbrev: "NAV" },
+  { name: "Carrera", city: "TAG Heuer", color: "#0076B6", abbrev: "CRR" },
+  { name: "Snowflake", city: "Grand Seiko", color: "#203731", abbrev: "SNW" },
+  { name: "Khaki Field", city: "Hamilton", color: "#FB4F14", abbrev: "KHK" },
+  { name: "G-Shock", city: "Casio", color: "#125740", abbrev: "GSK" },
+  { name: "Spirit", city: "Longines", color: "#FB4F14", abbrev: "SPT" },
+  { name: "Promaster", city: "Citizen", color: "#0080C6", abbrev: "PRO" },
+  { name: "Aquis", city: "Oris", color: "#002C5F", abbrev: "AQU" },
+  { name: "Luminor", city: "Panerai", color: "#03202F", abbrev: "LUM" },
+  { name: "Pilot", city: "IWC", color: "#FFB612", abbrev: "PLT" },
+  { name: "El Primero", city: "Zenith", color: "#002244", abbrev: "ELP" },
+  { name: "Royal Oak", city: "Audemars Piguet", color: "#0B2265", abbrev: "ROK" },
+  { name: "Overseas", city: "Vacheron Constantin", color: "#5A1414", abbrev: "OVS" },
+  { name: "Reverso", city: "Jaeger-LeCoultre", color: "#0B162A", abbrev: "REV" },
+  { name: "Big Bang", city: "Hublot", color: "#4F2683", abbrev: "BGB" },
+  { name: "Datejust", city: "Rolex", color: "#D3BC8D", abbrev: "DTJ" },
+  { name: "Seamaster", city: "Omega", color: "#A71930", abbrev: "SEA" },
+  { name: "Pelagos", city: "Tudor", color: "#0085CA", abbrev: "PEL" },
+  { name: "Tangente", city: "Nomos", color: "#D50A0A", abbrev: "TAN" },
+  { name: "BR 03", city: "Bell & Ross", color: "#97233F", abbrev: "BR3" },
+  { name: "GMT-Master", city: "Rolex", color: "#003594", abbrev: "GMT" },
+  { name: "Prospex", city: "Seiko", color: "#002244", abbrev: "PSX" },
+  { name: "Marine", city: "Breguet", color: "#000000", abbrev: "MAR" },
+  { name: "556", city: "Sinn", color: "#006778", abbrev: "S56" },
+  { name: "PRX", city: "Tissot", color: "#0C2340", abbrev: "PRX" },
+  { name: "Marlin", city: "Timex", color: "#311D00", abbrev: "MRL" },
 ]
 
 // Pre-sold team indices (16 teams already sold to match 16/32 spots available)
@@ -93,7 +93,6 @@ interface Team {
   city?: string
   color: string
   abbrev?: string
-  logo?: string
 }
 
 interface ThumbnailsInlineRevealProps {
@@ -376,7 +375,7 @@ export function BoardReveal({ isRevealing, onComplete, team: propTeam, onTeamSel
                   >
                     <CircularProgress available={availableSpots ?? spotsLeft} total={32} size={14} />
                     <span className="text-white/80 text-xs font-medium whitespace-nowrap">
-                      {availableSpots ?? spotsLeft}/32 spots available
+                      {availableSpots ?? spotsLeft}/32 items available
                     </span>
                   </button>
                 )}
@@ -390,7 +389,7 @@ export function BoardReveal({ isRevealing, onComplete, team: propTeam, onTeamSel
                   onClick={onViewSpots}
                   className="flex items-center gap-0.5 text-white/60 hover:text-white text-sm whitespace-nowrap transition-colors shrink-0"
                 >
-                  View spots
+                  View items
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 18l6-6-6-6" />
                   </svg>
@@ -400,7 +399,7 @@ export function BoardReveal({ isRevealing, onComplete, team: propTeam, onTeamSel
           )
         })()}
 
-        {/* Board view: team title + View spots button above the thumbnails,
+        {/* Board view: team title + View items button above the thumbnails,
             with a divider separating this row from the grid. The title shows
             the pre-selected team before a spin, cycles during the spin, and
             turns green once it lands on the winning team. */}
@@ -428,7 +427,7 @@ export function BoardReveal({ isRevealing, onComplete, team: propTeam, onTeamSel
                 onClick={onViewSpots}
                 className="flex items-center gap-0.5 text-white/60 hover:text-white text-sm whitespace-nowrap transition-colors shrink-0"
               >
-                View spots
+                View items
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 18l6-6-6-6" />
                 </svg>

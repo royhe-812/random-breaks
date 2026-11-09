@@ -311,8 +311,8 @@ export function MultiSpin6TitleRowSpinner({
                 teams[currentIndex].abbrev
               ) : (
                 <img
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%F0%9F%93%B8%20Image-9iS4XVufx1PUEY9oOKKsmjnhTZzv9F.png"
-                  alt="Panini Luminance box"
+                  src="/images/watches-surprise-set.png"
+                  alt="Luxury watches surprise set"
                   className="w-full h-full object-cover rounded-lg"
                 />
               )}

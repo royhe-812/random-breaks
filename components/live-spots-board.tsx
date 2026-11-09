@@ -7,44 +7,41 @@ import { Search, X } from "lucide-react"
 // Same team order as BreakSpotsSheet, so both boards agree on which spots are
 // sold for a given spots count: the first (total - available) teams are sold.
 const TEAMS = [
-  { city: "Kansas City", name: "Chiefs", abbrev: "KC" },
-  { city: "Philadelphia", name: "Eagles", abbrev: "PHI" },
-  { city: "Dallas", name: "Cowboys", abbrev: "DAL" },
-  { city: "San Francisco", name: "49ers", abbrev: "SF" },
-  { city: "Buffalo", name: "Bills", abbrev: "BUF" },
-  { city: "Miami", name: "Dolphins", abbrev: "MIA" },
-  { city: "Baltimore", name: "Ravens", abbrev: "BAL" },
-  { city: "Detroit", name: "Lions", abbrev: "DET" },
-  { city: "Green Bay", name: "Packers", abbrev: "GB" },
-  { city: "Cincinnati", name: "Bengals", abbrev: "CIN" },
-  { city: "New York", name: "Jets", abbrev: "NYJ" },
-  { city: "Denver", name: "Broncos", abbrev: "DEN" },
-  { city: "Los Angeles", name: "Chargers", abbrev: "LAC" },
-  { city: "Indianapolis", name: "Colts", abbrev: "IND" },
-  { city: "Houston", name: "Texans", abbrev: "HOU" },
-  { city: "Pittsburgh", name: "Steelers", abbrev: "PIT" },
-  { city: "New England", name: "Patriots", abbrev: "NE" },
-  { city: "New York", name: "Giants", abbrev: "NYG" },
-  { city: "Washington", name: "Commanders", abbrev: "WAS" },
-  { city: "Chicago", name: "Bears", abbrev: "CHI" },
-  { city: "Minnesota", name: "Vikings", abbrev: "MIN" },
-  { city: "New Orleans", name: "Saints", abbrev: "NO" },
-  { city: "Atlanta", name: "Falcons", abbrev: "ATL" },
-  { city: "Carolina", name: "Panthers", abbrev: "CAR" },
-  { city: "Tampa Bay", name: "Buccaneers", abbrev: "TB" },
-  { city: "Arizona", name: "Cardinals", abbrev: "ARI" },
-  { city: "Los Angeles", name: "Rams", abbrev: "LAR" },
-  { city: "Seattle", name: "Seahawks", abbrev: "SEA" },
-  { city: "Las Vegas", name: "Raiders", abbrev: "LV" },
-  { city: "Jacksonville", name: "Jaguars", abbrev: "JAX" },
-  { city: "Tennessee", name: "Titans", abbrev: "TEN" },
-  { city: "Cleveland", name: "Browns", abbrev: "CLE" },
+  { city: "Rolex", name: "Submariner", abbrev: "SUB" },
+  { city: "Omega", name: "Speedmaster", abbrev: "SPD" },
+  { city: "Cartier", name: "Tank", abbrev: "TNK" },
+  { city: "Patek Philippe", name: "Nautilus", abbrev: "NAU" },
+  { city: "Seiko", name: "Presage", abbrev: "PRS" },
+  { city: "Tudor", name: "Black Bay", abbrev: "BBY" },
+  { city: "Breitling", name: "Navitimer", abbrev: "NAV" },
+  { city: "TAG Heuer", name: "Carrera", abbrev: "CRR" },
+  { city: "Grand Seiko", name: "Snowflake", abbrev: "SNW" },
+  { city: "Hamilton", name: "Khaki Field", abbrev: "KHK" },
+  { city: "Casio", name: "G-Shock", abbrev: "GSK" },
+  { city: "Longines", name: "Spirit", abbrev: "SPT" },
+  { city: "Citizen", name: "Promaster", abbrev: "PRO" },
+  { city: "Oris", name: "Aquis", abbrev: "AQU" },
+  { city: "Panerai", name: "Luminor", abbrev: "LUM" },
+  { city: "IWC", name: "Pilot", abbrev: "PLT" },
+  { city: "Zenith", name: "El Primero", abbrev: "ELP" },
+  { city: "Audemars Piguet", name: "Royal Oak", abbrev: "ROK" },
+  { city: "Vacheron Constantin", name: "Overseas", abbrev: "OVS" },
+  { city: "Jaeger-LeCoultre", name: "Reverso", abbrev: "REV" },
+  { city: "Hublot", name: "Big Bang", abbrev: "BGB" },
+  { city: "Rolex", name: "Datejust", abbrev: "DTJ" },
+  { city: "Omega", name: "Seamaster", abbrev: "SEA" },
+  { city: "Tudor", name: "Pelagos", abbrev: "PEL" },
+  { city: "Nomos", name: "Tangente", abbrev: "TAN" },
+  { city: "Bell & Ross", name: "BR 03", abbrev: "BR3" },
+  { city: "Rolex", name: "GMT-Master", abbrev: "GMT" },
+  { city: "Seiko", name: "Prospex", abbrev: "PSX" },
+  { city: "Breguet", name: "Marine", abbrev: "MAR" },
+  { city: "Sinn", name: "556", abbrev: "S56" },
+  { city: "Tissot", name: "PRX", abbrev: "PRX" },
+  { city: "Timex", name: "Marlin", abbrev: "MRL" },
 ]
 
 const BUYERS = ["KemMajed90", "BestCollector", "CardKing22", "SportsGuru", "PackRipper", "HobbyFan", "CardChaser", "BigHits", "TopPulls", "RookieHunter", "GradedGems", "WaxBreaker", "HitMaker", "CardShark", "BoxBreaker", "SerialHunter", "ChaseElite", "MintCondition", "RipNShip", "SlabHunter", "TheBreaker", "CardVault", "HitChaser", "PrizmKing", "WaxAddict", "GemMint10", "BreakRoom", "CardCove", "HotBoxes", "PullMaster", "AceCards", "BigLeague"]
-
-const logoFor = (abbrev: string) =>
-  `https://a.espncdn.com/i/teamlogos/nfl/500/${abbrev === "WAS" ? "wsh" : abbrev.toLowerCase()}.png`
 
 type Filter = "all" | "open" | "sold"
 
@@ -112,7 +109,7 @@ export function LiveSpotsBoard({
                 <p className="text-[11px] font-bold uppercase tracking-widest text-white/50">Live board</p>
               </div>
               <h2 id="live-board-title" className="mt-1 text-xl font-bold leading-6">
-                {openCount} of {total} spots available
+                {openCount} of {total} items available
               </h2>
               <p className="mt-0.5 text-xs text-white/55">
                 {soldCount} sold · {openCount} left to be assigned
@@ -158,18 +155,18 @@ export function LiveSpotsBoard({
           <div className="px-4 pt-2">
             <label className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-2">
               <Search className="h-4 w-4 text-white/45" aria-hidden="true" />
-              <span className="sr-only">Search teams or buyers</span>
+              <span className="sr-only">Search items or buyers</span>
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search teams or buyers"
+                placeholder="Search items or buyers"
                 className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/45"
               />
             </label>
           </div>
 
-          {/* Team grid */}
+          {/* Item grid */}
           <div className="no-scrollbar flex-1 overflow-y-auto px-4 pb-6 pt-3">
             {visible.length === 0 ? (
               <p className="pt-8 text-center text-sm text-white/50">
@@ -184,12 +181,12 @@ export function LiveSpotsBoard({
                       s.owner ? "bg-white/[0.04] ring-white/10" : "bg-[#4CE160]/[0.07] ring-[#4CE160]/40"
                     }`}
                   >
-                    <img
-                      src={logoFor(s.abbrev)}
-                      alt=""
-                      className={`h-9 w-9 object-contain ${s.owner ? "opacity-60" : ""}`}
-                      loading="lazy"
-                    />
+                    <span
+                      aria-hidden="true"
+                      className={`flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold text-white ${s.owner ? "opacity-60" : ""}`}
+                    >
+                      {s.abbrev}
+                    </span>
                     <span className="w-full truncate text-center text-xs font-semibold leading-4">{s.name}</span>
                     {s.owner ? (
                       <span className="w-full truncate rounded-full bg-white/10 px-1.5 py-0.5 text-center text-[10px] font-medium leading-3 text-white/75">

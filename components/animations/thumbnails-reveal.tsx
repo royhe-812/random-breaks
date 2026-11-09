@@ -2,32 +2,30 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import Image from "next/image"
 
 const teams = [
-  { name: "Chiefs", city: "Kansas City", color: "#E31837", abbrev: "KC", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png" },
-  { name: "Eagles", city: "Philadelphia", color: "#004C54", abbrev: "PHI", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png" },
-  { name: "Cowboys", city: "Dallas", color: "#003594", abbrev: "DAL", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/dal.png" },
-  { name: "49ers", city: "San Francisco", color: "#AA0000", abbrev: "SF", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png" },
-  { name: "Bills", city: "Buffalo", color: "#00338D", abbrev: "BUF", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/buf.png" },
-  { name: "Dolphins", city: "Miami", color: "#008E97", abbrev: "MIA", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png" },
-  { name: "Ravens", city: "Baltimore", color: "#241773", abbrev: "BAL", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png" },
-  { name: "Lions", city: "Detroit", color: "#0076B6", abbrev: "DET", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/det.png" },
-  { name: "Packers", city: "Green Bay", color: "#203731", abbrev: "GB", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" },
-  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", abbrev: "CIN", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/cin.png" },
-  { name: "Jets", city: "New York", color: "#125740", abbrev: "NYJ", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png" },
-  { name: "Broncos", city: "Denver", color: "#FB4F14", abbrev: "DEN", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/den.png" },
-  { name: "Chargers", city: "Los Angeles", color: "#0080C6", abbrev: "LAC", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/lac.png" },
-  { name: "Colts", city: "Indianapolis", color: "#002C5F", abbrev: "IND", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ind.png" },
-  { name: "Texans", city: "Houston", color: "#03202F", abbrev: "HOU", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/hou.png" },
-  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", abbrev: "PIT", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png" },
+  { name: "Submariner", city: "Rolex", color: "#E31837", abbrev: "SUB" },
+  { name: "Speedmaster", city: "Omega", color: "#004C54", abbrev: "SPD" },
+  { name: "Tank", city: "Cartier", color: "#003594", abbrev: "TNK" },
+  { name: "Nautilus", city: "Patek Philippe", color: "#AA0000", abbrev: "NAU" },
+  { name: "Presage", city: "Seiko", color: "#00338D", abbrev: "PRS" },
+  { name: "Black Bay", city: "Tudor", color: "#008E97", abbrev: "BBY" },
+  { name: "Navitimer", city: "Breitling", color: "#241773", abbrev: "NAV" },
+  { name: "Carrera", city: "TAG Heuer", color: "#0076B6", abbrev: "CRR" },
+  { name: "Snowflake", city: "Grand Seiko", color: "#203731", abbrev: "SNW" },
+  { name: "Khaki Field", city: "Hamilton", color: "#FB4F14", abbrev: "KHK" },
+  { name: "G-Shock", city: "Casio", color: "#125740", abbrev: "GSK" },
+  { name: "Spirit", city: "Longines", color: "#FB4F14", abbrev: "SPT" },
+  { name: "Promaster", city: "Citizen", color: "#0080C6", abbrev: "PRO" },
+  { name: "Aquis", city: "Oris", color: "#002C5F", abbrev: "AQU" },
+  { name: "Luminor", city: "Panerai", color: "#03202F", abbrev: "LUM" },
+  { name: "Pilot", city: "IWC", color: "#FFB612", abbrev: "PLT" },
 ]
 
 interface Team {
   name: string
   city?: string
   color: string
-  logo?: string
   abbrev?: string
 }
 
@@ -117,7 +115,6 @@ export function ThumbnailsReveal({ isRevealing, onComplete, team: propTeam, onTe
               name: selectedTeam.name,
               city: selectedTeam.city,
               color: selectedTeam.color,
-              logo: selectedTeam.logo,
               abbrev: selectedTeam.abbrev,
             })
           }
@@ -253,14 +250,11 @@ export function ThumbnailsReveal({ isRevealing, onComplete, team: propTeam, onTe
                 />
               )}
               
-              <div className="relative w-full h-full p-1.5">
-                <Image
-                  src={team.logo}
-                  alt={team.name}
-                  fill
-                  className="object-contain"
-                  unoptimized
-                />
+              <div
+                className="flex h-full w-full items-center justify-center text-[10px] font-bold text-white"
+                aria-label={`${team.city} ${team.name}`}
+              >
+                {team.abbrev}
               </div>
             </motion.div>
           )

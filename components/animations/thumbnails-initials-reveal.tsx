@@ -45,38 +45,38 @@ const CircularProgress = ({ available, total, size = 16 }: { available: number; 
 }
 
 const teams = [
-  { name: "Chiefs", city: "Kansas City", color: "#E31837", initials: "KC", abbrev: "KC" },
-  { name: "Eagles", city: "Philadelphia", color: "#004C54", initials: "PHI", abbrev: "PHI" },
-  { name: "Cowboys", city: "Dallas", color: "#003594", initials: "DAL", abbrev: "DAL" },
-  { name: "49ers", city: "San Francisco", color: "#AA0000", initials: "SF", abbrev: "SF" },
-  { name: "Bills", city: "Buffalo", color: "#00338D", initials: "BUF", abbrev: "BUF" },
-  { name: "Dolphins", city: "Miami", color: "#008E97", initials: "MIA", abbrev: "MIA" },
-  { name: "Ravens", city: "Baltimore", color: "#241773", initials: "BAL", abbrev: "BAL" },
-  { name: "Lions", city: "Detroit", color: "#0076B6", initials: "DET", abbrev: "DET" },
-  { name: "Packers", city: "Green Bay", color: "#203731", initials: "GB", abbrev: "GB" },
-  { name: "Bengals", city: "Cincinnati", color: "#FB4F14", initials: "CIN", abbrev: "CIN" },
-  { name: "Jets", city: "New York", color: "#125740", initials: "NYJ", abbrev: "NYJ" },
-  { name: "Broncos", city: "Denver", color: "#FB4F14", initials: "DEN", abbrev: "DEN" },
-  { name: "Chargers", city: "Los Angeles", color: "#0080C6", initials: "LAC", abbrev: "LAC" },
-  { name: "Colts", city: "Indianapolis", color: "#002C5F", initials: "IND", abbrev: "IND" },
-  { name: "Texans", city: "Houston", color: "#03202F", initials: "HOU", abbrev: "HOU" },
-  { name: "Steelers", city: "Pittsburgh", color: "#FFB612", initials: "PIT", abbrev: "PIT" },
-  { name: "Patriots", city: "New England", color: "#002244", initials: "NE", abbrev: "NE" },
-  { name: "Giants", city: "New York", color: "#0B2265", initials: "NYG", abbrev: "NYG" },
-  { name: "Commanders", city: "Washington", color: "#5A1414", initials: "WAS", abbrev: "WAS" },
-  { name: "Bears", city: "Chicago", color: "#0B162A", initials: "CHI", abbrev: "CHI" },
-  { name: "Vikings", city: "Minnesota", color: "#4F2683", initials: "MIN", abbrev: "MIN" },
-  { name: "Saints", city: "New Orleans", color: "#D3BC8D", initials: "NO", abbrev: "NO" },
-  { name: "Falcons", city: "Atlanta", color: "#A71930", initials: "ATL", abbrev: "ATL" },
-  { name: "Panthers", city: "Carolina", color: "#0085CA", initials: "CAR", abbrev: "CAR" },
-  { name: "Buccaneers", city: "Tampa Bay", color: "#D50A0A", initials: "TB", abbrev: "TB" },
-  { name: "Cardinals", city: "Arizona", color: "#97233F", initials: "ARI", abbrev: "ARI" },
-  { name: "Rams", city: "Los Angeles", color: "#003594", initials: "LAR", abbrev: "LAR" },
-  { name: "Seahawks", city: "Seattle", color: "#002244", initials: "SEA", abbrev: "SEA" },
-  { name: "Raiders", city: "Las Vegas", color: "#000000", initials: "LV", abbrev: "LV" },
-  { name: "Jaguars", city: "Jacksonville", color: "#006778", initials: "JAX", abbrev: "JAX" },
-  { name: "Titans", city: "Tennessee", color: "#0C2340", initials: "TEN", abbrev: "TEN" },
-  { name: "Browns", city: "Cleveland", color: "#311D00", initials: "CLE", abbrev: "CLE" },
+  { name: "Submariner", city: "Rolex", color: "#E31837", initials: "KC", abbrev: "SUB" },
+  { name: "Speedmaster", city: "Omega", color: "#004C54", initials: "PHI", abbrev: "SPD" },
+  { name: "Tank", city: "Cartier", color: "#003594", initials: "DAL", abbrev: "TNK" },
+  { name: "Nautilus", city: "Patek Philippe", color: "#AA0000", initials: "SF", abbrev: "NAU" },
+  { name: "Presage", city: "Seiko", color: "#00338D", initials: "BUF", abbrev: "PRS" },
+  { name: "Black Bay", city: "Tudor", color: "#008E97", initials: "MIA", abbrev: "BBY" },
+  { name: "Navitimer", city: "Breitling", color: "#241773", initials: "BAL", abbrev: "NAV" },
+  { name: "Carrera", city: "TAG Heuer", color: "#0076B6", initials: "DET", abbrev: "CRR" },
+  { name: "Snowflake", city: "Grand Seiko", color: "#203731", initials: "GB", abbrev: "SNW" },
+  { name: "Khaki Field", city: "Hamilton", color: "#FB4F14", initials: "CIN", abbrev: "KHK" },
+  { name: "G-Shock", city: "Casio", color: "#125740", initials: "NYJ", abbrev: "GSK" },
+  { name: "Spirit", city: "Longines", color: "#FB4F14", initials: "DEN", abbrev: "SPT" },
+  { name: "Promaster", city: "Citizen", color: "#0080C6", initials: "LAC", abbrev: "PRO" },
+  { name: "Aquis", city: "Oris", color: "#002C5F", initials: "IND", abbrev: "AQU" },
+  { name: "Luminor", city: "Panerai", color: "#03202F", initials: "HOU", abbrev: "LUM" },
+  { name: "Pilot", city: "IWC", color: "#FFB612", initials: "PIT", abbrev: "PLT" },
+  { name: "El Primero", city: "Zenith", color: "#002244", initials: "NE", abbrev: "ELP" },
+  { name: "Royal Oak", city: "Audemars Piguet", color: "#0B2265", initials: "NYG", abbrev: "ROK" },
+  { name: "Overseas", city: "Vacheron Constantin", color: "#5A1414", initials: "WAS", abbrev: "OVS" },
+  { name: "Reverso", city: "Jaeger-LeCoultre", color: "#0B162A", initials: "CHI", abbrev: "REV" },
+  { name: "Big Bang", city: "Hublot", color: "#4F2683", initials: "MIN", abbrev: "BGB" },
+  { name: "Datejust", city: "Rolex", color: "#D3BC8D", initials: "NO", abbrev: "DTJ" },
+  { name: "Seamaster", city: "Omega", color: "#A71930", initials: "ATL", abbrev: "SEA" },
+  { name: "Pelagos", city: "Tudor", color: "#0085CA", initials: "CAR", abbrev: "PEL" },
+  { name: "Tangente", city: "Nomos", color: "#D50A0A", initials: "TB", abbrev: "TAN" },
+  { name: "BR 03", city: "Bell & Ross", color: "#97233F", initials: "ARI", abbrev: "BR3" },
+  { name: "GMT-Master", city: "Rolex", color: "#003594", initials: "LAR", abbrev: "GMT" },
+  { name: "Prospex", city: "Seiko", color: "#002244", initials: "SEA", abbrev: "PSX" },
+  { name: "Marine", city: "Breguet", color: "#000000", initials: "LV", abbrev: "MAR" },
+  { name: "556", city: "Sinn", color: "#006778", initials: "JAX", abbrev: "S56" },
+  { name: "PRX", city: "Tissot", color: "#0C2340", initials: "TEN", abbrev: "PRX" },
+  { name: "Marlin", city: "Timex", color: "#311D00", initials: "CLE", abbrev: "MRL" },
 ]
 
 // Pre-sold team indices (16 teams already sold to match 16/32 spots available)
@@ -331,7 +331,7 @@ export function ThumbnailsInitialsReveal({ isRevealing, onComplete, team: propTe
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5 flex-1 mr-4">
               <CircularProgress available={spotsLeft} total={32} size={16} />
-              <span className="text-white text-xs font-medium">{spotsLeft}/32 spots available</span>
+              <span className="text-white text-xs font-medium">{spotsLeft}/32 items available</span>
             </div>
             
             {/* Hide sold toggle */}
