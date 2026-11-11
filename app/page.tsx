@@ -5,7 +5,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from "react"
 
 // External libraries
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronDown, ChevronRight, Heart, Star, Pin } from "lucide-react"
+import { ChevronDown, ChevronRight, Heart, Star, Pin, Award, ShieldCheck, Clock, X, Minus, Tag, RotateCcw } from "lucide-react"
 
 // Internal components
 import { TeamSpinner, type Team, teams } from "@/components/team-spinner"
@@ -45,6 +45,7 @@ import { BoardReveal } from "@/components/animations/board-reveal"
 import { ThumbnailsInitialsReveal } from "@/components/animations/thumbnails-initials-reveal"
 import { ThumbnailsTextReveal } from "@/components/animations/thumbnails-text-reveal"
 import { InStreamExperience } from "@/components/in-stream-experience"
+import { TradesV1 } from "@/components/trades-v1"
 import { LiveViewerIndicator } from "@/components/live-viewer-indicator"
 import { IPhoneStatusBar } from "@/components/iphone-status-bar"
 import { SwipeToBid } from "@/components/swipe-to-bid"
@@ -52,7 +53,7 @@ import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { LiveSpotsBoard } from "@/components/live-spots-board"
 import { TestingZone } from "@/components/testing-zone"
 
-type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "future-state" | "future-state-v2" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
+type AnimationType = "card-flip" | "buyback" | "trades" | "consignments" | "grading" | "vaulting" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "future-state" | "future-state-v2" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
 
 // Both manual concepts share the same behavior (extra 4th manual chip, chat
 // wording, item-card label); they only differ in how the chip is marked:
@@ -60,6 +61,16 @@ type AnimationType = "card-flip" | "single-spin-populate" | "single-spin-later" 
 // uses a hand/pointer icon.
 const isManualConcept = (a: AnimationType) =>
   a === "multi-spin-5-manual" || a === "multi-spin-5-manual-icon"
+
+// "Buyback" and its siblings (Consignments, Grading, Vaulting): same live stream
+// + chat UI, but with no bidding box, spinner, or randomizer at all — only the
+// chat and comment input remain. They differ only by their rail label.
+const isBuyback = (a: AnimationType) =>
+  a === "buyback" || a === "trades" || a === "consignments" || a === "grading" || a === "vaulting"
+
+// Grading + Vaulting share one user-driven "/request" command that offers both
+// services, so either concept lands the buyer on the same command flow.
+const isRequestConcept = (a: AnimationType) => a === "grading" || a === "vaulting"
 
 // "Spin Later" is a duplicate of "Single Spin"; the only differences are that all
 // spots are sold (0/32 available), the item card reads "Surprise set #32", and the
@@ -110,11 +121,18 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // { id: "single-spin-populate", name: "Single Spin" },
   // { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
   { id: "spin-in-place-roller-subtle", name: "Randomizing" },
-  // "Future state" and "Future State V2" removed from the prototype. Their
-  // AnimationType members and branches are intentionally left in place (nothing
-  // in this list selects them), matching the other removed concepts.
-  // { id: "future-state", name: "Future state" },
-  // { id: "future-state-v2", name: "Future State V2" },
+  { id: "future-state", name: "Future state" },
+  // Future State V2 is the "Board" concept from the Live Board chat.
+  { id: "future-state-v2", name: "Future State V2" },
+  { id: "buyback", name: "Buy back" },
+  { id: "trades", name: "Trades" },
+  { id: "consignments", name: "Consignments" },
+  { id: "grading", name: "Grading and Vaulting" },
+  // "Vaulting" removed as a standalone concept — the "Grading and Vaulting"
+  // concept above already offers both services through the /request menu. The
+  // "vaulting" AnimationType member and its branches are intentionally left in
+  // place (harmless while nothing in the list selects it).
+  // { id: "vaulting", name: "Vaulting" },
   // "Ticker" removed from the prototype. The "ticker" AnimationType member and its
   // branches (usesTicker/usesRollerCard, the drum render) are intentionally left in
   // place — they're harmless while nothing in the list selects "ticker".
@@ -373,6 +391,128 @@ const chatMessages = [
   { user: "cardfiend", message: "What's the grail piece?", color: "text-white" },
 ]
 
+// Buyback version: no bidding, so the chat is pure hype reacting to insane NFL
+// card pulls coming out of the break.
+type BuybackOfferStatus = "available" | "reviewing" | "accepted" | "declined"
+
+const BUYBACK_OFFER = {
+  card: {
+    title: "Rookie Gold Refractor /10",
+    player: "Jayden Daniels",
+    set: "2024 Prizm Football",
+    grade: "Ungraded",
+    image: "/images/buyback-card.png",
+  },
+  marketValue: 425,
+  instantCredit: 380,
+  expiresIn: "14:32",
+} as const
+
+const formatDollars = (value: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value)
+
+// Consignments version: works like Buyback, but instead of buying the card
+// outright the seller offers to LIST and sell it on your behalf. The offer you
+// review is the proposed listing terms: the sale format (auction or Buy It
+// Now), the price (sale price for BIN, starting bid for auction), the seller's
+// commission once it sells, and how long the consignment runs.
+type ConsignmentOfferStatus = "available" | "reviewing" | "accepted" | "declined"
+
+const CONSIGNMENT_OFFER = {
+  card: {
+    title: "Rookie Gold Refractor /10",
+    player: "Jayden Daniels",
+    set: "2024 Prizm Football",
+    grade: "Ungraded",
+    image: "/images/buyback-card.png",
+  },
+  // Which listing format the seller is proposing. Flip to "Auction" to review
+  // the auction terms (starting bid) instead of the Buy It Now sale price.
+  format: "Buy It Now" as "Buy It Now" | "Auction",
+  salePrice: 480, // used when format is "Buy It Now"
+  startingBid: 250, // used when format is "Auction"
+  commissionPercent: 15,
+  duration: "30 days",
+  expiresIn: "14:32",
+} as const
+
+// Grading + Vaulting are user-driven, not seller-pushed: the buyer types
+// "/request" in chat to open a menu offering PSA Grading and Vaulting as two
+// separate services. Grading shows an estimated price + turnaround; Vaulting
+// shows vault details + cost information.
+const REQUEST_CARD = {
+  player: "Jayden Daniels",
+  title: "Rookie Gold Refractor /10",
+  set: "2024 Prizm Football",
+  image: "/images/buyback-card.png",
+} as const
+
+const GRADING_INFO = {
+  service: "PSA Grading",
+  tier: "PSA Regular",
+  estimatedPrice: 25, // per card, incl. shipping to PSA
+  estimatedGradedValue: "$520 – $900", // estimated value once graded
+  turnaround: "45 business days",
+} as const
+
+const VAULTING_INFO = {
+  facility: "eBay Vault · New Castle, DE",
+  insuredValue: 480,
+  monthlyCost: 0, // free ongoing storage
+  costLabel: "Free",
+  intakeFee: 0,
+  benefits: [
+    "Climate-controlled, fully insured storage",
+    "Ships to any buyer in 1 business day when it sells",
+    "List instantly from the vault — no re-shipping",
+  ],
+} as const
+
+// Trades version: another collector in the stream offers to trade one of their
+// cards (plus cash to balance) for the card you just pulled. Same chat-only
+// shell as Buyback, but the review sheet compares both cards side by side.
+type TradeOfferStatus = "available" | "reviewing" | "accepted" | "declined"
+
+const TRADE_OFFER = {
+  from: "hobbyheat",
+  yourCard: {
+    title: "Rookie Gold Refractor /10",
+    player: "Jayden Daniels",
+    set: "2024 Prizm Football",
+    grade: "Ungraded",
+    image: "/images/buyback-card.png",
+    marketValue: 425,
+  },
+  theirCard: {
+    title: "Silver Prizm Refractor /25",
+    player: "Justin Jefferson",
+    set: "2024 Prizm Football",
+    grade: "PSA 9",
+    image: "/images/trade-card.png",
+    marketValue: 410,
+  },
+  // Cash the other collector adds to your side to balance the trade.
+  cashToYou: 60,
+} as const
+
+const buybackChatMessages = [
+  { user: "gridironpulls", message: "NO WAY that's a Mahomes gold /10!!", color: "text-yellow-400" },
+  { user: "hobbyheat", message: "That Caleb Williams RPA is a GRAIL", color: "text-white/60" },
+  { user: "casehitkyle", message: "CASE HIT!! Jefferson Downtown 🔥", color: "text-green-400" },
+  { user: "rookiervc", message: "Bijan Kaboom just hit, insane pull", color: "text-blue-400" },
+  { user: "autohunter", message: "Stroud on-card auto /25 are you kidding", color: "text-purple-400" },
+  { user: "sundaybreaks", message: "Burrow Color Blast is a WALL", color: "text-orange-400" },
+  { user: "chasethechase", message: "that Prizm Black 1/1 just changed his life", color: "text-red-400" },
+  { user: "wembyofnfl", message: "MARVIN HARRISON JR SILVER omg", color: "text-cyan-400" },
+  { user: "slabgod", message: "PSA 10 lock for sure on that one", color: "text-pink-400" },
+  { user: "flippincards", message: "the Kelce Kaboom is comping $400+ rn", color: "text-white" },
+  { user: "pullpartyy", message: "Nabers Silver Prizm let's gooo", color: "text-green-400" },
+  { user: "endzonebreaks", message: "Lamar Downtown would end the whole box", color: "text-blue-400" },
+  { user: "waxwarrior", message: "that numbered patch is nasty clean", color: "text-yellow-400" },
+  { user: "cardsbyleo", message: "Penix rookie auto sneaky hit", color: "text-purple-400" },
+  { user: "midnightpulls", message: "best break of the night no debate", color: "text-white/60" },
+]
+
 // Fixed teams for the Multi-Spin (Manual) scenario: Zenith El Primero (spot 1),
 // Hamilton Khaki Field (spot 2), TAG Heuer Carrera (spot 3). The buyer then requests Carrera + Cartier Tank
 // (the extra manual team not in the list).
@@ -399,6 +539,27 @@ export default function AnimationShowcase() {
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
   const [showBoardCardReveal, setShowBoardCardReveal] = useState(false) // Future State V2: card reveal after the board lands
   const [breakSpotsToRules, setBreakSpotsToRules] = useState(false) // When opening the sheet, jump straight to Break Rules
+  const [buybackOfferStatus, setBuybackOfferStatus] = useState<BuybackOfferStatus>("available")
+  const buybackDifference = BUYBACK_OFFER.marketValue - BUYBACK_OFFER.instantCredit
+  // Offer pop-ups can be minimized to a small floating pill (like Trades).
+  const [buybackMinimized, setBuybackMinimized] = useState(false)
+  const [consignmentMinimized, setConsignmentMinimized] = useState(false)
+  const [consignmentOfferStatus, setConsignmentOfferStatus] = useState<ConsignmentOfferStatus>("available")
+  // The price the terms are quoted against: sale price (BIN) or starting bid (auction).
+  const consignmentIsAuction = CONSIGNMENT_OFFER.format === "Auction"
+  const consignmentListPrice = consignmentIsAuction ? CONSIGNMENT_OFFER.startingBid : CONSIGNMENT_OFFER.salePrice
+  // Commission the seller keeps once it sells, and what you net after it, off the sale price.
+  const consignmentCommissionAmount = Math.round((CONSIGNMENT_OFFER.salePrice * CONSIGNMENT_OFFER.commissionPercent) / 100)
+  const consignmentNetToYou = CONSIGNMENT_OFFER.salePrice - consignmentCommissionAmount
+  // Grading / Vaulting "/request" command state.
+  const [requestCommandActive, setRequestCommandActive] = useState(false) // buyer "typed" /request
+  const [requestMenuOpen, setRequestMenuOpen] = useState(false) // service picker showing
+  const [requestSheet, setRequestSheet] = useState<"grading" | "vaulting" | null>(null) // open review sheet
+  const [requestStatus, setRequestStatus] = useState<"idle" | "grading-sent" | "vaulting-sent">("idle")
+  const [tradeOfferStatus, setTradeOfferStatus] = useState<TradeOfferStatus>("available")
+  // What you receive (their card + cash) vs. what you give (your card).
+  const tradeReceivedValue = TRADE_OFFER.theirCard.marketValue + TRADE_OFFER.cashToYou
+  const tradeNetDifference = tradeReceivedValue - TRADE_OFFER.yourCard.marketValue
   const [showMarquee, setShowMarquee] = useState(false) // Toggle (under the seller name) for the promo marquee; off by default on both multi spin concepts
   const [showPinnedMessage, setShowPinnedMessage] = useState(false) // Toggle for the seller's pinned message above the comment input
   // Demo: tapping the spots arc cycles the available count through the color tiers
@@ -426,7 +587,7 @@ export default function AnimationShowcase() {
    * Roller concept only: whether the card draws one spot or chains three.
    * Prototype-side control, toggled from the panel beside the device frame.
    */
-  const [rollerMode] = useState<"single" | "multi">("single")
+  const [rollerMode, setRollerMode] = useState<"single" | "multi">("single")
   /**
    * "Subtle Winning" concept only: which celebration treatment plays on a win.
    * "floating" is the ambient floaters over the stream; "takeover" scopes the
@@ -494,6 +655,18 @@ export default function AnimationShowcase() {
     if (!spinInPlaceShowing) setPushArrived(false)
   }, [spinInPlaceShowing])
 
+  useEffect(() => {
+    setBuybackOfferStatus("available")
+    setTradeOfferStatus("available")
+    setConsignmentOfferStatus("available")
+    setBuybackMinimized(false)
+    setConsignmentMinimized(false)
+    setRequestCommandActive(false)
+    setRequestMenuOpen(false)
+    setRequestSheet(null)
+    setRequestStatus("idle")
+  }, [selectedAnimation])
+
   /* Non-push concepts spin the moment they mount, exactly as before. */
   const spinnerRunning = isPushRoller ? spinInPlaceActive && pushArrived : spinInPlaceActive
 
@@ -535,10 +708,13 @@ export default function AnimationShowcase() {
      index changed on every tick — React saw 3 removals + 3 insertions instead of
      a 1-in/1-out, and `popLayout` rendered the outgoing copies on top of the
      incoming ones. That was the visible chat ghosting/duplication. */
+  // Buyback swaps the chat corpus for NFL-card-pull hype; every other version
+  // keeps the original messages.
+  const activeChatMessages = isBuyback(selectedAnimation) ? buybackChatMessages : chatMessages
   const [visibleMessages, setVisibleMessages] = useState(() =>
-    chatMessages.slice(0, 3).map((m, i) => ({ ...m, id: i })),
+    activeChatMessages.slice(0, 3).map((m, i) => ({ ...m, id: i })),
   )
-  const chatUidRef = useRef(chatMessages.length)
+  const chatUidRef = useRef(activeChatMessages.length)
   const [viewerCount, setViewerCount] = useState(240)
   const [winnerTeam, setWinnerTeam] = useState<Team | null>(null)
   const [showWinner, setShowWinner] = useState(false)
@@ -580,7 +756,7 @@ export default function AnimationShowcase() {
       setVisibleMessages(prev => {
         const newMessages = [...prev.slice(1)]
         newMessages.push({
-          ...chatMessages[messageIndexRef.current % chatMessages.length],
+          ...activeChatMessages[messageIndexRef.current % activeChatMessages.length],
           id: chatUidRef.current++,
         })
         messageIndexRef.current++
@@ -588,7 +764,14 @@ export default function AnimationShowcase() {
       })
     }, 2500)
     return () => clearInterval(interval)
-  }, [chatMessages])
+  }, [activeChatMessages])
+
+  // When the prototype version changes, reseed the live chat from the corpus
+  // that version uses (buyback -> NFL pull hype, everything else -> default).
+  useEffect(() => {
+    messageIndexRef.current = 3
+    setVisibleMessages(activeChatMessages.slice(0, 3).map((m, i) => ({ ...m, id: chatUidRef.current++ })))
+  }, [activeChatMessages])
 
   // Fluctuate viewer count realistically
   useEffect(() => {
@@ -1220,6 +1403,12 @@ case "future-state-v2":
     )
   }
 
+  // Read into a boolean so the JSX branch below does not narrow the
+  // `selectedAnimation` union inside its else branch (which would make the
+  // other, still-mounted `selectedAnimation === "trades"` guards look like
+  // dead comparisons to the type checker).
+  const isTradesConcept: boolean = selectedAnimation === "trades"
+
   return (
     <div className="w-full min-h-screen bg-zinc-950 flex items-center justify-center p-0 sm:p-4">
       {/* Secondary controls, stacked on the LEFT. Both live OUTSIDE the device
@@ -1231,8 +1420,45 @@ case "future-state-v2":
           version rail. Hidden under lg, where there's no room beside the
           frame without covering the prototype. */}
       <div className="hidden lg:flex fixed left-6 top-1/2 -translate-y-1/2 z-[110] flex-col gap-3">
-      {/* The Roller spin Single/Multi toggle was removed: the roller is always
-          single-spin now. */}
+      {usesRollerCard(selectedAnimation) && (
+        <div
+          role="group"
+          aria-label={usesTicker(selectedAnimation) ? "Ticker spin mode" : "Roller spin mode"}
+          className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-zinc-900/95 backdrop-blur p-3 shadow-2xl"
+        >
+          <span className="text-[11px] font-medium uppercase tracking-wide text-white/50">
+            {usesTicker(selectedAnimation) ? "Ticker spin" : "Roller spin"}
+          </span>
+          {([
+            { id: "single", label: "Single", hint: "1 item" },
+            { id: "multi", label: "Multi", hint: "3 items" },
+          ] as const).map((mode) => (
+            <button
+              key={mode.id}
+              onClick={() => setRollerMode(mode.id)}
+              /* Disabled mid-reveal: switching would swap the mounted spinner
+                 while `isSpinning` is still true, restarting the draw. */
+              disabled={spinInPlaceShowing}
+              aria-pressed={rollerMode === mode.id}
+              className={`flex w-28 flex-col items-start rounded-xl px-3 py-2 text-left transition-all ${
+                spinInPlaceShowing
+                  ? "cursor-not-allowed bg-zinc-800/50 text-white/30"
+                  : rollerMode === mode.id
+                  ? "bg-zinc-800 text-white ring-2 ring-inset ring-yellow-400"
+                  : "bg-zinc-800 text-white/70 hover:bg-zinc-700"
+              }`}
+            >
+              <span className="text-xs font-medium">{mode.label}</span>
+              <span className="text-[10px] text-white/40">{mode.hint}</span>
+            </button>
+          ))}
+          {spinInPlaceShowing && (
+            <span className="w-28 text-[10px] leading-tight text-white/40">
+              Locked while spinning
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Subtle Winning celebration control, second in the left stack. */}
       {isSubtleConcept && (
@@ -1303,6 +1529,13 @@ case "future-state-v2":
           screen would, so a fake bezel there would just eat viewport.
           Deliberately NOT overflow-hidden, so the side buttons can sit proud of
           the frame; the screen child below does its own clipping. */}
+      {/* The "Trades" concept is the self-contained V1 In-Chat Trades
+          experience (its own iPhone frame, /trade command, incoming-trade
+          banner, and team-selection drawer), so it takes over the whole device
+          slot instead of rendering inside the shared 440px stream shell. */}
+      {isTradesConcept ? (
+        <TradesV1 />
+      ) : (
       <div className="relative w-full max-w-[440px] sm:w-[464px] sm:max-w-none sm:rounded-[3.3rem] sm:bg-[#0f0f11] sm:p-3 sm:ring-1 sm:ring-inset sm:ring-white/10 sm:shadow-[0_30px_90px_rgba(0,0,0,0.75)]">
         {/* Side buttons. Decorative hardware, hidden from assistive tech. */}
         <div aria-hidden="true" className="hidden sm:block absolute -left-[3px] top-[112px] h-8 w-[3px] rounded-l-sm bg-zinc-800" />
@@ -1523,6 +1756,52 @@ case "future-state-v2":
         </div>
       </div>
 
+      {/* Minimized offer pill — floats on the right beneath the side panel,
+          same position as the Trades collapsed pill. Tapping it restores the
+          full offer card in the bottom stack. */}
+      <AnimatePresence>
+        {selectedAnimation === "buyback" &&
+          (buybackOfferStatus === "available" || buybackOfferStatus === "reviewing") &&
+          buybackMinimized && (
+            <motion.button
+              key="buyback-pill"
+              type="button"
+              onClick={() => setBuybackMinimized(false)}
+              aria-label="Restore buyback offer"
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              transition={{ duration: 0.2, type: "spring", damping: 22, stiffness: 320 }}
+              className="absolute right-4 top-[430px] z-[18] flex flex-col items-center gap-1.5 rounded-2xl bg-black/70 px-2.5 py-3 ring-1 ring-green-400/50 backdrop-blur-xl"
+              style={{ width: 48 }}
+            >
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
+              <RotateCcw className="h-3.5 w-3.5 text-green-400" />
+              <span className="text-[10px] font-bold leading-none text-green-400">Offer</span>
+            </motion.button>
+          )}
+        {selectedAnimation === "consignments" &&
+          (consignmentOfferStatus === "available" || consignmentOfferStatus === "reviewing") &&
+          consignmentMinimized && (
+            <motion.button
+              key="consignment-pill"
+              type="button"
+              onClick={() => setConsignmentMinimized(false)}
+              aria-label="Restore consignment offer"
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              transition={{ duration: 0.2, type: "spring", damping: 22, stiffness: 320 }}
+              className="absolute right-4 top-[430px] z-[18] flex flex-col items-center gap-1.5 rounded-2xl bg-black/70 px-2.5 py-3 ring-1 ring-green-400/50 backdrop-blur-xl"
+              style={{ width: 48 }}
+            >
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
+              <Tag className="h-3.5 w-3.5 text-green-400" />
+              <span className="text-[10px] font-bold leading-none text-green-400">Offer</span>
+            </motion.button>
+          )}
+      </AnimatePresence>
+
       {/* Bottom UI Stack - Chat, Comment, Spinner, Auction Card */}
       <div className="absolute left-4 right-4 bottom-4 z-20 flex flex-col gap-2">
         {/* Chat Messages - extend full width, leaving room for the right nav (~56px) plus a 24px gap */}
@@ -1610,6 +1889,107 @@ case "future-state-v2":
             mock keyboard. The pre-written request only populates after the buyer
             taps a key, and tapping again (Send) posts it into chat. */}
         {(() => {
+          // Grading + Vaulting: a user-driven "/request" command that opens a
+          // service picker (PSA Grading / Vaulting), each leading to its own
+          // review sheet. This replaces the generic comment input for these two.
+          if (isRequestConcept(selectedAnimation)) {
+            const confirmation =
+              requestStatus === "grading-sent"
+                ? `Grading requested — ${GRADING_INFO.tier} · est. ${GRADING_INFO.turnaround}`
+                : requestStatus === "vaulting-sent"
+                  ? `Sent to the vault — ${VAULTING_INFO.facility}`
+                  : null
+            return (
+              <div className="flex flex-col gap-2">
+                {confirmation && (
+                  <motion.div
+                    key={requestStatus}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 rounded-2xl bg-[#4CE160]/15 px-4 py-3 ring-1 ring-[#4CE160]/50 backdrop-blur pointer-events-auto"
+                  >
+                    <ShieldCheck className="h-4 w-4 flex-shrink-0 text-[#4CE160]" />
+                    <span className="text-sm font-medium text-white">{confirmation}</span>
+                  </motion.div>
+                )}
+
+                {/* Service picker popover, sitting above the command input */}
+                <AnimatePresence>
+                  {requestMenuOpen && (
+                    <motion.div
+                      key="request-menu"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+                      className="overflow-hidden rounded-2xl bg-black/80 ring-1 ring-white/12 backdrop-blur pointer-events-auto"
+                      role="menu"
+                      aria-label="Request a service"
+                    >
+                      <div className="flex items-center justify-between px-4 pt-3 pb-1">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/45">Request a service</p>
+                        <button
+                          type="button"
+                          aria-label="Close menu"
+                          onClick={() => { setRequestMenuOpen(false); setRequestCommandActive(false) }}
+                          className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-white/60 hover:bg-white/20"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => { setRequestSheet("grading"); setRequestMenuOpen(false) }}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/10"
+                      >
+                        <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/20">
+                          <Award className="h-4.5 w-4.5 text-blue-300" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-white">PSA Grading</span>
+                          <span className="block truncate text-xs text-white/55">Get your card professionally graded</span>
+                        </span>
+                        <ChevronRight className="h-4 w-4 flex-shrink-0 text-white/35" />
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => { setRequestSheet("vaulting"); setRequestMenuOpen(false) }}
+                        className="flex w-full items-center gap-3 border-t border-white/8 px-4 py-3 text-left transition-colors hover:bg-white/10"
+                      >
+                        <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/20">
+                          <ShieldCheck className="h-4.5 w-4.5 text-amber-300" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-white">Vaulting</span>
+                          <span className="block truncate text-xs text-white/55">Store your card in the eBay Vault</span>
+                        </span>
+                        <ChevronRight className="h-4 w-4 flex-shrink-0 text-white/35" />
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Command input */}
+                <button
+                  type="button"
+                  onClick={() => { setRequestCommandActive(true); setRequestMenuOpen(true) }}
+                  className={`flex w-full items-center gap-2 rounded-full bg-black/40 px-4 py-3 text-left backdrop-blur transition-shadow pointer-events-auto ${requestMenuOpen ? "ring-1 ring-[#4CE160]/60" : ""}`}
+                >
+                  {requestCommandActive ? (
+                    <span className="flex-1 text-sm font-medium">
+                      <span className="text-[#4CE160]">/request</span>
+                    </span>
+                  ) : (
+                    <span className="flex-1 text-sm text-white/50">Type <span className="text-white/70">/request</span> to grade or vault…</span>
+                  )}
+                  <Heart className="h-5 w-5 fill-red-500 text-red-500" />
+                </button>
+              </div>
+            )
+          }
+
           const hasDraft = revealPendingSeller && !!requestDraft && !commentRequested
           const draftText = requestDraft
             ? isManualConcept(selectedAnimation) && manualExtraTeam
@@ -1680,7 +2060,7 @@ case "future-state-v2":
         {/* Team Spinner with Spots Available - shown for most concepts. For slot-machine (Team Picker),
             battle, and carousel it stays in its idle/zero state (thumbnail) since those concepts
             handle their own cycling + reveal full screen (isSpinnerRevealing is never set for them). */}
-        {selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "single-spin-later" && !isSpinInPlace(selectedAnimation) && selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "future-state-v2" && (
+        {selectedAnimation !== "card-flip" && selectedAnimation !== "single-spin-populate" && selectedAnimation !== "single-spin-later" && !isSpinInPlace(selectedAnimation) && selectedAnimation !== "pick-card" && selectedAnimation !== "multi-spin" && selectedAnimation !== "multi-spin-2" && selectedAnimation !== "multi-spin-4" && selectedAnimation !== "multi-spin-4-auto" && selectedAnimation !== "multi-spin-4-chips" && selectedAnimation !== "multi-spin-4-chips-no-label" && selectedAnimation !== "multi-spin-3-label" && selectedAnimation !== "multi-spin-4-rules" && selectedAnimation !== "multi-spin-5-label" && selectedAnimation !== "multi-spin-5-manual" && selectedAnimation !== "multi-spin-5-manual-icon" && selectedAnimation !== "multi-spin-6-titlerow" && selectedAnimation !== "thumbnails" && selectedAnimation !== "thumbnails-2" && selectedAnimation !== "thumbnails-3" && selectedAnimation !== "thumbnails-4" && selectedAnimation !== "future-state-v2" && !isBuyback(selectedAnimation) && (
           <TeamSpinner
             totalSpots={32}
             availableSpots={hasWon ? 15 : 16}
@@ -1859,7 +2239,215 @@ case "future-state-v2":
         {/* For the push, this wrapper becomes the window the two cards slide
             through: without clipping, the displaced bid card would just float up
             over the chat instead of being shoved out of the frame. */}
-        {/* The entire bid box + randomizer + win-celebration unit. */}
+        {selectedAnimation === "buyback" && (
+          <AnimatePresence mode="wait">
+            {(buybackOfferStatus === "available" || buybackOfferStatus === "reviewing") && !buybackMinimized ? (
+              <motion.section
+                key="buyback-offer"
+                aria-label="Seller buyback offer"
+                className="relative overflow-hidden rounded-2xl bg-black/80 text-white shadow-2xl backdrop-blur"
+                initial={{ opacity: 0, y: 28 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 16 }}
+                transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setBuybackMinimized(true)}
+                  aria-label="Minimize offer"
+                  className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/60 transition-colors hover:bg-white/20"
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
+                <div className="flex min-h-44 gap-3 p-4">
+                  <img
+                    src={BUYBACK_OFFER.card.image}
+                    alt={`${BUYBACK_OFFER.card.player} ${BUYBACK_OFFER.card.title} card`}
+                    className="h-28 w-20 flex-shrink-0 rounded-lg object-cover"
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col pr-7">
+                    <p className="text-xs font-bold uppercase tracking-wide text-green-400">Buyback offer</p>
+                    <h2 className="mt-1 text-pretty text-base font-bold leading-5">The seller wants to buy your card</h2>
+                    <p className="mt-1 truncate text-sm text-white/70">{BUYBACK_OFFER.card.player} · {BUYBACK_OFFER.card.title}</p>
+                    <div className="mt-auto flex items-end justify-between gap-3 pt-3">
+                      <div>
+                        <p className="text-xs text-white/60">Get instantly</p>
+                        <p className="text-xl font-bold">{formatDollars(BUYBACK_OFFER.instantCredit)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setBuybackOfferStatus("reviewing")}
+                        className="min-h-11 rounded-full bg-blue-600 px-5 text-sm font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      >
+                        Review offer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-t border-white/15 px-4 py-2 text-xs text-white/60">Expires in {BUYBACK_OFFER.expiresIn}</div>
+              </motion.section>
+            ) : buybackOfferStatus === "accepted" || buybackOfferStatus === "declined" ? (
+              <motion.section
+                key={buybackOfferStatus}
+                aria-live="polite"
+                className="flex min-h-44 flex-col justify-center rounded-2xl bg-black/80 p-5 text-white shadow-2xl backdrop-blur"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <p className="text-xs font-bold uppercase tracking-wide text-white/60">Buyback offer</p>
+                <h2 className="mt-2 text-xl font-bold">
+                  {buybackOfferStatus === "accepted" ? `${formatDollars(BUYBACK_OFFER.instantCredit)} credited` : "Offer declined"}
+                </h2>
+                <p className="mt-1 text-sm text-white/70">
+                  {buybackOfferStatus === "accepted"
+                    ? "The card is going back to the seller. Your credit is ready to use."
+                    : "You’ll keep the card from your break."}
+                </p>
+              </motion.section>
+            ) : null}
+          </AnimatePresence>
+        )}
+
+        {selectedAnimation === "consignments" && (
+          <AnimatePresence mode="wait">
+            {(consignmentOfferStatus === "available" || consignmentOfferStatus === "reviewing") && !consignmentMinimized ? (
+              <motion.section
+                key="consignment-offer"
+                aria-label="Seller consignment offer"
+                className="relative overflow-hidden rounded-2xl bg-black/80 text-white shadow-2xl backdrop-blur"
+                initial={{ opacity: 0, y: 28 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 16 }}
+                transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setConsignmentMinimized(true)}
+                  aria-label="Minimize offer"
+                  className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/60 transition-colors hover:bg-white/20"
+                >
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
+                <div className="flex min-h-44 gap-3 p-4">
+                  <img
+                    src={CONSIGNMENT_OFFER.card.image}
+                    alt={`${CONSIGNMENT_OFFER.card.player} ${CONSIGNMENT_OFFER.card.title} card`}
+                    className="h-28 w-20 flex-shrink-0 rounded-lg object-cover"
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col pr-7">
+                    <p className="text-xs font-bold uppercase tracking-wide text-green-400">Consignment offer</p>
+                    <h2 className="mt-1 text-pretty text-base font-bold leading-5">The seller wants to list and sell your card</h2>
+                    <p className="mt-1 truncate text-sm text-white/70">{CONSIGNMENT_OFFER.card.player} · {CONSIGNMENT_OFFER.card.title}</p>
+                    <div className="mt-auto flex items-end justify-between gap-3 pt-3">
+                      <div>
+                        <p className="text-xs text-white/60">{consignmentIsAuction ? "Auction start" : "List for"}</p>
+                        <p className="text-xl font-bold">{formatDollars(consignmentListPrice)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setConsignmentOfferStatus("reviewing")}
+                        className="min-h-11 rounded-full bg-blue-600 px-5 text-sm font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      >
+                        Review offer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-t border-white/15 px-4 py-2 text-xs text-white/60">Expires in {CONSIGNMENT_OFFER.expiresIn}</div>
+              </motion.section>
+            ) : consignmentOfferStatus === "accepted" || consignmentOfferStatus === "declined" ? (
+              <motion.section
+                key={consignmentOfferStatus}
+                aria-live="polite"
+                className="flex min-h-44 flex-col justify-center rounded-2xl bg-black/80 p-5 text-white shadow-2xl backdrop-blur"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <p className="text-xs font-bold uppercase tracking-wide text-white/60">Consignment offer</p>
+                <h2 className="mt-2 text-xl font-bold">
+                  {consignmentOfferStatus === "accepted" ? "Card consigned" : "Offer declined"}
+                </h2>
+                <p className="mt-1 text-sm text-white/70">
+                  {consignmentOfferStatus === "accepted"
+                    ? `The seller is listing it as ${CONSIGNMENT_OFFER.format} for ${formatDollars(consignmentListPrice)}. You’ll get paid when it sells.`
+                    : "You’ll keep the card from your break."}
+                </p>
+              </motion.section>
+            ) : null}
+          </AnimatePresence>
+        )}
+
+        {selectedAnimation === "trades" && (
+          <AnimatePresence mode="wait">
+            {tradeOfferStatus === "available" || tradeOfferStatus === "reviewing" ? (
+              <motion.section
+                key="trade-offer"
+                aria-label="Collector trade offer"
+                className="overflow-hidden rounded-2xl bg-black/80 text-white shadow-2xl backdrop-blur"
+                initial={{ opacity: 0, y: 28 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 16 }}
+                transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
+              >
+                <div className="flex min-h-44 gap-3 p-4">
+                  <div className="relative flex-shrink-0">
+                    <img
+                      src={TRADE_OFFER.theirCard.image}
+                      alt={`${TRADE_OFFER.theirCard.player} ${TRADE_OFFER.theirCard.title} card`}
+                      className="h-28 w-20 rounded-lg object-cover"
+                    />
+                    <img
+                      src={TRADE_OFFER.yourCard.image}
+                      alt={`${TRADE_OFFER.yourCard.player} ${TRADE_OFFER.yourCard.title} card`}
+                      className="absolute -bottom-1 -right-2 h-16 w-11 rounded-md border-2 border-black object-cover"
+                    />
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <p className="text-xs font-bold uppercase tracking-wide text-purple-300">Trade offer</p>
+                    <h2 className="mt-1 text-pretty text-base font-bold leading-5">{TRADE_OFFER.from} wants to trade for your card</h2>
+                    <p className="mt-1 truncate text-sm text-white/70">{TRADE_OFFER.theirCard.player} · {TRADE_OFFER.theirCard.title}</p>
+                    <div className="mt-auto flex items-end justify-between gap-3 pt-3">
+                      <div>
+                        <p className="text-xs text-white/60">Their card + cash</p>
+                        <p className="text-xl font-bold">{formatDollars(tradeReceivedValue)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setTradeOfferStatus("reviewing")}
+                        className="min-h-11 rounded-full bg-blue-600 px-5 text-sm font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      >
+                        Review offer
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-t border-white/15 px-4 py-2 text-xs text-white/60">Expires in {BUYBACK_OFFER.expiresIn}</div>
+              </motion.section>
+            ) : (
+              <motion.section
+                key={tradeOfferStatus}
+                aria-live="polite"
+                className="flex min-h-44 flex-col justify-center rounded-2xl bg-black/80 p-5 text-white shadow-2xl backdrop-blur"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <p className="text-xs font-bold uppercase tracking-wide text-white/60">Trade offer</p>
+                <h2 className="mt-2 text-xl font-bold">
+                  {tradeOfferStatus === "accepted" ? "Trade accepted" : "Trade declined"}
+                </h2>
+                <p className="mt-1 text-sm text-white/70">
+                  {tradeOfferStatus === "accepted"
+                    ? `You’ll receive ${TRADE_OFFER.theirCard.player} plus ${formatDollars(TRADE_OFFER.cashToYou)}. Your card ships to ${TRADE_OFFER.from}.`
+                    : "You’ll keep the card from your break."}
+                </p>
+              </motion.section>
+            )}
+          </AnimatePresence>
+        )}
+
+        {/* The entire bid box + randomizer + win-celebration unit. Hidden for
+            "Buyback", which keeps only the chat and comment input above. */}
+        {!isBuyback(selectedAnimation) && (
         <div
           className={`relative transition-[min-height] duration-300 ease-out ${
             isPushRoller ? "overflow-hidden" : ""
@@ -2226,6 +2814,7 @@ case "future-state-v2":
           </div>
         )}
         </div>
+        )}
       </div>
 
       {/* Crown "WINNER" celebration - plays right after a bid win, before the
@@ -2317,6 +2906,635 @@ case "future-state-v2":
         )}
       </AnimatePresence>
       
+      <AnimatePresence>
+        {selectedAnimation === "buyback" && buybackOfferStatus === "reviewing" && (
+          <motion.div
+            className="absolute inset-0 z-50 flex items-end bg-black/55"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setBuybackOfferStatus("available")
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="buyback-offer-title"
+              className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl bg-white text-black shadow-2xl"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 360, damping: 38 }}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => setBuybackOfferStatus("available")}
+                  className="min-h-11 rounded-full px-2 text-sm font-semibold text-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+                >
+                  Back
+                </button>
+                <p className="text-sm font-bold">Review buyback offer</p>
+                <button
+                  type="button"
+                  aria-label="Close offer review"
+                  onClick={() => setBuybackOfferStatus("available")}
+                  className="flex min-h-11 min-w-11 items-center justify-end text-2xl leading-none text-black"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-5 p-5 pb-8">
+                <div className="flex gap-4">
+                  <img
+                    src={BUYBACK_OFFER.card.image}
+                    alt={`${BUYBACK_OFFER.card.player} ${BUYBACK_OFFER.card.title} card`}
+                    className="h-36 w-24 flex-shrink-0 rounded-xl object-cover shadow-md"
+                  />
+                  <div className="min-w-0 pt-1">
+                    <p className="text-xs font-bold uppercase tracking-wide text-black/55">Your card</p>
+                    <h2 id="buyback-offer-title" className="mt-1 text-balance text-xl font-bold leading-6">{BUYBACK_OFFER.card.player}</h2>
+                    <p className="mt-1 text-sm font-semibold">{BUYBACK_OFFER.card.title}</p>
+                    <p className="mt-2 text-sm text-black/60">{BUYBACK_OFFER.card.set}</p>
+                    <p className="text-sm text-black/60">{BUYBACK_OFFER.card.grade}</p>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl border border-black/15">
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Estimated market value</p>
+                      <p className="mt-0.5 text-xs text-black/55">Based on recent comparable sales</p>
+                    </div>
+                    <p className="text-lg font-bold">{formatDollars(BUYBACK_OFFER.marketValue)}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 bg-green-50 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Instant credit you get</p>
+                      <p className="mt-0.5 text-xs text-black/55">Added to your account immediately</p>
+                    </div>
+                    <p className="text-xl font-bold text-green-700">{formatDollars(BUYBACK_OFFER.instantCredit)}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Difference from market value</p>
+                      <p className="mt-0.5 text-xs text-black/55">Market value minus instant credit</p>
+                    </div>
+                    <p className="text-lg font-bold">−{formatDollars(buybackDifference)}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-zinc-100 p-4">
+                  <div>
+                    <p className="text-sm font-semibold">Offer expires in</p>
+                    <p className="text-xs text-black/55">After this time, the seller’s offer closes</p>
+                  </div>
+                  <p className="font-mono text-xl font-bold tabular-nums">{BUYBACK_OFFER.expiresIn}</p>
+                </div>
+
+                <p className="text-xs leading-5 text-black/55">Market value is an estimate, not a guaranteed resale price. Accepting transfers the card back to the seller for the instant credit shown.</p>
+
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setBuybackOfferStatus("accepted")}
+                    className="min-h-12 rounded-full bg-blue-600 px-6 text-base font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  >
+                    Accept {formatDollars(BUYBACK_OFFER.instantCredit)} offer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBuybackOfferStatus("declined")}
+                    className="min-h-12 rounded-full border border-black px-6 text-base font-bold text-black transition-colors hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                  >
+                    Decline offer
+                  </button>
+                </div>
+              </div>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedAnimation === "consignments" && consignmentOfferStatus === "reviewing" && (
+          <motion.div
+            className="absolute inset-0 z-50 flex items-end bg-black/55"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setConsignmentOfferStatus("available")
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="consignment-offer-title"
+              className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl bg-white text-black shadow-2xl"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 360, damping: 38 }}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => setConsignmentOfferStatus("available")}
+                  className="min-h-11 rounded-full px-2 text-sm font-semibold text-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+                >
+                  Back
+                </button>
+                <p className="text-sm font-bold">Review consignment offer</p>
+                <button
+                  type="button"
+                  aria-label="Close offer review"
+                  onClick={() => setConsignmentOfferStatus("available")}
+                  className="flex min-h-11 min-w-11 items-center justify-end text-2xl leading-none text-black"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-5 p-5 pb-8">
+                <div className="flex gap-4">
+                  <img
+                    src={CONSIGNMENT_OFFER.card.image}
+                    alt={`${CONSIGNMENT_OFFER.card.player} ${CONSIGNMENT_OFFER.card.title} card`}
+                    className="h-36 w-24 flex-shrink-0 rounded-xl object-cover shadow-md"
+                  />
+                  <div className="min-w-0 pt-1">
+                    <p className="text-xs font-bold uppercase tracking-wide text-black/55">Your card</p>
+                    <h2 id="consignment-offer-title" className="mt-1 text-balance text-xl font-bold leading-6">{CONSIGNMENT_OFFER.card.player}</h2>
+                    <p className="mt-1 text-sm font-semibold">{CONSIGNMENT_OFFER.card.title}</p>
+                    <p className="mt-2 text-sm text-black/60">{CONSIGNMENT_OFFER.card.set}</p>
+                    <p className="text-sm text-black/60">{CONSIGNMENT_OFFER.card.grade}</p>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl border border-black/15">
+                  {/* 1. Sale format */}
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Sale format</p>
+                      <p className="mt-0.5 text-xs text-black/55">How the seller will list your card</p>
+                    </div>
+                    <p className="text-lg font-bold">{CONSIGNMENT_OFFER.format}</p>
+                  </div>
+                  {/* 2. Sale price (BIN) or starting bid (auction) */}
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">{consignmentIsAuction ? "Starting bid" : "Sale price"}</p>
+                      <p className="mt-0.5 text-xs text-black/55">
+                        {consignmentIsAuction ? "Where bidding opens" : "The Buy It Now price"}
+                      </p>
+                    </div>
+                    <p className="text-lg font-bold">{formatDollars(consignmentListPrice)}</p>
+                  </div>
+                  {/* 3. Seller commission */}
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Seller commission</p>
+                      <p className="mt-0.5 text-xs text-black/55">
+                        {consignmentIsAuction
+                          ? "Paid to the seller from the final sale price"
+                          : `Paid to the seller when it sells · ${formatDollars(consignmentCommissionAmount)}`}
+                      </p>
+                    </div>
+                    <p className="text-lg font-bold">{CONSIGNMENT_OFFER.commissionPercent}%</p>
+                  </div>
+                  {/* 4. Duration of consignment */}
+                  <div className="flex items-center justify-between gap-4 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Consignment duration</p>
+                      <p className="mt-0.5 text-xs text-black/55">How long the card stays listed</p>
+                    </div>
+                    <p className="text-lg font-bold">{CONSIGNMENT_OFFER.duration}</p>
+                  </div>
+                </div>
+
+                {!consignmentIsAuction && (
+                  <div className="flex items-center justify-between gap-4 rounded-2xl border border-green-200 bg-green-50 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">You receive if it sells</p>
+                      <p className="mt-0.5 text-xs text-black/55">Sale price minus seller commission</p>
+                    </div>
+                    <p className="text-xl font-bold text-green-700">{formatDollars(consignmentNetToYou)}</p>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-zinc-100 p-4">
+                  <div>
+                    <p className="text-sm font-semibold">Offer expires in</p>
+                    <p className="text-xs text-black/55">After this time, the seller’s offer closes</p>
+                  </div>
+                  <p className="font-mono text-xl font-bold tabular-nums">{CONSIGNMENT_OFFER.expiresIn}</p>
+                </div>
+
+                <p className="text-xs leading-5 text-black/55">
+                  {consignmentIsAuction
+                    ? "The starting bid is where the auction opens, not a guaranteed sale price. Accepting hands the card to the seller to list on your behalf; the commission comes out of the final sale price when it sells."
+                    : "Accepting hands the card to the seller to list on your behalf. You get paid only if it sells, after the seller’s commission is deducted."}
+                </p>
+
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setConsignmentOfferStatus("accepted")}
+                    className="min-h-12 rounded-full bg-blue-600 px-6 text-base font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  >
+                    Consign this card
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConsignmentOfferStatus("declined")}
+                    className="min-h-12 rounded-full border border-black px-6 text-base font-bold text-black transition-colors hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                  >
+                    Decline offer
+                  </button>
+                </div>
+              </div>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Grading review sheet: estimated price + turnaround time */}
+      <AnimatePresence>
+        {requestSheet === "grading" && (
+          <motion.div
+            className="absolute inset-0 z-50 flex items-end bg-black/55"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setRequestSheet(null)
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="grading-title"
+              className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl bg-white text-black shadow-2xl"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 360, damping: 38 }}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => setRequestSheet(null)}
+                  className="min-h-11 rounded-full px-2 text-sm font-semibold text-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+                >
+                  Back
+                </button>
+                <p className="text-sm font-bold">PSA Grading</p>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onClick={() => setRequestSheet(null)}
+                  className="flex min-h-11 min-w-11 items-center justify-end text-2xl leading-none text-black"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-5 p-5 pb-8">
+                <div className="flex gap-4">
+                  <img
+                    src={REQUEST_CARD.image}
+                    alt={`${REQUEST_CARD.player} ${REQUEST_CARD.title} card`}
+                    className="h-36 w-24 flex-shrink-0 rounded-xl object-cover shadow-md"
+                  />
+                  <div className="min-w-0 pt-1">
+                    <p className="text-xs font-bold uppercase tracking-wide text-black/55">Grading request</p>
+                    <h2 id="grading-title" className="mt-1 text-balance text-xl font-bold leading-6">{REQUEST_CARD.player}</h2>
+                    <p className="mt-1 text-sm font-semibold">{REQUEST_CARD.title}</p>
+                    <p className="mt-2 text-sm text-black/60">{REQUEST_CARD.set}</p>
+                    <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                      <Award className="h-3.5 w-3.5" />
+                      {GRADING_INFO.tier}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl border border-black/15">
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Estimated price</p>
+                      <p className="mt-0.5 text-xs text-black/55">Grading fee incl. shipping to PSA</p>
+                    </div>
+                    <p className="text-lg font-bold">{formatDollars(GRADING_INFO.estimatedPrice)}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-black/45" />
+                      <div>
+                        <p className="text-sm font-semibold">Turnaround time</p>
+                        <p className="mt-0.5 text-xs text-black/55">From when PSA receives the card</p>
+                      </div>
+                    </div>
+                    <p className="text-lg font-bold">{GRADING_INFO.turnaround}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Estimated graded value</p>
+                      <p className="mt-0.5 text-xs text-black/55">Range once graded — not guaranteed</p>
+                    </div>
+                    <p className="text-lg font-bold text-green-700">{GRADING_INFO.estimatedGradedValue}</p>
+                  </div>
+                </div>
+
+                <p className="text-xs leading-5 text-black/55">
+                  Estimated values are based on recent comparable sales and depend on the final grade. Requesting sends your card to PSA through eBay; grading fees are charged when it ships.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => { setRequestStatus("grading-sent"); setRequestSheet(null); setRequestCommandActive(false); setRequestMenuOpen(false) }}
+                  className="min-h-12 rounded-full bg-blue-600 px-6 text-base font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  Request grading · {formatDollars(GRADING_INFO.estimatedPrice)}
+                </button>
+              </div>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Vaulting review sheet: vault information + cost information */}
+      <AnimatePresence>
+        {requestSheet === "vaulting" && (
+          <motion.div
+            className="absolute inset-0 z-50 flex items-end bg-black/55"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setRequestSheet(null)
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="vaulting-title"
+              className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl bg-white text-black shadow-2xl"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 360, damping: 38 }}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => setRequestSheet(null)}
+                  className="min-h-11 rounded-full px-2 text-sm font-semibold text-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+                >
+                  Back
+                </button>
+                <p className="text-sm font-bold">Vaulting</p>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onClick={() => setRequestSheet(null)}
+                  className="flex min-h-11 min-w-11 items-center justify-end text-2xl leading-none text-black"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-5 p-5 pb-8">
+                <div className="flex gap-4">
+                  <img
+                    src={REQUEST_CARD.image}
+                    alt={`${REQUEST_CARD.player} ${REQUEST_CARD.title} card`}
+                    className="h-36 w-24 flex-shrink-0 rounded-xl object-cover shadow-md"
+                  />
+                  <div className="min-w-0 pt-1">
+                    <p className="text-xs font-bold uppercase tracking-wide text-black/55">Vault request</p>
+                    <h2 id="vaulting-title" className="mt-1 text-balance text-xl font-bold leading-6">{REQUEST_CARD.player}</h2>
+                    <p className="mt-1 text-sm font-semibold">{REQUEST_CARD.title}</p>
+                    <p className="mt-2 text-sm text-black/60">{REQUEST_CARD.set}</p>
+                  </div>
+                </div>
+
+                {/* Vault information */}
+                <div>
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wide text-black/55">Vault information</p>
+                  <div className="overflow-hidden rounded-2xl border border-black/15">
+                    <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4 text-amber-500" />
+                        <p className="text-sm font-semibold">Facility</p>
+                      </div>
+                      <p className="text-right text-sm font-bold">{VAULTING_INFO.facility}</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 p-4">
+                      <p className="text-sm font-semibold">Insured value</p>
+                      <p className="text-lg font-bold">{formatDollars(VAULTING_INFO.insuredValue)}</p>
+                    </div>
+                  </div>
+                  <ul className="mt-3 flex flex-col gap-2">
+                    {VAULTING_INFO.benefits.map((benefit) => (
+                      <li key={benefit} className="flex items-start gap-2 text-sm text-black/70">
+                        <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Cost information */}
+                <div>
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wide text-black/55">Cost information</p>
+                  <div className="overflow-hidden rounded-2xl border border-black/15">
+                    <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                      <div>
+                        <p className="text-sm font-semibold">Storage</p>
+                        <p className="mt-0.5 text-xs text-black/55">Ongoing monthly cost</p>
+                      </div>
+                      <p className="text-lg font-bold text-green-700">{VAULTING_INFO.costLabel}</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                      <div>
+                        <p className="text-sm font-semibold">Intake fee</p>
+                        <p className="mt-0.5 text-xs text-black/55">One-time, to vault this card</p>
+                      </div>
+                      <p className="text-lg font-bold">{VAULTING_INFO.intakeFee === 0 ? "Free" : formatDollars(VAULTING_INFO.intakeFee)}</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 p-4">
+                      <div>
+                        <p className="text-sm font-semibold">Selling fees</p>
+                        <p className="mt-0.5 text-xs text-black/55">Only charged if you sell from the vault</p>
+                      </div>
+                      <p className="text-sm font-bold">Standard rate</p>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-xs leading-5 text-black/55">
+                  Vaulting keeps your card secure and insured so you can sell instantly without shipping it yourself. You can request it back or list it any time.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => { setRequestStatus("vaulting-sent"); setRequestSheet(null); setRequestCommandActive(false); setRequestMenuOpen(false) }}
+                  className="min-h-12 rounded-full bg-blue-600 px-6 text-base font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  Send to vault · {VAULTING_INFO.costLabel} storage
+                </button>
+              </div>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedAnimation === "trades" && tradeOfferStatus === "reviewing" && (
+          <motion.div
+            className="absolute inset-0 z-50 flex items-end bg-black/55"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setTradeOfferStatus("available")
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="trade-offer-title"
+              className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl bg-white text-black shadow-2xl"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 360, damping: 38 }}
+            >
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/10 bg-white px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => setTradeOfferStatus("available")}
+                  className="min-h-11 rounded-full px-2 text-sm font-semibold text-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
+                >
+                  Back
+                </button>
+                <p className="text-sm font-bold">Review trade offer</p>
+                <button
+                  type="button"
+                  aria-label="Close offer review"
+                  onClick={() => setTradeOfferStatus("available")}
+                  className="flex min-h-11 min-w-11 items-center justify-end text-2xl leading-none text-black"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-5 p-5 pb-8">
+                <p id="trade-offer-title" className="text-balance text-lg font-bold leading-6">
+                  {TRADE_OFFER.from} wants to trade with you
+                </p>
+
+                <div className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-3">
+                  <div className="flex flex-col rounded-2xl border border-black/15 p-3">
+                    <p className="text-xs font-bold uppercase tracking-wide text-black/55">You give</p>
+                    <img
+                      src={TRADE_OFFER.yourCard.image}
+                      alt={`${TRADE_OFFER.yourCard.player} ${TRADE_OFFER.yourCard.title} card`}
+                      className="mt-2 aspect-[2/3] w-full rounded-lg object-cover shadow-sm"
+                    />
+                    <p className="mt-2 text-sm font-bold leading-5">{TRADE_OFFER.yourCard.player}</p>
+                    <p className="text-xs text-black/60">{TRADE_OFFER.yourCard.title}</p>
+                    <p className="mt-1 text-xs text-black/55">{TRADE_OFFER.yourCard.grade}</p>
+                    <p className="mt-auto pt-2 text-sm font-bold">{formatDollars(TRADE_OFFER.yourCard.marketValue)}</p>
+                  </div>
+
+                  <div className="flex items-center text-black/40" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M7 4 3 8l4 4" />
+                      <path d="M3 8h14" />
+                      <path d="m17 20 4-4-4-4" />
+                      <path d="M21 16H7" />
+                    </svg>
+                  </div>
+
+                  <div className="flex flex-col rounded-2xl border border-blue-200 bg-blue-50/60 p-3">
+                    <p className="text-xs font-bold uppercase tracking-wide text-blue-700">You get</p>
+                    <img
+                      src={TRADE_OFFER.theirCard.image}
+                      alt={`${TRADE_OFFER.theirCard.player} ${TRADE_OFFER.theirCard.title} card`}
+                      className="mt-2 aspect-[2/3] w-full rounded-lg object-cover shadow-sm"
+                    />
+                    <p className="mt-2 text-sm font-bold leading-5">{TRADE_OFFER.theirCard.player}</p>
+                    <p className="text-xs text-black/60">{TRADE_OFFER.theirCard.title}</p>
+                    <p className="mt-1 text-xs text-black/55">{TRADE_OFFER.theirCard.grade}</p>
+                    <p className="mt-auto pt-2 text-sm font-bold">{formatDollars(TRADE_OFFER.theirCard.marketValue)}</p>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl border border-black/15">
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Their card market value</p>
+                      <p className="mt-0.5 text-xs text-black/55">Based on recent comparable sales</p>
+                    </div>
+                    <p className="text-lg font-bold">{formatDollars(TRADE_OFFER.theirCard.marketValue)}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-b border-black/10 bg-green-50 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Cash credited to you</p>
+                      <p className="mt-0.5 text-xs text-black/55">Added to your account to balance the trade</p>
+                    </div>
+                    <p className="text-xl font-bold text-green-700">+{formatDollars(TRADE_OFFER.cashToYou)}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 p-4">
+                    <div>
+                      <p className="text-sm font-semibold">Net difference in your favor</p>
+                      <p className="mt-0.5 text-xs text-black/55">What you get minus your card’s value</p>
+                    </div>
+                    <p className="text-lg font-bold text-green-700">+{formatDollars(tradeNetDifference)}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-zinc-100 p-4">
+                  <div>
+                    <p className="text-sm font-semibold">Offer expires in</p>
+                    <p className="text-xs text-black/55">After this time, the trade offer closes</p>
+                  </div>
+                  <p className="font-mono text-xl font-bold tabular-nums">{BUYBACK_OFFER.expiresIn}</p>
+                </div>
+
+                <p className="text-xs leading-5 text-black/55">Market values are estimates, not guaranteed resale prices. Accepting sends your card to {TRADE_OFFER.from} and transfers their card plus {formatDollars(TRADE_OFFER.cashToYou)} to you.</p>
+
+                <div className="flex flex-col gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setTradeOfferStatus("accepted")}
+                    className="min-h-12 rounded-full bg-blue-600 px-6 text-base font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  >
+                    Accept trade
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTradeOfferStatus("declined")}
+                    className="min-h-12 rounded-full border border-black px-6 text-base font-bold text-black transition-colors hover:bg-black/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                  >
+                    Decline offer
+                  </button>
+                </div>
+              </div>
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Future State V2: full-screen card reveal after the board lands. */}
       <AnimatePresence>
         {showBoardCardReveal && (
@@ -2387,6 +3605,7 @@ case "future-state-v2":
       />
       </div>
       </div>
+      )}
     </div>
   )
 }
