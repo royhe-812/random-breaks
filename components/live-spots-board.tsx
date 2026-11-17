@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { ChevronLeft, Heart, Search, Trophy, Zap } from "lucide-react"
 
@@ -43,7 +43,7 @@ const TEAMS = [
 
 const BUYERS = ["KemMajed90", "BestCollector", "CardKing22", "SportsGuru", "PackRipper", "HobbyFan", "CardChaser", "BigHits", "TopPulls", "RookieHunter", "GradedGems", "WaxBreaker", "HitMaker", "CardShark", "BoxBreaker", "SerialHunter", "ChaseElite", "MintCondition", "RipNShip", "SlabHunter", "TheBreaker", "CardVault", "HitChaser", "PrizmKing", "WaxAddict", "GemMint10", "BreakRoom", "CardCove", "HotBoxes", "PullMaster", "AceCards", "BigLeague"]
 
-type Filter = "available" | "sold"
+type Filter = "all" | "available" | "sold"
 
 const SPOT_PRICE = 21
 
@@ -89,8 +89,16 @@ export function LiveSpotsBoard({
   spotsAvailable: number
   spotsTotal: number
 }) {
-  const [filter, setFilter] = useState<Filter>("available")
+  const [filter, setFilter] = useState<Filter>("all")
   const [query, setQuery] = useState("")
+
+  // Every time the board opens it starts on All (Available + Sold sections).
+  useEffect(() => {
+    if (isOpen) {
+      setFilter("all")
+      setQuery("")
+    }
+  }, [isOpen])
 
   const total = Math.min(TEAMS.length, spotsTotal)
   const soldCount = Math.min(total, Math.max(0, total - spotsAvailable))
@@ -112,6 +120,11 @@ export function LiveSpotsBoard({
     if (!q) return true
     return `${s.city} ${s.name} ${s.abbrev} ${s.owner ?? ""}`.toLowerCase().includes(q)
   })
+
+  const sections = [
+    { id: "available", label: "Available", items: visible.filter((s) => !s.owner) },
+    { id: "sold", label: "Sold", items: visible.filter((s) => s.owner) },
+  ].filter((section) => section.items.length > 0)
 
   const chipBase = "flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors"
   const chipIdle = "border border-white/70 bg-black text-white"
@@ -165,7 +178,7 @@ export function LiveSpotsBoard({
           <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 py-3" role="group" aria-label="Filter spots">
             <button
               type="button"
-              onClick={() => setFilter("available")}
+              onClick={() => setFilter(filter === "available" ? "all" : "available")}
               aria-pressed={filter === "available"}
               className={`${chipBase} ${filter === "available" ? chipOn : chipIdle}`}
             >
@@ -186,7 +199,7 @@ export function LiveSpotsBoard({
             </button>
             <button
               type="button"
-              onClick={() => setFilter("sold")}
+              onClick={() => setFilter(filter === "sold" ? "all" : "sold")}
               aria-pressed={filter === "sold"}
               className={`${chipBase} ${filter === "sold" ? chipOn : chipIdle}`}
             >
@@ -229,36 +242,54 @@ export function LiveSpotsBoard({
 
               {visible.length === 0 ? (
                 <p className="pt-8 text-center text-sm text-white/50">
-                  {filter === "available" && openCount === 0 ? "Every spot has been sold." : "No spots match your search."}
+                  {filter === "available" && openCount === 0
+                    ? "Every spot has been sold."
+                    : filter === "sold" && soldCount === 0 && !q
+                      ? "No spots have sold yet."
+                      : "No spots match your search."}
                 </p>
               ) : (
-                <ul className="mt-3">
-                  {visible.map((s) => (
-                    <li key={s.abbrev} className="flex items-center justify-between gap-3 border-b border-white/25 py-3 last:border-b-0">
-                      <div className="min-w-0">
-                        <p className="truncate text-lg leading-6">
-                          {s.city} {s.name}
-                        </p>
-                        {s.owner && (
-                          <p className="mt-1 flex items-center gap-1.5 text-lg leading-6">
-                            <span className="font-bold">${SPOT_PRICE}.00</span>
-                            <Trophy className="h-4 w-4 flex-shrink-0 text-[#f5b90b]" aria-hidden="true" />
-                            <span className="truncate font-bold">{s.owner}</span>
-                          </p>
-                        )}
-                      </div>
-                      {s.owner ? (
-                        <span className="flex-shrink-0 rounded-full border border-[#ff5a4d] px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-[#ff5a4d]">
-                          Sold out
-                        </span>
-                      ) : (
-                        <span className="flex-shrink-0 rounded-full border border-white/40 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-white/55">
-                          Available
-                        </span>
+                <div className="mt-3 flex flex-col gap-4">
+                  {sections.map((section) => (
+                    <section key={section.id} aria-labelledby={`spots-${section.id}`}>
+                      {filter === "all" && (
+                        <h4
+                          id={`spots-${section.id}`}
+                          className="border-b border-white/25 pb-2 pt-1 text-sm font-bold uppercase tracking-wider text-white/60"
+                        >
+                          {section.label} · {section.items.length}
+                        </h4>
                       )}
-                    </li>
+                      <ul>
+                        {section.items.map((s) => (
+                          <li key={s.abbrev} className="flex items-center justify-between gap-3 border-b border-white/25 py-3 last:border-b-0">
+                            <div className="min-w-0">
+                              <p className="truncate text-lg leading-6">
+                                {s.city} {s.name}
+                              </p>
+                              {s.owner && (
+                                <p className="mt-1 flex items-center gap-1.5 text-lg leading-6">
+                                  <span className="font-bold">${SPOT_PRICE}.00</span>
+                                  <Trophy className="h-4 w-4 flex-shrink-0 text-[#f5b90b]" aria-hidden="true" />
+                                  <span className="truncate font-bold">{s.owner}</span>
+                                </p>
+                              )}
+                            </div>
+                            {s.owner ? (
+                              <span className="flex-shrink-0 rounded-full border border-[#ff5a4d] px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-[#ff5a4d]">
+                                Sold out
+                              </span>
+                            ) : (
+                              <span className="flex-shrink-0 rounded-full border border-white/40 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-white/55">
+                                Available
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
                   ))}
-                </ul>
+                </div>
               )}
             </div>
           </div>
