@@ -3583,12 +3583,13 @@ case "future-state-v2":
           sheet. The Break Rules link still uses the sheet's rules screen. */}
       <LiveSpotsBoard
         isOpen={isBreakSpotsOpen && (selectedAnimation === "future-state" || selectedAnimation === "future-state-v2") && !breakSpotsToRules}
-        onClose={() => setIsBreakSpotsOpen(false)}
-        spotsAvailable={demoSpots}
-        spotsTotal={32}
-      />
-
-      {/* Break Spots Sheet */}
+  onClose={() => setIsBreakSpotsOpen(false)}
+  onBreakRules={() => setBreakSpotsToRules(true)}
+  spotsAvailable={demoSpots}
+  spotsTotal={32}
+  />
+  
+  {/* Break Spots Sheet */}
       <BreakSpotsSheet 
         isOpen={isBreakSpotsOpen && !((selectedAnimation === "future-state" || selectedAnimation === "future-state-v2") && !breakSpotsToRules)} 
         onClose={() => setIsBreakSpotsOpen(false)}
