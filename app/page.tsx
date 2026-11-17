@@ -121,7 +121,6 @@ const animations: { id: AnimationType; name: string; disabled?: boolean }[] = [
   // concepts below rely on.
   // { id: "single-spin-populate", name: "Single Spin" },
   // { id: "spin-in-place-roller", name: "Spin In Place (Roller)" },
-  { id: "spin-in-place-roller-subtle", name: "Randomizing" },
   { id: "future-state", name: "Future state" },
   // Future State V2 is the "Board" concept from the Live Board chat.
   { id: "future-state-v2", name: "Future State V2" },
@@ -525,7 +524,7 @@ const MANUAL_FORCED_TEAMS: [Team, Team, Team] = [
 const MANUAL_EXTRA_TEAM: Team = { name: "Tank", city: "Cartier", abbrev: "TNK", color: "#003594", secondary: "#869397" }
 
 export default function AnimationShowcase() {
-  const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("spin-in-place-roller-subtle")
+  const [selectedAnimation, setSelectedAnimation] = useState<AnimationType>("future-state")
   const [showTestingZone, setShowTestingZone] = useState(false)
   const [isRevealing, setIsRevealing] = useState(false)
   const [isSpinnerRevealing, setIsSpinnerRevealing] = useState(false) // For TeamSpinner cycling
