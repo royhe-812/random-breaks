@@ -47,7 +47,7 @@ type Filter = "available" | "sold"
 
 const SPOT_PRICE = 21
 
-function ProgressRing({ available, total, size = 22 }: { available: number; total: number; size?: number }) {
+function ProgressRing({ available, total, color, size = 22 }: { available: number; total: number; color: string; size?: number }) {
   const stroke = 3
   const r = (size - stroke) / 2
   const c = 2 * Math.PI * r
@@ -60,7 +60,7 @@ function ProgressRing({ available, total, size = 22 }: { available: number; tota
         cy={size / 2}
         r={r}
         fill="none"
-        stroke="#eab308"
+        stroke={color}
         strokeWidth={stroke}
         strokeLinecap="round"
         strokeDasharray={c}
@@ -76,10 +76,16 @@ export function LiveSpotsBoard({
   onBreakRules,
   spotsAvailable,
   spotsTotal,
+  setTitle = "Sick watch surprise set!",
+  setImage = "/images/watches-surprise-set.png",
+  startingSoon = false,
 }: {
+  startingSoon?: boolean
   isOpen: boolean
   onClose: () => void
   onBreakRules?: () => void
+  setTitle?: string
+  setImage?: string
   spotsAvailable: number
   spotsTotal: number
 }) {
@@ -192,15 +198,21 @@ export function LiveSpotsBoard({
             <div className="rounded-3xl bg-[#2f2f2f] p-4">
               <div className="flex gap-3">
                 <div className="h-28 w-28 flex-shrink-0 overflow-hidden rounded-2xl bg-[#3a3a3a]">
-                  <img src="/images/watches-surprise-set.png" alt="Luxury Watches Surprise Set" className="h-full w-full object-cover" />
+                  <img src={setImage} alt={setTitle} className="h-full w-full object-cover" />
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col items-start">
-                  <span className="rounded-full border border-[#4d8bff] px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[#6ea0ff]">
-                    Featured
-                  </span>
-                  <h3 className="mt-1.5 line-clamp-2 text-lg font-medium leading-6">Luxury Watches Surprise Set #15</h3>
+                  {startingSoon ? (
+                    <span className="rounded-full border border-white/35 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white/55">
+                      Starting soon
+                    </span>
+                  ) : (
+                    <span className="rounded-full border border-[#4d8bff] px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-[#6ea0ff]">
+                      Featured
+                    </span>
+                  )}
+                  <h3 className="mt-1.5 line-clamp-2 text-lg font-medium leading-6">{setTitle}</h3>
                   <div className="mt-1 flex items-center gap-2">
-                    <ProgressRing available={openCount} total={total} />
+                    <ProgressRing available={openCount} total={total} color={startingSoon ? "#4CE160" : "#eab308"} />
                     <span className="text-base text-white/85">
                       {openCount}/{total} spots available
                     </span>

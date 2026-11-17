@@ -51,6 +51,7 @@ import { IPhoneStatusBar } from "@/components/iphone-status-bar"
 import { SwipeToBid } from "@/components/swipe-to-bid"
 import { BreakSpotsSheet } from "@/components/break-spots-sheet"
 import { LiveSpotsBoard } from "@/components/live-spots-board"
+import { ItemLineupSheet, SURPRISE_SETS, type SurpriseSetId } from "@/components/item-lineup-sheet"
 import { TestingZone } from "@/components/testing-zone"
 
 type AnimationType = "card-flip" | "buyback" | "trades" | "consignments" | "grading" | "vaulting" | "single-spin-populate" | "single-spin-later" | "spin-in-place" | "spin-in-place-roller" | "spin-in-place-roller-subtle" | "future-state" | "future-state-v2" | "ticker" | "multi-spin-repeat" | "multi-spin" | "multi-spin-2" | "multi-spin-4" | "multi-spin-4-auto" | "multi-spin-4-chips" | "multi-spin-4-chips-no-label" | "multi-spin-3-label" | "multi-spin-4-rules" | "multi-spin-5-label" | "multi-spin-5-manual" | "multi-spin-5-manual-icon" | "multi-spin-6-titlerow" | "pack-rip" | "slot-machine" | "mystery-box" | "particle-assembly" | "gift-box" | "battle" | "pick-card" | "carousel" | "in-stream" | "gift-reveal" | "thumbnails" | "thumbnails-2" | "thumbnails-3" | "thumbnails-4"
@@ -538,6 +539,8 @@ export default function AnimationShowcase() {
   const [spinnerLastWinner, setSpinnerLastWinner] = useState<{ username: string; team: string } | null>(null) // TeamSpinner: dynamic last winner
   const [isBreakSpotsOpen, setIsBreakSpotsOpen] = useState(false) // For BreakSpotsSheet
   const [showBoardCardReveal, setShowBoardCardReveal] = useState(false) // Future State V2: card reveal after the board lands
+  const [isLineupOpen, setIsLineupOpen] = useState(false) // Future state: Items rail opens the item lineup
+  const [lineupSet, setLineupSet] = useState<SurpriseSetId | null>(null) // Set whose spots the board is showing; null = the live featured set
   const [breakSpotsToRules, setBreakSpotsToRules] = useState(false) // When opening the sheet, jump straight to Break Rules
   const [buybackOfferStatus, setBuybackOfferStatus] = useState<BuybackOfferStatus>("available")
   const buybackDifference = BUYBACK_OFFER.marketValue - BUYBACK_OFFER.instantCredit
@@ -1708,8 +1711,13 @@ case "future-state-v2":
           <div className="bg-black/40 backdrop-blur rounded-3xl px-2 py-3 flex flex-col items-center gap-2 mt-2">
             {/* Live indicator + viewer count (Figma node 25300:8726) */}
             <LiveViewerIndicator count={viewerCount} />
-            {/* Items */}
-            <div className="flex flex-col items-center">
+            {/* Items: opens the item lineup in the Future state concepts */}
+            <button
+              type="button"
+              disabled={!(selectedAnimation === "future-state" || selectedAnimation === "future-state-v2")}
+              onClick={() => setIsLineupOpen(true)}
+              className="flex flex-col items-center disabled:cursor-default"
+            >
               <div className="w-10 h-10 flex items-center justify-center">
                 <img 
                   src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/items-lRJIiXEXUI5vZJg8YwpehK7c6cPcIp.png" 
@@ -1718,7 +1726,7 @@ case "future-state-v2":
                 />
               </div>
               <span className="text-white text-xs font-medium mt-1">Items</span>
-            </div>
+            </button>
             {/* Wallet */}
             <div className="flex flex-col items-center">
               <div className="w-10 h-10 flex items-center justify-center">
@@ -3583,10 +3591,29 @@ case "future-state-v2":
           sheet. The Break Rules link still uses the sheet's rules screen. */}
       <LiveSpotsBoard
         isOpen={isBreakSpotsOpen && (selectedAnimation === "future-state" || selectedAnimation === "future-state-v2") && !breakSpotsToRules}
-  onClose={() => setIsBreakSpotsOpen(false)}
+  onClose={() => {
+    setIsBreakSpotsOpen(false)
+    if (lineupSet) setIsLineupOpen(true)
+  }}
   onBreakRules={() => setBreakSpotsToRules(true)}
-  spotsAvailable={demoSpots}
+  spotsAvailable={lineupSet && lineupSet !== "sick-watch" ? SURPRISE_SETS[lineupSet].total : demoSpots}
   spotsTotal={32}
+  setTitle={SURPRISE_SETS[lineupSet ?? "sick-watch"].title}
+  setImage={SURPRISE_SETS[lineupSet ?? "sick-watch"].image}
+  startingSoon={SURPRISE_SETS[lineupSet ?? "sick-watch"].status === "starting-soon"}
+  />
+
+  {/* Future state: Items rail opens the item lineup; each surprise set opens its spots board. */}
+  <ItemLineupSheet
+  isOpen={isLineupOpen && (selectedAnimation === "future-state" || selectedAnimation === "future-state-v2")}
+  onClose={() => { setIsLineupOpen(false); setLineupSet(null) }}
+  featuredAvailable={demoSpots}
+  onSeeSpots={(id) => {
+    setLineupSet(id)
+    setIsLineupOpen(false)
+    setBreakSpotsToRules(false)
+    setIsBreakSpotsOpen(true)
+  }}
   />
   
   {/* Break Spots Sheet */}
