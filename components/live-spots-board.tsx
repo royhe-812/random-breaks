@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronLeft, Search, Trophy } from "lucide-react"
+import { ChevronDown, ChevronLeft, Search, Trophy } from "lucide-react"
 
 // Same team order as BreakSpotsSheet, so both boards agree on which spots are
 // sold for a given spots count: the first (total - available) teams are sold.
@@ -87,11 +87,13 @@ export function LiveSpotsBoard({
   spotsTotal: number
 }) {
   const [query, setQuery] = useState("")
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
-  // Clear any previous search each time the board opens.
+  // Start fresh (no search, all sections expanded) each time the board opens.
   useEffect(() => {
     if (isOpen) {
       setQuery("")
+      setCollapsed({})
     }
   }, [isOpen])
 
@@ -200,15 +202,25 @@ export function LiveSpotsBoard({
                 <div className="mt-3 flex flex-col gap-4">
                   {sections.map((section) => (
                     <section key={section.id} aria-labelledby={`spots-${section.id}`}>
-                      {(
-                        <h4
+                      <h4 className="border-b border-white/25">
+                        <button
+                          type="button"
                           id={`spots-${section.id}`}
-                          className="border-b border-white/25 pb-2 pt-1 text-sm font-bold uppercase tracking-wider text-white/60"
+                          aria-expanded={!collapsed[section.id]}
+                          aria-controls={`spots-list-${section.id}`}
+                          onClick={() => setCollapsed((c) => ({ ...c, [section.id]: !c[section.id] }))}
+                          className="flex w-full items-center justify-between gap-2 pb-2 pt-1 text-left text-sm font-bold uppercase tracking-wider text-white/60 transition-colors hover:text-white"
                         >
-                          {section.label} · {section.items.length}
-                        </h4>
-                      )}
-                      <ul>
+                          <span>
+                            {section.label} · {section.items.length}
+                          </span>
+                          <ChevronDown
+                            className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${collapsed[section.id] ? "-rotate-90" : ""}`}
+                            aria-hidden="true"
+                          />
+                        </button>
+                      </h4>
+                      <ul id={`spots-list-${section.id}`} hidden={!!collapsed[section.id]}>
                         {section.items.map((s) => (
                           <li key={s.abbrev} className="flex items-center justify-between gap-3 border-b border-white/25 py-3 last:border-b-0">
                             <div className="min-w-0">
