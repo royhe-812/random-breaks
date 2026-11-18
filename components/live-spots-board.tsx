@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { ChevronLeft, Heart, Search, Trophy, Zap } from "lucide-react"
+import { ChevronLeft, Search, Trophy } from "lucide-react"
 
 // Same team order as BreakSpotsSheet, so both boards agree on which spots are
 // sold for a given spots count: the first (total - available) teams are sold.
@@ -43,7 +43,6 @@ const TEAMS = [
 
 const BUYERS = ["KemMajed90", "BestCollector", "CardKing22", "SportsGuru", "PackRipper", "HobbyFan", "CardChaser", "BigHits", "TopPulls", "RookieHunter", "GradedGems", "WaxBreaker", "HitMaker", "CardShark", "BoxBreaker", "SerialHunter", "ChaseElite", "MintCondition", "RipNShip", "SlabHunter", "TheBreaker", "CardVault", "HitChaser", "PrizmKing", "WaxAddict", "GemMint10", "BreakRoom", "CardCove", "HotBoxes", "PullMaster", "AceCards", "BigLeague"]
 
-type Filter = "all" | "available" | "sold"
 
 const SPOT_PRICE = 21
 
@@ -73,7 +72,6 @@ function ProgressRing({ available, total, color, size = 22 }: { available: numbe
 export function LiveSpotsBoard({
   isOpen,
   onClose,
-  onBreakRules,
   spotsAvailable,
   spotsTotal,
   setTitle = "Sick watch surprise set!",
@@ -83,19 +81,16 @@ export function LiveSpotsBoard({
   startingSoon?: boolean
   isOpen: boolean
   onClose: () => void
-  onBreakRules?: () => void
   setTitle?: string
   setImage?: string
   spotsAvailable: number
   spotsTotal: number
 }) {
-  const [filter, setFilter] = useState<Filter>("all")
   const [query, setQuery] = useState("")
 
-  // Every time the board opens it starts on All (Available + Sold sections).
+  // Clear any previous search each time the board opens.
   useEffect(() => {
     if (isOpen) {
-      setFilter("all")
       setQuery("")
     }
   }, [isOpen])
@@ -115,8 +110,6 @@ export function LiveSpotsBoard({
 
   const q = query.trim().toLowerCase()
   const visible = spots.filter((s) => {
-    if (filter === "available" && s.owner) return false
-    if (filter === "sold" && !s.owner) return false
     if (!q) return true
     return `${s.city} ${s.name} ${s.abbrev} ${s.owner ?? ""}`.toLowerCase().includes(q)
   })
@@ -126,9 +119,6 @@ export function LiveSpotsBoard({
     { id: "sold", label: "Sold", items: visible.filter((s) => s.owner) },
   ].filter((section) => section.items.length > 0)
 
-  const chipBase = "flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors"
-  const chipIdle = "border border-white/70 bg-black text-white"
-  const chipOn = "border border-white bg-white text-black"
 
   return (
     <AnimatePresence>
@@ -175,39 +165,8 @@ export function LiveSpotsBoard({
             </label>
           </div>
 
-          <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 py-3" role="group" aria-label="Filter spots">
-            <button
-              type="button"
-              onClick={() => setFilter(filter === "available" ? "all" : "available")}
-              aria-pressed={filter === "available"}
-              className={`${chipBase} ${filter === "available" ? chipOn : chipIdle}`}
-            >
-              Available
-            </button>
-            <button type="button" disabled className={`${chipBase} ${chipIdle} flex items-center gap-1.5 text-white/60`}>
-              <Zap className="h-4 w-4" aria-hidden="true" />
-              Deals
-            </button>
-            <button type="button" disabled className={`${chipBase} ${chipIdle}`}>
-              Auctions
-            </button>
-            <button type="button" disabled className={`${chipBase} ${chipIdle} text-white/60`}>
-              Buy It Now
-            </button>
-            <button type="button" disabled aria-label="Watched" className={`${chipBase} ${chipIdle} px-3.5`}>
-              <Heart className="h-5 w-5" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter(filter === "sold" ? "all" : "sold")}
-              aria-pressed={filter === "sold"}
-              className={`${chipBase} ${filter === "sold" ? chipOn : chipIdle}`}
-            >
-              Sold
-            </button>
-          </div>
 
-          <div className="no-scrollbar flex-1 overflow-y-auto px-4 pb-8">
+          <div className="no-scrollbar mt-3 flex-1 overflow-y-auto px-4 pb-8">
             <div className="rounded-3xl bg-[#2f2f2f] p-4">
               <div className="flex gap-3">
                 <div className="h-28 w-28 flex-shrink-0 overflow-hidden rounded-2xl bg-[#3a3a3a]">
@@ -230,29 +189,18 @@ export function LiveSpotsBoard({
                       {openCount}/{total} spots available
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={onBreakRules}
-                    className="mt-2.5 rounded-full border border-white/80 px-5 py-2 text-base font-medium transition-colors hover:bg-white/10"
-                  >
-                    Break rules
-                  </button>
                 </div>
               </div>
 
               {visible.length === 0 ? (
                 <p className="pt-8 text-center text-sm text-white/50">
-                  {filter === "available" && openCount === 0
-                    ? "Every spot has been sold."
-                    : filter === "sold" && soldCount === 0 && !q
-                      ? "No spots have sold yet."
-                      : "No spots match your search."}
+                  No spots match your search.
                 </p>
               ) : (
                 <div className="mt-3 flex flex-col gap-4">
                   {sections.map((section) => (
                     <section key={section.id} aria-labelledby={`spots-${section.id}`}>
-                      {filter === "all" && (
+                      {(
                         <h4
                           id={`spots-${section.id}`}
                           className="border-b border-white/25 pb-2 pt-1 text-sm font-bold uppercase tracking-wider text-white/60"

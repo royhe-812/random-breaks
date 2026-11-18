@@ -3594,7 +3594,6 @@ case "future-state-v2":
     setIsBreakSpotsOpen(false)
     if (lineupSet) setIsLineupOpen(true)
   }}
-  onBreakRules={() => setBreakSpotsToRules(true)}
   spotsAvailable={lineupSet && lineupSet !== "sick-watch" ? SURPRISE_SETS[lineupSet].total : demoSpots}
   spotsTotal={32}
   setTitle={SURPRISE_SETS[lineupSet ?? "sick-watch"].title}
