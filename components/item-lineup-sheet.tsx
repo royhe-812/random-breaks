@@ -188,7 +188,7 @@ export function ItemLineupSheet({
                         onClick={() => onSeeSpots(e.id)}
                         className="mt-4 w-full rounded-full bg-[#5b8def] py-3 text-base font-bold text-black transition-opacity hover:opacity-90"
                       >
-                        See all spots
+                        View all items
                       </button>
                     </li>
                   )
